@@ -14,7 +14,7 @@ interfaceUtils={}
 * @param {String} event The event to listen for
 * @param {String} handler Function to answer with
 * @param {Bool} debug If true will print to console
-* Listen to an event of an element, if the element doesnçt exist get a warning. */
+* Listen to an event of an element, if the element does not exist get a warning. */
 interfaceUtils.listen= function(domid,event,handler,debug){
     var dbg=debug || false;
     //console.log(dbg)
