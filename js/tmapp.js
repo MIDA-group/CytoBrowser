@@ -63,7 +63,7 @@ tmapp.registerActions = function () {
             as[j].addEventListener("click",function(){interfaceUtils.hideTabsExcept($(this))});
         }
     }
-    interfaceUtils.activateMainChildTabs("markers-gui");
+//    interfaceUtils.activateMainChildTabs("markers-gui");
 }
 
 /**
