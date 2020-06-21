@@ -242,19 +242,26 @@ tmapp.init = function () {
  * Options for the fixed and moving OSD 
  * all options are described here https://openseadragon.github.io/docs/OpenSeadragon.html#.Options */
 tmapp.options_osd = {
-    id: "ISS_viewer",
-    prefixUrl: "js/openseadragon/images/",
+    id: "ISS_viewer", //cybr_viewer
+    prefixUrl: "js/openseadragon/images/", //Location of button graphics
     navigatorSizeRatio: 1,
     wrapHorizontal: false,
-    showNavigator: true,
+    showNavigator: false,
     navigatorPosition: "BOTTOM_LEFT",
-    navigatorSizeRatio: 0.15,
+    navigatorSizeRatio: 0.25,
     animationTime: 0.0,
     blendTime: 0,
     minZoomImageRatio: 1,
-    maxZoomPixelRatio: 10,
-    zoomPerClick: 1.0,
+    maxZoomPixelRatio: 4,
+    gestureSettingsMouse: {clickToZoom: false},
+    zoomPerClick: 1.4,
     constrainDuringPan: true,
     visibilityRatio: 1,
-    showNavigationControl: false
+    showNavigationControl: true, //FIX: After Full screen, interface stops working
+
+    //imageSmoothingEnabled: false,
+    sequenceMode: false, // true,
+    preserveViewport: true,
+    preserveOverlays: true,
+    preload: true
 }
