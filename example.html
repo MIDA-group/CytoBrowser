@@ -4,8 +4,6 @@
 <head>
     <title>TissUUmaps</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <!--<script src="https://d3js.org/d3.v4.min.js"></script>-->
-    <!--<script src="//d3js.org/d3-scale-chromatic.v0.3.min.js"></script>-->
     <script src="js/d3.v4.min.js"></script>
     <script src="js/d3-scale-chromatic.v0.3.min.js"></script>
     <script src="js/jquery-3.4.1.slim.min.js"></script>
@@ -553,11 +551,12 @@
 <script src="js/tmapp.js"></script>
 <script>
 
-    document.getElementById("project_title").innerText = "Project title";
-    // ----------
+    document.getElementById("project_title").innerText = "Cyto Browser";
+
+    // Start our tmapp
     $(document).ready(function () {
-        tmapp.fixed_file = "location/of/your.dzi";
-	    //tmapp.layers =[{name:"Layer name",tileSource:"location/of/your.dzi"}];
+        var url = new URL(window.location.href);
+        tmapp.fixed_file = url.searchParams.get("image");
         tmapp.registerActions();
         tmapp.init();
     });
