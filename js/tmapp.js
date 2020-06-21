@@ -15,6 +15,7 @@ tmapp = {
     _image_dir: "data/", //subdirectory where dzi images are stored
     fixed_file: "",
     viewer: null,
+    curr_z:0,
 
     getFocusLevel: function() {
         return curr_z;
@@ -66,6 +67,7 @@ tmapp.registerActions = function () {
 //    interfaceUtils.activateMainChildTabs("markers-gui");
 }
 
+
 /**
  * Expand single image name into z-stack array of names */
 tmapp.expandImageName = function(img) {
@@ -97,6 +99,7 @@ tmapp.loadImages = function(z=-1) {
         z=Math.floor(this.fixed_file.length/2);
     }
     curr_z=z;
+
     console.log("Opening: "+this.fixed_file);
     for(i=0;i < this.fixed_file.length;){
         this.viewer.addTiledImage({
@@ -104,137 +107,139 @@ tmapp.loadImages = function(z=-1) {
             opacity: i==curr_z,
             index: i++,
             //Announce when we're done
-            success:function() {if (tmapp.viewer.world.getItemCount()==tmapp.fixed_file.length) tmapp.viewer.raiseEvent('open') }
+            success:function() { if (tmapp.viewer.world.getItemCount()==tmapp.fixed_file.length) { tmapp.viewer.raiseEvent('open') } },
+            error:function() { tmapp.viewer.raiseEvent('open-failed') }
         });
     }
 }
 
 
 /**
- * This method is called when the document is loaded. The tmapp object is built as an "app" and init is its main function.
- * Creates the OpenSeadragon (OSD) viewer and adds the handlers for interaction.
- * To know which data one is referring to, there are Object Prefixes (op). For In situ sequencing projects it can be "ISS" for
- * Cell Profiler data it can be "CP".
- * If there are images to be displayed on top of the main image, they are stored in the layers object and, if there are layers
- * it will create the buttons to display them in the settings panel.
- * The SVG overlays for the viewer are also initialized here 
- * @summary After setting up the tmapp object, initialize it*/
-tmapp.init = function () {
-    //This prefix will be called by all other utilities in js/utils
-    tmapp["object_prefix"] = tmapp.options_osd.id.split("_")[0];
-    var op = tmapp["object_prefix"];
-    var vname = op + "_viewer";
-
-    this.expandImageName(this.fixed_file);
-
-    //init OSD this.viewer
-    this.viewer = OpenSeadragon(tmapp.options_osd);
-    tmapp[vname] = this.viewer;
+ * OSD view callbacks */
+tmapp.add_handlers = function () {
+    viewer=tmapp.viewer;
 
     //Change-of-Page (z-level) handle
-    this.viewer.addHandler("page", function (data) {
+    viewer.addHandler("page", function (data) {
         tmapp.setFocusName();
     });
 
-    this.viewer.addHandler("zoom", function (data) {
+    viewer.addHandler("zoom", function (data) {
         tmapp.setZoomName();
     });
 
     //When we're done loading
-    this.viewer.addHandler('open', function ( event ) {
+    viewer.addHandler('open', function ( event ) {
         console.log("Done loading!");
         tmapp.viewer.canvas.focus();
         tmapp.viewer.viewport.goHome();
         tmapp.setZoomName();
         tmapp.setFocusName();
     });
-    
-    //open the DZI xml file pointing to the tiles
-//    tmapp[vname].open(this._url_suffix + this.fixed_file);
-    this.loadImages();
+
+    //Error message if we fail to load
+    viewer.addHandler('open-failed', function ( event ) {
+        //alert( "ERROR!\nOpenFailed: "+ event.message + "\n" );
+        console.log("Open failed!");
+    });
 
     //pixelate because we need the exact values of pixels
-    this.viewer.addHandler("tile-drawn", OSDViewerUtils.pixelateAtMaximumZoomHandler);
-
-    if(tmapp.layers){
-	    var settingspannel=document.getElementById("image-overlay-panel");
-    	tmapp.layers.forEach(function(layer,i){
-	    var _button = document.createElement("button");
-	    _button.setAttribute("id","layer"+(i+1)+"_btn");
-	    _button.setAttribute("layer",(i+1));
-	    _button.innerHTML=layer.name
-             settingspannel.appendChild(_button);
-	    tmapp[vname].addTiledImage({
-		    index: i+1,tileSource: tmapp._url_suffix+layer.tileSource, opacity:0.0
-	     });
-	    _button.addEventListener("click",function(ev){
-		 var layer=ev.srcElement.attributes.layer;
-	        overlayUtils.setItemOpacity(i+1); 
-	    });
-	});
-    }
+    viewer.addHandler("tile-drawn", OSDViewerUtils.pixelateAtMaximumZoomHandler);
+}
 
 
-    //Create svgOverlay(); so that anything like D3, or any canvas library can act upon. https://d3js.org/
-    var svgovname = tmapp["object_prefix"] + "_svgov";
-    tmapp[svgovname] = this.viewer.svgOverlay();
+/**
+ * This method is called when the document is loaded. 
+ * Creates the OpenSeadragon (OSD) viewer and adds the handlers for interaction.
+ * The SVG overlays for the viewer are also initialized here */
+tmapp.init = function () {
+    //This prefix will be called by all other utilities in js/utils
+    tmapp["object_prefix"] = tmapp.options_osd.id.split("_")[0];
+    var op = tmapp["object_prefix"];
+    var vname = op + "_viewer";
 
-    //main node
-    overlayUtils._d3nodes[op + "_svgnode"] = d3.select(tmapp[svgovname].node());
+
+    this.expandImageName(this.fixed_file);
+
+    //init OSD viewer
+    this.viewer = OpenSeadragon(tmapp.options_osd);
+    tmapp[vname] = this.viewer; //For js/utils, this is a TissUUmaps thing. TODO: Get rid of TissUUmaps things we do not use.
+
+    this.add_handlers();
+
+    //open the DZI xml file pointing to the tiles
+    this.loadImages();
+   
+
+    tmapp.svgov=tmapp.viewer.svgOverlay();
+    tmapp.singleTMCPS=d3.select(tmapp.svgov.node()).append('g').attr('class', "fixed singleTMCPS");
+
+    // //Create svgOverlay(); so that anything like D3, or any canvas library can act upon. https://d3js.org/
+    // var svgovname = tmapp["object_prefix"] + "_svgov";
+    // tmapp[svgovname] = this.viewer.svgOverlay();
+
+    // //main node
+    // overlayUtils._d3nodes[op + "_svgnode"] = d3.select(tmapp[svgovname].node());
     
-    //overlay for marker data                                             //main node
-    overlayUtils._d3nodes[op + "_markers_svgnode"] = overlayUtils._d3nodes[op + "_svgnode"].append("g")
-        .attr("id", op + "_markers_svgnode");
-    //overlay for region data                                              //main node
-    overlayUtils._d3nodes[op + "_regions_svgnode"] = overlayUtils._d3nodes[op + "_svgnode"].append("g")
-        .attr("id", op + "_regions_svgnode");
-    //overlay for CP data   
-    var cpop="CP";                                   //main node;
-    overlayUtils._d3nodes[cpop+"_svgnode"] = overlayUtils._d3nodes[op + "_svgnode"].append("g")
-        .attr("id", cpop+"_svgnode");
+    // //overlay for marker data                                             //main node
+    // overlayUtils._d3nodes[op + "_markers_svgnode"] = overlayUtils._d3nodes[op + "_svgnode"].append("g")
+    //     .attr("id", op + "_markers_svgnode");
 
-    var click_handler = function (event) {
-        if (event.quick) {
-            if (overlayUtils._drawRegions) {
-                //call region creator and drawer
-                regionUtils.manager(event);
+
+    //This is the OSD click handler, when the event is quick it triggers the creation of a marker
+    //Called when we are far from any existing points; if we are close to elem, then DOM code in overlayUtils is called instead 
+    var click_handler= function(event) {
+        if(event.quick){
+            console.log("New click!");
+            // if (!(document.hasFocus())) {
+            if (tmapp.lost_focus) { //We get document focus back before getting the event
+                console.log("Lost document focus, ignoreing click and just setting (element) focus"); //Since it's irritating to get TMCP by asking for focus
+                tmapp.fixed_viewer.canvas.focus();
+                tmapp.checkFocus();
             }
-        } else { //if it is not quick then its panning
-            scroll_handler();
+            else if (cntrlIsPressed) {
+            }
+            else {
+                console.log("Adding point");
+                overlayUtils.addTMCPtoViewers(event);
+            }
+        } 
+        else {
+            //if it is not quick then it is dragged
+            console.log("drag thing");
         }
     };
 
+    var scroll_handler = function(event){
+        if (cntrlIsPressed) {
+            //TODO: Ctrl-scroll = focus
+        }
+        console.log("scroll thing");
+    };
 
-    //delay the scroll and the panning options so that there is a bit more time to calcualte which 
-    //markers to plot and where and how many
-    var isScrolling;
-    var scroll_handler = function (event) {
-
-        // Clear our timeout throughout the scroll
-        window.clearTimeout(isScrolling);
-        // Set a timeout to run after scrolling ends
-        isScrolling = setTimeout(function () {
-
-            // Run the callback
-            console.log('Scrolling has stopped.');
-            //
-            overlayUtils.modifyDisplayIfAny();
-
-        }, tmapp._scrollDelay);
-
-    }
-
-
-    //OSD handlers are not registered manually they have to be registered
-    //using MouseTracker OSD objects 
+    //OSD handlers have to be registered using MouseTracker OSD objects 
     var ISS_mouse_tracker = new OpenSeadragon.MouseTracker({
-        //element: this.fixed_svgov.node().parentNode, 
         element: this.viewer.canvas,
         clickHandler: click_handler,
         scrollHandler: scroll_handler
     }).setTracking(true);
 
-    //document.getElementById('cancelsearch-moving-button').addEventListener('click', function(){ markerUtils.showAllRows("moving");}); 
+
+
+    // //Assign the function to the button in the document (this should be done more dynamically)
+    // document.getElementById('pointstojson').addEventListener('click', JSONUtils.downloadJSON);
+    // document.getElementById('jsontodata').addEventListener('click', JSONUtils.readJSONToData);
+
+    document.getElementById("class1").addEventListener('click', function(){ overlayUtils.setClass(1); } );
+    document.getElementById("class2").addEventListener('click', function(){ overlayUtils.setClass(2); } );
+    document.getElementById("class3").addEventListener('click', function(){ overlayUtils.setClass(3); } );
+
+    document.getElementById("focus_next").addEventListener('click', function(){ tmapp.setFocusLevel(tmapp.getFocusLevel()+1); } );
+    document.getElementById("focus_prev").addEventListener('click', function(){ tmapp.setFocusLevel(tmapp.getFocusLevel()-1); } );
+    
+    tmapp.viewer.canvas.addEventListener('mouseover', function() { tmapp.checkFocus(); });
+
+    console.log("Finish init");
 } //finish init
 
 

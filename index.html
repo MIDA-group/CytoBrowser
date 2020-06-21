@@ -47,7 +47,8 @@
                  The ID will give the prefix for all the objects related to the viewer in this case ISS-->
             <div id="ISS_viewer" class="ISS_viewer"></div>
         </div>
-        
+
+        <!-- Table of annotated points -->
         <div class="col-xs-4" style="padding: 15px;">
             <div class="row">
                 <div class="table-wrapper-scroll-y my-custom-scrollbar">
@@ -66,24 +67,26 @@
                 </div>
             </div>
         </div>
-            
+        
+        <!-- Interface buttons -->        
         <div class="col-xs-4" style="padding: 15px">               
             <div class="panel panel-default">
-                <div class="panel-heading">
+                <!-- <div class="panel-heading">
                     <h3 class="panel-title">Options</h3>
-                </div>
+                </div> -->
                 <div class="panel-body">
+
                     <div class="row" style="padding: 10px">
                         <div class="col-xs-7">
                             <div class="btn-group btn-group-toggle" data-toggle="buttons">
-                                <label class="btn btn-success active" id="class0"> <!-- The 'click' happens in the lable! -->
-                                    <input type="radio" name="class_options" autocomplete="off" checked=""> Class 0
+                                <label class="btn btn-success active" id="class1"> <!-- The 'click' happens in the lable! -->
+                                    <input type="radio" name="class_options" autocomplete="off" checked=""> Class 1
                                 </label>
-                                <label class="btn btn-warning" id="class1">
-                                    <input type="radio" name="class_options" autocomplete="off"> Class 1
-                                </label>
-                                <label class="btn btn-danger" id="class2">
+                                <label class="btn btn-warning" id="class2">
                                     <input type="radio" name="class_options" autocomplete="off"> Class 2
+                                </label>
+                                <label class="btn btn-danger" id="class3">
+                                    <input type="radio" name="class_options" autocomplete="off"> Class 3
                                 </label>
                             </div>
                         </div>
@@ -93,6 +96,8 @@
                             <button id="focus_prev" class="btn btn-primary" type="button"> Down</button>
                         </div>
                     </div>
+
+                    <!-- Download annotation json -->
                     <div class="row">
                         <div class="col-xs-3">
                             <button id="pointstojson" class="btn btn-primary" type="button"> Download</button>
@@ -150,6 +155,42 @@
     function setImageZoom(txt) {
         document.getElementById("img_zoom").innerText=txt;
     }
+
+    $(document).mousedown(function(event){
+        if (!(document.hasFocus())) {
+            console.log("Lost focus, ignoreing click and setting focus")
+            tmcpoints.fixed_viewer.canvas.focus();
+        }
+    });
+
+    // Ctrl-click for delete etc.
+    $(document).keydown(function(event){
+        switch(event.which) {
+            case 17:cntrlIsPressed = true; break;
+        }
+    });
+
+    $(document).keyup(function(){
+        switch(event.which) {
+            case 17:cntrlIsPressed = false; break;
+        }
+    });
+
+    //1,2,... for class selection
+    //z,x for focus up down
+    $(document).keypress(function(){
+        console.log(event.which);
+        switch(event.which) {
+            case "1".charCodeAt(): document.getElementById("class1").click(); break;
+            case "2".charCodeAt(): document.getElementById("class2").click(); break;
+            case "3".charCodeAt(): document.getElementById("class3").click(); break;
+            case "z".charCodeAt(): document.getElementById("focus_prev").click(); break;
+            case "x".charCodeAt(): document.getElementById("focus_next").click(); break; 
+        }
+    });
+
+    var cntrlIsPressed = false;
+
 
 </script>
 </html>
