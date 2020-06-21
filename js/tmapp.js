@@ -12,8 +12,10 @@
 tmapp = {
     _url_suffix: "",
     _scrollDelay: 900,
+    _image_dir: "data/", //subdirectory where dzi images are stored
     fixed_file: ""
 }
+
 
 /** 
  * Get all the buttons from the interface and assign all the functions associated to them */
@@ -41,8 +43,50 @@ tmapp.registerActions = function () {
         }
     }
     interfaceUtils.activateMainChildTabs("markers-gui");
-
 }
+
+/**
+ * Expand single image name into z-stack array of names */
+tmapp.expandImageName = function(img) {
+    function* range(start, end, step=1) {
+        for (let i = start; i < end; i+=step) {
+            yield i;
+        }
+    }
+    
+    //Hard coded z-ranges based on image number
+    //TODO: glob for z-range
+    if (parseInt(img.match(/^\d*/),10)<=80) {
+        z_levels=[...range(-2000, 2001, 400)].map(z => "_z"+z);
+    } 
+    else {
+        z_levels=[...range(-2500, 2501, 500)].map(z => "_z"+z);
+    }
+    console.log(z_levels);
+
+    this.fixed_file=z_levels.map(function(z) {return tmapp._image_dir+img+z+".dzi";});
+}
+
+/**
+ * Open stack of .dzi and set current z-level (default=mid level) */
+tmapp.loadImages = function(viewer,z=-1) {
+    if (z<0) {
+        z=Math.floor(this.fixed_file.length/2);
+    }
+    curr_z=z;
+    console.log("Opening: "+this.fixed_file);
+    for(i=0;i < this.fixed_file.length;){
+        viewer.addTiledImage({
+            tileSource: this.fixed_file[i],
+            opacity: i==curr_z,
+            index: i++,
+            //Announce when we're done
+            success:function() {if (viewer.world.getItemCount()==tmapp.fixed_file.length) viewer.raiseEvent('open') }
+        });
+    }
+}
+
+
 /**
  * This method is called when the document is loaded. The tmapp object is built as an "app" and init is its main function.
  * Creates the OpenSeadragon (OSD) viewer and adds the handlers for interaction.
@@ -57,10 +101,16 @@ tmapp.init = function () {
     tmapp["object_prefix"] = tmapp.options_osd.id.split("_")[0];
     var op = tmapp["object_prefix"];
     var vname = op + "_viewer";
+
+    this.expandImageName(this.fixed_file);
+
     //init OSD viewer
     tmapp[vname] = OpenSeadragon(tmapp.options_osd);
+
     //open the DZI xml file pointing to the tiles
-    tmapp[vname].open(this._url_suffix + this.fixed_file);
+//    tmapp[vname].open(this._url_suffix + this.fixed_file);
+    this.loadImages(tmapp[vname]);
+
     //pixelate because we need the exact values of pixels
     tmapp[vname].addHandler("tile-drawn", OSDViewerUtils.pixelateAtMaximumZoomHandler);
 
@@ -81,11 +131,13 @@ tmapp.init = function () {
 	    });
 	});
     }
+
+
     //Create svgOverlay(); so that anything like D3, or any canvas library can act upon. https://d3js.org/
     var svgovname = tmapp["object_prefix"] + "_svgov";
     tmapp[svgovname] = tmapp[vname].svgOverlay();
 
-                          //main node
+    //main node
     overlayUtils._d3nodes[op + "_svgnode"] = d3.select(tmapp[svgovname].node());
     
     //overlay for marker data                                             //main node
@@ -109,6 +161,7 @@ tmapp.init = function () {
             scroll_handler();
         }
     };
+
 
     //delay the scroll and the panning options so that there is a bit more time to calcualte which 
     //markers to plot and where and how many
@@ -141,6 +194,7 @@ tmapp.init = function () {
 
     //document.getElementById('cancelsearch-moving-button').addEventListener('click', function(){ markerUtils.showAllRows("moving");}); 
 } //finish init
+
 
 /**
  * Options for the fixed and moving OSD 

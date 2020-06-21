@@ -556,7 +556,7 @@
     // Start our tmapp
     $(document).ready(function () {
         var url = new URL(window.location.href);
-        tmapp.fixed_file = url.searchParams.get("image");
+        tmapp.fixed_file = url.searchParams.get("image"); //TODO: Give sensible error message if "image" key is missing
         tmapp.registerActions();
         tmapp.init();
     });
