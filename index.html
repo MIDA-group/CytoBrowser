@@ -123,15 +123,18 @@
 <script src="js/openseadragon.2.4.0.min.js"></script>
 <script src="js/openseadragon-filtering.js"></script>
 <script src="js/openseadragon-svg-overlay.js"></script>
-<script src="js/utils/interfaceUtils.js"></script>
-<script src="js/utils/dataUtils.js"></script>
-<script src="js/utils/CPDataUtils.js"></script>
-<script src="js/utils/markerUtils.js"></script>
-<script src="js/utils/OSDViewerUtils.js"></script>
-<script src="js/utils/HTMLElementUtils.js"></script>
-<script src="js/utils/regionUtils.js"></script>
+<!-- <script src="js/tm_utils/interfaceUtils.js"></script> -->
+<!-- <script src="js/tm_utils/dataUtils.js"></script> -->
+<!-- <script src="js/tm_utils/CPDataUtils.js"></script> -->
+<!-- <script src="js/tm_utils/markerUtils.js"></script> -->
+<script src="js/tm_utils/OSDViewerUtils.js"></script>
+<!-- <script src="js/tm_utils/HTMLElementUtils.js"></script> -->
+<!-- <script src="js/tm_utils/regionUtils.js"></script> -->
+<!-- <script src="js/tm_utils/overlayUtils.js"></script> -->
+<!-- <script src="js/tm_utils/geometryUtils.js"></script> -->
+<script src="js/utils/JSONUtils.js"></script>
 <script src="js/utils/overlayUtils.js"></script>
-<script src="js/utils/geometryUtils.js"></script>
+<script src="js/utils/markerUtils.js"></script>
 <script src="js/tmapp.js"></script>
 <script>
 
@@ -141,7 +144,7 @@
     $(document).ready(function () {
         var url = new URL(window.location.href);
         tmapp.fixed_file = url.searchParams.get("image"); //TODO: Give sensible error message if "image" key is missing
-        tmapp.registerActions();
+//        tmapp.registerActions();
         tmapp.init();
     });
 

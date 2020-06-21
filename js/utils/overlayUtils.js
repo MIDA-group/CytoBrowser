@@ -1,165 +1,210 @@
-/**
- * @file overlayUtils.js Interface to ask information to OSD
- * @author Leslie Solorzano
- * @see {@link overlayUtils}
- */
+overlayUtils={
+    TMCPCount:{"ISS":1},
+    markerClass:0,
+    amountClasses:3,
 
-/**
- * @namespace overlayUtils
- * @property {Bool}   overlayUtils._drawRegions - If false then disable the drawing of regions
- * @property {Object} overlayUtils._d3nodes - Main group or container of all d3 svg groups of overlays corresponding to the 3 main marker data groups
- * @property {Number} overlayUtils._percentageForSubsample - Take this percentage of each barcode when downsamplir for lower resolutions
- * @property {Number}  overlayUtils._zoomForSubsample - When the zoom is bigger than this, display all the checked genes 
- */
-overlayUtils = {
-    _drawRegions: false,
-    _d3nodes: {},
-    _percentageForSubsample: 0.25,
-    _zoomForSubsample:5.15
-}
+    _singleTMCPD3Groups: {"ISS":null},
 
-/** 
- * @param {Number} item Index of an OSD tile source
- * Set the opacity of a tile source */
-overlayUtils.setItemOpacity= function(item){
-    var op = tmapp["object_prefix"];
-    var opa=Math.abs(1.0-tmapp[op + "_viewer"].world.getItemAt(item).opacity);	
-    tmapp[op + "_viewer"].world.getItemAt(item).setOpacity(opa);
-}
+    switchClass: function(){
+    	overlayUtils.markerClass=(overlayUtils.markerClass+1) % overlayUtils.amountClasses;
+    },
+    setClass: function(cl){
+        console.log("Setting:"+cl)
+    	overlayUtils.markerClass=(cl) % overlayUtils.amountClasses;
+    },
 
-/** 
- * @param {String} layerName name of an existing d3 node
- * @param {Number} opacity desired opacity
- * Set the opacity of a tile source */
-overlayUtils.setLayerOpacity= function(layerName,opacity){
-    if(layerName in overlayUtils._d3nodes){
-        var layer = overlayUtils._d3nodes[layerName];
-        layer._groups[0][0].style.opacity=opacity;    
-    }else{
-        console.log("layer does not exist or is not a D3 node");
-    }
-}
+    drawSingleTMCP: function(overlay,options){
+        options.imageWidth=overlayUtils.OSDimageWidth(overlay);
+        options.overlay=overlay;
+        options.strokeColor=overlayUtils.classColor(overlayUtils.markerClass);
 
-/**
- * @param {String} colortype A string from [hex,hsl,rgb]
- * Get a random color in the desired format
- */
-overlayUtils.randomColor = function (colortype) {
-    if (!colortype) {
-        colortype = "hex";
-    }
-    //I need random colors that are far away from the palette in the image
-    //in this case Hematoxilyn and DAB so far away from brown and light blue
-    //and avoid light colors because of the white  background 
-    //in HSL color space this means L from 0.2 to 0.75
-    //H [60,190],[220,360], S[0.3, 1.0]
-    var rh1 = Math.floor(Math.random() * (190 - 60 + 1)) + 60;
-    var rh2 = Math.floor(Math.random() * (360 - 220 + 1)) + 220;
-    var H = 0.0;
+        var elem=d3.select( tmapp[overlay+"_singleTMCPS"].node());
+        return markerUtils.TMCP(elem,options); //Add TMCP
+    },
 
-    if (Math.random() > 0.5) { H = rh1; } else { H = rh2; }
+    OSDimageWidth: function(overlay,options){
+        if(overlay=="ISS")
+            return tmapp.viewer.world.getItemAt(0).getContentSize().x
+        else
+            console.log("no width image");
+    },
 
-    var L = Math.floor(Math.random() * (75 - 20 + 1)) + 20 + '%';
-    var S = Math.floor(Math.random() * (100 - 40 + 1)) + 40 + '%';
+    randomColor:function(){
+        //I need random colors that are far away from the palette in the image
+        //in this case Hematoxilyn and DAB so far away from brown and light blue
+        //and avoid light colors because of the white  background 
+        //in HSL color space this means L from 0.2 to 0.75
+        //H [60,190],[220,360], S[0.3, 1.0]
+        var rh1=Math.floor(Math.random() * (190 - 60 + 1)) +60;
+        var rh2=Math.floor(Math.random() * (360 - 220 + 1)) +220;
+        var H=0.0;
+        
+        if(Math.random() > 0.5){ H=rh1; }else{ H=rh2; }
+        
+        var L=Math.floor(Math.random() * (75-20+1)) + 20 + '%';
+        var S=Math.floor(Math.random() * (100-30+1)) + 30 + '%';
+        
+        return 'hsl('+H.toString()+','+S.toString()+','+L.toString()+')';
+    },
 
-    var hslstring = 'hsl(' + H.toString() + ',' + S.toString() + ',' + L.toString() + ')';
-
-    var d3color = d3.hsl(hslstring);
-    if (colortype == "hsl") return hslstring;
-    if (colortype == "rgb") {
-        return d3color.rgb().toString();
-    }
-    if (colortype == "hex") {
-        var hex = function (value) {
-            value = Math.max(0, Math.min(255, Math.round(value) || 0));
-            return (value < 16 ? "0" : "") + value.toString(16);
+    classColor:function(cl){
+        switch(cl){
+            case 0:
+                return '#3F3';
+            case 1:
+                return '#CA3';
+            case 2:
+                return '#F33';
         }
-        var rgbcolor = d3color.rgb();
-        return "#" + hex(rgbcolor.r) + hex(rgbcolor.g) + hex(rgbcolor.b);
-    }
-}
+        return overlayUtils.randomColor();
+    },
 
-/**
- * Main function to update the view if there has been a reason for it. 
- * It computes all the elements that have to be drawn.
- */
-overlayUtils.modifyDisplayIfAny = function () {
-    //get four corners of view
-    var op = tmapp["object_prefix"];
-    var bounds = tmapp[op + "_viewer"].viewport.getBounds();
-    var currentZoom = tmapp[op + "_viewer"].viewport.getZoom();
+    //https://stackoverflow.com/questions/17824145/parse-svg-transform-attribute-with-javascript
+    transformToObject: function(transform){
+        var b={};
+        for (var i in a = transform.match(/(\w+\((\-?\d+\.?\d*e?\-?\d*,?)+\))+/g))
+        {
+            var c = a[i].match(/[\w\.\-]+/g);
+            b[c.shift()] = c;
+        }
+        return b;   
+    },
 
-    var xmin, xmax, ymin, ymax;
-    xmin = bounds.x; ymin = bounds.y;
-    xmax = xmin + bounds.width; ymax = ymin + bounds.height;
+    objectToTransform: function(tobj){
+        var jsonstr=JSON.stringify(tobj);
+        //console.log("jsonstr",jsonstr);
+        jsonstr=jsonstr.replace("{","");
+        jsonstr=jsonstr.replace("}","");
+        jsonstr=jsonstr.replace(/("|:)/g, "");
+        jsonstr=jsonstr.replace("[","(");
+        jsonstr=jsonstr.replace("]",")");
+        //console.log("after jsonstr",jsonstr);
+        return jsonstr;
+    },
 
-    var imageWidth = OSDViewerUtils.getImageWidth();
-    var imageHeight = OSDViewerUtils.getImageHeight();
+    addTrackingToDOMElement: function(node,overlay) {
+        new OpenSeadragon.MouseTracker({
+            element: node,
 
-    if (xmin < 0) { xmin = 0; }; if (xmax > 1.0) { xmax = 1.0; };
-    if (ymin < 0) { ymin = 0; }; if (ymax > 1.0) { ymax = 1.0; };
-    
-    var total = imageWidth * imageHeight;
+            dragHandler: function(event) { //called repeatedly during drag
+                var viewportDelta=overlayUtils.viewportDelta(event.delta,overlay);
+                var d3node=d3.select(node);
+                var transformobj=overlayUtils.transformToObject(d3node.attr("transform"));
 
-    //convert to global image coords
-    xmin *= imageWidth; xmax *= imageWidth; ymin *= imageWidth; ymax *= imageWidth;
+                transformobj.translate[0]=Number(transformobj.translate[0])+Number(viewportDelta.x);
+                transformobj.translate[1]=Number(transformobj.translate[1])+Number(viewportDelta.y);
+                //console.log(transformobj);
+                d3node.attr("transform",overlayUtils.objectToTransform(transformobj));
+                
+                
+                var id=d3node.attr("id").split("-")[2];
+                var cellid="cell-"+overlay+"-"+id;
+                var cell=document.getElementById(cellid);
+                var OSDPoint=new OpenSeadragon.Point(transformobj.translate[0],transformobj.translate[1]);
+                var pToImageCoords=overlayUtils.pointToImage(OSDPoint,overlay);
+                cell.textContent= "("+Math.round(pToImageCoords.x)+", "+ Math.round(pToImageCoords.y)+")"; //FIX, don't use different view method for drag
 
-    var portion = (xmax - xmin) * (ymax - ymin);
-    var percentage = portion / total;
+                //JSONUtils.setJSONString();
+            },
 
-    //get barcodes that are checked to draw
-    for (var barcode in markerUtils._checkBoxes) {
-        if (markerUtils._checkBoxes[barcode].checked) {
-            var markersInViewportBounds = []
-            if (percentage < overlayUtils._percentageForSubsample) {
-                //console.log("percentage less than " + overlayUtils._percentageForSubsample);
-                markersInViewportBounds = markerUtils.arrayOfMarkersInBox(
-                    dataUtils[op + "_barcodeGarden"][barcode], xmin, ymin, xmax, ymax, { globalCoords: true }
-                );
+            dragEndHandler: function(event){ //called at end of drag
+                var d3node=d3.select(node);
+                var htmlid=d3node.attr("id");
+                console.log(htmlid);
+                var transformobj=overlayUtils.transformToObject(d3node.attr("transform"));
+            //    markerUtils._TMCPS[overlay][htmlid]={"x":Number(transformobj.translate[0]),"y":Number(transformobj.translate[1])}; //FIX! Update instead of overwrite!
+                markerUtils._TMCPS[overlay][htmlid].x=Number(transformobj.translate[0]);
+                markerUtils._TMCPS[overlay][htmlid].y=Number(transformobj.translate[1]);
+            },
 
-                //console.log(markersInViewportBounds.length);
-                var drawThese = dataUtils.randomSamplesFromList(markerUtils.startCullingAt, markersInViewportBounds);
+            clickHandler: function(event){ //also called at end of drag
+                console.log("DOM click")
+                var d3node=d3.select(node);
 
-                //console.log(drawThese.length);
-                markerUtils.drawAllFromList(drawThese);
+                if (cntrlIsPressed) {
+                    var htmlid=d3node.attr("id");
+                    var id=Number(htmlid.split("-")[2]);
+                    
+                    console.log("Deleting ID:"+id+"("+overlayUtils.TMCPCount[overlay]+")");
+                    delete markerUtils._TMCPS[overlay][htmlid];
+                    
+                    overlayUtils.delRowFromTable("tmcptablebody",id);
+                    d3node.remove();
 
-            } else {
-                //if the percentage of image I see is bigger than a threshold then use the predownsampled markers
-                if (dataUtils._subsampledBarcodes[barcode]) {
-                    markerUtils.drawAllFromList(dataUtils._subsampledBarcodes[barcode]);
-                } else {
-                    markerUtils.drawAllFromBarcode(barcode);
+                    if (id+1==overlayUtils.TMCPCount[overlay]) { //If last one, then decrease count
+                        console.log("DeleteLast")
+                        overlayUtils.TMCPCount[overlay]--;
+                    }
                 }
             }
-        } 
-    }
+        }).setTracking(true);
+    },
 
-    //if anything from cpdata exists
-    var cpop="CP";
-    if(CPDataUtils.hasOwnProperty(cpop+"_rawdata")){ //I need to put a button here to draw or remove
-        //Zoom of 1 means all image is visible so low res. Bigger than 1 means zooming in.
-        if (currentZoom > overlayUtils._zoomForSubsample) {            
-            markerUtils.drawCPdata({searchInTree:true,xmin:xmin, xmax:xmax, ymin:ymin, ymax:ymax});
-        } else {
-            console.log("subsample");
-            //I create the subsampled one already when I read de CP csv, in CPDataUtils[cpop + "_subsampled_data"]     
-            markerUtils.drawCPdata({searchInTree:false});            
+    delRowFromTable: function(tableid,id) {
+        var rowid="row-ISS-"+id;
+        console.log("rowid:"+rowid);
+        var row=document.getElementById(rowid);  
+        row.parentNode.removeChild(row);
+    },
+
+    addRowToTable: function(tableid,id,x1,y1,mclass) {
+        var tablebody=document.getElementById(tableid);
+        var row=tablebody.insertRow(0);
+        row.id="row-ISS-"+id;
+
+        var cell1=row.insertCell(0);
+        var cell2=row.insertCell(1);
+        
+        cell1.textContent=id;
+        cell2.id="cell-ISS-"+id; 
+        cell2.textContent= "("+Math.round(x1)+", "+ Math.round(y1)+"; "+mclass+")";
+    },
+
+    pointToImage: function(point,overlay){
+        if (overlay+"_viewer" in tmapp){
+        //    return tmapp[overlay+"_viewer"].viewport.viewportToImageCoordinates( point ); //This gives warning with MultiImages
+            return tmapp[overlay+"_viewer"].world.getItemAt(0).viewportToImageCoordinates( point );
         }
-    }
-}
+    },
 
-/**
- * Save the current SVG overlay to open in a vector graphics editor for a figure for example
- */
-overlayUtils.saveSVG=function(){
-    var svg = d3.select("svg");
-    var svgData = svg._groups[0][0].outerHTML;
-    var svgBlob = new Blob([svgData], {type:"image/svg+xml;charset=utf-8"});
-    var svgUrl = URL.createObjectURL(svgBlob);
-    var downloadLink = document.createElement("a");
-    downloadLink.href = svgUrl;
-    downloadLink.download = "currentview.svg";
-    document.body.appendChild(downloadLink);
-    downloadLink.click();
-    document.body.removeChild(downloadLink); 
+    pointFromOSDPixel: function(position,overlay){
+        if (overlay+"_viewer" in tmapp){
+            return tmapp[overlay+"_viewer"].viewport.pointFromPixel( position );
+        }
+    },
+
+    imageToViewport: function(imcoords,overlay){
+        if (overlay+"_viewer" in tmapp){
+            return tmapp[overlay+"_viewer"].viewport.imageToViewportCoordinates( imcoords );
+        }
+    },
+
+    viewportDelta: function(eventdelta,overlay){
+        if (overlay+"_viewer" in tmapp){
+            return tmapp[overlay+"_viewer"].viewport.deltaPointsFromPixels(eventdelta);  
+        }      
+    },
+    
+    addTMCPtoViewers: function(event){
+        // The canvas-click event gives us a position in web coordinates.
+        //The event position is relative to OSD viewer 
+        // Convert that to viewport coordinates, the lingua franca of OpenSeadragon coordinates.
+        var normalizedPointF=overlayUtils.pointFromOSDPixel( event.position, "ISS" );
+        
+        //draw in the ISS viewer, now we need to convert it to pixels and then to the moving space viewport to put there
+        //also saveToTMCPS array 
+        console.log("normalizedPointF.x");
+        console.log(normalizedPointF.x);
+        var optionsF=overlayUtils.drawSingleTMCP("ISS",{"saveToTMCPS":true,"x":normalizedPointF.x,"y":normalizedPointF.y});
+        //get the pixel coordinates in ISS image 
+        var imagePointF = overlayUtils.pointToImage(normalizedPointF,"ISS");
+        overlayUtils.addRowToTable("tmcptablebody",optionsF.id,imagePointF.x,imagePointF.y,optionsF.mclass); 
+        JSONUtils.setJSONString();
+    },
+
+    removeAllFromOverlay: function(overlay){
+        d3.select(tmapp[overlay+"_svgov"].node()).selectAll("*").remove();
+        tmapp[overlay+"_singleTMCPS"] = d3.select(tmapp[overlay+"_svgov"].node()).append('g').attr('class', overlay+" singleTMCPS");
+    }
+        
 }

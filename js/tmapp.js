@@ -16,6 +16,7 @@ tmapp = {
     fixed_file: "",
     viewer: null,
     curr_z:0,
+    lost_focus:false,
 
     getFocusLevel: function() {
         return curr_z;
@@ -29,6 +30,9 @@ tmapp = {
         curr_z=z;
         tmapp.setFocusName();
     },
+    checkFocus: function() {
+        tmapp.lost_focus=!document.hasFocus(); //If the document lost focus, there is no way to get it back
+    },
 
     setFocusName: function() { //Display focus level in UI
         setImageZLevel(z_levels[tmapp.getFocusLevel()]);
@@ -41,7 +45,7 @@ tmapp = {
 
 /** 
  * Get all the buttons from the interface and assign all the functions associated to them */
-tmapp.registerActions = function () {
+/* tmapp.registerActions = function () {
     tmapp["object_prefix"] = tmapp.options_osd.id.split("_")[0];
     var op = tmapp["object_prefix"];
     var cpop="CP";
@@ -66,7 +70,7 @@ tmapp.registerActions = function () {
     }
 //    interfaceUtils.activateMainChildTabs("markers-gui");
 }
-
+ */
 
 /**
  * Expand single image name into z-stack array of names */
@@ -143,8 +147,8 @@ tmapp.add_handlers = function () {
         console.log("Open failed!");
     });
 
-    //pixelate because we need the exact values of pixels
-    viewer.addHandler("tile-drawn", OSDViewerUtils.pixelateAtMaximumZoomHandler);
+    //pixelate at MaxZoom level (instead of blur)
+//    viewer.addHandler("tile-drawn", OSDViewerUtils.pixelateAtMaximumZoomHandler);
 }
 
 
@@ -171,19 +175,9 @@ tmapp.init = function () {
     this.loadImages();
    
 
+    //Create svgOverlay(); so that anything like D3, or any canvas library can act upon. https://d3js.org/
     tmapp.svgov=tmapp.viewer.svgOverlay();
-    tmapp.singleTMCPS=d3.select(tmapp.svgov.node()).append('g').attr('class', "fixed singleTMCPS");
-
-    // //Create svgOverlay(); so that anything like D3, or any canvas library can act upon. https://d3js.org/
-    // var svgovname = tmapp["object_prefix"] + "_svgov";
-    // tmapp[svgovname] = this.viewer.svgOverlay();
-
-    // //main node
-    // overlayUtils._d3nodes[op + "_svgnode"] = d3.select(tmapp[svgovname].node());
-    
-    // //overlay for marker data                                             //main node
-    // overlayUtils._d3nodes[op + "_markers_svgnode"] = overlayUtils._d3nodes[op + "_svgnode"].append("g")
-    //     .attr("id", op + "_markers_svgnode");
+    tmapp.ISS_singleTMCPS=d3.select(tmapp.svgov.node()).append('g').attr('class', "ISS singleTMCPS");
 
 
     //This is the OSD click handler, when the event is quick it triggers the creation of a marker
