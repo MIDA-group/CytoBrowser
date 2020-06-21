@@ -13,7 +13,28 @@ tmapp = {
     _url_suffix: "",
     _scrollDelay: 900,
     _image_dir: "data/", //subdirectory where dzi images are stored
-    fixed_file: ""
+    fixed_file: "",
+    viewer: null,
+
+    getFocusLevel: function() {
+        return curr_z;
+    },
+    setFocusLevel: function( z ) {
+        var count = this.viewer.world.getItemCount();
+        z=Math.min(Math.max(z,0),count-1);
+        for (i = 0; i < count; i++) {
+            tmapp.viewer.world.getItemAt(i).setOpacity(z==i);
+        }
+        curr_z=z;
+        tmapp.setFocusName();
+    },
+
+    setFocusName: function() { //Display focus level in UI
+        setImageZLevel(z_levels[tmapp.getFocusLevel()]);
+    },
+    setZoomName: function() { //Display zoom level in UI
+        setImageZoom(Math.round(tmapp.viewer.viewport.getZoom()*10)/10);
+    }
 }
 
 
@@ -53,35 +74,37 @@ tmapp.expandImageName = function(img) {
             yield i;
         }
     }
-    
+
+    setImageName(img);
+
     //Hard coded z-ranges based on image number
     //TODO: glob for z-range
     if (parseInt(img.match(/^\d*/),10)<=80) {
-        z_levels=[...range(-2000, 2001, 400)].map(z => "_z"+z);
+        z_levels=[...range(-2000, 2001, 400)];
     } 
     else {
-        z_levels=[...range(-2500, 2501, 500)].map(z => "_z"+z);
+        z_levels=[...range(-2500, 2501, 500)];
     }
     console.log(z_levels);
 
-    this.fixed_file=z_levels.map(function(z) {return tmapp._image_dir+img+z+".dzi";});
+    this.fixed_file=z_levels.map(function(z) {return tmapp._image_dir+img+"_z"+z+".dzi";});
 }
 
 /**
  * Open stack of .dzi and set current z-level (default=mid level) */
-tmapp.loadImages = function(viewer,z=-1) {
+tmapp.loadImages = function(z=-1) {
     if (z<0) {
         z=Math.floor(this.fixed_file.length/2);
     }
     curr_z=z;
     console.log("Opening: "+this.fixed_file);
     for(i=0;i < this.fixed_file.length;){
-        viewer.addTiledImage({
+        this.viewer.addTiledImage({
             tileSource: this.fixed_file[i],
             opacity: i==curr_z,
             index: i++,
             //Announce when we're done
-            success:function() {if (viewer.world.getItemCount()==tmapp.fixed_file.length) viewer.raiseEvent('open') }
+            success:function() {if (tmapp.viewer.world.getItemCount()==tmapp.fixed_file.length) tmapp.viewer.raiseEvent('open') }
         });
     }
 }
@@ -104,15 +127,34 @@ tmapp.init = function () {
 
     this.expandImageName(this.fixed_file);
 
-    //init OSD viewer
-    tmapp[vname] = OpenSeadragon(tmapp.options_osd);
+    //init OSD this.viewer
+    this.viewer = OpenSeadragon(tmapp.options_osd);
+    tmapp[vname] = this.viewer;
 
+    //Change-of-Page (z-level) handle
+    this.viewer.addHandler("page", function (data) {
+        tmapp.setFocusName();
+    });
+
+    this.viewer.addHandler("zoom", function (data) {
+        tmapp.setZoomName();
+    });
+
+    //When we're done loading
+    this.viewer.addHandler('open', function ( event ) {
+        console.log("Done loading!");
+        tmapp.viewer.canvas.focus();
+        tmapp.viewer.viewport.goHome();
+        tmapp.setZoomName();
+        tmapp.setFocusName();
+    });
+    
     //open the DZI xml file pointing to the tiles
 //    tmapp[vname].open(this._url_suffix + this.fixed_file);
-    this.loadImages(tmapp[vname]);
+    this.loadImages();
 
     //pixelate because we need the exact values of pixels
-    tmapp[vname].addHandler("tile-drawn", OSDViewerUtils.pixelateAtMaximumZoomHandler);
+    this.viewer.addHandler("tile-drawn", OSDViewerUtils.pixelateAtMaximumZoomHandler);
 
     if(tmapp.layers){
 	    var settingspannel=document.getElementById("image-overlay-panel");
@@ -135,7 +177,7 @@ tmapp.init = function () {
 
     //Create svgOverlay(); so that anything like D3, or any canvas library can act upon. https://d3js.org/
     var svgovname = tmapp["object_prefix"] + "_svgov";
-    tmapp[svgovname] = tmapp[vname].svgOverlay();
+    tmapp[svgovname] = this.viewer.svgOverlay();
 
     //main node
     overlayUtils._d3nodes[op + "_svgnode"] = d3.select(tmapp[svgovname].node());
@@ -187,7 +229,7 @@ tmapp.init = function () {
     //using MouseTracker OSD objects 
     var ISS_mouse_tracker = new OpenSeadragon.MouseTracker({
         //element: this.fixed_svgov.node().parentNode, 
-        element: tmapp[vname].canvas,
+        element: this.viewer.canvas,
         clickHandler: click_handler,
         scrollHandler: scroll_handler
     }).setTracking(true);
