@@ -22,7 +22,7 @@ tmapp = {
     lost_focus:false,
 
     getFocusLevel: function() {
-        return curr_z;
+        return this.curr_z;
     },
     setFocusLevel: function( z ) {
         var count = this.viewer.world.getItemCount();
@@ -30,7 +30,7 @@ tmapp = {
         for (i = 0; i < count; i++) {
             tmapp.viewer.world.getItemAt(i).setOpacity(z==i);
         }
-        curr_z=z;
+        this.curr_z=z;
         tmapp.setFocusName();
     },
     checkFocus: function() {
@@ -44,22 +44,22 @@ tmapp = {
     setZoomName: function() { //Display zoom level in UI
         const zoom = tmapp.viewer.viewport.getZoom();
         setImageZoom(Math.round(zoom*10)/10);
-        curr_zoom = zoom;
+        this.curr_zoom = zoom;
         tmapp.updateURLParams();
     },
     setPosition: function() { //Update the current position params
-        let position = tmapp.viewer.viewport.getCenter();
-        curr_x = position.x;
-        curr_y = position.y;
-        tmapp.updateURLParams();
+        let position = this.viewer.viewport.getCenter();
+        this.curr_x = position.x;
+        this.curr_y = position.y;
+        this.updateURLParams();
     },
     updateURLParams: function() { //Update the URL params
         url = new URL(window.location.href);
         params = url.searchParams;
-        params.set("zoom", curr_zoom);
-        params.set("x", curr_x);
-        params.set("y", curr_y);
-        params.set("z", curr_z);
+        params.set("zoom", this.curr_zoom);
+        params.set("x", this.curr_x);
+        params.set("y", this.curr_y);
+        params.set("z", this.curr_z);
         setURL("?" + params.toString());
     }
 }
@@ -159,10 +159,18 @@ tmapp.add_handlers = function () {
     });
 
     //When we're done loading
-    viewer.addHandler('open', function ( event ) {
+    viewer.addHandler("open", function ( event ) {
         console.log("Done loading!");
         tmapp.viewer.canvas.focus();
-        tmapp.viewer.viewport.goHome();
+
+        //Move the viewport to the params specified
+        const zoom = tmapp.curr_zoom;
+        const center = new OpenSeadragon.Point(tmapp.curr_x, tmapp.curr_z);
+        viewer.viewport.zoomTo(zoom, null, true);
+        viewer.viewport.panTo(center, true);
+
+        // TODO: This should still work if no params are specified
+        //tmapp.viewer.viewport.goHome();
         tmapp.setZoomName();
         tmapp.setFocusName();
     });
@@ -198,7 +206,8 @@ tmapp.init = function () {
     //Move the viewport to the params specified
     const zoom = tmapp.curr_zoom;
     const center = new OpenSeadragon.Point(tmapp.curr_x, tmapp.curr_z);
-    this.viewer.viewport.zoomTo(zoom, center, true);
+    this.viewer.viewport.zoomTo(zoom, null, true);
+    this.viewer.viewport.panTo(center, true);
 
 
     this.add_handlers();
