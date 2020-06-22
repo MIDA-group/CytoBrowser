@@ -42,13 +42,13 @@ tmapp = {
         tmapp.updateURLParams();
     },
     setZoomName: function() { //Display zoom level in UI
-        const zoom = tmapp.viewer.viewport.getZoom();
+        const zoom = this.viewer.viewport.getZoom();
         setImageZoom(Math.round(zoom*10)/10);
         this.curr_zoom = zoom;
         tmapp.updateURLParams();
     },
     setPosition: function() { //Update the current position params
-        let position = this.viewer.viewport.getCenter();
+        const position = this.viewer.viewport.getCenter();
         this.curr_x = position.x;
         this.curr_y = position.y;
         this.updateURLParams();
@@ -202,13 +202,6 @@ tmapp.init = function () {
     //init OSD viewer
     this.viewer = OpenSeadragon(tmapp.options_osd);
     tmapp[vname] = this.viewer; //For js/utils, this is a TissUUmaps thing. TODO: Get rid of TissUUmaps things we do not use.
-
-    //Move the viewport to the params specified
-    const zoom = tmapp.curr_zoom;
-    const center = new OpenSeadragon.Point(tmapp.curr_x, tmapp.curr_z);
-    this.viewer.viewport.zoomTo(zoom, null, true);
-    this.viewer.viewport.panTo(center, true);
-
 
     this.add_handlers();
 
