@@ -15,6 +15,9 @@ tmapp = {
     _image_dir: "data/", //subdirectory where dzi images are stored
     fixed_file: "",
     viewer: null,
+    curr_zoom:0.7,
+    curr_x:0,
+    curr_y:0,
     curr_z:0,
     lost_focus:false,
 
@@ -36,14 +39,33 @@ tmapp = {
 
     setFocusName: function() { //Display focus level in UI
         setImageZLevel(z_levels[tmapp.getFocusLevel()]);
+        updateURLParams();
     },
     setZoomName: function() { //Display zoom level in UI
-        setImageZoom(Math.round(tmapp.viewer.viewport.getZoom()*10)/10);
+        const zoom = tmapp.viewer.viewport.getZoom();
+        setImageZoom(Math.round(zoom*10)/10);
+        curr_zoom = zoom;
+        updateURLParams();
+    },
+    setPosition: function() { //Update the current position params
+        let position = tmapp.viewer.viewport.getCenter();
+        curr_x = position.x;
+        curr_y = position.y;
+        updateURLParams();
+    },
+    updateURLParams: function() { //Update the URL params
+        url = new URL(window.location.href);
+        params = url.searchParams;
+        params.setParams("zoom", curr_zoom);
+        params.setParams("x", curr_x);
+        params.setParams("y", curr_y);
+        params.setParams("z", curr_z);
+        setURL("?" + params.toString());
     }
 }
 
 
-/** 
+/**
  * Get all the buttons from the interface and assign all the functions associated to them */
 /* tmapp.registerActions = function () {
     tmapp["object_prefix"] = tmapp.options_osd.id.split("_")[0];
@@ -87,7 +109,7 @@ tmapp.expandImageName = function(img) {
     //TODO: glob for z-range
     if (parseInt(img.match(/^\d*/),10)<=80) {
         z_levels=[...range(-2000, 2001, 400)];
-    } 
+    }
     else {
         z_levels=[...range(-2500, 2501, 500)];
     }
@@ -132,6 +154,10 @@ tmapp.add_handlers = function () {
         tmapp.setZoomName();
     });
 
+    viewer.addHandler("pan", function (data) {
+        tmapp.setPosition();
+    });
+
     //When we're done loading
     viewer.addHandler('open', function ( event ) {
         console.log("Done loading!");
@@ -153,7 +179,7 @@ tmapp.add_handlers = function () {
 
 
 /**
- * This method is called when the document is loaded. 
+ * This method is called when the document is loaded.
  * Creates the OpenSeadragon (OSD) viewer and adds the handlers for interaction.
  * The SVG overlays for the viewer are also initialized here */
 tmapp.init = function () {
@@ -173,7 +199,7 @@ tmapp.init = function () {
 
     //open the DZI xml file pointing to the tiles
     this.loadImages();
-   
+
 
     //Create svgOverlay(); so that anything like D3, or any canvas library can act upon. https://d3js.org/
     tmapp.svgov=tmapp.viewer.svgOverlay();
@@ -181,7 +207,7 @@ tmapp.init = function () {
 
 
     //This is the OSD click handler, when the event is quick it triggers the creation of a marker
-    //Called when we are far from any existing points; if we are close to elem, then DOM code in overlayUtils is called instead 
+    //Called when we are far from any existing points; if we are close to elem, then DOM code in overlayUtils is called instead
     var click_handler= function(event) {
         if(event.quick){
             console.log("New click!");
@@ -197,7 +223,7 @@ tmapp.init = function () {
                 console.log("Adding point");
                 overlayUtils.addTMCPtoViewers(event);
             }
-        } 
+        }
         else {
             //if it is not quick then it is dragged
             console.log("drag thing");
@@ -211,7 +237,7 @@ tmapp.init = function () {
         console.log("scroll thing");
     };
 
-    //OSD handlers have to be registered using MouseTracker OSD objects 
+    //OSD handlers have to be registered using MouseTracker OSD objects
     var ISS_mouse_tracker = new OpenSeadragon.MouseTracker({
         element: this.viewer.canvas,
         clickHandler: click_handler,
@@ -230,7 +256,7 @@ tmapp.init = function () {
 
     document.getElementById("focus_next").addEventListener('click', function(){ tmapp.setFocusLevel(tmapp.getFocusLevel()+1); } );
     document.getElementById("focus_prev").addEventListener('click', function(){ tmapp.setFocusLevel(tmapp.getFocusLevel()-1); } );
-    
+
     tmapp.viewer.canvas.addEventListener('mouseover', function() { tmapp.checkFocus(); });
 
     console.log("Finish init");
@@ -238,7 +264,7 @@ tmapp.init = function () {
 
 
 /**
- * Options for the fixed and moving OSD 
+ * Options for the fixed and moving OSD
  * all options are described here https://openseadragon.github.io/docs/OpenSeadragon.html#.Options */
 tmapp.options_osd = {
     id: "ISS_viewer", //cybr_viewer

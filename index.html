@@ -9,7 +9,7 @@
     <script src="js/jquery-3.4.1.slim.min.js"></script>
     <link rel="stylesheet" href="css/tmcpmain.min.css">
     <link rel="stylesheet" href="css/TissueMapsTheme.css">
-    <link rel="stylesheet" href="css/tm-icon-style.css">    
+    <link rel="stylesheet" href="css/tm-icon-style.css">
 </head>
 
 <body>
@@ -20,7 +20,7 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" href="https://tissuumaps.research.it.uu.se/"><img 
+            <a class="navbar-brand" href="https://tissuumaps.research.it.uu.se/"><img
                 style="height:50px; margin-top:-15px; overflow: visible; z-index: 9999;"
                 src="uulogowhitetuum.png"> </a>
         </div>
@@ -32,10 +32,10 @@
             </ul>
             <!-- Show ImageName, Z-level, and Zoom-->
             <ul class="nav navbar-nav">
-				<li class="nav-item"><a>Image: <span id="img_name"> -</span></a></li>	
+				<li class="nav-item"><a>Image: <span id="img_name"> -</span></a></li>
                 <li class="nav-item"><a> Z-level: <span id="img_zlevel"> -</span></a></li>
-                <li class="nav-item"><a> Zoom: <span id="img_zoom"> -</span></a></li>	
-			</ul> 
+                <li class="nav-item"><a> Zoom: <span id="img_zoom"> -</span></a></li>
+			</ul>
         </div>
     </div>
 
@@ -43,7 +43,7 @@
 
         <!-- The main viewer -->
         <div class="col-xs-8"> <!-- Each class scales up, so if you wish to set the same widths for xs and sm, you only need to specify xs. -->
-            <!-- The id is what OSD will look for to draw the viewer, the class is our own css to stylize 
+            <!-- The id is what OSD will look for to draw the viewer, the class is our own css to stylize
                  The ID will give the prefix for all the objects related to the viewer in this case ISS-->
             <div id="ISS_viewer" class="ISS_viewer"></div>
         </div>
@@ -59,17 +59,17 @@
                             <th class="text-center" >ID</th>
                             <th class="text-center" id="thimg1">Annotation</th>
                         </tr>
-                    </thead>              
-                    
+                    </thead>
+
                     <tbody id="tmcptablebody">
                     </tbody>
                 </table>
                 </div>
             </div>
         </div>
-        
-        <!-- Interface buttons -->        
-        <div class="col-xs-4" style="padding: 15px">               
+
+        <!-- Interface buttons -->
+        <div class="col-xs-4" style="padding: 15px">
             <div class="panel panel-default">
                 <!-- <div class="panel-heading">
                     <h3 class="panel-title">Options</h3>
@@ -90,8 +90,8 @@
                                 </label>
                             </div>
                         </div>
-                        
-                        <div class="col-xs-5">Focus: 
+
+                        <div class="col-xs-5">Focus:
                             <button id="focus_next" class="btn btn-primary" type="button"> Up</button>
                             <button id="focus_prev" class="btn btn-primary" type="button"> Down</button>
                         </div>
@@ -108,13 +108,13 @@
                         <div class="col-xs-1">
                                 <input type="file" id="fileElem" multiple accept="image/*" style="display:none" onchange="handleFiles(this.files)">
                             <button id="jsontodata" class="btn btn-primary" type="button"> Import </button>
-                        </div>                            
+                        </div>
                     </div>
                     <div class="row" style="padding: 15px">
                         <textarea class="form-control" rows="10" id="jsonpoints"></textarea>
                     </div>
-                </div>                    
-            </div>                
+                </div>
+            </div>
         </div>
     </div><!-- end of container-fuild-->
 </body>
@@ -146,6 +146,10 @@
         var url = new URL(window.location.href);
         tmapp.fixed_file = url.searchParams.get("image"); //TODO: Give sensible error message if "image" key is missing
 //        tmapp.registerActions();
+        tmapp.curr_zoom = url.searchParams.get("zoom");
+        tmapp.curr_x = url.searchParams.get("x");
+        tmapp.curr_y = url.searchParams.get("y");
+        //tmapp.curr_z = url.searchParams.get("z");
         tmapp.init();
     });
 
@@ -155,9 +159,12 @@
     }
     function setImageZLevel(txt) {
         document.getElementById("img_zlevel").innerText=txt;
-    }    
+    }
     function setImageZoom(txt) {
         document.getElementById("img_zoom").innerText=txt;
+    }
+    function setURL(txt) {
+        window.history.pushState(null, "", txt);
     }
 
     $(document).mousedown(function(event){
@@ -189,7 +196,7 @@
             case "2".charCodeAt(): document.getElementById("class1").click(); break;
             case "3".charCodeAt(): document.getElementById("class2").click(); break;
             case "z".charCodeAt(): document.getElementById("focus_prev").click(); break;
-            case "x".charCodeAt(): document.getElementById("focus_next").click(); break; 
+            case "x".charCodeAt(): document.getElementById("focus_next").click(); break;
         }
     });
 
