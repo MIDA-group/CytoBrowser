@@ -57,7 +57,7 @@
                     <thead align="center" >
                         <tr align="center" >
                             <th class="text-center" >ID</th>
-                            <th class="text-center" id="thimg1">img1</th>
+                            <th class="text-center" id="thimg1">Annotation</th>
                         </tr>
                     </thead>              
                     
@@ -79,14 +79,14 @@
                     <div class="row" style="padding: 10px">
                         <div class="col-xs-7">
                             <div class="btn-group btn-group-toggle" data-toggle="buttons">
-                                <label class="btn btn-success active" id="class1"> <!-- The 'click' happens in the lable! -->
-                                    <input type="radio" name="class_options" autocomplete="off" checked=""> Class 1
+                                <label class="btn btn-success active" id="class0"> <!-- The 'click' happens in the lable! -->
+                                    <input type="radio" name="class_options" autocomplete="off" checked=""> Class 0
                                 </label>
-                                <label class="btn btn-warning" id="class2">
+                                <label class="btn btn-warning" id="class1">
+                                    <input type="radio" name="class_options" autocomplete="off"> Class 1
+                                </label>
+                                <label class="btn btn-danger" id="class2">
                                     <input type="radio" name="class_options" autocomplete="off"> Class 2
-                                </label>
-                                <label class="btn btn-danger" id="class3">
-                                    <input type="radio" name="class_options" autocomplete="off"> Class 3
                                 </label>
                             </div>
                         </div>
@@ -137,6 +137,7 @@
 <script src="js/utils/markerUtils.js"></script>
 <script src="js/tmapp.js"></script>
 <script>
+    markerUtils._TMCPStyle={ strokeWidth: 4, radius: 80, drawText:false, textSize:1 };
 
     document.getElementById("project_title").innerText = "Cyto Browser";
 
@@ -184,9 +185,9 @@
     $(document).keypress(function(){
         console.log(event.which);
         switch(event.which) {
-            case "1".charCodeAt(): document.getElementById("class1").click(); break;
-            case "2".charCodeAt(): document.getElementById("class2").click(); break;
-            case "3".charCodeAt(): document.getElementById("class3").click(); break;
+            case "1".charCodeAt(): document.getElementById("class0").click(); break;
+            case "2".charCodeAt(): document.getElementById("class1").click(); break;
+            case "3".charCodeAt(): document.getElementById("class2").click(); break;
             case "z".charCodeAt(): document.getElementById("focus_prev").click(); break;
             case "x".charCodeAt(): document.getElementById("focus_next").click(); break; 
         }

@@ -220,13 +220,13 @@ tmapp.init = function () {
 
 
 
-    // //Assign the function to the button in the document (this should be done more dynamically)
-    // document.getElementById('pointstojson').addEventListener('click', JSONUtils.downloadJSON);
-    // document.getElementById('jsontodata').addEventListener('click', JSONUtils.readJSONToData);
+    //Assign the function to the button in the document (this should be done more dynamically)
+    document.getElementById('pointstojson').addEventListener('click', JSONUtils.downloadJSON);
+    document.getElementById('jsontodata').addEventListener('click', JSONUtils.readJSONToData);
 
+    document.getElementById("class0").addEventListener('click', function(){ overlayUtils.setClass(0); } );
     document.getElementById("class1").addEventListener('click', function(){ overlayUtils.setClass(1); } );
     document.getElementById("class2").addEventListener('click', function(){ overlayUtils.setClass(2); } );
-    document.getElementById("class3").addEventListener('click', function(){ overlayUtils.setClass(3); } );
 
     document.getElementById("focus_next").addEventListener('click', function(){ tmapp.setFocusLevel(tmapp.getFocusLevel()+1); } );
     document.getElementById("focus_prev").addEventListener('click', function(){ tmapp.setFocusLevel(tmapp.getFocusLevel()-1); } );
@@ -245,7 +245,7 @@ tmapp.options_osd = {
     prefixUrl: "js/openseadragon/images/", //Location of button graphics
     navigatorSizeRatio: 1,
     wrapHorizontal: false,
-    showNavigator: false,
+    showNavigator: true,
     navigatorPosition: "BOTTOM_LEFT",
     navigatorSizeRatio: 0.25,
     animationTime: 0.0,

@@ -11,7 +11,8 @@ JSONUtils={
      * @returns {Object} An object with two keys to the arrays of the points locations in the
      * two viewers
      */
-    // Not needed
+
+    // Only needed for live JSON display(?)
     pointsToJSON: function(){
         var me={ };
         me.reference=Array();
@@ -48,7 +49,6 @@ JSONUtils={
         a.remove();
     },  
 
-    
     /**
      * @function
      * Fill the text area with the points JSON, be it current points in display or the imported points
