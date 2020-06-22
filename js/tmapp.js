@@ -195,6 +195,12 @@ tmapp.init = function () {
     this.viewer = OpenSeadragon(tmapp.options_osd);
     tmapp[vname] = this.viewer; //For js/utils, this is a TissUUmaps thing. TODO: Get rid of TissUUmaps things we do not use.
 
+    //Move the viewport to the params specified
+    const zoom = tmapp.curr_zoom;
+    const center = new OpenSeadragon.Point(tmapp.curr_x, tmapp.curr_z);
+    this.viewer.viewport.zoomTo(zoom, center, true);
+
+
     this.add_handlers();
 
     //open the DZI xml file pointing to the tiles
