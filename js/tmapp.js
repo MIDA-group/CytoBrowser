@@ -39,27 +39,27 @@ tmapp = {
 
     setFocusName: function() { //Display focus level in UI
         setImageZLevel(z_levels[tmapp.getFocusLevel()]);
-        updateURLParams();
+        tmapp.updateURLParams();
     },
     setZoomName: function() { //Display zoom level in UI
         const zoom = tmapp.viewer.viewport.getZoom();
         setImageZoom(Math.round(zoom*10)/10);
         curr_zoom = zoom;
-        updateURLParams();
+        tmapp.updateURLParams();
     },
     setPosition: function() { //Update the current position params
         let position = tmapp.viewer.viewport.getCenter();
         curr_x = position.x;
         curr_y = position.y;
-        updateURLParams();
+        tmapp.updateURLParams();
     },
     updateURLParams: function() { //Update the URL params
         url = new URL(window.location.href);
         params = url.searchParams;
-        params.setParams("zoom", curr_zoom);
-        params.setParams("x", curr_x);
-        params.setParams("y", curr_y);
-        params.setParams("z", curr_z);
+        params.set("zoom", curr_zoom);
+        params.set("x", curr_x);
+        params.set("y", curr_y);
+        params.set("z", curr_z);
         setURL("?" + params.toString());
     }
 }
