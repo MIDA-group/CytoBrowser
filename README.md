@@ -11,10 +11,15 @@ Fork of [TissUUmaps](https://github.com/wahlby-lab/TissUUmaps) aimed at Cytology
 
 #### Example
 ```
-#Start web server on localhost
+#Start web server on local or remote host, serving on localhost
 python -m http.server 8080 --bind 127.0.0.1
 
-#Open browser
-$BROWSER http://localhost:8080/viewer.html?image=A_x40
+#Optionally open an ssh-pipe from your local machine to the web server
+ssh -L 8080:localhost:8080 remote.host
+
+#Open browser on your local machine
+$BROWSER http://localhost:8080/?image=filename
+
+#Enjoy! =)
 ```
 
