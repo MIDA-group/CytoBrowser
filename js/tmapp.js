@@ -56,12 +56,12 @@ tmapp = {
     },
     updateURLParams: function() { //Update the URL params
         url = new URL(window.location.href);
-        let roundTo = (x, n) => Math.round(x * 10^n) / 10^n;
+        let roundTo = (x, n) => Math.round(x * Math.pow(10, n)) / Math.pow(10, n);
         params = url.searchParams;
         params.set("zoom", roundTo(this.curr_zoom, 2));
         params.set("x", roundTo(this.curr_x, 5));
         params.set("y", roundTo(this.curr_y, 5));
-        params.set("z", this.curr_z);
+        params.set("z", this.curr_z - 5);
         setURL("?" + params.toString());
     }
 }
@@ -172,7 +172,8 @@ tmapp.add_handlers = function () {
             const center = new OpenSeadragon.Point(params.x, params.y);
             viewer.viewport.zoomTo(zoom, null, true);
             viewer.viewport.panTo(center, true);
-            tmapp.setFocusLevel(params.z);
+            tmapp.setFocusLevel(params.z + 5);
+	    // Currently hard-coded to 5, may want to do this better
         }
         else {
             // Otherwise move to home
