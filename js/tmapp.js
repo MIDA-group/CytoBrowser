@@ -40,13 +40,13 @@ tmapp = {
 
     setFocusName: function() { //Display focus level in UI
         setImageZLevel(z_levels[tmapp.getFocusLevel()]);
-        tmapp.updateURLParams();
+        this.updateURLParams();
     },
     setZoomName: function() { //Display zoom level in UI
         const zoom = this.viewer.viewport.getZoom();
         setImageZoom(Math.round(zoom*10)/10);
         this.curr_zoom = zoom;
-        tmapp.updateURLParams();
+        this.updateURLParams();
     },
     setPosition: function() { //Update the current position params
         const position = this.viewer.viewport.getCenter();
