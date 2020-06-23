@@ -15,11 +15,12 @@ tmapp = {
     _image_dir: "data/", //subdirectory where dzi images are stored
     fixed_file: "",
     viewer: null,
-    curr_zoom:0.7,
-    curr_x:0,
-    curr_y:0,
-    curr_z:0,
-    lost_focus:false,
+    initial_params: null,
+    curr_zoom: 0.7,
+    curr_x: 0,
+    curr_y: 0,
+    curr_z: 0,
+    lost_focus: false,
 
     getFocusLevel: function() {
         return this.curr_z;
@@ -163,14 +164,20 @@ tmapp.add_handlers = function () {
         console.log("Done loading!");
         tmapp.viewer.canvas.focus();
 
-        //Move the viewport to the params specified
-        const zoom = tmapp.curr_zoom;
-        const center = new OpenSeadragon.Point(tmapp.curr_x, tmapp.curr_z);
-        viewer.viewport.zoomTo(zoom, null, true);
-        viewer.viewport.panTo(center, true);
+        const params = tmapp.initial_params;
+        if (params === null) {
+            // Move the viewport to the initial params if defined
+            const zoom = params.zoom;
+            const center = new OpenSeadragon.Point(params.x, params.y);
+            viewer.viewport.zoomTo(zoom, null, true);
+            viewer.viewport.panTo(center, true);
+            tmapp.setFocusLevel(params.z);
+        }
+        else {
+            // Otherwise move to home
+            viewer.viewport.goHome();
+        }
 
-        // TODO: This should still work if no params are specified
-        //tmapp.viewer.viewport.goHome();
         tmapp.setZoomName();
         tmapp.setFocusName();
     });
