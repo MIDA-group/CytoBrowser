@@ -160,6 +160,9 @@
 
         // Set the initial params if all are defined
         if (params_defined) {
+	    for (const [key, value] of Object.entries(initial_params)) {
+                initial_params[key] = Number(value);
+	    }
             tmapp.initial_params = initial_params;
         }
         tmapp.init();

@@ -165,7 +165,7 @@ tmapp.add_handlers = function () {
         tmapp.viewer.canvas.focus();
 
         const params = tmapp.initial_params;
-        if (params === null) {
+        if (params !== null) {
             // Move the viewport to the initial params if defined
             const zoom = params.zoom;
             const center = new OpenSeadragon.Point(params.x, params.y);
