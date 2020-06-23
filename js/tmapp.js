@@ -56,10 +56,11 @@ tmapp = {
     },
     updateURLParams: function() { //Update the URL params
         url = new URL(window.location.href);
+        let roundTo = (x, n) => Math.round(x * 10^n) / 10^n;
         params = url.searchParams;
-        params.set("zoom", this.curr_zoom);
-        params.set("x", this.curr_x);
-        params.set("y", this.curr_y);
+        params.set("zoom", roundTo(this.curr_zoom, 2));
+        params.set("x", roundTo(this.curr_x, 5));
+        params.set("y", roundTo(this.curr_y, 5));
         params.set("z", this.curr_z);
         setURL("?" + params.toString());
     }
