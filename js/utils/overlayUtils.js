@@ -1,7 +1,7 @@
 overlayUtils={
     TMCPCount:{"ISS":1},
     markerClass:0,
-    amountClasses:3,
+    amountClasses:7,
 
     _singleTMCPD3Groups: {"ISS":null},
 
@@ -32,18 +32,18 @@ overlayUtils={
     randomColor:function(){
         //I need random colors that are far away from the palette in the image
         //in this case Hematoxilyn and DAB so far away from brown and light blue
-        //and avoid light colors because of the white  background 
+        //and avoid light colors because of the white  background
         //in HSL color space this means L from 0.2 to 0.75
         //H [60,190],[220,360], S[0.3, 1.0]
         var rh1=Math.floor(Math.random() * (190 - 60 + 1)) +60;
         var rh2=Math.floor(Math.random() * (360 - 220 + 1)) +220;
         var H=0.0;
-        
+
         if(Math.random() > 0.5){ H=rh1; }else{ H=rh2; }
-        
+
         var L=Math.floor(Math.random() * (75-20+1)) + 20 + '%';
         var S=Math.floor(Math.random() * (100-30+1)) + 30 + '%';
-        
+
         return 'hsl('+H.toString()+','+S.toString()+','+L.toString()+')';
     },
 
@@ -67,7 +67,7 @@ overlayUtils={
             var c = a[i].match(/[\w\.\-]+/g);
             b[c.shift()] = c;
         }
-        return b;   
+        return b;
     },
 
     objectToTransform: function(tobj){
@@ -95,8 +95,8 @@ overlayUtils={
                 transformobj.translate[1]=Number(transformobj.translate[1])+Number(viewportDelta.y);
                 //console.log(transformobj);
                 d3node.attr("transform",overlayUtils.objectToTransform(transformobj));
-                
-                
+
+
                 var id=d3node.attr("id").split("-")[2];
                 var cellid="cell-"+overlay+"-"+id;
                 var cell=document.getElementById(cellid);
@@ -124,10 +124,10 @@ overlayUtils={
                 if (cntrlIsPressed) {
                     var htmlid=d3node.attr("id");
                     var id=Number(htmlid.split("-")[2]);
-                    
+
                     console.log("Deleting ID:"+id+"("+overlayUtils.TMCPCount[overlay]+")");
                     delete markerUtils._TMCPS[overlay][htmlid];
-                    
+
                     overlayUtils.delRowFromTable("tmcptablebody",id);
                     d3node.remove();
 
@@ -143,7 +143,7 @@ overlayUtils={
     delRowFromTable: function(tableid,id) {
         var rowid="row-ISS-"+id;
         console.log("rowid:"+rowid);
-        var row=document.getElementById(rowid);  
+        var row=document.getElementById(rowid);
         row.parentNode.removeChild(row);
     },
 
@@ -154,9 +154,9 @@ overlayUtils={
 
         var cell1=row.insertCell(0);
         var cell2=row.insertCell(1);
-        
+
         cell1.textContent=id;
-        cell2.id="cell-ISS-"+id; 
+        cell2.id="cell-ISS-"+id;
         cell2.textContent= "("+Math.round(x1)+", "+ Math.round(y1)+"; "+mclass+")";
     },
 
@@ -181,24 +181,24 @@ overlayUtils={
 
     viewportDelta: function(eventdelta,overlay){
         if (overlay+"_viewer" in tmapp){
-            return tmapp[overlay+"_viewer"].viewport.deltaPointsFromPixels(eventdelta);  
-        }      
+            return tmapp[overlay+"_viewer"].viewport.deltaPointsFromPixels(eventdelta);
+        }
     },
-    
+
     addTMCPtoViewers: function(event){
         // The canvas-click event gives us a position in web coordinates.
-        //The event position is relative to OSD viewer 
+        //The event position is relative to OSD viewer
         // Convert that to viewport coordinates, the lingua franca of OpenSeadragon coordinates.
         var normalizedPointF=overlayUtils.pointFromOSDPixel( event.position, "ISS" );
-        
+
         //draw in the ISS viewer, now we need to convert it to pixels and then to the moving space viewport to put there
-        //also saveToTMCPS array 
+        //also saveToTMCPS array
         console.log("normalizedPointF.x");
         console.log(normalizedPointF.x);
         var optionsF=overlayUtils.drawSingleTMCP("ISS",{"saveToTMCPS":true,"x":normalizedPointF.x,"y":normalizedPointF.y});
-        //get the pixel coordinates in ISS image 
+        //get the pixel coordinates in ISS image
         var imagePointF = overlayUtils.pointToImage(normalizedPointF,"ISS");
-        overlayUtils.addRowToTable("tmcptablebody",optionsF.id,imagePointF.x,imagePointF.y,optionsF.mclass); 
+        overlayUtils.addRowToTable("tmcptablebody",optionsF.id,imagePointF.x,imagePointF.y,optionsF.mclass);
         JSONUtils.setJSONString();
     },
 
@@ -206,5 +206,5 @@ overlayUtils={
         d3.select(tmapp[overlay+"_svgov"].node()).selectAll("*").remove();
         tmapp[overlay+"_singleTMCPS"] = d3.select(tmapp[overlay+"_svgov"].node()).append('g').attr('class', overlay+" singleTMCPS");
     }
-        
+
 }

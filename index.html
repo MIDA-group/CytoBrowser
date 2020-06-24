@@ -78,18 +78,6 @@
 
                     <div class="row" style="padding: 10px">
                         <div class="col">
-                            <!--
-                            <div class="btn-group btn-group-toggle" data-toggle="buttons">
-                                <label class="btn btn-success active" id="class0"> --><!-- The 'click' happens in the lable! --> <!--
-                                    <input type="radio" name="class_options" autocomplete="off" checked=""> Class 0
-                                </label>
-                                <label class="btn btn-warning" id="class1">
-                                    <input type="radio" name="class_options" autocomplete="off"> Class 1
-                                </label>
-                                <label class="btn btn-danger" id="class2">
-                                    <input type="radio" name="class_options" autocomplete="off"> Class 2
-                                </label>
-                            </div>-->
                             <div id="class_buttons" class="btn-group btn-group-small btn-group-toggle" data-toggle="buttons">
                                 <!-- Buttons are added programatically -->
                             </div>
@@ -148,23 +136,46 @@
     document.getElementById("project_title").innerText = "Cyto Browser";
 
     // Populate the class buttons programatically
-    const classes = {
-        "NILM": "Negative for intraepithelial lesion or malignancy",
-        "ASC-US": "Atypical squamous cells of undetermined significance",
-        "ASC-H": "Atypical squamous cell-cannot exclude HSIL",
-        "LSIL": "Low squamous intraepithelial lesion",
-        "HSIL": "High squamous intraepithelial lesion",
-        "SCC": "Squamous cell carcinoma",
-        "AdC": "Adenocarcinoma"
-    };
-    for (const [class_name, description] of Object.entries(classes)) {
+    const classes = [
+        {
+            name: "NILM",
+            description: "Negative for intraepithelial lesion or malignancy"
+        },
+        {
+            name: "ASC-US",
+            description: "Atypical squamous cells of undetermined significance"
+        },
+        {
+            name: "ASC-H",
+            description: "Atypical squamous cell-cannot exclude HSIL"
+        },
+        {
+            name: "LSIL",
+            description: "Low squamous intraepithelial lesion"
+        },
+        {
+            name: "HSIL",
+            description: "High squamous intraepithelial lesion"
+        },
+        {
+            name: "SCC",
+            description: "Squamous cell carcinoma"
+        },
+        {
+            name: "AdC",
+            description: "Adenocarcinoma"
+        },
+    ];
+
+    classes.forEach(function(item, index){
         let label = $("<label></label>");
         label.addClass("btn btn-success");
-        let id = "class_" + class_name;
-        let input = $("<input id='class_" + class_name + "' type='radio' name='class_options' autocomplete='off'>" + class_name + "</input>");
+        let name = item.name;
+        let id = "class_" + item.name;
+        let input = $("<input id='" + id + "' type='radio' name='class_options' autocomplete='off'>" + name + "</input>");
         label.append(input);
         $("#class_buttons").append(label);
-    }
+    });
 
     // Start our tmapp
     $(document).ready(function () {
