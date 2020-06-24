@@ -55,6 +55,14 @@ overlayUtils={
                 return '#CA3';
             case 2:
                 return '#F33';
+            case 3:
+                return '#3CC';
+            case 4:
+                return '#F4F';
+            case 5:
+                return '#CF6';
+            case 6:
+                return '#FC6';
         }
         return overlayUtils.randomColor();
     },
