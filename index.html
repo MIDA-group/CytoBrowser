@@ -169,6 +169,7 @@
     classes.forEach(function(item, index){
         let label = $("<label></label>");
         label.addClass("btn btn-success");
+        if (index == 0) { label.addClass("active"); }
         label.attr("id", "class_" + item.name);
         label.attr("title", item.description);
         let input = $("<input>" + item.name + "</input>");
@@ -246,11 +247,17 @@
     $(document).keypress(function(){
         console.log(event.which);
         switch(event.which) {
-            case "1".charCodeAt(): document.getElementById("class0").click(); break;
-            case "2".charCodeAt(): document.getElementById("class1").click(); break;
-            case "3".charCodeAt(): document.getElementById("class2").click(); break;
             case "z".charCodeAt(): document.getElementById("focus_prev").click(); break;
             case "x".charCodeAt(): document.getElementById("focus_next").click(); break;
+            default:
+                // Handle digit keys being pressed for classes
+                const digits = Array.from({length: 10}, (v,k) => String((k+1) % 10));
+                const chars = digits.map((digit) => digit.charCodeAt());
+                chars.slice(0, classes.length).forEach((char, index) => {
+                    if (event.which == char) {
+                        $("#class_" + classes[index].name).click();
+                    }
+                });
         }
     });
 
