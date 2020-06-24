@@ -267,9 +267,9 @@ tmapp.init = function () {
     document.getElementById('pointstojson').addEventListener('click', JSONUtils.downloadJSON);
     document.getElementById('jsontodata').addEventListener('click', JSONUtils.readJSONToData);
 
-    document.getElementById("class0").addEventListener('click', function(){ overlayUtils.setClass(0); } );
-    document.getElementById("class1").addEventListener('click', function(){ overlayUtils.setClass(1); } );
-    document.getElementById("class2").addEventListener('click', function(){ overlayUtils.setClass(2); } );
+    classes.forEach(function(item, index){
+        $("#class_" + item.name).click(function(){ overlayUtils.setClass(index) });
+    });
 
     document.getElementById("focus_next").addEventListener('click', function(){ tmapp.setFocusLevel(tmapp.getFocusLevel()+1); } );
     document.getElementById("focus_prev").addEventListener('click', function(){ tmapp.setFocusLevel(tmapp.getFocusLevel()-1); } );

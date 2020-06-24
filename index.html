@@ -77,21 +77,14 @@
                 <div class="panel-body">
 
                     <div class="row" style="padding: 10px">
-                        <div class="col-xs-7">
-                            <div class="btn-group btn-group-toggle" data-toggle="buttons">
-                                <label class="btn btn-success active" id="class0"> <!-- The 'click' happens in the lable! -->
-                                    <input type="radio" name="class_options" autocomplete="off" checked=""> Class 0
-                                </label>
-                                <label class="btn btn-warning" id="class1">
-                                    <input type="radio" name="class_options" autocomplete="off"> Class 1
-                                </label>
-                                <label class="btn btn-danger" id="class2">
-                                    <input type="radio" name="class_options" autocomplete="off"> Class 2
-                                </label>
+                        <div class="col-xs-9">
+                            <h5>Marker class:</h5>
+                            <div id="class_buttons" class="btn-group btn-group-small btn-group-toggle" data-toggle="buttons">
+                                <!-- Buttons are added programatically -->
                             </div>
                         </div>
-
-                        <div class="col-xs-5">Focus:
+                        <div class="col-xs-3">
+                            <h5>Focus:</h5>
                             <button id="focus_next" class="btn btn-primary" type="button"> Up</button>
                             <button id="focus_prev" class="btn btn-primary" type="button"> Down</button>
                         </div>
@@ -140,6 +133,51 @@
     markerUtils._TMCPStyle={ strokeWidth: 4, radius: 80, drawText:false, textSize:1 };
 
     document.getElementById("project_title").innerText = "Cyto Browser";
+
+    // Populate the class buttons programatically
+    const classes = [
+        {
+            name: "NILM",
+            description: "Negative for intraepithelial lesion or malignancy"
+        },
+        {
+            name: "ASC-US",
+            description: "Atypical squamous cells of undetermined significance"
+        },
+        {
+            name: "ASC-H",
+            description: "Atypical squamous cell - cannot exclude HSIL"
+        },
+        {
+            name: "LSIL",
+            description: "Low squamous intraepithelial lesion"
+        },
+        {
+            name: "HSIL",
+            description: "High squamous intraepithelial lesion"
+        },
+        {
+            name: "SCC",
+            description: "Squamous cell carcinoma"
+        },
+        {
+            name: "AdC",
+            description: "Adenocarcinoma"
+        },
+    ];
+
+    classes.forEach(function(item, index){
+        let label = $("<label></label>");
+        label.addClass("btn btn-success");
+        label.attr("id", "class_" + item.name);
+        label.attr("title", item.description);
+        let input = $("<input>" + item.name + "</input>");
+        input.attr("type", "radio");
+        input.attr("name", "class_options");
+        input.attr("autocomplete", "off");
+        label.append(input);
+        $("#class_buttons").append(label);
+    });
 
     // Start our tmapp
     $(document).ready(function () {
