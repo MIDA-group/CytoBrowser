@@ -267,7 +267,7 @@ tmapp.init = function () {
     document.getElementById('pointstojson').addEventListener('click', JSONUtils.downloadJSON);
     document.getElementById('jsontodata').addEventListener('click', JSONUtils.readJSONToData);
 
-    classes.forEach(function(item, index){
+    bethesdaClassUtils.forEachClass(function(item, index){
         $("#class_" + item.name).click(function(){ overlayUtils.setClass(index) });
     });
 

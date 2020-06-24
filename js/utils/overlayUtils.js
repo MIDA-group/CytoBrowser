@@ -1,16 +1,15 @@
 overlayUtils={
     TMCPCount:{"ISS":1},
     markerClass:0,
-    amountClasses:7,
 
     _singleTMCPD3Groups: {"ISS":null},
 
     switchClass: function(){
-    	overlayUtils.markerClass=(overlayUtils.markerClass+1) % overlayUtils.amountClasses;
+    	overlayUtils.markerClass=(overlayUtils.markerClass+1) % bethesdaClassUtils.amountClasses;
     },
     setClass: function(cl){
         console.log("Setting:"+cl)
-    	overlayUtils.markerClass=(cl) % overlayUtils.amountClasses;
+    	overlayUtils.markerClass=(cl) % bethesdaClassUtils.amountClasses;
     },
 
     drawSingleTMCP: function(overlay,options){
@@ -48,23 +47,13 @@ overlayUtils={
     },
 
     classColor:function(cl){
-        switch(cl){
-            case 0:
-                return '#3F3';
-            case 1:
-                return '#CA3';
-            case 2:
-                return '#F33';
-            case 3:
-                return '#3CC';
-            case 4:
-                return '#F4F';
-            case 5:
-                return '#CF6';
-            case 6:
-                return '#FC6';
+        const color = bethesdaClassUtils.classColor(cl);
+        if (color === undefined) {
+            return overlayUtils.randomColor();
         }
-        return overlayUtils.randomColor();
+        else {
+            return color;
+        }
     },
 
     //https://stackoverflow.com/questions/17824145/parse-svg-transform-attribute-with-javascript

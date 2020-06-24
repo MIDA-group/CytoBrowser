@@ -125,6 +125,7 @@
 <!-- <script src="js/tm_utils/regionUtils.js"></script> -->
 <!-- <script src="js/tm_utils/overlayUtils.js"></script> -->
 <!-- <script src="js/tm_utils/geometryUtils.js"></script> -->
+<script src="js/utils/bethesdaClassUtils.js"></script>
 <script src="js/utils/JSONUtils.js"></script>
 <script src="js/utils/overlayUtils.js"></script>
 <script src="js/utils/markerUtils.js"></script>
@@ -135,38 +136,7 @@
     document.getElementById("project_title").innerText = "Cyto Browser";
 
     // Populate the class buttons programatically
-    const classes = [
-        {
-            name: "NILM",
-            description: "Negative for intraepithelial lesion or malignancy"
-        },
-        {
-            name: "ASC-US",
-            description: "Atypical squamous cells of undetermined significance"
-        },
-        {
-            name: "ASC-H",
-            description: "Atypical squamous cell - cannot exclude HSIL"
-        },
-        {
-            name: "LSIL",
-            description: "Low squamous intraepithelial lesion"
-        },
-        {
-            name: "HSIL",
-            description: "High squamous intraepithelial lesion"
-        },
-        {
-            name: "SCC",
-            description: "Squamous cell carcinoma"
-        },
-        {
-            name: "AdC",
-            description: "Adenocarcinoma"
-        },
-    ];
-
-    classes.forEach(function(item, index){
+    bethesdaClassUtils.forEachClass(function(item, index){
         let label = $("<label></label>");
         label.addClass("btn btn-success");
         if (index == 0) { label.addClass("active"); }
@@ -240,9 +210,9 @@
                 // Handle digit keys being pressed for classes
                 const digits = Array.from({length: 10}, (v,k) => String((k+1) % 10));
                 const chars = digits.map((digit) => digit.charCodeAt());
-                chars.slice(0, classes.length).forEach((char, index) => {
+                chars.slice(0, bethesdaClassUtils.amountClasses).forEach((char, index) => {
                     if (event.which == char) {
-                        $("#class_" + classes[index].name).click();
+                        $("#class_" + bethesdaClassUtils.getClassFromID(index).name).click();
                     }
                 });
         }
