@@ -1,12 +1,12 @@
 JSONUtils={
     //This function calls all the points in the Fabric JS canvases and encodes them into JSON
-    //format in a way that is suitable for numpy.linalg.lstsq least squares to find the 
+    //format in a way that is suitable for numpy.linalg.lstsq least squares to find the
     //affine transformation matrix.
     //https://docs.scipy.org/doc/numpy/reference/generated/numpy.linalg.lstsq.html
     /**
      * @function
-     * Take the currently drawn SVG points, look at their transform attribute using 
-     * {@link overlayUtils.transformToObject} and then 
+     * Take the currently drawn SVG points, look at their transform attribute using
+     * {@link overlayUtils.transformToObject} and then
      * find the coordinate in the image space in pixels by calling {@link overlayUtils.pointToImage}
      * @returns {Object} An object with two keys to the arrays of the points locations in the
      * two viewers
@@ -16,7 +16,7 @@ JSONUtils={
     pointsToJSON: function(){
         var me={ };
         me.reference=Array();
-  
+
         d3.selectAll(".TMCP-ISS").each(function() {
             var d3node=d3.select(this);
             var transformObj=overlayUtils.transformToObject(d3node.attr("transform"));
@@ -26,11 +26,21 @@ JSONUtils={
             //console.log(OSDPoint,imageCoord);
         });
         return me;
-    }, 
+    },
 
     dataToJSON: function(){
-        var data={ "points":{"ISS":{}} };
-        data.points=markerUtils._TMCPS;
+        const data = {
+            version: "1.0", // Version of the JSON formatting
+            points: []
+        };
+
+        // TODO: Iterate through the points and add them to the data
+        data.points.append({
+            x: 0,
+            y: 0,
+            z: 0,
+            class: "A"
+        });
         return data;
     },
 
@@ -39,7 +49,7 @@ JSONUtils={
      * Save the data from a hiden <a> tag into a json file containing the locations of the points.
      */
     downloadJSON: function(){
-        var a = document.createElement("a");        
+        var a = document.createElement("a");
         var data = "text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(JSONUtils.dataToJSON(),0,4));
         a.setAttribute("href", "data:"+data);
         a.setAttribute("download", "data.json");
@@ -47,7 +57,7 @@ JSONUtils={
         a.setAttribute('display', 'none');
         a.click();
         a.remove();
-    },  
+    },
 
     /**
      * @function
@@ -57,8 +67,8 @@ JSONUtils={
     setJSONString:function(jsonpoints){
         var ta=document.getElementById('jsonpoints');
         ta.className="form-control";
-        
-        if(jsonpoints){ 
+
+        if(jsonpoints){
             ta.value=JSON.stringify(jsonpoints);
         }else{
             ta.value=JSON.stringify(JSONUtils.pointsToJSON(),0,4);
@@ -67,24 +77,24 @@ JSONUtils={
 
 
     /**
-     * @function 
-     * Read text area and create all the 
+     * @function
+     * Read text area and create all the
      * symbols dynamically. If the JSON is not well formatted, the points will not be loaded.
      */
     importPointsFromJSON: function(){
         console.log("KALLEy");
-        
+
         iconId=1;
         d3.select(tmcpoints.ISS_svgov.node()).selectAll("*").remove();
         var tablebody=document.getElementById("tmcptablebody");
         //didnt want to but use jquery for simplicity
-        $("#tmcptablebody").children().remove();       
-        
+        $("#tmcptablebody").children().remove();
+
         var ta=document.getElementById('jsonpoints');
         ta.className="form-control";
         try{
             var jsonobjects=JSON.parse(ta.value);
-        }catch(e){            
+        }catch(e){
             alert("The points syntax is wrong, verify your JSON notation. Points were not loaded.");
         }
 
@@ -95,13 +105,13 @@ JSONUtils={
             var normref=tmcpoints.ISS_viewer.viewport.imageToViewportCoordinates(ref[0], ref[1]);
 
             var options=overlayUtils.drawTMCP("ISS",{"x":normref.x,"y":normref.y});
-            overlayUtils.addRowToTable("tmcptablebody",internaloptions.id,ref[0], ref[1]);  
-        } 
+            overlayUtils.addRowToTable("tmcptablebody",internaloptions.id,ref[0], ref[1]);
+        }
     },
 
     readJSONToData: function(){
         overlayUtils.removeAllFromOverlay("ISS");
-        var tablebody=document.getElementById("tmcptablebody"); 
+        var tablebody=document.getElementById("tmcptablebody");
         tablebody.innerHTML="";
         overlayUtils.TMCPCount["ISS"]=0;
 
@@ -110,12 +120,12 @@ console.log("ReadJSON");
  //fileElem = document.getElementById("fileElem").click();
         if (window.File && window.FileReader && window.FileList && window.Blob) {
             console.log("KALLE");
-            
+
             var text=document.getElementById("data_files_import");
             text.click();
             var file=text.files[0];
             if(!file){alert('No file selected'); return; }
-            if (file.type.match('json')) {	
+            if (file.type.match('json')) {
                 console.log("KALLE");
                 //console.log(file);
                 var reader = new FileReader();

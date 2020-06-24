@@ -234,7 +234,7 @@ tmapp.init = function () {
                 tmapp.fixed_viewer.canvas.focus();
                 tmapp.checkFocus();
             }
-            else if (cntrlIsPressed) {
+            else if (event.ctrlKey) {
             }
             else {
                 console.log("Adding point");
@@ -248,7 +248,7 @@ tmapp.init = function () {
     };
 
     var scroll_handler = function(event){
-        if (cntrlIsPressed) {
+        if (ctrlKey) {
             //TODO: Ctrl-scroll = focus
         }
         console.log("scroll thing");

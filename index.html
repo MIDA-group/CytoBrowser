@@ -229,19 +229,6 @@
         }
     });
 
-    // Ctrl-click for delete etc.
-    $(document).keydown(function(event){
-        switch(event.which) {
-            case 17:cntrlIsPressed = true; break;
-        }
-    });
-
-    $(document).keyup(function(){
-        switch(event.which) {
-            case 17:cntrlIsPressed = false; break;
-        }
-    });
-
     //1,2,... for class selection
     //z,x for focus up down
     $(document).keypress(function(){
@@ -260,9 +247,5 @@
                 });
         }
     });
-
-    var cntrlIsPressed = false;
-
-
 </script>
 </html>
