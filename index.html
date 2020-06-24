@@ -170,9 +170,10 @@
     classes.forEach(function(item, index){
         let label = $("<label></label>");
         label.addClass("btn btn-success");
-        let name = item.name;
         let id = "class_" + item.name;
-        let input = $("<input id='" + id + "' type='radio' name='class_options' autocomplete='off'>" + name + "</input>");
+	label.attr("id", id);
+        let name = item.name;
+        let input = $("<input type='radio' name='class_options' autocomplete='off'>" + name + "</input>");
         label.append(input);
         $("#class_buttons").append(label);
     });
