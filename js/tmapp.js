@@ -248,7 +248,7 @@ tmapp.init = function () {
     };
 
     var scroll_handler = function(event){
-        if (ctrlKey) {
+        if (event.ctrlKey) {
             //TODO: Ctrl-scroll = focus
         }
         console.log("scroll thing");

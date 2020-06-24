@@ -129,7 +129,7 @@ overlayUtils={
                 console.log("DOM click")
                 var d3node=d3.select(node);
 
-                if (event.ctrlKey) {
+                if (event.originalEvent.ctrlKey) {
                     var htmlid=d3node.attr("id");
                     var id=Number(htmlid.split("-")[2]);
 
