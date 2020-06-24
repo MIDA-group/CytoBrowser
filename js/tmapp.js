@@ -19,7 +19,7 @@ tmapp = {
     curr_zoom: 0.7,
     curr_x: 0,
     curr_y: 0,
-    curr_z: 0,
+    curr_z: 5,
     lost_focus: false,
 
     getFocusLevel: function() {
