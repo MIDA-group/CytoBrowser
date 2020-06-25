@@ -199,6 +199,14 @@ overlayUtils={
         JSONUtils.setJSONString();
     },
 
+    addTMCP: function(x, y, z, mclass) {
+        var optionsF=overlayUtils.drawSingleTMCP("ISS",{"saveToTMCPS":true,"x":x,"y":y,"z":z});
+        //get the pixel coordinates in ISS image
+        var imagePointF = overlayUtils.pointToImage(new OpenSeadragon.Point(x, y),"ISS");
+        overlayUtils.addRowToTable("tmcptablebody",optionsF.id,imagePointF.x,imagePointF.y,optionsF.mclass,z);
+        JSONUtils.setJSONString();
+    }
+
     removeAllFromOverlay: function(overlay){
         d3.select(tmapp[overlay+"_svgov"].node()).selectAll("*").remove();
         tmapp[overlay+"_singleTMCPS"] = d3.select(tmapp[overlay+"_svgov"].node()).append('g').attr('class', overlay+" singleTMCPS");

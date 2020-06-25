@@ -34,7 +34,6 @@ JSONUtils={
             points: []
         };
 
-        // TODO: Iterate through the points and add them to the data
         d3.selectAll(".TMCP-ISS").each(function() {
             let point = d3.select(this);
             data.points.push({
@@ -114,24 +113,23 @@ JSONUtils={
     },
 
     readJSONToData: function(){
-        overlayUtils.removeAllFromOverlay("ISS");
+        // TODO: Should remove all present points?
+        /*
+         overlayUtils.removeAllFromOverlay("ISS");
         var tablebody=document.getElementById("tmcptablebody");
         tablebody.innerHTML="";
         overlayUtils.TMCPCount["ISS"]=0;
+        */
 
-console.log("ReadJSON");
-
- //fileElem = document.getElementById("fileElem").click();
+        //fileElem = document.getElementById("fileElem").click();
         if (window.File && window.FileReader && window.FileList && window.Blob) {
             console.log("KALLE");
 
             var text=document.getElementById("data_files_import");
-            text.click();
             var file=text.files[0];
             if(!file){alert('No file selected'); return; }
             if (file.type.match('json')) {
                 console.log("KALLE");
-                //console.log(file);
                 var reader = new FileReader();
                 reader.onload=function(event) {
                     console.log("KALLEx");
@@ -147,15 +145,20 @@ console.log("ReadJSON");
     },
 
     importDataFromJSON: function(datainJSONFormat){
-        console.log("KALLEy");
-        for(point in  datainJSONFormat.points.ISS) {
-            var pointf=datainJSONFormat.points.ISS[point];
-            var returnedmarker=overlayUtils.drawSingleTMCP("ISS",{"saveToTMCPS":true,
-                "x":pointf.vx,"y":pointf.vy,"strokeColor":pointf.color});
+        // TODO: This is clunky, should refactor
+        let current_class = overlayUtils.markerClass;
+        for(point in  datainJSONFormat.points) {
+            overlayUtils.setClass(Number(point.class));
 
-            var thisid=returnedmarker.id;
-            overlayUtils.addRowToTable("tmcptablebody",thisid,pointf.gx,pointf.gy);
+            // Convert the image coordinates to viewport coordinates first
+            const point_pixel = new OpenSeadragon.Point(point.x, point.y);
+            const point_viewport = overlayUtils.pointToImage(point, "ISS");
+            const vx = point_viewport.x;
+            const vy = point_viewport.y;
+
+            overlayUtils.addTMCP(vx, vy, point.z, point.class);
         }
+        overlayUtils.setClass(current_class);
     }
 
 }
