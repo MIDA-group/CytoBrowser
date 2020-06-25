@@ -154,7 +154,7 @@ overlayUtils={
 
         cell1.textContent=id;
         cell2.id="cell-ISS-"+id;
-        cell2.textContent= "("+Math.round(x1)+", "+ Math.round(y1)+","+ z +"; "+mclass+")";
+        cell2.textContent= "("+Math.round(x1)+", "+ Math.round(y1)+", "+ z +"; "+mclass+")";
     },
 
     pointToImage: function(point,overlay){
@@ -195,7 +195,7 @@ overlayUtils={
         var optionsF=overlayUtils.drawSingleTMCP("ISS",{"saveToTMCPS":true,"x":normalizedPointF.x,"y":normalizedPointF.y,"z":tmapp.curr_z});
         //get the pixel coordinates in ISS image
         var imagePointF = overlayUtils.pointToImage(normalizedPointF,"ISS");
-        overlayUtils.addRowToTable("tmcptablebody",optionsF.id,imagePointF.x,imagePointF.y,optionsF.mclass,optionsF.z);
+        overlayUtils.addRowToTable("tmcptablebody",optionsF.id,imagePointF.x,imagePointF.y,optionsF.mclass,tmapp.curr_z);
         JSONUtils.setJSONString();
     },
 
