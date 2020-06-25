@@ -35,12 +35,16 @@ JSONUtils={
         };
 
         // TODO: Iterate through the points and add them to the data
-        data.points.append({
-            x: 0,
-            y: 0,
-            z: 0,
-            class: "A"
-        });
+        d3.selectAll(".TMCP-ISS").each(function() {
+            let point = d3.select(this);
+            data.points.push({
+                x: point.attr("gx"),
+                y: point.attr("gy"),
+                z: 0,
+                class: point.attr("mclass")
+            });
+        })
+
         return data;
     },
 
