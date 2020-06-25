@@ -19,7 +19,7 @@ markerUtils={
 		var extraClass=options.extraClass || null;
 		var x = options.x || null;
 		var y = options.y || null;
-		var z =options.z || null;
+		var z =options.z !== undefined ? options.z : null;
 		var gx =options.gx || x*imageWidth;
 		var gy =options.gy || y*imageWidth;
 		var mclass =options.mclass || overlayUtils.markerClass || 0;
