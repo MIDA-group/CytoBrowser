@@ -40,7 +40,7 @@ JSONUtils={
             data.points.push({
                 x: point.attr("gx"),
                 y: point.attr("gy"),
-                z: 0,
+                z: point.attr("z"),
                 class: point.attr("mclass")
             });
         })

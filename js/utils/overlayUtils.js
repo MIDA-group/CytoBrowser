@@ -144,7 +144,7 @@ overlayUtils={
         row.parentNode.removeChild(row);
     },
 
-    addRowToTable: function(tableid,id,x1,y1,mclass) {
+    addRowToTable: function(tableid,id,x1,y1,mclass,z) {
         var tablebody=document.getElementById(tableid);
         var row=tablebody.insertRow(0);
         row.id="row-ISS-"+id;
@@ -154,7 +154,7 @@ overlayUtils={
 
         cell1.textContent=id;
         cell2.id="cell-ISS-"+id;
-        cell2.textContent= "("+Math.round(x1)+", "+ Math.round(y1)+"; "+mclass+")";
+        cell2.textContent= "("+Math.round(x1)+", "+ Math.round(y1)+","+ z +"; "+mclass+")";
     },
 
     pointToImage: function(point,overlay){
@@ -192,10 +192,10 @@ overlayUtils={
         //also saveToTMCPS array
         console.log("normalizedPointF.x");
         console.log(normalizedPointF.x);
-        var optionsF=overlayUtils.drawSingleTMCP("ISS",{"saveToTMCPS":true,"x":normalizedPointF.x,"y":normalizedPointF.y});
+        var optionsF=overlayUtils.drawSingleTMCP("ISS",{"saveToTMCPS":true,"x":normalizedPointF.x,"y":normalizedPointF.y,"z":tmapp.curr_z});
         //get the pixel coordinates in ISS image
         var imagePointF = overlayUtils.pointToImage(normalizedPointF,"ISS");
-        overlayUtils.addRowToTable("tmcptablebody",optionsF.id,imagePointF.x,imagePointF.y,optionsF.mclass);
+        overlayUtils.addRowToTable("tmcptablebody",optionsF.id,imagePointF.x,imagePointF.y,optionsF.mclass,optionsF.z);
         JSONUtils.setJSONString();
     },
 

@@ -1,6 +1,6 @@
 markerUtils={
 	_TMCPStyle:{ strokeWidth: 20, radius: 9, drawText:true, textSize:1 },
-	
+
 	//single TMCP lists
 	_TMCPS:{"ISS":{}},
 
@@ -9,16 +9,17 @@ markerUtils={
 		var drawText = options.drawText || markerUtils._TMCPStyle.drawText;
 		var imageWidth=options.imageWidth || overlayUtils.OSDimageWidth(overlay);
 		var tmcpid=overlayUtils.TMCPCount[overlay]++;
-		
+
 		var strokeWidth=options.strokeWidth || markerUtils._TMCPStyle.strokeWidth; strokeWidth/=imageWidth;///10;
 		var radius=options.radius || markerUtils._TMCPStyle.radius; radius/=imageWidth;
-		
+
 		console.log("rad"+radius);
-		
+
 		var strokeColor=options.strokeColor || overlayUtils.randomColor();
 		var extraClass=options.extraClass || null;
 		var x = options.x || null;
 		var y = options.y || null;
+		var z =options.z || null;
 		var gx =options.gx || x*imageWidth;
 		var gy =options.gy || y*imageWidth;
 		var mclass =options.mclass || overlayUtils.markerClass || 0;
@@ -30,13 +31,14 @@ markerUtils={
 			.attr( 'vy',y)
 			.attr( 'gx',gx)
 			.attr( 'gy',gy)
+			.attr( 'z',z)
 			.attr( 'mclass', mclass);
 		if(extraClass){
 			elemEnter.attr("class","TMCP-"+overlay+" "+extraClass)
 		}else{
 			elemEnter.attr("class","TMCP-"+overlay)
-		}		
-		
+		}
+
 		// var square=
 		elemEnter
         .append("path")
@@ -52,18 +54,18 @@ markerUtils={
 	        .attr('stroke-width',strokeWidth/2)
 	        .attr('stroke', "gray").style("fill","transparent" );
         if(drawText){
-			// var text = 
+			// var text =
 			elemEnter
 			.append("text").style("fill", "blue").style("stroke", "white").style("stroke-width", 0.004)
 			.style("font-size", "1%").attr("text-anchor", "middle")
             .attr( 'transform','translate(0,0.010) scale('+(markerUtils._TMCPStyle.textSize/20).toString()+ ')')
             .text(tmcpid);/* function(){
-            	var toreturn=String(tmcpid); 
-            	//overlayUtils.TMCPCount[overlay]+=1; 
+            	var toreturn=String(tmcpid);
+            	//overlayUtils.TMCPCount[overlay]+=1;
             	return toreturn
             }); */
 		}
-		
+
 		if(options.saveToTMCPS){ //Separate storage array
 			markerUtils._TMCPS[overlay]["TMCP-"+overlay+"-"+tmcpid]={"vx":x,"vy":y,
 			"gx":gx,"gy":gy,"id":tmcpid,"color":strokeColor,"mclass":mclass};
@@ -73,7 +75,7 @@ markerUtils={
         d3.select("#TMCP-"+overlay+"-"+(tmcpid)).each(function() {
 			overlayUtils.addTrackingToDOMElement(this,overlay);
         });
-		
+
         return {"strokeColor":strokeColor,"radius":radius,"strokeWidth":strokeWidth,"id":tmcpid,"mclass":mclass };
 	}
 
