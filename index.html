@@ -49,7 +49,7 @@
         </div>
 
         <!-- Table of annotated points -->
-        <div class="col-xs-4" style="padding: 15px;">
+        <div class="col-xs-4">
             <div class="row">
                 <div class="table-wrapper-scroll-y my-custom-scrollbar">
                 <table id="tmcptable" class="table-striped table-bordered" style="padding: 10px; width: 100%; text-align: center;" >
@@ -69,17 +69,16 @@
         </div>
 
         <!-- Interface buttons -->
-        <div class="col-xs-4" style="padding: 15px">
+        <div class="col-xs-4">
             <div class="panel panel-default">
-                <!-- <div class="panel-heading">
+                <div class="panel-heading">
                     <h3 class="panel-title">Options</h3>
-                </div> -->
+                </div>
                 <div class="panel-body">
-
-                    <div class="row" style="padding: 10px">
+                    <div class="row" style="padding: 0 10px 10px">
                         <div class="col-xs-9">
                             <h5>Marker class:</h5>
-                            <div id="class_buttons" class="btn-group btn-group-small btn-group-toggle" data-toggle="buttons">
+                            <div id="class_buttons" class="btn-group btn-group-small btn-group-toggle" data-toggle="buttons" style="display: flex">
                                 <!-- Buttons are added programatically -->
                             </div>
                         </div>
@@ -142,6 +141,7 @@
         if (index == 0) { label.addClass("active"); }
         label.attr("id", "class_" + item.name);
         label.attr("title", item.description);
+        label.css("flex", 1);
         let input = $("<input>" + item.name + "</input>");
         input.attr("type", "radio");
         input.attr("name", "class_options");

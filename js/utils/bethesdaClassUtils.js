@@ -1,5 +1,5 @@
 bethesdaClassUtils = {
-    amountClasses: 7,
+    amountClasses: 0,
     classes: [
         {
             name: "NILM",
@@ -50,3 +50,5 @@ bethesdaClassUtils = {
         bethesdaClassUtils.classes.forEach(f);
     }
 }
+
+bethesdaClassUtils.amountClasses = bethesdaClassUtils.classes.length;
