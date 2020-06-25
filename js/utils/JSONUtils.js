@@ -147,17 +147,16 @@ JSONUtils={
     importDataFromJSON: function(datainJSONFormat){
         // TODO: This is clunky, should refactor
         let current_class = overlayUtils.markerClass;
-        for(point in  datainJSONFormat.points) {
+        datainJSONFormat.points.forEach(function(point) {
             overlayUtils.setClass(Number(point.class));
 
             // Convert the image coordinates to viewport coordinates first
-            const point_pixel = new OpenSeadragon.Point(point.x, point.y);
-            const point_viewport = overlayUtils.pointToImage(point, "ISS");
-            const vx = point_viewport.x;
-            const vy = point_viewport.y;
+            const vx = point.x / overlayUtils.OSDimageWidth("ISS");
+	    // TODO: Assumes square image
+            const vy = point.y / overlayUtils.OSDimageWidth("ISS");
 
             overlayUtils.addTMCP(vx, vy, point.z, point.class);
-        }
+        });
         overlayUtils.setClass(current_class);
     }
 

@@ -204,8 +204,8 @@ overlayUtils={
         //get the pixel coordinates in ISS image
         var imagePointF = overlayUtils.pointToImage(new OpenSeadragon.Point(x, y),"ISS");
         overlayUtils.addRowToTable("tmcptablebody",optionsF.id,imagePointF.x,imagePointF.y,optionsF.mclass,z);
-        JSONUtils.setJSONString();
-    }
+        // JSONUtils.setJSONString();
+    },
 
     removeAllFromOverlay: function(overlay){
         d3.select(tmapp[overlay+"_svgov"].node()).selectAll("*").remove();
