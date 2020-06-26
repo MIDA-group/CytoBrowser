@@ -238,11 +238,10 @@ tmapp.init = function () {
             }
             else {
                 console.log("Adding point");
-                const normalizedPointF = overlayUtils.pointFromOSDPixel(event.position, "ISS");
                 const point = {
-                    x: normalizedPointF,
-                    y: normalizedPointF,
-                    z: normalizedPointF,
+                    x: event.position.x,
+                    y: event.position.y,
+                    z: tmapp.curr_z,
                     mclass: overlayUtils.markerClass
                 };
                 markerPoints.addPoint(point);
