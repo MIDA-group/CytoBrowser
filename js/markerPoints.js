@@ -46,27 +46,28 @@ markerPoints = {
     },
     _getCoordSystems: function(point, coordSystem) {
         const originalPoint = new OpenSeadragon.Point(point.x, point.y);
+        const webPoint, viewportPoint, imagePoint;
         // TODO: Doesn't convert to web coordinates, but not sure if needed
         switch(coordSystem) {
             case "web":
-                const viewportPoint = overlayUtils.pointFromOSDPixel(originalPoint, "ISS");
-                const imagePoint = overlayUtils.pointToImage(viewportPoint, "ISS");
+                viewportPoint = overlayUtils.pointFromOSDPixel(originalPoint, "ISS");
+                imagePoint = overlayUtils.pointToImage(viewportPoint, "ISS");
                 return {
                     web: {x: point.x, y: point.y},
                     viewport: {x: viewportPoint.x, y: viewportPoint.y},
                     image: {x: imagePoint.x, y: imagePoint.y}
                 };
             case "viewport":
-                const webPoint = {};
-                const imagePoint = overlayUtils.pointToImage(viewportPoint, "ISS");
+                webPoint = {};
+                imagePoint = overlayUtils.pointToImage(viewportPoint, "ISS");
                 return {
                     web: {x: webPoint.x, y: webPoint.y},
                     viewport: {x: point.x, y: point.y},
                     image: {x: imagePoint.x, y: imagePoint.y}
                 };
             case "image":
-                const webPoint = {};
-                const viewportPoint = overlayUtils.imageToViewport(originalPoint, "ISS");
+                webPoint = {};
+                viewportPoint = overlayUtils.imageToViewport(originalPoint, "ISS");
                 return {
                     web: {x: webPoint.x, y: webPoint.y},
                     viewport: {x: viewportPoint.x, y: viewportPoint.y},
