@@ -101,9 +101,9 @@ markerPoints = {
      * Remove all points from the data.
      */
     clearPoints: function() {
-        markerPoints._points.forEach(function(point) {
-            markerPoints.removePoint(point.id);
-        });
+        const points = markerPoints._points;
+        const ids = points.map((point) => point.id);
+        ids.forEach((id) => markerPoints.removePoint(id));
     },
 
     /**
