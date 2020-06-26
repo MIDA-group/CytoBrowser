@@ -238,7 +238,12 @@ tmapp.init = function () {
             }
             else {
                 console.log("Adding point");
-                overlayUtils.addTMCPtoViewers(event);
+                const normalizedPointF = overlayUtils.pointFromOSDPixel(event.position, "ISS");
+                const x = normalizedPointF.x;
+                const y = normalizedPointF.y;
+                const z = tmapp.curr_z;
+                const mclass = overlayUtils.markerClass;
+                markerPoints.addPoint(x, y, z, mclass);
             }
         }
         else {

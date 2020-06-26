@@ -62,7 +62,8 @@ markerPoints = {
         // Add a data representation of the point
         markerPoints._points.push(addedPoint);
 
-        // TODO: Add a graphical representation of the point
+        // Add a graphical representation of the point
+        overlayUtils.addTMCP(x, y, z, mclass);
     },
 
     /**
