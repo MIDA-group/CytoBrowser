@@ -29,6 +29,15 @@ markerPoints = {
         markerPoints._nextId = id + 1;
         return id;
     },
+    _clonePoint: function(point) {
+        /**
+         * Note: This implementation copies references, so if the
+         * representation of a point is ever changed to include a
+         * reference to an Object, this function should be changed to
+         * take this into account.
+         */
+        return Object.assign({}, point);
+    },
 
     /**
      * Add a single point to the data.
@@ -36,20 +45,22 @@ markerPoints = {
      * @param {boolean} [pixelCoords=false] Positions in pixel coordinates if true, otherwise viewport coordinates.
      */
     addPoint: function(point, pixelCoords=false) {
+        const addedPoint = markerPoints._clonePoint(point);
+
         // Make sure the point has an id
-        if (point.id === undefined) {
-            point.id = markerPoints._generateId();
+        if (addedPoint.id === undefined) {
+            addedPoint.id = markerPoints._generateId();
         }
         else {
             // If the id has been specified, check if it's not taken
-            const existingPoint = markerPoints.getPointById(point.id);
+            const existingPoint = markerPoints.getPointById(addedPoint.id);
             if (existingPoint !== undefined) {
                 throw new Error("Tried assign an already-used id.");
             }
         }
 
         // Add a data representation of the point
-        markerPoints._points.push(point);
+        markerPoints._points.push(addedPoint);
 
         // TODO: Add a graphical representation of the point
     },
