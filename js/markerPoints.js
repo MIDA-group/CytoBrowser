@@ -13,7 +13,7 @@ markerPoints = {
      * @property {number} x X position of the point.
      * @property {number} y Y position of the point.
      * @property {number} z Z value when the point was placed.
-     * @property {string} mClass Class name of the point.
+     * @property {string} mclass Class name of the point.
      * @property {number} [id] Hard-coded ID of the point.
      */
     _points: [],
@@ -63,7 +63,12 @@ markerPoints = {
         markerPoints._points.push(addedPoint);
 
         // Add a graphical representation of the point
-        overlayUtils.addTMCP(x, y, z, mclass);
+        overlayUtils.addTMCP(
+            addedPoint.x,
+            addedPoint.y,
+            addedPoint.z,
+            addedPoint.mclass
+        );
     },
 
     /**
