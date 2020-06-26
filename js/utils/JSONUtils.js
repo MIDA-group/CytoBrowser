@@ -113,39 +113,36 @@ JSONUtils={
     },
 
     readJSONToData: function(){
-        // TODO: Should remove all present points?
-        /*
-         overlayUtils.removeAllFromOverlay("ISS");
-        var tablebody=document.getElementById("tmcptablebody");
-        tablebody.innerHTML="";
-        overlayUtils.TMCPCount["ISS"]=0;
-        */
-
-        //fileElem = document.getElementById("fileElem").click();
-        if (window.File && window.FileReader && window.FileList && window.Blob) {
-            console.log("KALLE");
-
-            var text=document.getElementById("data_files_import");
-            var file=text.files[0];
-            if(!file){alert('No file selected'); return; }
-            if (file.type.match('json')) {
-                console.log("KALLE");
-                var reader = new FileReader();
-                reader.onload=function(event) {
-                    console.log("KALLEx");
-                    JSONUtils.importDataFromJSON(JSON.parse(event.target.result));
-                    console.log(JSON.parse(event.target.result));
-                };
-                //var result=
-                reader.readAsText(file);
-            }
-        } else {
-            alert('The File APIs are not fully supported in this browser.');
+        // Clear all current points
+        if (!window.File || !window.FileReader || !window.FileList || !window.Blob) {
+            throw new Error("The File APIs are not fully supported in this browser.");
         }
-    },
-
+        var text = document.getElementById("data_files_import");
+        var file = text.files[0];
+        if(!file){alert('No file selected'); return; }
+        if (file.type.match('json')) {
+            markerPoints.clearPoints();
+            var reader = new FileReader();
+            reader.readAsText(file);
+            reader.onload=function(event) {
+                const data = JSON.parse(event.target.result);
+                // In case the data representation changes but we want compatibility
+                switch (data.version) {
+                    case "1.0":
+                        data.points.forEach((point) => {
+                            markerPoints.addPoint(point, "image");
+                        })
+                        break;
+                    default:
+                        throw new Error("Data format version " + points.version + " not implemented.");
+                }
+            };
+        }
+    }
+/*
     importDataFromJSON: function(datainJSONFormat){
         // TODO: This is clunky, should refactor
+        jsonData.forEach((point) => );
         let current_class = overlayUtils.markerClass;
         datainJSONFormat.points.forEach(function(point) {
             overlayUtils.setClass(Number(point.class));
@@ -159,5 +156,5 @@ JSONUtils={
         });
         overlayUtils.setClass(current_class);
     }
-
+    */
 }

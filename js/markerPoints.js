@@ -46,7 +46,7 @@ markerPoints = {
     },
     _getCoordSystems: function(point, coordSystem) {
         const originalPoint = new OpenSeadragon.Point(point.x, point.y);
-        const webPoint, viewportPoint, imagePoint;
+        let webPoint, viewportPoint, imagePoint;
         // TODO: Doesn't convert to web coordinates, but not sure if needed
         switch(coordSystem) {
             case "web":

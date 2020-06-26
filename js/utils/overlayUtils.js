@@ -86,6 +86,11 @@ overlayUtils={
             dragHandler: function(event) { //called repeatedly during drag
                 var viewportDelta=overlayUtils.viewportDelta(event.delta,overlay);
                 var d3node=d3.select(node);
+                const htmlid = d3node.attr("id");
+                const id = Number(htmlid.split("-")[2]);
+                const point = markerPoints.getPointById(id);
+                //TODO
+
                 var transformobj=overlayUtils.transformToObject(d3node.attr("transform"));
 
                 transformobj.translate[0]=Number(transformobj.translate[0])+Number(viewportDelta.x);
@@ -115,13 +120,14 @@ overlayUtils={
             },
 
             clickHandler: function(event){ //also called at end of drag
-                console.log("DOM click")
-                var d3node=d3.select(node);
+                const d3node = d3.select(node);
 
                 if (event.originalEvent.ctrlKey) {
-                    var htmlid=d3node.attr("id");
-                    var id=Number(htmlid.split("-")[2]);
+                    const htmlid = d3node.attr("id");
+                    const id = Number(htmlid.split("-")[2]);
+                    markerPoints.removePoint(id);
 
+                    /*
                     console.log("Deleting ID:"+id+"("+overlayUtils.TMCPCount[overlay]+")");
                     delete markerUtils._TMCPS[overlay][htmlid];
 
@@ -132,6 +138,7 @@ overlayUtils={
                         console.log("DeleteLast")
                         overlayUtils.TMCPCount[overlay]--;
                     }
+                    */
                 }
             }
         }).setTracking(true);
