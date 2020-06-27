@@ -33,17 +33,7 @@ JSONUtils={
             version: "1.0", // Version of the JSON formatting
             points: []
         };
-
-        d3.selectAll(".TMCP-ISS").each(function() {
-            let point = d3.select(this);
-            data.points.push({
-                x: point.attr("gx"),
-                y: point.attr("gy"),
-                z: point.attr("z"),
-                class: point.attr("mclass")
-            });
-        })
-
+        markerPoints.forEachPoint(data.points.push);
         return data;
     },
 
@@ -84,6 +74,7 @@ JSONUtils={
      * Read text area and create all the
      * symbols dynamically. If the JSON is not well formatted, the points will not be loaded.
      */
+     /*
     importPointsFromJSON: function(){
         console.log("KALLEy");
 
@@ -111,6 +102,7 @@ JSONUtils={
             overlayUtils.addRowToTable("tmcptablebody",internaloptions.id,ref[0], ref[1]);
         }
     },
+    */
 
     readJSONToData: function(){
         // Clear all current points
@@ -119,25 +111,30 @@ JSONUtils={
         }
         var text = document.getElementById("data_files_import");
         var file = text.files[0];
-        if(!file){alert('No file selected'); return; }
-        if (file.type.match('json')) {
-            markerPoints.clearPoints();
-            var reader = new FileReader();
-            reader.readAsText(file);
-            reader.onload=function(event) {
-                const data = JSON.parse(event.target.result);
-                // In case the data representation changes but we want compatibility
-                switch (data.version) {
-                    case "1.0":
-                        data.points.forEach((point) => {
-                            markerPoints.addPoint(point, "image");
-                        })
-                        break;
-                    default:
-                        throw new Error("Data format version " + points.version + " not implemented.");
-                }
-            };
+        if(!file){
+            alert("No file selected");
+            return;
         }
+        if (!file.type.match('json')) {
+            alert("File should be json");
+            return;
+        }
+        markerPoints.clearPoints();
+        var reader = new FileReader();
+        reader.readAsText(file);
+        reader.onload=function(event) {
+            const data = JSON.parse(event.target.result);
+            // In case the data representation changes but we want compatibility
+            switch (data.version) {
+                case "1.0":
+                    data.points.forEach((point) => {
+                        markerPoints.addPoint(point, "image");
+                    })
+                    break;
+                default:
+                    throw new Error("Data format version " + points.version + " not implemented.");
+            }
+        };
     }
 /*
     importDataFromJSON: function(datainJSONFormat){

@@ -170,6 +170,17 @@ markerPoints = {
     },
 
     /**
+     * Iterate a function for each point. The function will not change
+     * the values of the point, and will instead work on clones of them,
+     * effectively making them read-only. If the point values should be
+     * updated, updatePoint() can be run in the passed function.
+     * @param {function} f Function to be called with each point.
+     */
+    forEachPoint: function() {
+        markerPoints._points.map(markerPoints._clonePoint).forEach(f);
+    }
+
+    /**
      * Get a copy of a specified point by its id.
      * @param {number} id The id used for looking up the point.
      * @returns {Object} The point with the specified id, or undefined if not in use
