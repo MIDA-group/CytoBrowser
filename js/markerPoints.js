@@ -176,9 +176,9 @@ markerPoints = {
      * updated, updatePoint() can be run in the passed function.
      * @param {function} f Function to be called with each point.
      */
-    forEachPoint: function() {
+    forEachPoint: function(f) {
         markerPoints._points.map(markerPoints._clonePoint).forEach(f);
-    }
+    },
 
     /**
      * Get a copy of a specified point by its id.
@@ -187,6 +187,9 @@ markerPoints = {
      */
     getPointById: function(id) {
         const point = markerPoints._points.find((point) => point.id == id);
+        if (point === undefined) {
+            return undefined;
+        }
         const pointClone = markerPoints._clonePoint(point);
         return pointClone;
     }

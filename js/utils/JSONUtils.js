@@ -33,7 +33,7 @@ JSONUtils={
             version: "1.0", // Version of the JSON formatting
             points: []
         };
-        markerPoints.forEachPoint(data.points.push);
+        markerPoints.forEachPoint(function(point) {data.points.push(point)});
         return data;
     },
 
