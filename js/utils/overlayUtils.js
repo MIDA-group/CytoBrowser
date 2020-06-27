@@ -15,7 +15,7 @@ overlayUtils={
     drawSingleTMCP: function(overlay,options){
         options.imageWidth=overlayUtils.OSDimageWidth(overlay);
         options.overlay=overlay;
-        options.strokeColor=overlayUtils.classColor(overlayUtils.markerClass);
+        options.strokeColor=bethesdaClassUtils.classColor(options.mclass);
 
         var elem=d3.select( tmapp[overlay+"_singleTMCPS"].node());
         return markerUtils.TMCP(elem,options); //Add TMCP
@@ -212,12 +212,18 @@ overlayUtils={
         JSONUtils.setJSONString();
     },
 
-    addTMCP: function(x, y, z, mclass) {
-        var optionsF=overlayUtils.drawSingleTMCP("ISS",{"saveToTMCPS":true,"x":x,"y":y,"z":z});
+    addTMCP: function(id, x, y, z, mclass) {
+        var optionsF=overlayUtils.drawSingleTMCP("ISS", {
+            saveToTMCPS: true,
+            id: id,
+            x: x,
+            y: y,
+            z: z,
+            mclass: mclass
+        });
         //get the pixel coordinates in ISS image
         var imagePointF = overlayUtils.pointToImage(new OpenSeadragon.Point(x, y),"ISS");
-        overlayUtils.addRowToTable("tmcptablebody",optionsF.id,imagePointF.x,imagePointF.y,optionsF.mclass,z);
-        // JSONUtils.setJSONString();
+        overlayUtils.addRowToTable("tmcptablebody", id, x, y, mclass, z);
     },
 
     removeAllFromOverlay: function(overlay){

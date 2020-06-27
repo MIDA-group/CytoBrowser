@@ -37,7 +37,11 @@ bethesdaClassUtils = {
             color: "#FC6"
         }
     ],
-    classColor: function(id) {
+    classColor: function(idOrName) {
+        let id = idOrName;
+        if (typeof(id) === "string") {
+            id = bethesdaClassUtils.getIDFromName(idOrName);
+        }
         return bethesdaClassUtils.classes[id].color;
     },
     getClassFromID: function(id) {

@@ -20,6 +20,7 @@ tmapp = {
     curr_x: 0,
     curr_y: 0,
     curr_z: 5,
+    curr_mclass: "",
     lost_focus: false,
 
     getFocusLevel: function() {
@@ -205,7 +206,6 @@ tmapp.init = function () {
     var op = tmapp["object_prefix"];
     var vname = op + "_viewer";
 
-
     this.expandImageName(this.fixed_file);
 
     //init OSD viewer
@@ -217,11 +217,12 @@ tmapp.init = function () {
     //open the DZI xml file pointing to the tiles
     this.loadImages();
 
-
     //Create svgOverlay(); so that anything like D3, or any canvas library can act upon. https://d3js.org/
     tmapp.svgov=tmapp.viewer.svgOverlay();
     tmapp.ISS_singleTMCPS=d3.select(tmapp.svgov.node()).append('g').attr('class', "ISS singleTMCPS");
 
+    // Set the class that will be assigned to created points
+    tmapp.curr_mclass = bethesdaClassUtils.classes[0].name;
 
     //This is the OSD click handler, when the event is quick it triggers the creation of a marker
     //Called when we are far from any existing points; if we are close to elem, then DOM code in overlayUtils is called instead
@@ -242,7 +243,7 @@ tmapp.init = function () {
                     x: event.position.x,
                     y: event.position.y,
                     z: tmapp.curr_z,
-                    mclass: overlayUtils.markerClass
+                    mclass: tmapp.curr_mclass
                 };
                 markerPoints.addPoint(point);
             }
@@ -274,7 +275,8 @@ tmapp.init = function () {
     document.getElementById('jsontodata').addEventListener('click', JSONUtils.readJSONToData);
 
     bethesdaClassUtils.forEachClass(function(item, index){
-        $("#class_" + item.name).click(function(){ overlayUtils.setClass(index) });
+        const className = bethesdaClassUtils.getClassFromID(index).name;
+        $("#class_" + item.name).click(function(){ tmapp.curr_mclass = className; });
     });
 
     document.getElementById("focus_next").addEventListener('click', function(){ tmapp.setFocusLevel(tmapp.getFocusLevel()+1); } );

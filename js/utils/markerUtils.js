@@ -7,8 +7,8 @@ markerUtils={
 	TMCP: function(element,options){
 		var overlay = options.overlay || "ISS";
 		var drawText = options.drawText || markerUtils._TMCPStyle.drawText;
-		var imageWidth=options.imageWidth || overlayUtils.OSDimageWidth(overlay);
-		var tmcpid=overlayUtils.TMCPCount[overlay]++;
+		var imageWidth= options.imageWidth || overlayUtils.OSDimageWidth(overlay);
+		var tmcpid= options.id;
 
 		var strokeWidth=options.strokeWidth || markerUtils._TMCPStyle.strokeWidth; strokeWidth/=imageWidth;///10;
 		var radius=options.radius || markerUtils._TMCPStyle.radius; radius/=imageWidth;
@@ -22,7 +22,7 @@ markerUtils={
 		var z =options.z !== undefined ? options.z : null;
 		var gx =options.gx || x*imageWidth;
 		var gy =options.gy || y*imageWidth;
-		var mclass =options.mclass || overlayUtils.markerClass || 0;
+		var mclass =options.mclass || 0;
 		var elemEnter = element
                         .append("g")
 			.attr("id","TMCP-"+overlay+"-"+tmcpid)

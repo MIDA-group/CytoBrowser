@@ -110,6 +110,7 @@ markerPoints = {
 
         // Add a graphical representation of the point
         overlayUtils.addTMCP(
+            addedPoint.id,
             coords.viewport.x,
             coords.viewport.y,
             addedPoint.z,
@@ -156,8 +157,11 @@ markerPoints = {
             throw new Error("Tried to remove a point that doesn't exist");
         }
 
-        // Remove the point
+        // Remove the point from the data
         points.splice(deletedIndex, 1);
+
+        // Remove the point from the graphics
+
     },
 
     /**
