@@ -161,7 +161,7 @@ markerPoints = {
         points.splice(deletedIndex, 1);
 
         // Remove the point from the graphics
-
+        overlayUtils.removeTMCP(deletedIndex);
     },
 
     /**
