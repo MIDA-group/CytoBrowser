@@ -84,13 +84,19 @@ overlayUtils={
             element: node,
 
             dragHandler: function(event) { //called repeatedly during drag
-                var viewportDelta=overlayUtils.viewportDelta(event.delta,overlay);
-                var d3node=d3.select(node);
+                const viewportDelta = overlayUtils.viewportDelta(event.delta, overlay);
+                const d3node = d3.select(node);
                 const htmlid = d3node.attr("id");
                 const id = Number(htmlid.split("-")[2]);
                 const point = markerPoints.getPointById(id);
+                const newX = overlayUtils.pointToImage(point.x) + viewportDelta.x;
+                const newY = overlayUtils.pointToImage(point.y) + viewportDelta.y;
+                point.x = newX;
+                point.y = newY;
+                markerPoints.updatePoint(id, point, "viewport");
                 //TODO
 
+                /*
                 var transformobj=overlayUtils.transformToObject(d3node.attr("transform"));
 
                 transformobj.translate[0]=Number(transformobj.translate[0])+Number(viewportDelta.x);
@@ -105,7 +111,7 @@ overlayUtils={
                 var OSDPoint=new OpenSeadragon.Point(transformobj.translate[0],transformobj.translate[1]);
                 var pToImageCoords=overlayUtils.pointToImage(OSDPoint,overlay);
                 cell.textContent= "("+Math.round(pToImageCoords.x)+", "+ Math.round(pToImageCoords.y)+")"; //FIX, don't use different view method for drag
-
+                */
                 //JSONUtils.setJSONString();
             },
 

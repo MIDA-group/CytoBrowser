@@ -170,11 +170,13 @@ markerPoints = {
     },
 
     /**
-     * Get a specified point by its id.
+     * Get a copy of a specified point by its id.
      * @param {number} id The id used for looking up the point.
      * @returns {Object} The point with the specified id, or undefined if not in use
      */
     getPointById: function(id) {
-        return markerPoints._points.find((point) => point.id == id);
+        const point = markerPoints._points.find((point) => point.id == id);
+        const pointClone = markerPoints._clonePoint(point);
+        return pointClone;
     }
 };
