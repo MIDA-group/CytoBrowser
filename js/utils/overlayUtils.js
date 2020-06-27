@@ -132,19 +132,6 @@ overlayUtils={
                     const htmlid = d3node.attr("id");
                     const id = Number(htmlid.split("-")[2]);
                     markerPoints.removePoint(id);
-
-                    /*
-                    console.log("Deleting ID:"+id+"("+overlayUtils.TMCPCount[overlay]+")");
-                    delete markerUtils._TMCPS[overlay][htmlid];
-
-                    overlayUtils.delRowFromTable("tmcptablebody",id);
-                    d3node.remove();
-
-                    if (id+1==overlayUtils.TMCPCount[overlay]) { //If last one, then decrease count
-                        console.log("DeleteLast")
-                        overlayUtils.TMCPCount[overlay]--;
-                    }
-                    */
                 }
             }
         }).setTracking(true);
@@ -195,23 +182,6 @@ overlayUtils={
         }
     },
 
-    addTMCPtoViewers: function(event){
-        // The canvas-click event gives us a position in web coordinates.
-        //The event position is relative to OSD viewer
-        // Convert that to viewport coordinates, the lingua franca of OpenSeadragon coordinates.
-        var normalizedPointF=overlayUtils.pointFromOSDPixel( event.position, "ISS" );
-
-        //draw in the ISS viewer, now we need to convert it to pixels and then to the moving space viewport to put there
-        //also saveToTMCPS array
-        console.log("normalizedPointF.x");
-        console.log(normalizedPointF.x);
-        var optionsF=overlayUtils.drawSingleTMCP("ISS",{"saveToTMCPS":true,"x":normalizedPointF.x,"y":normalizedPointF.y,"z":tmapp.curr_z});
-        //get the pixel coordinates in ISS image
-        var imagePointF = overlayUtils.pointToImage(normalizedPointF,"ISS");
-        overlayUtils.addRowToTable("tmcptablebody",optionsF.id,imagePointF.x,imagePointF.y,optionsF.mclass,tmapp.curr_z);
-        JSONUtils.setJSONString();
-    },
-
     addTMCP: function(id, x, y, z, mclass) {
         var optionsF=overlayUtils.drawSingleTMCP("ISS", {
             saveToTMCPS: true,
@@ -224,6 +194,22 @@ overlayUtils={
         //get the pixel coordinates in ISS image
         var imagePointF = overlayUtils.pointToImage(new OpenSeadragon.Point(x, y),"ISS");
         overlayUtils.addRowToTable("tmcptablebody", id, imagePointF.x, imagePointF.y, mclass, z);
+    },
+
+    removeTMCP: function(id) {
+        // TODO: This is a bit shoddy, should probably clean it up
+        const d3node = d3.select("#TMCP-ISS-" + String(id));
+        const htmlid = "TMCP-ISS-" + String(id);
+        console.log("Deleting ID:"+id+"("+overlayUtils.TMCPCount[overlay]+")");
+        delete markerUtils._TMCPS["ISS"][htmlid];
+
+        overlayUtils.delRowFromTable("tmcptablebody",id);
+        d3node.remove();
+
+        if (id+1==overlayUtils.TMCPCount[overlay]) { //If last one, then decrease count
+            console.log("DeleteLast")
+            overlayUtils.TMCPCount[overlay]--;
+        }
     },
 
     removeAllFromOverlay: function(overlay){
