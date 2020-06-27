@@ -223,7 +223,7 @@ overlayUtils={
         });
         //get the pixel coordinates in ISS image
         var imagePointF = overlayUtils.pointToImage(new OpenSeadragon.Point(x, y),"ISS");
-        overlayUtils.addRowToTable("tmcptablebody", id, x, y, mclass, z);
+        overlayUtils.addRowToTable("tmcptablebody", id, imagePointF.x, imagePointF.y, mclass, z);
     },
 
     removeAllFromOverlay: function(overlay){
