@@ -202,15 +202,18 @@ overlayUtils={
         const htmlid = "TMCP-ISS-" + String(id);
         const overlay = "ISS";
         console.log("Deleting ID:"+id+"("+overlayUtils.TMCPCount[overlay]+")");
-        delete markerUtils._TMCPS["ISS"][htmlid];
+        const markers = markerUtils._TMCPS["ISS"];
+        delete markers.find((marker) => marker.id);
 
         overlayUtils.delRowFromTable("tmcptablebody",id);
         d3node.remove();
 
+        /*
         if (id+1==overlayUtils.TMCPCount[overlay]) { //If last one, then decrease count
             console.log("DeleteLast")
             overlayUtils.TMCPCount[overlay]--;
         }
+        */
     },
 
     removeAllFromOverlay: function(overlay){
