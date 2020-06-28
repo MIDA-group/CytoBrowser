@@ -202,9 +202,7 @@ overlayUtils={
         const htmlid = "TMCP-ISS-" + String(id);
         const overlay = "ISS";
         console.log("Deleting ID:"+id+"("+overlayUtils.TMCPCount[overlay]+")");
-        const markers = markerUtils._TMCPS["ISS"];
-        delete markers.find((marker) => marker.id);
-
+        delete markerUtils._TMCPS["ISS"][htmlid];
         overlayUtils.delRowFromTable("tmcptablebody",id);
         d3node.remove();
 
