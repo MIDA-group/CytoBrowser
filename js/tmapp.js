@@ -255,7 +255,8 @@ tmapp.init = function () {
     };
 
     var scroll_handler = function(event){
-        if (event.ctrlKey) {
+        if (event.originalEvent.ctrlKey) {
+            event.preventDefaultAction = true;
             if (event.scroll > 0) {
                 $("#focus_next").click();
             }
