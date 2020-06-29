@@ -26,6 +26,9 @@ tmapp = {
     getFocusLevel: function() {
         return this.curr_z;
     },
+    getFocusIndex: function() {
+        return curr_z + Math.floor(z_levels.length / 2);
+    },
     setFocusLevel: function( z ) {
         var count = this.viewer.world.getItemCount();
         z=Math.min(Math.max(z,0),count-1);
@@ -40,7 +43,7 @@ tmapp = {
     },
 
     setFocusName: function() { //Display focus level in UI
-        setImageZLevel(z_levels[tmapp.getFocusLevel()]);
+        setImageZLevel(z_levels[tmapp.getFocusIndex()]);
         this.updateURLParams();
     },
     setZoomName: function() { //Display zoom level in UI
@@ -62,7 +65,7 @@ tmapp = {
         params.set("zoom", roundTo(this.curr_zoom, 2));
         params.set("x", roundTo(this.curr_x, 5));
         params.set("y", roundTo(this.curr_y, 5));
-        params.set("z", this.curr_z - 5);
+        params.set("z", this.curr_z);
         setURL("?" + params.toString());
     }
 }
@@ -173,7 +176,7 @@ tmapp.add_handlers = function () {
             const center = new OpenSeadragon.Point(params.x, params.y);
             viewer.viewport.zoomTo(zoom, null, true);
             viewer.viewport.panTo(center, true);
-            tmapp.setFocusLevel(params.z + 5);
+            tmapp.setFocusLevel(params.z);
 	    // Currently hard-coded to 5, may want to do this better
         }
         else {
