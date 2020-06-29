@@ -126,6 +126,7 @@ markerPoints = {
      */
     updatePoint: function(id, point, pixelCoords=false) {
         const updatedPoint = markerPoints.getPointById(id);
+        const updatedIndex = points.findIndex((point) => point.id == id);
 
         // Check if the point being updated exists first
         if (updatedPoint === undefined) {
@@ -141,7 +142,11 @@ markerPoints = {
         }
 
         // Copy over the updated properties
-        Object.assign(point, updatedPoint);
+        Object.assign(updatedPoint, point);
+        markerPoints._points[updatedIndex] = updatedPoint;
+
+        // Update the point in the graphics
+        overlayUtils.updateTMCP(point.id, point.x, point.y, point.z, point.mclass);
     },
 
     /**

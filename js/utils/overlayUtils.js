@@ -84,37 +84,19 @@ overlayUtils={
             element: node,
 
             dragHandler: function(event) { //called repeatedly during drag
-                const viewportDelta = overlayUtils.viewportDelta(event.delta, overlay);
+                const delta = overlayUtils.viewportDelta(event.delta, overlay);
                 const d3node = d3.select(node);
                 const htmlid = d3node.attr("id");
                 const id = Number(htmlid.split("-")[2]);
                 const point = markerPoints.getPointById(id);
-                const newX = overlayUtils.pointToImage(point.x) + viewportDelta.x;
-                const newY = overlayUtils.pointToImage(point.y) + viewportDelta.y;
+                const newX = point.x + delta.x;
+                const newY = point.y + delta.y;
                 point.x = newX;
                 point.y = newY;
-                markerPoints.updatePoint(id, point, "viewport");
-                //TODO
-
-                /*
-                var transformobj=overlayUtils.transformToObject(d3node.attr("transform"));
-
-                transformobj.translate[0]=Number(transformobj.translate[0])+Number(viewportDelta.x);
-                transformobj.translate[1]=Number(transformobj.translate[1])+Number(viewportDelta.y);
-                //console.log(transformobj);
-                d3node.attr("transform",overlayUtils.objectToTransform(transformobj));
-
-
-                var id=d3node.attr("id").split("-")[2];
-                var cellid="cell-"+overlay+"-"+id;
-                var cell=document.getElementById(cellid);
-                var OSDPoint=new OpenSeadragon.Point(transformobj.translate[0],transformobj.translate[1]);
-                var pToImageCoords=overlayUtils.pointToImage(OSDPoint,overlay);
-                cell.textContent= "("+Math.round(pToImageCoords.x)+", "+ Math.round(pToImageCoords.y)+")"; //FIX, don't use different view method for drag
-                */
-                //JSONUtils.setJSONString();
+                markerPoints.updatePoint(id, point, "image");
             },
 
+            /*
             dragEndHandler: function(event){ //called at end of drag
                 var d3node=d3.select(node);
                 var htmlid=d3node.attr("id");
@@ -124,6 +106,7 @@ overlayUtils={
                 markerUtils._TMCPS[overlay][htmlid].x=Number(transformobj.translate[0]);
                 markerUtils._TMCPS[overlay][htmlid].y=Number(transformobj.translate[1]);
             },
+            */
 
             clickHandler: function(event){ //also called at end of drag
                 const d3node = d3.select(node);
@@ -155,6 +138,12 @@ overlayUtils={
         cell1.textContent=id;
         cell2.id="cell-ISS-"+id;
         cell2.textContent= "("+Math.round(x1)+", "+ Math.round(y1)+", "+ z +"; "+mclass+")";
+    },
+
+    updateTableRow: function(tableid,id,x1,y1,mclass,z) {
+        var cellid="cell-"+overlay+"-"+id;
+        var cell=document.getElementById(cellid);
+        cell.textContent= "("+Math.round(x1)+", "+ Math.round(y1)+", "+ z +"; "+mclass+")"; //FIX, don't use different view method for drag
     },
 
     pointToImage: function(point,overlay){
@@ -196,6 +185,18 @@ overlayUtils={
         overlayUtils.addRowToTable("tmcptablebody", id, imagePointF.x, imagePointF.y, mclass, z);
     },
 
+    updateTMCP: function(id, x, y, z, mclass) {
+        const d3node = d3.select("#TMCP-ISS-" + String(id));
+        const transformobj = overlayUtils.transformToObject(d3node.attr("transform"));
+        const viewportPos = overlayUtils.imageToViewport(new OpenSeadragon(point.x, point.y));
+
+        transformobj.translate[0] = viewportPos.x;
+        transformobj.translate[1] = viewportPos.y;
+        d3node.attr("transform", overlayUtils.objectToTransform(transformobj));
+
+        overlayUtils.updateTableRow(tableid, id, x, y, mclass, z);
+    },
+
     removeTMCP: function(id) {
         // TODO: This is a bit shoddy, should probably clean it up
         const d3node = d3.select("#TMCP-ISS-" + String(id));
@@ -205,13 +206,6 @@ overlayUtils={
         delete markerUtils._TMCPS["ISS"][htmlid];
         overlayUtils.delRowFromTable("tmcptablebody",id);
         d3node.remove();
-
-        /*
-        if (id+1==overlayUtils.TMCPCount[overlay]) { //If last one, then decrease count
-            console.log("DeleteLast")
-            overlayUtils.TMCPCount[overlay]--;
-        }
-        */
     },
 
     removeAllFromOverlay: function(overlay){
