@@ -84,16 +84,18 @@ overlayUtils={
             element: node,
 
             dragHandler: function(event) { //called repeatedly during drag
-                const delta = overlayUtils.viewportDelta(event.delta, overlay);
+                const delta = overlayUtils.viewportDelta(event.delta, "ISS");
                 const d3node = d3.select(node);
                 const htmlid = d3node.attr("id");
                 const id = Number(htmlid.split("-")[2]);
                 const point = markerPoints.getPointById(id);
-                const newX = point.x + delta.x;
-                const newY = point.y + delta.y;
+                const imageCoords = new OpenSeadragon.Point(point.x, point.y);
+                const viewportCoords = overlayUtils.imageToViewport(imageCoords, "ISS");
+                const newX = viewportCoords.x + delta.x;
+                const newY = viewportCoords.y + delta.y;
                 point.x = newX;
                 point.y = newY;
-                markerPoints.updatePoint(id, point, "image");
+                markerPoints.updatePoint(id, point, "viewport");
             },
 
             /*
@@ -141,7 +143,7 @@ overlayUtils={
     },
 
     updateTableRow: function(tableid,id,x1,y1,mclass,z) {
-        var cellid="cell-"+overlay+"-"+id;
+        var cellid="cell-ISS-"+id;
         var cell=document.getElementById(cellid);
         cell.textContent= "("+Math.round(x1)+", "+ Math.round(y1)+", "+ z +"; "+mclass+")"; //FIX, don't use different view method for drag
     },
@@ -188,13 +190,13 @@ overlayUtils={
     updateTMCP: function(id, x, y, z, mclass) {
         const d3node = d3.select("#TMCP-ISS-" + String(id));
         const transformobj = overlayUtils.transformToObject(d3node.attr("transform"));
-        const viewportPos = overlayUtils.imageToViewport(new OpenSeadragon(point.x, point.y));
+        const imagePos = overlayUtils.pointToImage(new OpenSeadragon.Point(x, y),"ISS");
 
-        transformobj.translate[0] = viewportPos.x;
-        transformobj.translate[1] = viewportPos.y;
+        transformobj.translate[0] = x;
+        transformobj.translate[1] = y;
         d3node.attr("transform", overlayUtils.objectToTransform(transformobj));
 
-        overlayUtils.updateTableRow(tableid, id, x, y, mclass, z);
+        overlayUtils.updateTableRow("tmcptablebody", id, imagePos.x, imagePos.y, mclass, z);
     },
 
     removeTMCP: function(id) {

@@ -59,7 +59,7 @@ markerPoints = {
                 };
             case "viewport":
                 webPoint = {};
-                imagePoint = overlayUtils.pointToImage(viewportPoint, "ISS");
+                imagePoint = overlayUtils.pointToImage(originalPoint, "ISS");
                 return {
                     web: {x: webPoint.x, y: webPoint.y},
                     viewport: {x: point.x, y: point.y},
@@ -124,9 +124,10 @@ markerPoints = {
      * @param {MarkerPoint} point The new values for the point to be updated.
      * @param {boolean} [pixelCoords=false] Positions in pixel coordinates if true, otherwise web coordinates.
      */
-    updatePoint: function(id, point, pixelCoords=false) {
-        const updatedPoint = markerPoints.getPointById(id);
+    updatePoint: function(id, point, coordSystem) {
+        const points = markerPoints._points;
         const updatedIndex = points.findIndex((point) => point.id == id);
+        const updatedPoint = markerPoints.getPointById(id);
 
         // Check if the point being updated exists first
         if (updatedPoint === undefined) {
@@ -143,10 +144,19 @@ markerPoints = {
 
         // Copy over the updated properties
         Object.assign(updatedPoint, point);
-        markerPoints._points[updatedIndex] = updatedPoint;
+
+        // Make sure the data is stored in the image coordinate system
+        const coords = markerPoints._getCoordSystems(updatedPoint, coordSystem);
+        if (coordSystem != "image") {
+            updatedPoint.x = coords.image.x;
+            updatedPoint.y = coords.image.y;
+        }
+
+        // Store the point in data
+        points[updatedIndex] = updatedPoint;
 
         // Update the point in the graphics
-        overlayUtils.updateTMCP(point.id, point.x, point.y, point.z, point.mclass);
+        overlayUtils.updateTMCP(point.id, coords.viewport.x, coords.viewport.y, point.z, point.mclass);
     },
 
     /**
