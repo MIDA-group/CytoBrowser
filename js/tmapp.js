@@ -19,7 +19,7 @@ tmapp = {
     curr_zoom: 0.7,
     curr_x: 0,
     curr_y: 0,
-    curr_z: 5,
+    curr_z: 0,
     curr_mclass: "",
     lost_focus: false,
 
@@ -30,12 +30,15 @@ tmapp = {
         return curr_z + Math.floor(z_levels.length / 2);
     },
     setFocusLevel: function( z ) {
-        var count = this.viewer.world.getItemCount();
-        z=Math.min(Math.max(z,0),count-1);
-        for (i = 0; i < count; i++) {
-            tmapp.viewer.world.getItemAt(i).setOpacity(z==i);
+        const count = this.viewer.world.getItemCount();
+	const max = Math.floor(count / 2);
+	const min = -max;
+        z=Math.min(Math.max(z,min),max);
+        for (i = min; i <= max; i++) {
+            let idx = i + Math.floor(z_levels.length / 2);
+            tmapp.viewer.world.getItemAt(idx).setOpacity(z == i);
         }
-        this.curr_z=z;
+        this.curr_z = z;
         tmapp.setFocusName();
     },
     checkFocus: function() {
