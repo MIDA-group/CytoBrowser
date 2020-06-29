@@ -1,22 +1,21 @@
 overlayUtils={
     TMCPCount:{"ISS":1},
     markerClass:0,
-    amountClasses:7,
 
     _singleTMCPD3Groups: {"ISS":null},
 
     switchClass: function(){
-    	overlayUtils.markerClass=(overlayUtils.markerClass+1) % overlayUtils.amountClasses;
+    	overlayUtils.markerClass=(overlayUtils.markerClass+1) % bethesdaClassUtils.amountClasses;
     },
     setClass: function(cl){
         console.log("Setting:"+cl)
-    	overlayUtils.markerClass=(cl) % overlayUtils.amountClasses;
+    	overlayUtils.markerClass=(cl) % bethesdaClassUtils.amountClasses;
     },
 
     drawSingleTMCP: function(overlay,options){
         options.imageWidth=overlayUtils.OSDimageWidth(overlay);
         options.overlay=overlay;
-        options.strokeColor=overlayUtils.classColor(overlayUtils.markerClass);
+        options.strokeColor=bethesdaClassUtils.classColor(options.mclass);
 
         var elem=d3.select( tmapp[overlay+"_singleTMCPS"].node());
         return markerUtils.TMCP(elem,options); //Add TMCP
@@ -48,23 +47,13 @@ overlayUtils={
     },
 
     classColor:function(cl){
-        switch(cl){
-            case 0:
-                return '#3F3';
-            case 1:
-                return '#CA3';
-            case 2:
-                return '#F33';
-            case 3:
-                return '#3CC';
-            case 4:
-                return '#F4F';
-            case 5:
-                return '#CF6';
-            case 6:
-                return '#FC6';
+        const color = bethesdaClassUtils.classColor(cl);
+        if (color === undefined) {
+            return overlayUtils.randomColor();
         }
-        return overlayUtils.randomColor();
+        else {
+            return color;
+        }
     },
 
     //https://stackoverflow.com/questions/17824145/parse-svg-transform-attribute-with-javascript
@@ -95,26 +84,21 @@ overlayUtils={
             element: node,
 
             dragHandler: function(event) { //called repeatedly during drag
-                var viewportDelta=overlayUtils.viewportDelta(event.delta,overlay);
-                var d3node=d3.select(node);
-                var transformobj=overlayUtils.transformToObject(d3node.attr("transform"));
-
-                transformobj.translate[0]=Number(transformobj.translate[0])+Number(viewportDelta.x);
-                transformobj.translate[1]=Number(transformobj.translate[1])+Number(viewportDelta.y);
-                //console.log(transformobj);
-                d3node.attr("transform",overlayUtils.objectToTransform(transformobj));
-
-
-                var id=d3node.attr("id").split("-")[2];
-                var cellid="cell-"+overlay+"-"+id;
-                var cell=document.getElementById(cellid);
-                var OSDPoint=new OpenSeadragon.Point(transformobj.translate[0],transformobj.translate[1]);
-                var pToImageCoords=overlayUtils.pointToImage(OSDPoint,overlay);
-                cell.textContent= "("+Math.round(pToImageCoords.x)+", "+ Math.round(pToImageCoords.y)+")"; //FIX, don't use different view method for drag
-
-                //JSONUtils.setJSONString();
+                const delta = overlayUtils.viewportDelta(event.delta, "ISS");
+                const d3node = d3.select(node);
+                const htmlid = d3node.attr("id");
+                const id = Number(htmlid.split("-")[2]);
+                const point = markerPoints.getPointById(id);
+                const imageCoords = new OpenSeadragon.Point(point.x, point.y);
+                const viewportCoords = overlayUtils.imageToViewport(imageCoords, "ISS");
+                const newX = viewportCoords.x + delta.x;
+                const newY = viewportCoords.y + delta.y;
+                point.x = newX;
+                point.y = newY;
+                markerPoints.updatePoint(id, point, "viewport");
             },
 
+            /*
             dragEndHandler: function(event){ //called at end of drag
                 var d3node=d3.select(node);
                 var htmlid=d3node.attr("id");
@@ -124,25 +108,15 @@ overlayUtils={
                 markerUtils._TMCPS[overlay][htmlid].x=Number(transformobj.translate[0]);
                 markerUtils._TMCPS[overlay][htmlid].y=Number(transformobj.translate[1]);
             },
+            */
 
             clickHandler: function(event){ //also called at end of drag
-                console.log("DOM click")
-                var d3node=d3.select(node);
+                const d3node = d3.select(node);
 
-                if (cntrlIsPressed) {
-                    var htmlid=d3node.attr("id");
-                    var id=Number(htmlid.split("-")[2]);
-
-                    console.log("Deleting ID:"+id+"("+overlayUtils.TMCPCount[overlay]+")");
-                    delete markerUtils._TMCPS[overlay][htmlid];
-
-                    overlayUtils.delRowFromTable("tmcptablebody",id);
-                    d3node.remove();
-
-                    if (id+1==overlayUtils.TMCPCount[overlay]) { //If last one, then decrease count
-                        console.log("DeleteLast")
-                        overlayUtils.TMCPCount[overlay]--;
-                    }
+                if (event.originalEvent.ctrlKey) {
+                    const htmlid = d3node.attr("id");
+                    const id = Number(htmlid.split("-")[2]);
+                    markerPoints.removePoint(id);
                 }
             }
         }).setTracking(true);
@@ -155,7 +129,7 @@ overlayUtils={
         row.parentNode.removeChild(row);
     },
 
-    addRowToTable: function(tableid,id,x1,y1,mclass) {
+    addRowToTable: function(tableid,id,x1,y1,mclass,z) {
         var tablebody=document.getElementById(tableid);
         var row=tablebody.insertRow(0);
         row.id="row-ISS-"+id;
@@ -165,7 +139,13 @@ overlayUtils={
 
         cell1.textContent=id;
         cell2.id="cell-ISS-"+id;
-        cell2.textContent= "("+Math.round(x1)+", "+ Math.round(y1)+"; "+mclass+")";
+        cell2.textContent= "("+Math.round(x1)+", "+ Math.round(y1)+", "+ z +"; "+mclass+")";
+    },
+
+    updateTableRow: function(tableid,id,x1,y1,mclass,z) {
+        var cellid="cell-ISS-"+id;
+        var cell=document.getElementById(cellid);
+        cell.textContent= "("+Math.round(x1)+", "+ Math.round(y1)+", "+ z +"; "+mclass+")"; //FIX, don't use different view method for drag
     },
 
     pointToImage: function(point,overlay){
@@ -193,21 +173,41 @@ overlayUtils={
         }
     },
 
-    addTMCPtoViewers: function(event){
-        // The canvas-click event gives us a position in web coordinates.
-        //The event position is relative to OSD viewer
-        // Convert that to viewport coordinates, the lingua franca of OpenSeadragon coordinates.
-        var normalizedPointF=overlayUtils.pointFromOSDPixel( event.position, "ISS" );
-
-        //draw in the ISS viewer, now we need to convert it to pixels and then to the moving space viewport to put there
-        //also saveToTMCPS array
-        console.log("normalizedPointF.x");
-        console.log(normalizedPointF.x);
-        var optionsF=overlayUtils.drawSingleTMCP("ISS",{"saveToTMCPS":true,"x":normalizedPointF.x,"y":normalizedPointF.y});
+    addTMCP: function(id, x, y, z, mclass) {
+        var optionsF=overlayUtils.drawSingleTMCP("ISS", {
+            saveToTMCPS: true,
+            id: id,
+            x: x,
+            y: y,
+            z: z,
+            mclass: mclass
+        });
         //get the pixel coordinates in ISS image
-        var imagePointF = overlayUtils.pointToImage(normalizedPointF,"ISS");
-        overlayUtils.addRowToTable("tmcptablebody",optionsF.id,imagePointF.x,imagePointF.y,optionsF.mclass);
-        JSONUtils.setJSONString();
+        var imagePointF = overlayUtils.pointToImage(new OpenSeadragon.Point(x, y),"ISS");
+        overlayUtils.addRowToTable("tmcptablebody", id, imagePointF.x, imagePointF.y, mclass, z);
+    },
+
+    updateTMCP: function(id, x, y, z, mclass) {
+        const d3node = d3.select("#TMCP-ISS-" + String(id));
+        const transformobj = overlayUtils.transformToObject(d3node.attr("transform"));
+        const imagePos = overlayUtils.pointToImage(new OpenSeadragon.Point(x, y),"ISS");
+
+        transformobj.translate[0] = x;
+        transformobj.translate[1] = y;
+        d3node.attr("transform", overlayUtils.objectToTransform(transformobj));
+
+        overlayUtils.updateTableRow("tmcptablebody", id, imagePos.x, imagePos.y, mclass, z);
+    },
+
+    removeTMCP: function(id) {
+        // TODO: This is a bit shoddy, should probably clean it up
+        const d3node = d3.select("#TMCP-ISS-" + String(id));
+        const htmlid = "TMCP-ISS-" + String(id);
+        const overlay = "ISS";
+        console.log("Deleting ID:"+id+"("+overlayUtils.TMCPCount[overlay]+")");
+        delete markerUtils._TMCPS["ISS"][htmlid];
+        overlayUtils.delRowFromTable("tmcptablebody",id);
+        d3node.remove();
     },
 
     removeAllFromOverlay: function(overlay){

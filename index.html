@@ -49,7 +49,7 @@
         </div>
 
         <!-- Table of annotated points -->
-        <div class="col-xs-4" style="padding: 15px;">
+        <div class="col-xs-4">
             <div class="row">
                 <div class="table-wrapper-scroll-y my-custom-scrollbar">
                 <table id="tmcptable" class="table-striped table-bordered" style="padding: 10px; width: 100%; text-align: center;" >
@@ -69,17 +69,16 @@
         </div>
 
         <!-- Interface buttons -->
-        <div class="col-xs-4" style="padding: 15px">
+        <div class="col-xs-4">
             <div class="panel panel-default">
-                <!-- <div class="panel-heading">
+                <div class="panel-heading">
                     <h3 class="panel-title">Options</h3>
-                </div> -->
+                </div>
                 <div class="panel-body">
-
-                    <div class="row" style="padding: 10px">
+                    <div class="row" style="padding: 0 10px 10px">
                         <div class="col-xs-9">
                             <h5>Marker class:</h5>
-                            <div id="class_buttons" class="btn-group btn-group-small btn-group-toggle" data-toggle="buttons">
+                            <div id="class_buttons" class="btn-group btn-group-small btn-group-toggle" data-toggle="buttons" style="display: flex">
                                 <!-- Buttons are added programatically -->
                             </div>
                         </div>
@@ -91,16 +90,16 @@
                     </div>
 
                     <!-- Download annotation json -->
-                    <div class="row">
+                    <div class="row" style="padding: 10px">
                         <div class="col-xs-3">
-                            <button id="pointstojson" class="btn btn-primary" type="button"> Download</button>
+                            <button id="pointstojson" class="btn btn-primary btn-block" type="button"> Download</button>
                         </div>
-                        <div class="col-xs-4">
+                        <div class="col-xs-6">
                             <input class="form-control-file form-control form-control-sm" type="file" id="data_files_import" name="files[]">
                         </div>
-                        <div class="col-xs-1">
+                        <div class="col-xs-3">
                                 <input type="file" id="fileElem" multiple accept="image/*" style="display:none" onchange="handleFiles(this.files)">
-                            <button id="jsontodata" class="btn btn-primary" type="button"> Import </button>
+                            <button id="jsontodata" class="btn btn-primary btn-block" type="button"> Import </button>
                         </div>
                     </div>
                     <div class="row" style="padding: 15px">
@@ -125,9 +124,11 @@
 <!-- <script src="js/tm_utils/regionUtils.js"></script> -->
 <!-- <script src="js/tm_utils/overlayUtils.js"></script> -->
 <!-- <script src="js/tm_utils/geometryUtils.js"></script> -->
+<script src="js/utils/bethesdaClassUtils.js"></script>
 <script src="js/utils/JSONUtils.js"></script>
 <script src="js/utils/overlayUtils.js"></script>
 <script src="js/utils/markerUtils.js"></script>
+<script src="js/markerPoints.js"></script>
 <script src="js/tmapp.js"></script>
 <script>
     markerUtils._TMCPStyle={ strokeWidth: 4, radius: 80, drawText:false, textSize:1 };
@@ -135,43 +136,13 @@
     document.getElementById("project_title").innerText = "Cyto Browser";
 
     // Populate the class buttons programatically
-    const classes = [
-        {
-            name: "NILM",
-            description: "Negative for intraepithelial lesion or malignancy"
-        },
-        {
-            name: "ASC-US",
-            description: "Atypical squamous cells of undetermined significance"
-        },
-        {
-            name: "ASC-H",
-            description: "Atypical squamous cell - cannot exclude HSIL"
-        },
-        {
-            name: "LSIL",
-            description: "Low squamous intraepithelial lesion"
-        },
-        {
-            name: "HSIL",
-            description: "High squamous intraepithelial lesion"
-        },
-        {
-            name: "SCC",
-            description: "Squamous cell carcinoma"
-        },
-        {
-            name: "AdC",
-            description: "Adenocarcinoma"
-        },
-    ];
-
-    classes.forEach(function(item, index){
+    bethesdaClassUtils.forEachClass(function(item, index){
         let label = $("<label></label>");
         label.addClass("btn btn-success");
         if (index == 0) { label.addClass("active"); }
         label.attr("id", "class_" + item.name);
         label.attr("title", item.description);
+        label.css("flex", 1);
         let input = $("<input>" + item.name + "</input>");
         input.attr("type", "radio");
         input.attr("name", "class_options");
@@ -229,19 +200,6 @@
         }
     });
 
-    // Ctrl-click for delete etc.
-    $(document).keydown(function(event){
-        switch(event.which) {
-            case 17:cntrlIsPressed = true; break;
-        }
-    });
-
-    $(document).keyup(function(){
-        switch(event.which) {
-            case 17:cntrlIsPressed = false; break;
-        }
-    });
-
     //1,2,... for class selection
     //z,x for focus up down
     $(document).keypress(function(){
@@ -253,16 +211,12 @@
                 // Handle digit keys being pressed for classes
                 const digits = Array.from({length: 10}, (v,k) => String((k+1) % 10));
                 const chars = digits.map((digit) => digit.charCodeAt());
-                chars.slice(0, classes.length).forEach((char, index) => {
+                chars.slice(0, bethesdaClassUtils.amountClasses).forEach((char, index) => {
                     if (event.which == char) {
-                        $("#class_" + classes[index].name).click();
+                        $("#class_" + bethesdaClassUtils.getClassFromID(index).name).click();
                     }
                 });
         }
     });
-
-    var cntrlIsPressed = false;
-
-
 </script>
 </html>
