@@ -98,18 +98,6 @@ overlayUtils={
                 markerPoints.updatePoint(id, point, "viewport");
             },
 
-            /*
-            dragEndHandler: function(event){ //called at end of drag
-                var d3node=d3.select(node);
-                var htmlid=d3node.attr("id");
-                console.log(htmlid);
-                var transformobj=overlayUtils.transformToObject(d3node.attr("transform"));
-            //    markerUtils._TMCPS[overlay][htmlid]={"x":Number(transformobj.translate[0]),"y":Number(transformobj.translate[1])}; //FIX! Update instead of overwrite!
-                markerUtils._TMCPS[overlay][htmlid].x=Number(transformobj.translate[0]);
-                markerUtils._TMCPS[overlay][htmlid].y=Number(transformobj.translate[1]);
-            },
-            */
-
             clickHandler: function(event){ //also called at end of drag
                 const d3node = d3.select(node);
 
@@ -136,10 +124,17 @@ overlayUtils={
 
         var cell1=row.insertCell(0);
         var cell2=row.insertCell(1);
+        var cell3=row.insertCell(2);
 
         cell1.textContent=id;
         cell2.id="cell-ISS-"+id;
         cell2.textContent= "(x: "+Math.round(x1)+", y: "+ Math.round(y1)+", z: "+ z +"; Class: "+mclass+")";
+
+        // Create a button for moving to the point
+        const button = document.createElement("button");
+        button.textContent = "Move to marker";
+        button.onClick(function(e) { console.log("Moving to " + id)});
+        cell3.appendChild(button);
     },
 
     updateTableRow: function(tableid,id,x1,y1,mclass,z) {
