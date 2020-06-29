@@ -1,6 +1,8 @@
 /**
  * Namespace for handling marker points. Deals with both the data
- * representation of the points and the graphical representation.
+ * representation of the points and the graphical representation. All
+ * manipulation of the points should go through this namespace's
+ * functions to ensure that all necessary steps are performed.
  * @namespace markerPoints
  */
 markerPoints = {
@@ -19,7 +21,8 @@ markerPoints = {
     /**
      * Representation of the OpenSeadragon coordinate system used to
      * represent a point. Should take on the values of "web", "viewport"
-     * or "image".
+     * or "image". See more information about the different coordinate
+     * systems {@link https://openseadragon.github.io/examples/viewport-coordinates/|here.}
      * @typedef {string} CoordSystem
      */
     _points: [],
@@ -122,9 +125,9 @@ markerPoints = {
      * Update the parameters of an already existing point.
      * @param {number} id The initial id of the point to be updated.
      * @param {MarkerPoint} point The new values for the point to be updated.
-     * @param {boolean} [pixelCoords=false] Positions in pixel coordinates if true, otherwise web coordinates.
+     * @param {CoordSystem} [coordSystem="web"] Coordinate system used by the point.
      */
-    updatePoint: function(id, point, coordSystem) {
+    updatePoint: function(id, point, coordSystem="web") {
         const points = markerPoints._points;
         const updatedIndex = points.findIndex((point) => point.id == id);
         const updatedPoint = markerPoints.getPointById(id);
@@ -202,7 +205,7 @@ markerPoints = {
     /**
      * Get a copy of a specified point by its id.
      * @param {number} id The id used for looking up the point.
-     * @returns {Object} The point with the specified id, or undefined if not in use
+     * @returns {Object} A clone of the point with the specified id, or undefined if not in use.
      */
     getPointById: function(id) {
         const point = markerPoints._points.find((point) => point.id == id);

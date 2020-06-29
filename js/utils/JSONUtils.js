@@ -28,6 +28,12 @@ JSONUtils={
         return me;
     },
 
+    /**
+     * @function
+     * Store all necessary information for the data points present in
+     * the current session as a JSON-formatted Object.
+     * @returns {Object} An object containing all points' data.
+     */
     dataToJSON: function(){
         const data = {
             version: "1.0", // Version of the JSON formatting
@@ -39,7 +45,8 @@ JSONUtils={
 
     /**
      * @function
-     * Save the data from a hiden <a> tag into a json file containing the locations of the points.
+     * Save the data of all points in the session as a JSON file on the
+     * local machine.
      */
     downloadJSON: function(){
         var a = document.createElement("a");
@@ -67,42 +74,6 @@ JSONUtils={
             ta.value=JSON.stringify(JSONUtils.pointsToJSON(),0,4);
         }
     },
-
-
-    /**
-     * @function
-     * Read text area and create all the
-     * symbols dynamically. If the JSON is not well formatted, the points will not be loaded.
-     */
-     /*
-    importPointsFromJSON: function(){
-        console.log("KALLEy");
-
-        iconId=1;
-        d3.select(tmcpoints.ISS_svgov.node()).selectAll("*").remove();
-        var tablebody=document.getElementById("tmcptablebody");
-        //didnt want to but use jquery for simplicity
-        $("#tmcptablebody").children().remove();
-
-        var ta=document.getElementById('jsonpoints');
-        ta.className="form-control";
-        try{
-            var jsonobjects=JSON.parse(ta.value);
-        }catch(e){
-            alert("The points syntax is wrong, verify your JSON notation. Points were not loaded.");
-        }
-
-        console.log("JSON: "+jsonobjects.reference.length);
-
-        for(var i=0; i <jsonobjects.reference.length; i++){
-            var ref=jsonobjects.reference[i];
-            var normref=tmcpoints.ISS_viewer.viewport.imageToViewportCoordinates(ref[0], ref[1]);
-
-            var options=overlayUtils.drawTMCP("ISS",{"x":normref.x,"y":normref.y});
-            overlayUtils.addRowToTable("tmcptablebody",internaloptions.id,ref[0], ref[1]);
-        }
-    },
-    */
 
     readJSONToData: function(){
         // Clear all current points
@@ -136,22 +107,4 @@ JSONUtils={
             }
         };
     }
-/*
-    importDataFromJSON: function(datainJSONFormat){
-        // TODO: This is clunky, should refactor
-        jsonData.forEach((point) => );
-        let current_class = overlayUtils.markerClass;
-        datainJSONFormat.points.forEach(function(point) {
-            overlayUtils.setClass(Number(point.class));
-
-            // Convert the image coordinates to viewport coordinates first
-            const vx = point.x / overlayUtils.OSDimageWidth("ISS");
-	    // TODO: Assumes square image
-            const vy = point.y / overlayUtils.OSDimageWidth("ISS");
-
-            overlayUtils.addTMCP(vx, vy, point.z, point.class);
-        });
-        overlayUtils.setClass(current_class);
-    }
-    */
 }
