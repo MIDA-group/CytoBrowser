@@ -70,6 +70,16 @@ tmapp = {
         params.set("y", roundTo(this.curr_y, 5));
         params.set("z", this.curr_z);
         setURL("?" + params.toString());
+    },
+    panToPoint: function(id) { // Pan to the specified point
+        const point = markerPoints.getPointById(id);
+        if (point === undefined) {
+            throw new Error("Tried to move to an unused point id.");
+        }
+        // TODO: Seems like this happens a lot, should maybe just store all coordinate systems with point
+        const imageCoords = new OpenSeadragon.Point(point.x, point.y);
+        const viewportCoords = overlayUtils.imageToViewport(imageCoords);
+        viewer.viewport.panTo(viewportCoords, false);
     }
 }
 
