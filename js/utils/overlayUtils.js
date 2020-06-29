@@ -139,13 +139,13 @@ overlayUtils={
 
         cell1.textContent=id;
         cell2.id="cell-ISS-"+id;
-        cell2.textContent= "("+Math.round(x1)+", "+ Math.round(y1)+", "+ z +"; "+mclass+")";
+        cell2.textContent= "(x: "+Math.round(x1)+", y: "+ Math.round(y1)+", z: "+ z +"; Class: "+mclass+")";
     },
 
     updateTableRow: function(tableid,id,x1,y1,mclass,z) {
         var cellid="cell-ISS-"+id;
         var cell=document.getElementById(cellid);
-        cell.textContent= "("+Math.round(x1)+", "+ Math.round(y1)+", "+ z +"; "+mclass+")"; //FIX, don't use different view method for drag
+        cell.textContent= "(x: "+Math.round(x1)+", y: "+ Math.round(y1)+", z: "+ z +"; Class: "+mclass+")"; //FIX, don't use different view method for drag
     },
 
     pointToImage: function(point,overlay){

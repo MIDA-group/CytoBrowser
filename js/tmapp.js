@@ -19,20 +19,26 @@ tmapp = {
     curr_zoom: 0.7,
     curr_x: 0,
     curr_y: 0,
-    curr_z: 5,
+    curr_z: 0,
     curr_mclass: "",
     lost_focus: false,
 
     getFocusLevel: function() {
         return this.curr_z;
     },
+    getFocusIndex: function() {
+        return curr_z + Math.floor(z_levels.length / 2);
+    },
     setFocusLevel: function( z ) {
-        var count = this.viewer.world.getItemCount();
-        z=Math.min(Math.max(z,0),count-1);
-        for (i = 0; i < count; i++) {
-            tmapp.viewer.world.getItemAt(i).setOpacity(z==i);
+        const count = this.viewer.world.getItemCount();
+	const max = Math.floor(count / 2);
+	const min = -max;
+        z=Math.min(Math.max(z,min),max);
+        for (i = min; i <= max; i++) {
+            let idx = i + Math.floor(z_levels.length / 2);
+            tmapp.viewer.world.getItemAt(idx).setOpacity(z == i);
         }
-        this.curr_z=z;
+        this.curr_z = z;
         tmapp.setFocusName();
     },
     checkFocus: function() {
@@ -40,7 +46,7 @@ tmapp = {
     },
 
     setFocusName: function() { //Display focus level in UI
-        setImageZLevel(z_levels[tmapp.getFocusLevel()]);
+        setImageZLevel(z_levels[tmapp.getFocusIndex()]);
         this.updateURLParams();
     },
     setZoomName: function() { //Display zoom level in UI
@@ -62,7 +68,7 @@ tmapp = {
         params.set("zoom", roundTo(this.curr_zoom, 2));
         params.set("x", roundTo(this.curr_x, 5));
         params.set("y", roundTo(this.curr_y, 5));
-        params.set("z", this.curr_z - 5);
+        params.set("z", this.curr_z);
         setURL("?" + params.toString());
     }
 }
@@ -173,7 +179,7 @@ tmapp.add_handlers = function () {
             const center = new OpenSeadragon.Point(params.x, params.y);
             viewer.viewport.zoomTo(zoom, null, true);
             viewer.viewport.panTo(center, true);
-            tmapp.setFocusLevel(params.z + 5);
+            tmapp.setFocusLevel(params.z);
 	    // Currently hard-coded to 5, may want to do this better
         }
         else {
@@ -255,10 +261,15 @@ tmapp.init = function () {
     };
 
     var scroll_handler = function(event){
-        if (event.ctrlKey) {
-            //TODO: Ctrl-scroll = focus
+        if (event.originalEvent.ctrlKey) {
+            event.preventDefaultAction = true;
+            if (event.scroll > 0) {
+                $("#focus_next").click();
+            }
+            else if (event.scroll < 0) {
+                $("#focus_prev").click();
+            }
         }
-        console.log("scroll thing");
     };
 
     //OSD handlers have to be registered using MouseTracker OSD objects
