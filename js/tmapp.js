@@ -256,9 +256,13 @@ tmapp.init = function () {
 
     var scroll_handler = function(event){
         if (event.ctrlKey) {
-            //TODO: Ctrl-scroll = focus
+            if (event.scroll > 0) {
+                $("#focus_next").click();
+            }
+            else if (event.scroll < 0) {
+                $("#focus_prev").click();
+            }
         }
-        console.log("scroll thing");
     };
 
     //OSD handlers have to be registered using MouseTracker OSD objects
