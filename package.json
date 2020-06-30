@@ -1,0 +1,23 @@
+{
+  "name": "cytobrowser",
+  "version": "1.0.0",
+  "description": "Tool for annotating cytology images",
+  "main": "app.js",
+  "dependencies": {
+    "express": "^4.17.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MIDA-group/CytoBrowser.git"
+  },
+  "author": "",
+  "license": "GPLV3",
+  "bugs": {
+    "url": "https://github.com/MIDA-group/CytoBrowser/issues"
+  },
+  "homepage": "https://github.com/MIDA-group/CytoBrowser#readme"
+}
