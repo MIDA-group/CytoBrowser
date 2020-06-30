@@ -78,8 +78,8 @@ tmapp = {
         }
         // TODO: Seems like this happens a lot, should maybe just store all coordinate systems with point
         const imageCoords = new OpenSeadragon.Point(point.x, point.y);
-        const viewportCoords = overlayUtils.imageToViewport(imageCoords);
-        viewer.viewport.panTo(viewportCoords, false);
+        const viewportCoords = overlayUtils.imageToViewport(imageCoords, "ISS");
+        viewer.viewport.panTo(viewportCoords, true);
     }
 }
 
