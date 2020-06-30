@@ -27,7 +27,7 @@ tmapp = {
         return this.curr_z;
     },
     getFocusIndex: function() {
-        return curr_z + Math.floor(z_levels.length / 2);
+        return tmapp.curr_z + Math.floor(z_levels.length / 2);
     },
     setFocusLevel: function( z ) {
         const count = this.viewer.world.getItemCount();
