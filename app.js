@@ -41,7 +41,7 @@ server.get("/api/images", (req, res) => {
                     return name[0];
                 }
             });
-            const uniqueNames = [... new Set(names.filter((name) => name !== null)];
+            const uniqueNames = [... new Set(names.filter((name) => name !== null))];
             res.status(200);
             res.json({imageNames: uniqueNames});
         }
