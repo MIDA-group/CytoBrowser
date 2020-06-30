@@ -1,9 +1,12 @@
 // Bind required modules
 const express = require("express");
 
+// Store the address to be used from arguments
+const hostname = process.argv[2] || "localhost";
+const port = process.argv[3] || 0;
+
 // Initialize the server
 const server = express();
-const port = 8080;
 
 // Serve static JS and css files
 server.use("/js", express.static("js"));
@@ -15,6 +18,9 @@ server.get("/", (req, res) => {
     res.sendFile(`${__dirname}/index.html`);
 });
 
-server.listen(port, () => {
-    console.log(`Example server listening at http://localhost:${port}`);
+// Begin listening on the specified interface
+const listener = server.listen(port, hostname, () => {
+    const address = listener.address().address;
+    const port = listener.address().port;
+    console.log(`CytoBrowser server listening at http://${address}:${port}`);
 });
