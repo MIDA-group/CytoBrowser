@@ -1,6 +1,7 @@
 // Declare required modules
 const fs = require("fs");
 const express = require("express");
+const availableImages = require("./availableImages");
 
 // Store the address to be used from arguments
 const hostname = process.argv[2] || "localhost";
@@ -22,30 +23,16 @@ server.get("/", (req, res) => {
 
 // Get a list of available images
 server.get("/api/images", (req, res) => {
-    // Read the available files in the data directory
-    fs.readdir('./data', (err, dir) => {
-        if (err) {
-            console.log("Couldn't find the ./data diectory.");
-            res.status(500);
-            res.send("The server did not have a data directory.");
-        }
-        else {
-            // Find all unique image names in the directory
-            const nameEx = /.*_x40/g; // TODO: Haven't checked if this applies to all images
-            const names = dir.map((fileOrDirName) => {
-                const name = fileOrDirName.match(nameEx);
-                if (name === null) {
-                    return null;
-                }
-                else {
-                    return name[0];
-                }
-            });
-            const uniqueNames = [... new Set(names.filter((name) => name !== null))];
-            res.status(200);
-            res.json({imageNames: uniqueNames});
-        }
-    });
+    // Get the available images and send them as a response
+    const images = availableImages();
+    if (images === null) {
+        res.status(500);
+        res.send("The server was unable to find images.");
+    }
+    else {
+        res.status(200);
+        res.json(images);
+    }
 });
 
 // Begin listening on the specified interface
