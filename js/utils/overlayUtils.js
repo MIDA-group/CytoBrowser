@@ -133,7 +133,7 @@ overlayUtils={
         // Create a button for moving to the point
         const button = document.createElement("button");
         button.textContent = "Move to marker";
-        button.class = "btn btn-info btn-link";
+        button.className = "btn btn-info btn-link";
         button.type = "button";
         button.addEventListener("click", function(e) { console.log("Moving to " + id); tmapp.panToPoint(id); });
         cell3.appendChild(button);
