@@ -14,20 +14,22 @@ const nameEx = /.+(?=_z[0-9]+\.dzi)/g;
 function getAvailableImages() {
     // Update the available images if enough time has passed
     if (lastCheck === null || Date.now() - checkInterval > lastCheck) {
-        fs.readdir('./data', (err, dir) => {
-            if (err) {
-                availableImages = null;
-            }
-            else {
-                // Find all unique image names in the directory
-                let names = dir.map((name) => name.match(nameEx)).flat();
-                names = names.filter((name) => name !== null);
-                const uniqueNames = [... new Set(names)];
+        try {
+            // Try to read the directory
+            const dir = fs.readdirSync("./data");
 
-                // TODO: Include information about z values and thumbnails
-                availableImages = {imageNames: uniqueNames};
-            }
-        });
+            // Find all unique image names in the directory
+            let names = dir.map((name) => name.match(nameEx)).flat();
+            names = names.filter((name) => name !== null);
+            const uniqueNames = [... new Set(names)];
+
+            // TODO: Include information about z values and thumbnails
+            availableImages = {imageNames: uniqueNames};
+        }
+        catch (error) {
+            console.log("Unable to find image information.");
+            availableImages = null;
+        }
     }
 
     return availableImages;
