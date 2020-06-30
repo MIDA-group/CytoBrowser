@@ -8,10 +8,11 @@ const port = process.argv[3] || 0;
 // Initialize the server
 const server = express();
 
-// Serve static JS and css files
+// Serve static files
 server.use("/js", express.static("js"));
 server.use("/css", express.static("css"));
 server.use("/misc", express.static("misc"));
+server.use("/data", express.static("data"));
 
 // Serve the index page at the root
 server.get("/", (req, res) => {
