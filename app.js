@@ -31,7 +31,7 @@ server.get("/api/images", (req, res) => {
         }
         else {
             // Find all unique image names in the directory
-            const nameEx = /[^(\.|^)]+_x40/g; // TODO: Haven't checked if this applies to all images
+            const nameEx = /.*_x40/g; // TODO: Haven't checked if this applies to all images
             const names = dir.map((fileOrDirName) => {
                 const name = fileOrDirName.match(nameEx);
                 if (name === null) {
