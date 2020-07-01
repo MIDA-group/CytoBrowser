@@ -72,8 +72,8 @@ function getThumbnails(image) {
                             rows.push(+nums[0]);
                             cols.push(+nums[1]);
                         });
-                        const row = rows.sort((a,b)=>a-b)[Math.floor(rows.length) / 2];
-                        const col = cols.sort((a,b)=>a-b)[Math.floor(cols.length) / 2];
+                        const row = rows.sort((a,b)=>a-b)[Math.floor(rows.length / 2)];
+                        const col = cols.sort((a,b)=>a-b)[Math.floor(cols.length / 2)];
                         const choice = dir.find((file) => RegExp(`${row}[^0-9]+${col}`).test(file));
                         thumbnails.detail = `${path}/${choice}`.slice(1);
                     }
