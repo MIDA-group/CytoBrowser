@@ -25,7 +25,7 @@ function getZLevels(image) {
 
         // Isolate the z levels in the dzi filenames
         const zLevels = names.map((name) => name.match(zEx)).flat();
-        image.zLevels = zLevels;
+        image.zLevels = zLevels.sort((a, b) => +a - +b);
     });
 }
 
@@ -62,11 +62,11 @@ function getThumbnails(image) {
 
                     // Store suitable thumbnails
                     if (dir.length === 1) {
-                        thumbnails.overview = `${path}/${dir[0]}`;
+                        thumbnails.overview = `${path}/${dir[0]}`.slice(1);
                     }
-                    else if (dir.length > 16) {
+                    else if (dir.length > 64) {
                         const middle = Math.floor(dir.length / 2);
-                        thumbnails.detail = `${path}/${dir[middle]}`;
+                        thumbnails.detail = `${path}/${dir[middle]}`.slice(1);
                     }
 
                     // Check if all thumbnails have been found
@@ -98,7 +98,6 @@ function updateImages() {
             getThumbnails(image);
         });
 
-        // TODO: Include information about z values and thumbnails
         availableImages = {images: images};
     });
 }
