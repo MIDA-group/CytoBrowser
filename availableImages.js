@@ -93,7 +93,7 @@ function updateImages() {
 
         const images = [];
         uniqueNames.map((name) => images.push({name: name}));
-        images = images.map((image) => {
+        images.map((image) => {
             getZLevels(image);
             getThumbnails(image);
         });
