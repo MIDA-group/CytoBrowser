@@ -3,7 +3,7 @@ const fs = require("fs");
 
 // Variables to avoid having to figure out which images exist every call
 const checkInterval = 60000;
-let lastCheck = null;
+let lastCheck = Date.now();
 
 // Variable to cache the available images
 let availableImages = null;
@@ -65,8 +65,17 @@ function getThumbnails(image) {
                         thumbnails.overview = `${path}/${dir[0]}`.slice(1);
                     }
                     else if (dir.length > 64) {
-                        const middle = Math.floor(dir.length / 2);
-                        thumbnails.detail = `${path}/${dir[middle]}`.slice(1);
+                        const rows = [];
+                        const cols = [];
+                        dir.map((name) => {
+                            const nums = name.split(/[_\.]/);
+                            rows.push(+nums[0]);
+                            cols.push(+nums[1]);
+                        });
+                        const row = rows.sort()[Math.floor(rows.length) / 2];
+                        const col = cols.sort()[Math.floor(cols.length) / 2];
+                        const choice = dir.find((file) => file.test(`${row}[^0-9]+${col}`));
+                        thumbnails.detail = `${path}/${choice}`.slice(1);
                     }
 
                     // Check if all thumbnails have been found
@@ -105,7 +114,7 @@ function updateImages() {
 
 function getAvailableImages() {
     // Update the available images if enough time has passed
-    if (lastCheck === null || Date.now() - checkInterval > lastCheck) {
+    if (Date.now() - checkInterval > lastCheck) {
         updateImages();
     }
 
