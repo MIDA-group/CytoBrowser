@@ -105,7 +105,7 @@
 
                     <!-- Go to another image -->
                     <div id="image_browser" class="row" style="padding: 10px">
-                        <div class="list-group">
+                        <div id="image_list" class="list-group" style="height: 15em; overflow-y: scroll">
                         </div>
                     </div>
                 </div>
@@ -206,7 +206,7 @@
         a.addClass("thumbnail list-group-item list-group-item-action");
         a.attr("href", `/?image=${image.name}`);
         a.text(image.name);
-        $("#image_browser.list-group").append(a);
+        $("#image_list").append(a);
     }
 
     // UI setters
