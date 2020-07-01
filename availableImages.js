@@ -74,7 +74,7 @@ function getThumbnails(image) {
                         });
                         const row = rows.sort()[Math.floor(rows.length) / 2];
                         const col = cols.sort()[Math.floor(cols.length) / 2];
-                        const choice = dir.find((file) => file.test(`${row}[^0-9]+${col}`));
+                        const choice = dir.find((file) => RegExp(`${row}[^0-9]+${col}`).test(file));
                         thumbnails.detail = `${path}/${choice}`.slice(1);
                     }
 
