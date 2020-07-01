@@ -81,35 +81,38 @@ function getThumbnails(image) {
     });
 }
 
+function updateImages() {
+    fs.readdir("./data", (err, dir) => {
+        if (err) {
+            availableImages = null;
+        }
+
+        let names = dir.map((name) => name.match(nameEx)).flat();
+        names = names.filter((name) => name !== null);
+        const uniqueNames = [... new Set(names)];
+
+        const images = [];
+        uniqueNames.map((name) => images.push({name: name}));
+        images = images.map((image) => {
+            getZLevels(image);
+            getThumbnails(image);
+        });
+
+        // TODO: Include information about z values and thumbnails
+        availableImages = {images: images};
+    });
+}
+
 function getAvailableImages() {
     // Update the available images if enough time has passed
     if (lastCheck === null || Date.now() - checkInterval > lastCheck) {
-        try {
-            // Try to read the directory
-            const dir = fs.readdirSync("./data");
-
-            // Find all unique image names in the directory
-            let names = dir.map((name) => name.match(nameEx)).flat();
-            names = names.filter((name) => name !== null);
-            const uniqueNames = [... new Set(names)];
-
-            const images = [];
-            uniqueNames.map((name) => images.push({name: name}));
-            images = images.map((image) => {
-                getZLevels(image);
-                getThumbnails(image);
-            });
-
-            // TODO: Include information about z values and thumbnails
-            availableImages = {images: images};
-        }
-        catch (error) {
-            console.log("Unable to find image information.");
-            availableImages = null;
-        }
+        updateImages();
     }
 
     return availableImages;
 }
+
+// Update the images when the module is first loaded
+updateImages();
 
 module.exports = getAvailableImages;
