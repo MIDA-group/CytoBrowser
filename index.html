@@ -102,13 +102,9 @@
                             <button id="jsontodata" class="btn btn-primary btn-block" type="button"> Import </button>
                         </div>
                     </div>
-                    <div class="row" style="padding: 15px">
-                        <!-- Open image browser -->
-                        <!--
-                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#image_browser">
-                            Open image browser
-                        </button>
-                    -->
+
+                    <!-- Go to another image -->
+                    <div id="image_browser" class="row" style="padding: 15px">
                         <a class="thumbnail" href="/?image=100_x40" style="width: 18rem;">
                             <img src="data/100_x40_z0_files/12/3_3.jpg" alt="Preview image">
                             <div class="card-body">
@@ -121,28 +117,6 @@
             </div>
         </div>
     </div><!-- end of container-fuild-->
-
-    <!-- Image browser -->
-    <!--
-    <div class="modal fade" id="image_browser" tabindex="-1" role="dialog">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Image browser</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span>&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    Images go here
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-primary">Open image</button>
-                </div>
-            </div>
-        </div>
-    </div>
--->
 </body>
 
 <script src="js/bootstrap.4.0.0.bundle.min.js" ></script>
@@ -211,6 +185,34 @@
             tmapp.initial_params = initial_params;
         }
         tmapp.init();
+    });
+
+    // Add images to the browser
+    function addImage(image) {
+
+        const a = $("<a></a>");
+        a.addClass("thumbnail");
+        a.attr("href", `/?image=${image.name}`);
+        a.css("width", "18rem");
+        const img = $("<img>", {src: image.thumbnail.detail});
+        const div = $("<div></div>");
+        div.addClass("caption");
+        const h4 = $("<h4></h4>");
+        const p = $("<p></p>");
+        a.append(img);
+        a.append(div);
+        div.append(h4);
+        div.append(p);
+        h4.text(image.name);
+        p.text(image.zLevels.join(", "));
+        $("#image_browser").append(a);
+    }
+
+    // Test image entry
+    addImage({
+        name: "100_x40",
+        thumbnail: {detail: "data/100_x40_z0_files/12/3_3.jpg"},
+        zLevels: ["-2500", "0", "2500"]
     });
 
     // UI setters
