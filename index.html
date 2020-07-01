@@ -105,6 +105,8 @@
 
                     <!-- Go to another image -->
                     <div id="image_browser" class="row" style="padding: 10px">
+                        <div class="list-group">
+                        </div>
                     </div>
                 </div>
             </div>
@@ -182,6 +184,7 @@
 
     // Add images to the browser
     function addImage(image) {
+        /*
         const a = $("<a></a>");
         a.addClass("thumbnail");
         a.attr("href", `/?image=${image.name}`);
@@ -198,6 +201,12 @@
         h4.text(image.name);
         p.text(image.zLevels.join(", "));
         $("#image_browser").append(a);
+        */
+        const a = $("<a></a>");
+        a.addClass("thumbnail list-group-item list-group-item-action");
+        a.attr("href", `/?image=${image.name}`);
+        a.text(image.name);
+        $("#image_browser.list-group").append(a);
     }
 
     // UI setters
