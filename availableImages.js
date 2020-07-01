@@ -85,6 +85,7 @@ function updateImages() {
     fs.readdir("./data", (err, dir) => {
         if (err) {
             availableImages = null;
+            return;
         }
 
         let names = dir.map((name) => name.match(nameEx)).flat();
