@@ -289,7 +289,16 @@ tmapp.init = function () {
         scrollHandler: scroll_handler
     }).setTracking(true);
 
-
+    // Load the available images and put them in the UI
+    const xmlHttp = new XMLHttpRequest();
+    xmlHttp.onreadystatechange = function() {
+        if (xmlHttp.readyState === 4 && xmlHttp.status === 200) {
+            const images = JSON.parse(xmlHttp.responseText);
+            images.images.forEach((image) => addImage(image));
+        }
+    }
+    xmlHttp.open("GET", window.location.origin + "/api/images", true);
+    xmlHttp.send(null);
 
     //Assign the function to the button in the document (this should be done more dynamically)
     document.getElementById('pointstojson').addEventListener('click', JSONUtils.downloadJSON);
