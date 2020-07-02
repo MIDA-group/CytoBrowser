@@ -222,6 +222,16 @@
     function setURL(txt) {
         window.history.pushState(null, "", txt);
     }
+    function displayImageError(error) {
+        const messages = {
+            noimage: "No image has been specified. Select one from the menu on the right.",
+            badimage: "The specified image was not found. Select a new one from the menu on the right.",
+            servererror: "Something went wrong on the server. Try again or contact an administrator.",
+            unexpected: "An unexpected error was encountered when retrieving the image list."
+        };
+        const message = messages[error];
+        alert(message);
+    }
 
     $(document).mousedown(function(event){
         if (!(document.hasFocus())) {
