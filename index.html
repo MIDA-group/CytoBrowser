@@ -223,14 +223,39 @@
         window.history.pushState(null, "", txt);
     }
     function displayImageError(error) {
-        const messages = {
-            noimage: "No image has been specified. Select one from the menu on the right.",
-            badimage: "The specified image was not found. Select a new one from the menu on the right.",
-            servererror: "Something went wrong on the server. Try again or contact an administrator.",
-            unexpected: "An unexpected error was encountered when retrieving the image list."
+        const errors = {
+            noimage: {
+                message: "No image has been specified. Select one from the menu on the right.",
+                type: "alert-info"
+            },
+            badimage: {
+                message: "The specified image was not found. Select a new one from the menu on the right.",
+                type: "alert-warning"
+            },
+            servererror: {
+                message: "Something went wrong on the server. Try again or contact an administrator.",
+                type: "alert-warning"
+            },
+            unexpected: {
+                message: "An unexpected error was encountered when retrieving the image list.",
+                type: "alert-warning"
+            }
         };
-        const message = messages[error];
-        alert(message);
+
+        // Add alert to the UI
+        const alert = $("<div></div>");
+        alert.addClass(`alert ${errors[error].type}`);
+        alert.text(errors[error].message);
+        const wrapper = $("<div></div>");
+        wrapper.css({
+            height: "100%",
+            width: "100%",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center"
+        });
+        wrapper.append(alert);
+        $("#ISS_viewer").append(wrapper);
     }
 
     $(document).mousedown(function(event){

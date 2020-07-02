@@ -221,8 +221,11 @@ tmapp.add_handlers = function () {
   * Otherwise, an error message is shown.
   */
 tmapp.init = function () {
-    // Initiate a HTTP request
+    // Initiate a HTTP request and send it to the image info endpoint
     const imageReq = new XMLHttpRequest();
+    imageReq.open("GET", window.location.origin + "/api/images", true);
+    imageReq.send(null);
+
     imageReq.onreadystatechange = function() {
         if (imageReq.readyState === 4) {
             switch (imageReq.status) {
@@ -254,10 +257,6 @@ tmapp.init = function () {
             }
         }
     }
-
-    // Send the request to the image info API
-    imageReq.open("GET", window.location.origin + "/api/images", true);
-    imageReq.send(null);
 }
 
 
