@@ -209,7 +209,7 @@ tmapp.add_handlers = function () {
 
     // A tile failed to load
     viewer.addHandler("tile-load-failed", function(event) {
-        displayImageError("tilefail", 5000);
+        displayImageError("tilefail", 1000);
     });
 
     //pixelate at MaxZoom level (instead of blur)
