@@ -207,8 +207,61 @@ tmapp.add_handlers = function () {
         console.log("Open failed!");
     });
 
+    // A tile failed to load
+    viewer.addHandler("tile-load-failed", function(event) {
+        displayImageError("tilefail", 1000);
+    });
+
     //pixelate at MaxZoom level (instead of blur)
 //    viewer.addHandler("tile-drawn", OSDViewerUtils.pixelateAtMaximumZoomHandler);
+}
+
+
+/**
+  * Method that should be called first when the document has finished
+  * loading. This method contacts the server to retrieve a list of
+  * available images and their Z values. If this information is
+  * successfully retrieved and the specified image in the parameters is
+  * found, a call is made to initOSD() initiate OpenSeadragon.
+  * Otherwise, an error message is shown.
+  */
+tmapp.init = function () {
+    // Initiate a HTTP request and send it to the image info endpoint
+    const imageReq = new XMLHttpRequest();
+    imageReq.open("GET", window.location.origin + "/api/images", true);
+    imageReq.send(null);
+
+    imageReq.onreadystatechange = function() {
+        if (imageReq.readyState === 4) {
+            switch (imageReq.status) {
+                case 200:
+                    // Image info was successfully retrieved
+                    const images = JSON.parse(imageReq.responseText);
+                    images.images.forEach((image) => addImage(image));
+
+                    // Find the specified image
+                    const image = images.images.find((image) => image.name === tmapp.fixed_file);
+                    if (image) {
+                        // Image was found
+                        tmapp.initOSD();
+                    }
+                    else {
+                        if (tmapp.fixed_file) {
+                            displayImageError("badimage");
+                        }
+                        else {
+                            displayImageError("noimage");
+                        }
+                    }
+                    break;
+                case 500:
+                    displayImageError("servererror");
+                    break;
+                default:
+                    displayImageError("unexpected");
+            }
+        }
+    }
 }
 
 
@@ -216,7 +269,7 @@ tmapp.add_handlers = function () {
  * This method is called when the document is loaded.
  * Creates the OpenSeadragon (OSD) viewer and adds the handlers for interaction.
  * The SVG overlays for the viewer are also initialized here */
-tmapp.init = function () {
+tmapp.initOSD = function () {
     //This prefix will be called by all other utilities in js/utils
     tmapp["object_prefix"] = tmapp.options_osd.id.split("_")[0];
     var op = tmapp["object_prefix"];
@@ -289,16 +342,6 @@ tmapp.init = function () {
         scrollHandler: scroll_handler
     }).setTracking(true);
 
-    // Load the available images and put them in the UI
-    const xmlHttp = new XMLHttpRequest();
-    xmlHttp.onreadystatechange = function() {
-        if (xmlHttp.readyState === 4 && xmlHttp.status === 200) {
-            const images = JSON.parse(xmlHttp.responseText);
-            images.images.forEach((image) => addImage(image));
-        }
-    }
-    xmlHttp.open("GET", window.location.origin + "/api/images", true);
-    xmlHttp.send(null);
 
     //Assign the function to the button in the document (this should be done more dynamically)
     document.getElementById('pointstojson').addEventListener('click', JSONUtils.downloadJSON);
