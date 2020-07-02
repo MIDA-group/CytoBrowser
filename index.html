@@ -22,7 +22,7 @@
             </button>
             <a class="navbar-brand" href="https://tissuumaps.research.it.uu.se/"><img
                 style="height:50px; margin-top:-15px; overflow: visible; z-index: 9999;"
-                src="uulogowhitetuum.png"> </a>
+                src="misc/uulogowhitetuum.png"> </a>
         </div>
         <div class="navbar-collapse collapse navbar-responsive-collapse">
             <ul class="nav navbar-nav">
@@ -102,8 +102,11 @@
                             <button id="jsontodata" class="btn btn-primary btn-block" type="button"> Import </button>
                         </div>
                     </div>
-                    <div class="row" style="padding: 15px">
-                        <textarea class="form-control" rows="10" id="jsonpoints"></textarea>
+
+                    <!-- Go to another image -->
+                    <div id="image_browser" class="row" style="padding: 10px">
+                        <div id="image_list" class="list-group" style="height: 15em; overflow-y: scroll">
+                        </div>
                     </div>
                 </div>
             </div>
@@ -178,6 +181,33 @@
         }
         tmapp.init();
     });
+
+    // Add images to the browser
+    function addImage(image) {
+        /*
+        const a = $("<a></a>");
+        a.addClass("thumbnail");
+        a.attr("href", `/?image=${image.name}`);
+        a.css("width", "18rem");
+        const img = $("<img>", {src: image.thumbnails.detail});
+        const div = $("<div></div>");
+        div.addClass("caption");
+        const h4 = $("<h4></h4>");
+        const p = $("<p></p>");
+        a.append(img);
+        a.append(div);
+        div.append(h4);
+        div.append(p);
+        h4.text(image.name);
+        p.text(image.zLevels.join(", "));
+        $("#image_browser").append(a);
+        */
+        const a = $("<a></a>");
+        a.addClass("thumbnail list-group-item list-group-item-action");
+        a.attr("href", `/?image=${image.name}`);
+        a.text(image.name);
+        $("#image_list").append(a);
+    }
 
     // UI setters
     function setImageName(txt) {
