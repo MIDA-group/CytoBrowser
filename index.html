@@ -46,6 +46,7 @@
             <!-- The id is what OSD will look for to draw the viewer, the class is our own css to stylize
                  The ID will give the prefix for all the objects related to the viewer in this case ISS-->
             <div id="ISS_viewer" class="ISS_viewer"></div>
+            <div id="alert_wrapper" style="height: 100%; width: 100%; display: flex; justify-content: center; align-items: center; position: absolute; top: 0; pointer-events: none"></div>
         </div>
 
         <!-- Table of annotated points -->
@@ -222,7 +223,7 @@
     function setURL(txt) {
         window.history.pushState(null, "", txt);
     }
-    function displayImageError(error) {
+    function displayImageError(error, duration) {
         const errors = {
             noimage: {
                 message: "No image has been specified. Select one from the menu on the right.",
@@ -246,16 +247,15 @@
         const alert = $("<div></div>");
         alert.addClass(`alert ${errors[error].type}`);
         alert.text(errors[error].message);
-        const wrapper = $("<div></div>");
-        wrapper.css({
-            height: "100%",
-            width: "100%",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center"
-        });
-        wrapper.append(alert);
-        $("#ISS_viewer").append(wrapper);
+        $("#alert_wrapper").removeClass("fade out");
+        $("#alert_wrapper").html(alert);
+
+        // Fade out the alert after the duration has passed
+        if (duration) {
+            window.setTimeout(function() {
+                $("#alert_wrapper").addClass("fade out");
+            }, duration);
+        }
     }
 
     $(document).mousedown(function(event){
