@@ -223,6 +223,8 @@
     function setURL(txt) {
         window.history.pushState(null, "", txt);
     }
+
+    let errorDisplayTimeout = null;
     function displayImageError(error, duration) {
         const errors = {
             noimage: {
@@ -251,12 +253,13 @@
         const alert = $("<div></div>");
         alert.addClass(`alert ${errors[error].type}`);
         alert.text(errors[error].message);
+        window.clearTimeout(errorDisplayTimeout);
         $("#alert_wrapper").removeClass("fade out");
         $("#alert_wrapper").html(alert);
 
         // Fade out the alert after the duration has passed
         if (duration) {
-            window.setTimeout(function() {
+            errorDisplayTimeout = window.setTimeout(function() {
                 $("#alert_wrapper").addClass("fade out");
             }, duration);
         }
