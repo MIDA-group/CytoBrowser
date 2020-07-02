@@ -232,17 +232,17 @@ tmapp.init = function () {
                     images.images.forEach((image) => addImage(image));
 
                     // Find the specified image
-                    const image = images.images.find((image) => {image.name === tmapp.fixed_file});
+                    const image = images.images.find((image) => image.name === tmapp.fixed_file);
                     if (image) {
                         // Image was found
                         tmapp.initOSD();
                     }
                     else {
                         if (tmapp.fixed_file) {
-                            displayImageError("noimage");
+                            displayImageError("badimage");
                         }
                         else {
-                            displayImageError("badimage");
+                            displayImageError("noimage");
                         }
                     }
                     break;
