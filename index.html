@@ -272,9 +272,11 @@
         const col = $("<div></div>");
         col.addClass("col-4 d-flex");
         const card = $("<div></div>");
-        card.addClass("card");
-        const img = $("<img>", {src: image.thumbnails.detail});
-        img.addClass("card-img-top");
+        card.addClass("card w-100");
+        const overview = $("<img>", {src: image.thumbnails.overview});
+        overview.addClass("card-img-top position-absolute");
+        const detail = $("<img>", {src: image.thumbnails.detail});
+        detail.addClass("card-img-top hide fade");
         const body = $("<div></div>");
         body.addClass("card-body");
         const title = $("<h5></h5>");
@@ -286,9 +288,11 @@
         a.addClass("card-link stretched-link");
         a.attr("href", `/?image=${image.name}`);
         a.text("Open image");
+        a.hover((e) => detail.addClass("show").removeClass("hide"), (e) => detail.addClass("hide").removeClass("show"));
         footer.append(a);
         body.append(title);
-        card.append(img);
+        card.append(overview);
+        card.append(detail);
         card.append(body);
         card.append(footer);
         col.append(card);
