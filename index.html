@@ -278,7 +278,7 @@
         overview.addClass("card-img-top position-absolute");
         const detail = $("<img>", {src: image.thumbnails.detail});
         detail.addClass("card-img-top hide fade");
-        detail.css("z-index", 9000);
+        detail.css({z-index: 9000, pointerEvents: "none"});
         const body = $("<div></div>");
         body.addClass("card-body");
         const title = $("<h5></h5>");
