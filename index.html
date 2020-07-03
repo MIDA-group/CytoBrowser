@@ -2,117 +2,195 @@
 <html>
 
 <head>
+    <link rel="stylesheet" href="css/tmcpmain.min.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/cytobrowsertheme.css">
+    <link rel="stylesheet" href="css/tm-icon-style.css">
     <title>TissUUmaps</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <script src="js/d3.v4.min.js"></script>
     <script src="js/d3-scale-chromatic.v0.3.min.js"></script>
     <script src="js/jquery-3.4.1.slim.min.js"></script>
-    <link rel="stylesheet" href="css/tmcpmain.min.css">
-    <link rel="stylesheet" href="css/TissueMapsTheme.css">
-    <link rel="stylesheet" href="css/tm-icon-style.css">
 </head>
 
+<style>
+    head, body { height: 100%; }
+</style>
+
 <body>
-    <div class="navbar navbar-default">
-        <div class="navbar-header">
-            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-responsive-collapse">
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-            </button>
-            <a class="navbar-brand" href="https://tissuumaps.research.it.uu.se/"><img
-                style="height:50px; margin-top:-15px; overflow: visible; z-index: 9999;"
-                src="misc/uulogowhitetuum.png"> </a>
-        </div>
-        <div class="navbar-collapse collapse navbar-responsive-collapse">
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-3">
+        <a class="navbar-brand" href="https://tissuumaps.research.it.uu.se/">
+            <img style="height:50px; margin:-5px; overflow: visible" src="misc/uulogowhitetuum.png">
+        </a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar_items">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbar_items">
             <ul class="nav navbar-nav">
                 <li>
-                    <a id="project_title" href "#"> Slide A</a>
+                    <a id="project_title" class="nav-link" href "#"> Slide A</a>
                 </li>
             </ul>
-            <!-- Show ImageName, Z-level, and Zoom-->
             <ul class="nav navbar-nav">
-				<li class="nav-item"><a>Image: <span id="img_name"> -</span></a></li>
-                <li class="nav-item"><a> Z-level: <span id="img_zlevel"> -</span></a></li>
-                <li class="nav-item"><a> Zoom: <span id="img_zoom"> -</span></a></li>
+                <li class="nav-item"><a class="nav-link">Image: <span id="img_name"> -</span></a></li>
+                <li class="nav-item"><a class="nav-link"> Z-level: <span id="img_zlevel"> -</span></a></li>
+                <li class="nav-item"><a class="nav-link"> Zoom: <span id="img_zoom"> -</span></a></li>
 			</ul>
         </div>
-    </div>
+    </nav>
 
+    <!-- Main content -->
     <div class="container-fluid">
-
-        <!-- The main viewer -->
-        <div class="col-xs-8"> <!-- Each class scales up, so if you wish to set the same widths for xs and sm, you only need to specify xs. -->
-            <!-- The id is what OSD will look for to draw the viewer, the class is our own css to stylize
-                 The ID will give the prefix for all the objects related to the viewer in this case ISS-->
-            <div id="ISS_viewer" class="ISS_viewer"></div>
-            <div id="alert_wrapper" style="height: 100%; width: 100%; display: flex; justify-content: center; align-items: center; position: absolute; top: 0; pointer-events: none"></div>
-        </div>
-
-        <!-- Table of annotated points -->
-        <div class="col-xs-4">
-            <div class="row">
-                <div class="table-wrapper-scroll-y my-custom-scrollbar">
-                <table id="tmcptable" class="table-striped table-bordered table-hover" style="padding: 10px; width: 100%; text-align: center;" >
-                    <col width="10%"><col width="70%"> <col width="30%">
-                    <thead align="center" >
-                        <tr align="center" >
-                            <th class="text-center" >ID</th>
-                            <th class="text-center" id="thimg1">Annotation</th>
-                        </tr>
-                    </thead>
-
-                    <tbody id="tmcptablebody">
-                    </tbody>
-                </table>
-                </div>
+        <div class="row">
+            <div class="col">
+                <div id="ISS_viewer" class="ISS_viewer"></div>
+                <div id="alert_wrapper" style="height: 100%; width: 100%; display: flex; justify-content: center; align-items: center; position: absolute; top: 0; pointer-events: none"></div>
             </div>
-        </div>
 
-        <!-- Interface buttons -->
-        <div class="col-xs-4">
-            <div class="panel panel-default">
-                <div class="panel-heading">
-                    <h3 class="panel-title">Options</h3>
-                </div>
-                <div class="panel-body">
-                    <div class="row" style="padding: 0 10px 10px">
-                        <div class="col-xs-9">
-                            <h5>Marker class:</h5>
-                            <div id="class_buttons" class="btn-group btn-group-small btn-group-toggle" data-toggle="buttons" style="display: flex">
-                                <!-- Buttons are added programatically -->
+            <div class="col-auto d-flex flex-column">
+                <div class="row">
+                    <div class="card m-2 w-100">
+                        <!-- Image browser access -->
+                        <div class="card-body">
+                            <button type="button" class="btn btn-block btn-primary" data-toggle="modal" data-target="#image_browser">
+                                Open image browser
+                            </button>
+                            <button type="button" class="btn btn-block btn-secondary" data-toggle="modal" data-target="#instructions">
+                                Usage instructions
+                            </button>
+                        </div>
+                        <hr />
+
+                        <!-- Functionality buttons -->
+                        <div class="card-body">
+                            <h4 class="card-title">Options</h4>
+                            <div class="card-block">
+                                <div class="row">
+                                    <div class="col-auto">
+                                        <h6 class="card-subtitle mb-2 text-muted">Marker class</h6>
+                                        <div id="class_buttons" class="btn-group btn-group-toggle d-flex" data-toggle="buttons" role="group">
+                                        </div>
+                                    </div>
+                                    <div class="col">
+                                        <h6 class="card-subtitle mb-2 text-muted">Change focus</h6>
+                                        <div class="btn-group d-flex" role="group">
+                                            <button id="focus_next" type="button" class="btn btn-primary">Up</button>
+                                            <button id="focus_prev" type="button" class="btn btn-primary">Down</button>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <div class="col-xs-3">
-                            <h5>Focus:</h5>
-                            <button id="focus_next" class="btn btn-primary" type="button"> Up</button>
-                            <button id="focus_prev" class="btn btn-primary" type="button"> Down</button>
-                        </div>
                     </div>
-
-                    <!-- Download annotation json -->
-                    <div class="row" style="padding: 10px">
-                        <div class="col-xs-3">
-                            <button id="pointstojson" class="btn btn-primary btn-block" type="button"> Download</button>
+                </div>
+                <div class="row flex-grow-1">
+                    <div class="card flex-grow-1 m-2 w-100">
+                        <!-- List of markers -->
+                        <div class="card-body">
+                            <h4 class="card-title">Markers</h4>
+                            <div class="row pb-3">
+                                <div class="col-3">
+                                    <button id="pointstojson" class="btn btn-primary btn-block" type="button"> Download</button>
+                                </div>
+                                <div class="col-3">
+                                    <input type="file" id="fileElem" multiple accept="image/*" style="display:none" onchange="handleFiles(this.files)">
+                                    <button id="jsontodata" class="btn btn-primary btn-block" type="button"> Import </button>
+                                </div>
+                                <div class="col-6">
+                                    <input class="form-control form-control-file" type="file" id="data_files_import" name="files[]">
+                                </div>
+                            </div>
                         </div>
-                        <div class="col-xs-6">
-                            <input class="form-control-file form-control form-control-sm" type="file" id="data_files_import" name="files[]">
-                        </div>
-                        <div class="col-xs-3">
-                                <input type="file" id="fileElem" multiple accept="image/*" style="display:none" onchange="handleFiles(this.files)">
-                            <button id="jsontodata" class="btn btn-primary btn-block" type="button"> Import </button>
-                        </div>
-                    </div>
-
-                    <!-- Go to another image -->
-                    <div id="image_browser" class="row" style="padding: 10px">
-                        <div id="image_list" class="list-group" style="height: 15em; overflow-y: scroll">
+                        <div style="height: 40vh; overflow-y: auto;"> <!-- TODO: Table should ideally fill remaining height of menu, not a specific fraction of viewport -->
+                            <table id="tmcptable" class="table table-striped table-hover">
+                                <col width="10%"><col width="70%"> <col width="30%">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th id="thimg1">Annotation</th>
+                                        <th>&nbsp;</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tmcptablebody" class="h-20">
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div><!-- end of container-fuild-->
+    </div> <!-- End of container -->
+
+    <!-- Image browser TODO -->
+    <div class="modal fade" id="image_browser" tabindex="-1" role="dialog">
+      <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Select an image</h5>
+            <button type="button" class="close" data-dismiss="modal">
+              <span>&times;</span>
+            </button>
+          </div>
+          <div id="available_images" class="modal-body">
+
+          </div>
+        </div>
+      </div>
+    </div> <!-- End of image browser -->
+
+    <!-- Instructions -->
+    <div class="modal fade" id="instructions" tabindex="-1" role="dialog">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">How to use</h5>
+            <button type="button" class="close" data-dismiss="modal">
+              <span>&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+              <h5>Loading images</h5>
+              <p>
+                  Click the button labeled <strong>Image browser</strong>
+                  to see a list of available images on the server. Click
+                  one of the images to view it.
+              </p>
+              <h5>Navigating images</h5>
+              <p>
+                  The image viewer can be navigated with the mouse. The
+                  mouse wheel is used to zoom in and out of the picture.
+                  Holding down the left mouse button and dragging it inside
+                  the image viewer pans the image. The focus can be changed
+                  either by pressing the <strong>Up</strong> and <strong>Down</strong>
+                  buttons on the right side of the page, pressing the
+                  <kbd>z</kbd> and <kbd>x</kbd> buttons on the keyboard,
+                  or holding down the <kbd>ctrl</kbd> key while scrolling
+                  the mouse wheel.
+              </p>
+              <h5>Markers</h5>
+              <p>
+                  Click the image viewer to add a marker with the currently
+                  selected class. The selected class can be set by either
+                  clicking the class buttons on the right side of the page
+                  or by pressing the number keys on the keyboard.
+                  Markers can be moved by holding down the mouse button
+                  on them and dragging them. To delete a marker, click
+                  it while holding down the <kbd>ctrl</kbd> key. To quickly
+                  move the image viewer to a specific marker, press the
+                  corresponding button in the marker table.
+              </p>
+              <h5>Saving markers</h5>
+              <p>
+                  Markers can be saved to a file on the local machine by
+                  pressing the <strong>Download</strong> button. Markers
+                  that have been saved can be loaded into the image by
+                  first selecting the file in the image browser and then
+                  pressing the <strong>Import</strong> button.
+          </div>
+        </div>
+      </div>
+    </div> <!-- End of instructions -->
 </body>
 
 <script src="js/bootstrap.4.0.0.bundle.min.js" ></script>
@@ -142,11 +220,10 @@
     // Populate the class buttons programatically
     bethesdaClassUtils.forEachClass(function(item, index){
         let label = $("<label></label>");
-        label.addClass("btn btn-success");
+        label.addClass("btn btn-dark");
         if (index == 0) { label.addClass("active"); }
         label.attr("id", "class_" + item.name);
         label.attr("title", item.description);
-        label.css("flex", 1);
         let input = $("<input>" + item.name + "</input>");
         input.attr("type", "radio");
         input.attr("name", "class_options");
@@ -185,29 +262,46 @@
 
     // Add images to the browser
     function addImage(image) {
-        /*
+        // Messy function, might want to do it some better way
+        let deck = $("#available_images .row").last();
+        if (deck.length === 0 || deck.children().length === 3) {
+            deck = $("<div></div>");
+            deck.addClass("row mb-4");
+            $("#available_images").append(deck);
+        }
+        const col = $("<div></div>");
+        col.addClass("col-4 d-flex");
+        const card = $("<div></div>");
+        card.addClass("card w-100");
+        const overview = $("<img>", {src: image.thumbnails.overview});
+        overview.addClass("card-img-top position-absolute");
+        const detail = $("<img>", {src: image.thumbnails.detail});
+        detail.addClass("card-img-top hide fade");
+        detail.css({zIndex: 9000, pointerEvents: "none"});
+        const body = $("<div></div>");
+        body.addClass("card-body");
+        const title = $("<h5></h5>");
+        title.text(image.name);
+        title.addClass("card-title");
+        const footer = $("<div></div>");
+        footer.addClass("card-footer");
         const a = $("<a></a>");
-        a.addClass("thumbnail");
+        a.addClass("card-link stretched-link");
         a.attr("href", `/?image=${image.name}`);
-        a.css("width", "18rem");
-        const img = $("<img>", {src: image.thumbnails.detail});
-        const div = $("<div></div>");
-        div.addClass("caption");
-        const h4 = $("<h4></h4>");
-        const p = $("<p></p>");
-        a.append(img);
-        a.append(div);
-        div.append(h4);
-        div.append(p);
-        h4.text(image.name);
-        p.text(image.zLevels.join(", "));
-        $("#image_browser").append(a);
-        */
-        const a = $("<a></a>");
-        a.addClass("thumbnail list-group-item list-group-item-action");
-        a.attr("href", `/?image=${image.name}`);
-        a.text(image.name);
-        $("#image_list").append(a);
+        a.text("Open image");
+        a.hover((e) =>
+            detail.addClass("show").removeClass("hide"),
+            (e) =>
+            detail.addClass("hide").removeClass("show")
+        );
+        footer.append(a);
+        body.append(title);
+        card.append(overview);
+        card.append(detail);
+        card.append(body);
+        card.append(footer);
+        col.append(card);
+        deck.append(col);
     }
 
     // UI setters

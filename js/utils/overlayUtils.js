@@ -126,6 +126,10 @@ overlayUtils={
         var cell2=row.insertCell(1);
         var cell3=row.insertCell(2);
 
+        cell1.className="align-middle";
+        cell2.className="align-middle";
+        cell3.className="align-middle";
+
         cell1.textContent=id;
         cell2.id="cell-ISS-"+id;
         cell2.textContent= "(x: "+Math.round(x1)+", y: "+ Math.round(y1)+", z: "+ z +"; Class: "+mclass+")";
@@ -133,7 +137,7 @@ overlayUtils={
         // Create a button for moving to the point
         const button = document.createElement("button");
         button.textContent = "Move to marker";
-        button.className = "btn btn-info btn-link";
+        button.className = "btn btn-sm btn-link";
         button.type = "button";
         button.addEventListener("click", function(e) { console.log("Moving to " + id); tmapp.panToPoint(id); });
         cell3.appendChild(button);
