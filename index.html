@@ -72,7 +72,7 @@
                                     <h6 class="card-subtitle mb-2 text-muted">Change focus</h6>
                                     <div class="btn-group d-flex" role="group">
                                         <button id="focus_next" type="button" class="btn btn-primary">Up</button>
-                                        <button id="focus_prec" type="button" class="btn btn-primary">Down</button>
+                                        <button id="focus_prev" type="button" class="btn btn-primary">Down</button>
                                     </div>
                                 </div>
                             </div>
@@ -122,8 +122,8 @@
               <span>&times;</span>
             </button>
           </div>
-          <div class="modal-body">
-            ...
+          <div id="available_images" class="modal-body">
+
           </div>
         </div>
       </div>
@@ -252,29 +252,30 @@
 
     // Add images to the browser
     function addImage(image) {
-        /*
-        const a = $("<a></a>");
-        a.addClass("thumbnail");
-        a.attr("href", `/?image=${image.name}`);
-        a.css("width", "18rem");
+        let deck = $("#available_images.card-deck").last();
+        if (!deck || deck.children().length === 3) {
+            deck = $("<div></div>");
+            deck.addClass("card-deck mb-4");
+            $("#available_images").append(deck);
+        }
+        const card = $("<div></div>");
+        card.addClass("card");
+
         const img = $("<img>", {src: image.thumbnails.detail});
-        const div = $("<div></div>");
-        div.addClass("caption");
-        const h4 = $("<h4></h4>");
-        const p = $("<p></p>");
-        a.append(img);
-        a.append(div);
-        div.append(h4);
-        div.append(p);
-        h4.text(image.name);
-        p.text(image.zLevels.join(", "));
-        $("#image_browser").append(a);
-        */
+        img.addClass("card-img-top");
+        const body = $("<div></div>");
+        body.addClass("card-body");
+        const title = $("<h4></h4>");
+        title.text(image.name);
         const a = $("<a></a>");
-        a.addClass("thumbnail list-group-item list-group-item-action");
+        a.addClass("card-link stretched-link");
         a.attr("href", `/?image=${image.name}`);
-        a.text(image.name);
-        $("#image_list").append(a);
+        a.text("Open image");
+        body.append(title);
+        body.append(a);
+        card.append(img);
+        card.append(body);
+        deck.append(card);
     }
 
     // UI setters
