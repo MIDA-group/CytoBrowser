@@ -263,6 +263,7 @@
 
     // Add images to the browser
     function addImage(image) {
+        // Messy function, might want to do it some better way
         let deck = $("#available_images .row").last();
         if (deck.length === 0 || deck.children().length === 3) {
             deck = $("<div></div>");
@@ -277,6 +278,7 @@
         overview.addClass("card-img-top position-absolute");
         const detail = $("<img>", {src: image.thumbnails.detail});
         detail.addClass("card-img-top hide fade");
+        detail.css("z-index", 9000);
         const body = $("<div></div>");
         body.addClass("card-body");
         const title = $("<h5></h5>");
@@ -288,7 +290,11 @@
         a.addClass("card-link stretched-link");
         a.attr("href", `/?image=${image.name}`);
         a.text("Open image");
-        a.hover((e) => detail.addClass("show").removeClass("hide"), (e) => detail.addClass("hide").removeClass("show"));
+        a.hover((e) =>
+            detail.addClass("show").removeClass("hide"),
+            (e) =>
+            detail.addClass("hide").removeClass("show")
+        );
         footer.append(a);
         body.append(title);
         card.append(overview);
