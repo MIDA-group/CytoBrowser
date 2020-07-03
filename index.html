@@ -114,7 +114,7 @@
 
     <!-- Image browser TODO -->
     <div class="modal fade" id="image_browser" tabindex="-1" role="dialog">
-      <div class="modal-dialog" role="document">
+      <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title">Select an image</h5>
@@ -252,8 +252,8 @@
 
     // Add images to the browser
     function addImage(image) {
-        let deck = $("#available_images.card-deck").last();
-        if (!deck || deck.children().length === 3) {
+        let deck = $("#available_images .card-deck").last();
+        if (deck.length === 0 || deck.children().length === 3) {
             deck = $("<div></div>");
             deck.addClass("card-deck mb-4");
             $("#available_images").append(deck);
@@ -265,16 +265,20 @@
         img.addClass("card-img-top");
         const body = $("<div></div>");
         body.addClass("card-body");
-        const title = $("<h4></h4>");
+        const title = $("<h5></h5>");
         title.text(image.name);
+        title.addClass("card-title");
+        const footer = $("<div></div>");
+        footer.addClass("card-footer");
         const a = $("<a></a>");
         a.addClass("card-link stretched-link");
         a.attr("href", `/?image=${image.name}`);
         a.text("Open image");
+        footer.append(a);
         body.append(title);
-        body.append(a);
         card.append(img);
         card.append(body);
+        card.append(footer);
         deck.append(card);
     }
 
