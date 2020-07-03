@@ -103,8 +103,8 @@
                                 </div>
                             </div>
                         </div>
-                        <div style="height: 40vh; overflow-y: scroll;"> <!-- TODO: Table should ideally fill remaining height of menu, not a specific fraction of viewport -->
-                            <table id="tmcptable" class="table table-striped table-hover overflow-scroll">
+                        <div style="height: 40vh; overflow-y: auto;"> <!-- TODO: Table should ideally fill remaining height of menu, not a specific fraction of viewport -->
+                            <table id="tmcptable" class="table table-striped table-hover">
                                 <col width="10%"><col width="70%"> <col width="30%">
                                 <thead>
                                     <tr>
@@ -263,15 +263,16 @@
 
     // Add images to the browser
     function addImage(image) {
-        let deck = $("#available_images .card-deck").last();
+        let deck = $("#available_images .row").last();
         if (deck.length === 0 || deck.children().length === 3) {
             deck = $("<div></div>");
-            deck.addClass("card-deck mb-4");
+            deck.addClass("row mb-4");
             $("#available_images").append(deck);
         }
+        const col = $("<div></div>");
+        col.addClass("col-4");
         const card = $("<div></div>");
         card.addClass("card");
-
         const img = $("<img>", {src: image.thumbnails.detail});
         img.addClass("card-img-top");
         const body = $("<div></div>");
@@ -290,7 +291,8 @@
         card.append(img);
         card.append(body);
         card.append(footer);
-        deck.append(card);
+        col.append(card);
+        deck.append(col);
     }
 
     // UI setters
