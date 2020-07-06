@@ -13,14 +13,12 @@ const app = express();
 const expressWs = require("express-ws")(app);
 
 // Serve static files
-app.use("/js", express.static("js"));
-app.use("/css", express.static("css"));
-app.use("/misc", express.static("misc"));
+app.use(express.static("public"));
 app.use("/data", express.static("data"));
 
 // Serve the index page at the root
 app.get("/", (req, res) => {
-    res.sendFile(`${__dirname}/index.html`);
+    res.sendFile(`${__dirname}/public/index.html`);
 });
 
 // Get a list of available images
