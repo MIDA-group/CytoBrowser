@@ -44,10 +44,11 @@ app.get("/api/collaboration/id", (req, res) => {
 
 // Add websocket endpoints for collaboration
 app.ws("/collaboration/:id", (ws, req) => {
+    const id = req.params.id;
+    collaboration.joinCollab(ws, id);
+
     ws.on("message", (msg) => {
-        console.log(req.params.id);
-        console.log(msg);
-        ws.send(`You sent "${msg}"!`);
+        collaboration.handleMessage(ws, id, msg);
     })
 });
 
