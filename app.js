@@ -8,21 +8,22 @@ const hostname = process.argv[2] || "localhost";
 const port = process.argv[3] || 0;
 
 // Initialize the server
-const server = express();
+const app = express();
+const expressWs = require("express-ws")(app);
 
 // Serve static files
-server.use("/js", express.static("js"));
-server.use("/css", express.static("css"));
-server.use("/misc", express.static("misc"));
-server.use("/data", express.static("data"));
+app.use("/js", express.static("js"));
+app.use("/css", express.static("css"));
+app.use("/misc", express.static("misc"));
+app.use("/data", express.static("data"));
 
 // Serve the index page at the root
-server.get("/", (req, res) => {
+app.get("/", (req, res) => {
     res.sendFile(`${__dirname}/index.html`);
 });
 
 // Get a list of available images
-server.get("/api/images", (req, res) => {
+app.get("/api/images", (req, res) => {
     // Get the available images and send them as a response
     const images = availableImages();
     if (images === null) {
@@ -35,8 +36,15 @@ server.get("/api/images", (req, res) => {
     }
 });
 
+app.ws("/test/:id", (ws, req) => {
+    ws.on("message", (msg) => {
+        console.log(req.params.id);
+        console.log(msg);
+    })
+});
+
 // Begin listening on the specified interface
-const listener = server.listen(port, hostname, () => {
+const listener = app.listen(port, hostname, () => {
     const address = listener.address().address;
     const port = listener.address().port;
     console.log(`CytoBrowser server listening at http://${address}:${port}`);
