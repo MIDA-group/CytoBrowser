@@ -2,6 +2,7 @@
 const fs = require("fs");
 const express = require("express");
 const availableImages = require("./availableImages");
+const collaboration = require("./collaboration");
 
 // Store the address to be used from arguments
 const hostname = process.argv[2] || "localhost";
@@ -36,10 +37,19 @@ app.get("/api/images", (req, res) => {
     }
 });
 
-app.ws("/test/:id", (ws, req) => {
+// Get an unused collaboration id
+app.get("/api/collaboration/id", (req, res) => {
+    const id = collaboration.getId();
+    res.status(200);
+    res.json({id: id});
+});
+
+// Add websocket endpoints for collaboration
+app.ws("/collaboration/:id", (ws, req) => {
     ws.on("message", (msg) => {
         console.log(req.params.id);
         console.log(msg);
+        ws.send(`You sent "${msg}"!`);
     })
 });
 
