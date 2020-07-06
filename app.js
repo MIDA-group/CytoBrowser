@@ -46,10 +46,16 @@ app.get("/api/collaboration/id", (req, res) => {
 app.ws("/collaboration/:id", (ws, req) => {
     const id = req.params.id;
     collaboration.joinCollab(ws, id);
+    console.info(`Collab [${id}] - A connection has been opened.`);
 
     ws.on("message", (msg) => {
         collaboration.handleMessage(ws, id, msg);
-    })
+    });
+
+    ws.on("close", (code, reason) => {
+        collaboration.leaveCollab(ws, id);
+        console.info(`Collab [${id}] - A connection has been closed.`);
+    });
 });
 
 // Begin listening on the specified interface
