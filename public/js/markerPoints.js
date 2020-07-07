@@ -113,7 +113,7 @@ markerPoints = {
         markerPoints._points.push(addedPoint);
 
         // Send the update to collaborators
-        local || collabClient.send({
+        !local || collabClient.send({
             type: "markerAction",
             actionType: "add",
             point: addedPoint
@@ -168,7 +168,7 @@ markerPoints = {
         points[updatedIndex] = updatedPoint;
 
         // Send the update to collaborators
-        local || collabClient.send({
+        !local || collabClient.send({
             type: "markerAction",
             actionType: "update",
             id: id,
@@ -197,7 +197,7 @@ markerPoints = {
         points.splice(deletedIndex, 1);
 
         // Send the update to collaborators
-        local || collabClient.send({
+        !local || collabClient.send({
             type: "markerAction",
             actionType: "remove",
             id: id
@@ -217,7 +217,7 @@ markerPoints = {
         ids.forEach((id) => markerPoints.removePoint(id));
 
         // Send the update to collaborators
-        local || collabClient.send({
+        !local || collabClient.send({
             type: "markerAction",
             actionType: "clear",
         });

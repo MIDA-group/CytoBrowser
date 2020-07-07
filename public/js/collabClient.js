@@ -29,7 +29,12 @@ collabClient = {
     },
     send: function(msg) {
         if (collabClient.ws) {
-            collabClient.ws.send(msg);
+            if (typeof(msg) === "object") {
+                collabClient.ws.send(JSON.stringify(msg));
+            }
+            else {
+                collabClient.ws.send(msg);
+            }
         }
     },
     handleMessage: function(msg) {
