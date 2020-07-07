@@ -17,25 +17,37 @@ class Collaboration {
     addMember(ws, name) {
         this.members.set(ws, {name: name});
         ws.send(JSON.stringify(this.stateSummary()));
+        broadcastMessage(ws, {
+            type: "memberEvent",
+            eventType: "connect",
+            member: this.members.get(ws)
+        });
     }
 
     removeMember(ws) {
+        broadcastMessage(ws, {
+            type: "memberEvent",
+            eventType: "disconnect",
+            member: this.members.get(ws)
+        });
         this.members.delete(ws);
     }
 
-    handleMessage(sender, msg) {
+    broadcastMessage(sender, msg) {
         // Forward the message to all other members
+        const msgJSON = JSON.stringify(msg);
         for (let member of this.members.keys()) {
             if (member !== sender) {
-                member.send(msg);
+                member.send(msgJSON);
             }
         }
+    }
 
-        msg = JSON.parse(msg);
-
+    handleMessage(sender, msg) {
         // Keep track of the current points
         switch (msg.type) {
             case "markerAction":
+                this.broadcastMessage(sender, msg);
                 switch (msg.actionType) {
                     case "add":
                         this.points.push(msg.point);
@@ -127,7 +139,7 @@ function leaveCollab(ws, id) {
  */
 function handleMessage(ws, id, msg) {
     const collab = getCollab(id);
-    collab.handleMessage(ws, msg);
+    collab.handleMessage(ws, JSON.parse(msg));
 }
 
 exports.getId = getId;
