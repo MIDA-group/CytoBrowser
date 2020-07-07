@@ -3,12 +3,12 @@ const collabs = {};
 
 class Collaboration {
     constructor(id) {
-        this.members = new Set();
+        this.members = new Map();
         this.id = id;
     }
 
-    addMember(ws) {
-        this.members.add(ws);
+    addMember(ws, name) {
+        this.members.set(ws, {name: name});
     }
 
     removeMember(ws) {
@@ -16,11 +16,11 @@ class Collaboration {
     }
 
     forward(sender, msg) {
-        this.members.forEach((member) => {
+        for (let member of this.members.keys()) {
             if (member !== sender) {
                 member.send(msg);
             }
-        });
+        }
     }
 };
 
@@ -38,9 +38,9 @@ function getId() {
     return id;
 }
 
-function joinCollab(ws, id) {
+function joinCollab(ws, name, id) {
     const collab = collabs.id || (collabs.id = new Collaboration(id));
-    collab.addMember(ws);
+    collab.addMember(ws, name);
 }
 
 function leaveCollab(ws, id) {

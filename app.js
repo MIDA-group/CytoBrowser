@@ -45,8 +45,9 @@ app.get("/api/collaboration/id", (req, res) => {
 // Add websocket endpoints for collaboration
 app.ws("/collaboration/:id", (ws, req) => {
     const id = req.params.id;
-    collaboration.joinCollab(ws, id);
-    console.info(`Collab [${id}] - A connection has been opened.`);
+    const name = req.query.name || "Unnamed";
+    collaboration.joinCollab(ws, name, id);
+    console.info(`Collab [${id}] - The user ${name} has connected.`);
 
     ws.on("message", (msg) => {
         collaboration.handleMessage(ws, id, msg);
@@ -54,7 +55,7 @@ app.ws("/collaboration/:id", (ws, req) => {
 
     ws.on("close", (code, reason) => {
         collaboration.leaveCollab(ws, id);
-        console.info(`Collab [${id}] - A connection has been closed.`);
+        console.info(`Collab [${id}] - The user ${name} has disconnected.`);
     });
 });
 
@@ -62,5 +63,5 @@ app.ws("/collaboration/:id", (ws, req) => {
 const listener = app.listen(port, hostname, () => {
     const address = listener.address().address;
     const port = listener.address().port;
-    console.log(`CytoBrowser server listening at http://${address}:${port}`);
+    console.info(`CytoBrowser server listening at http://${address}:${port}`);
 });
