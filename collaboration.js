@@ -47,6 +47,7 @@ class Collaboration {
                     default:
                         console.warn(`Tried to handle unknown marker action: ${msg.actionType}`);
                 }
+                break;
             default:
                 console.info("Received a message with an unknown type, forwarding anyway.");
         }

@@ -59,7 +59,7 @@ collabClient = {
                 break;
             case "summary":
                 console.info("Receiving collaboration info.");
-                msg.points.forEach((point) => markerPoints.add(point, "image", false));
+                msg.points.forEach((point) => markerPoints.addPoint(point, "image", false));
                 break;
             default:
                 console.warn(`Unknown message type received in collab: ${msg.type}`);
