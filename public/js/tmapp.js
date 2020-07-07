@@ -65,6 +65,7 @@ tmapp = {
         url = new URL(window.location.href);
         let roundTo = (x, n) => Math.round(x * Math.pow(10, n)) / Math.pow(10, n);
         params = url.searchParams;
+        params.set("image", tmapp.fixed_file);
         params.set("zoom", roundTo(this.curr_zoom, 2));
         params.set("x", roundTo(this.curr_x, 5));
         params.set("y", roundTo(this.curr_y, 5));
@@ -80,6 +81,14 @@ tmapp = {
         const imageCoords = new OpenSeadragon.Point(point.x, point.y);
         const viewportCoords = overlayUtils.imageToViewport(imageCoords, "ISS");
         viewer.viewport.panTo(viewportCoords, true);
+    },
+    changeImage: function(imageName) {
+        if (!tmapp.images.some((image) => image.name === imageName)) {
+            displayImageError("badimage", 5000);
+            throw new Error("Tried to change to an unknown image.");
+        }
+        tmapp.fixed_file = imageName;
+        tmapp.init();
     }
 }
 
@@ -237,6 +246,7 @@ tmapp.init = function () {
                 case 200:
                     // Image info was successfully retrieved
                     const images = JSON.parse(imageReq.responseText);
+                    tmapp.images = images.images;
                     images.images.forEach((image) => addImage(image));
 
                     // Find the specified image

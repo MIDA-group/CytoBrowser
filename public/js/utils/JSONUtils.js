@@ -37,6 +37,7 @@ JSONUtils={
     dataToJSON: function(){
         const data = {
             version: "1.0", // Version of the JSON formatting
+            image: tmapp.fixed_file,
             points: []
         };
         markerPoints.forEachPoint(function(point) {data.points.push(point)});
@@ -90,7 +91,6 @@ JSONUtils={
             alert("File should be json");
             return;
         }
-        markerPoints.clearPoints();
         var reader = new FileReader();
         reader.readAsText(file);
         reader.onload=function(event) {
@@ -98,6 +98,18 @@ JSONUtils={
             // In case the data representation changes but we want compatibility
             switch (data.version) {
                 case "1.0":
+                    // Change image if data is for another image
+                    if (data.image !== tmapp.fixed_file) {
+                        if (!confirm(`You are trying to load data for \
+                            the image "${data.image}". Do you want to \
+                            open this image? Any markers placed on the \
+                            current image will be lost unless you save \
+                            them first.`) {
+                            break;
+                        }
+                        tmapp.changeImage(data.image);
+                    }
+                    markerPoints.clearPoints();
                     data.points.forEach((point) => {
                         markerPoints.addPoint(point, "image");
                     })
