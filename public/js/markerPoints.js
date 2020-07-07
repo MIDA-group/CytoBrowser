@@ -85,8 +85,9 @@ markerPoints = {
      * Add a single point to the data.
      * @param {MarkerPoint} point A data representation of the point.
      * @param {CoordSystem} [coordSystem="web"] Coordinate system used by the point.
+     * @param {boolean} [local=true] The function originated from the local client.
      */
-    addPoint: function(point, coordSystem="web") {
+    addPoint: function(point, coordSystem="web", local = true) {
         const addedPoint = markerPoints._clonePoint(point);
 
         // Make sure the point has an id
@@ -111,6 +112,13 @@ markerPoints = {
         // Store a data representation of the point
         markerPoints._points.push(addedPoint);
 
+        // Send the update to collaborators
+        local || collabClient.send({
+            type: "markerAction",
+            actionType: "add",
+            point: addedPoint
+        });
+
         // Add a graphical representation of the point
         overlayUtils.addTMCP(
             addedPoint.id,
@@ -126,8 +134,9 @@ markerPoints = {
      * @param {number} id The initial id of the point to be updated.
      * @param {MarkerPoint} point The new values for the point to be updated.
      * @param {CoordSystem} [coordSystem="web"] Coordinate system used by the point.
+     * @param {boolean} [local=true] The function originated from the local client.
      */
-    updatePoint: function(id, point, coordSystem="web") {
+    updatePoint: function(id, point, coordSystem="web", local = true) {
         const points = markerPoints._points;
         const updatedIndex = points.findIndex((point) => point.id == id);
         const updatedPoint = markerPoints.getPointById(id);
@@ -158,6 +167,14 @@ markerPoints = {
         // Store the point in data
         points[updatedIndex] = updatedPoint;
 
+        // Send the update to collaborators
+        local || collabClient.send({
+            type: "markerAction",
+            actionType: "update",
+            id: id,
+            point: updatedPoint
+        });
+
         // Update the point in the graphics
         overlayUtils.updateTMCP(point.id, coords.viewport.x, coords.viewport.y, point.z, point.mclass);
     },
@@ -165,8 +182,9 @@ markerPoints = {
     /**
      * Remove a point from the data.
      * @param {number} id The id of the point to be removed.
+     * @param {boolean} [local=true] The function originated from the local client.
      */
-    removePoint: function(id) {
+    removePoint: function(id, local = true) {
         const points = markerPoints._points;
         const deletedIndex = points.findIndex((point) => point.id == id);
 
@@ -178,17 +196,31 @@ markerPoints = {
         // Remove the point from the data
         points.splice(deletedIndex, 1);
 
+        // Send the update to collaborators
+        local || collabClient.send({
+            type: "markerAction",
+            actionType: "remove",
+            id: id
+        });
+
         // Remove the point from the graphics
         overlayUtils.removeTMCP(id);
     },
 
     /**
      * Remove all points from the data.
+     * @param {boolean} [local=true] The function originated from the local client.
      */
-    clearPoints: function() {
+    clearPoints: function(local = true) {
         const points = markerPoints._points;
         const ids = points.map((point) => point.id);
         ids.forEach((id) => markerPoints.removePoint(id));
+
+        // Send the update to collaborators
+        local || collabClient.send({
+            type: "markerAction",
+            actionType: "clear",
+        });
     },
 
     /**
