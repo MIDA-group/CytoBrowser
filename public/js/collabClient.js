@@ -57,8 +57,12 @@ collabClient = {
                         console.warn(`Unknown marker action type: ${msg.actionType}`)
                 }
                 break;
+            case "summary":
+                console.info("Receiving collaboration info.");
+                msg.points.forEach((point) => markerPoints.add(point, "image", false));
+                break;
             default:
-                console.warn(`Unknown message type: ${msg.type}`);
+                console.warn(`Unknown message type received in collab: ${msg.type}`);
         }
     }
 }
