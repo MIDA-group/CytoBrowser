@@ -87,7 +87,9 @@ tmapp = {
             displayImageError("badimage", 5000);
             throw new Error("Tried to change to an unknown image.");
         }
+        $("#ISS_viewer").empty();
         tmapp.fixed_file = imageName;
+        tmapp.image_name = imageName; // TODO: Should make case consistent throughout project
         tmapp.init();
     }
 }
