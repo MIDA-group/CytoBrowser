@@ -1,3 +1,9 @@
+/**
+ * @module collaboration
+ * @desc Contains necessary server-side logic for collaboration between
+ * different users of the CytoBrowser.
+ */
+
 // Object for storing all ongoing collaborations
 const collabs = {};
 
@@ -67,7 +73,12 @@ function getCollab(id) {
     return collab = collabs.id || (collabs.id = new Collaboration(id));
 }
 
-// Get an unused ID for collaboration
+/**
+ * Generate an unused, randomly generated collaboration ID. There are
+ * around 6*10^7 possible IDs that can be generated with this function,
+ * as they are generated as five-character lower-case alphanumeric strings.
+ * @returns {string} A randomly generated, unused collaboration ID.
+ */
 function getId() {
     let id;
     do {
@@ -81,11 +92,25 @@ function getId() {
     return id;
 }
 
+/**
+ * Add a websocket context to a specified collaboration. The collaboration
+ * takes care of the necessary initial communication with the new member
+ * to make sure that they get all the necessary data.
+ * @param {WebSocket} ws WebSocket object to add to collab.
+ * @param {string} name Human-readable name for identifying the new member.
+ * @param {string} id ID of the collab being joined.
+ */
 function joinCollab(ws, name, id) {
     const collab = getCollab(id);
     collab.addMember(ws, name);
 }
 
+/**
+ * Remove a websocket context from a collaboration. Other contexts are
+ * notified of their removal.
+ * @param {WebSocket} ws WebSocket to remove from collab.
+ * @param {string} id ID of collab to remove websocket from.
+ */
 function leaveCollab(ws, id) {
     const collab = collabs.id;
     if (collab) {
@@ -93,6 +118,13 @@ function leaveCollab(ws, id) {
     }
 }
 
+/**
+ * Pass a message on to the appropriate collaboration and take the
+ * appropriate actions based on its content.
+ * @param {WebSocket} ws WebSocket that the message was sent from.
+ * @param {string} id ID of the collab the message was sent to.
+ * @param {string} msg JSON representation of the message object.
+ */
 function handleMessage(ws, id, msg) {
     const collab = getCollab(id);
     collab.handleMessage(ws, msg);
