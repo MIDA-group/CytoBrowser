@@ -4,25 +4,67 @@ const collabs = {};
 class Collaboration {
     constructor(id) {
         this.members = new Map();
+        this.points = [];
         this.id = id;
     }
 
     addMember(ws, name) {
         this.members.set(ws, {name: name});
+        ws.send(JSON.stringify(this.stateSummary()));
     }
 
     removeMember(ws) {
         this.members.delete(ws);
     }
 
-    forward(sender, msg) {
+    handleMessage(sender, msg) {
+        // Forward the message to all other members
         for (let member of this.members.keys()) {
             if (member !== sender) {
                 member.send(msg);
             }
         }
+
+        msg = JSON.parse(msg);
+
+        // Keep track of the current points
+        switch (msg.type) {
+            case "markerAction":
+                switch (msg.actionType) {
+                    case "add":
+                        this.points.push(msg.point);
+                        break;
+                    case "update":
+                        Object.assign(this.points.find((point) => point.id === msg.id), msg.point)
+                        break;
+                    case "remove":
+                        const index = this.points.findIndex((point) => point.id === msg.id);
+                        this.points.splice(index, 1);
+                        break;
+                    case "clear":
+                        this.points = [];
+                        break;
+                    default:
+                        console.warn(`Tried to handle unknown marker action: ${msg.actionType}`);
+                }
+            default:
+                console.info("Received a message with an unknown type, forwarding anyway.");
+        }
+    }
+
+    stateSummary() {
+        return {
+            type: "summary",
+            id: this.id,
+            members: Array.from(this.members.values()),
+            points: this.points
+        }
     }
 };
+
+function getCollab(id) {
+    return collab = collabs.id || (collabs.id = new Collaboration(id));
+}
 
 // Get an unused ID for collaboration
 function getId() {
@@ -39,7 +81,7 @@ function getId() {
 }
 
 function joinCollab(ws, name, id) {
-    const collab = collabs.id || (collabs.id = new Collaboration(id));
+    const collab = getCollab(id);
     collab.addMember(ws, name);
 }
 
@@ -51,8 +93,8 @@ function leaveCollab(ws, id) {
 }
 
 function handleMessage(ws, id, msg) {
-    const collab = collabs.id || (collabs.id = new Collaboration(id));
-    collab.forward(ws, msg);
+    const collab = getCollab(id);
+    collab.handleMessage(ws, msg);
 }
 
 exports.getId = getId;
