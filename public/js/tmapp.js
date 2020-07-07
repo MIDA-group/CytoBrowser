@@ -65,7 +65,7 @@ tmapp = {
         url = new URL(window.location.href);
         let roundTo = (x, n) => Math.round(x * Math.pow(10, n)) / Math.pow(10, n);
         params = url.searchParams;
-        params.set("image", tmapp.fixed_file);
+        params.set("image", tmapp.image_name);
         params.set("zoom", roundTo(this.curr_zoom, 2));
         params.set("x", roundTo(this.curr_x, 5));
         params.set("y", roundTo(this.curr_y, 5));

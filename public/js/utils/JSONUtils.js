@@ -37,7 +37,7 @@ JSONUtils={
     dataToJSON: function(){
         const data = {
             version: "1.0", // Version of the JSON formatting
-            image: tmapp.fixed_file,
+            image: tmapp.image_name,
             points: []
         };
         markerPoints.forEachPoint(function(point) {data.points.push(point)});
@@ -99,12 +99,12 @@ JSONUtils={
             switch (data.version) {
                 case "1.0":
                     // Change image if data is for another image
-                    if (data.image !== tmapp.fixed_file) {
+                    if (data.image !== tmapp.image_name) {
                         if (!confirm(`You are trying to load data for \
                             the image "${data.image}". Do you want to \
                             open this image? Any markers placed on the \
                             current image will be lost unless you save \
-                            them first.`) {
+                            them first.`)) {
                             break;
                         }
                         tmapp.changeImage(data.image);

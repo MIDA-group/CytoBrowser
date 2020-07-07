@@ -237,6 +237,7 @@
     $(document).ready(function () {
         var url = new URL(window.location.href);
         tmapp.fixed_file = url.searchParams.get("image"); //TODO: Give sensible error message if "image" key is missing
+        tmapp.image_name = url.searchParams.get("image");
 //        tmapp.registerActions();
 
         // Get the viewport params from the URL
