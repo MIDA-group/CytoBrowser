@@ -1,5 +1,5 @@
 collabClient = {
-    createCollab: function() {
+    createCollab: function(name) {
         // Get a new code for a collab first
         const idReq = new XMLHttpRequest();
         idReq.open("GET", window.location.origin + "/api/collaboration/id", true)
@@ -8,12 +8,12 @@ collabClient = {
             if (idReq.readyState === 4 && idReq.status === 200) {
                 const response = JSON.parse(idReq.responseText);
                 const id = response.id;
-                collabClient.connect(id);
+                collabClient.connect(id, name);
             }
         };
     },
-    connect: function(id) {
-        const address = `ws://${window.location.host}/collaboration/${id}`;
+    connect: function(id, name="Unnamed") {
+        const address = `ws://${window.location.host}/collaboration/${id}?name=${name}`;
         const ws = new WebSocket(address);
         ws.onopen = function(event) {
             console.info(`Successfully connected to collaboration ${id}.`);
@@ -21,6 +21,7 @@ collabClient = {
         }
         ws.onmessage = function(event) {
             console.log(`Received: ${event.data}`);
+            collabClient.handleMessage(JSON.parse(event.data));
         }
         ws.onclose = function(event) {
             delete collabClient.ws;
@@ -29,6 +30,30 @@ collabClient = {
     send: function(msg) {
         if (collabClient.ws) {
             collabClient.ws.send(msg);
+        }
+    },
+    handleMessage: function(msg) {
+        switch(msg.type) {
+            case "markerAction":
+                switch(msg.actionType) {
+                    case "add":
+                        markerPoints.addPoint(msg.point, "image", false);
+                        break;
+                    case "update":
+                        markerPoints.updatePoint(msg.id, msg.point, "image", false);
+                        break;
+                    case "remove":
+                        markerPoints.removePoint(msg.id, false);
+                        break;
+                    case "clear":
+                        markerPoints.clearPoints(false);
+                        break;
+                    default:
+                        console.warn(`Unknown marker action type: ${msg.actionType}`)
+                }
+                break;
+            default:
+                console.warn(`Unknown message type: ${msg.type}`);
         }
     }
 }
