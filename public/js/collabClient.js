@@ -1,5 +1,5 @@
 collabClient = {
-    createCollab: function(name, include, callback) {
+    createCollab: function(name, include) {
         // Get a new code for a collab first
         const idReq = new XMLHttpRequest();
         idReq.open("GET", window.location.origin + "/api/collaboration/id", true)
@@ -12,7 +12,7 @@ collabClient = {
             }
         };
     },
-    connect: function(id, name="Unnamed", include, callback) {
+    connect: function(id, name="Unnamed", include) {
         if (collabClient.ws) {
             collabClient.disconnect();
         }
@@ -22,7 +22,8 @@ collabClient = {
         ws.onopen = function(event) {
             console.info(`Successfully connected to collaboration ${id}.`);
             collabClient.ws = ws;
-            callback && callback({id: id, name: name, ws: ws});
+            collabClient.connection = {id: id, name: name, ws: ws};
+            collabClient.connectFun && collabClient.connectFun(collabClient.connection);
 
             if (include) {
                 markerPoints.forEachPoint((point) => {
@@ -45,11 +46,13 @@ collabClient = {
             collabClient.handleMessage(JSON.parse(event.data));
         }
         ws.onclose = function(event) {
+            delete collabClient.connection;
             delete collabClient.ws;
         }
     },
     disconnect: function() {
         if (collabClient.ws) {
+            collabClient.disconnectFun && collabClient.disconnectFun(collabClient.connection);
             collabClient.ws.close();
         }
         else {
@@ -96,5 +99,11 @@ collabClient = {
             default:
                 console.warn(`Unknown message type received in collab: ${msg.type}`);
         }
+    },
+    onConnect: function(f) {
+        collabClient.connectFun = f;
+    },
+    onDisconnect: function(f) {
+        collabClient.disconnectFun = f;
     }
 }
