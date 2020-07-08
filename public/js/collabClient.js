@@ -27,6 +27,14 @@ collabClient = {
             delete collabClient.ws;
         }
     },
+    disconnect: function() {
+        if (collabClient.ws) {
+            collabClient.ws.close();
+        }
+        else {
+            console.warn("Tried to disconnect from nonexistent collaboration.");
+        }
+    },
     send: function(msg) {
         if (collabClient.ws) {
             if (typeof(msg) === "object") {

@@ -238,12 +238,17 @@
                           <button id="create_collaboration" class="btn btn-block btn-primary">Create</button>
                       </div>
                   </div>
-                  <div class="form-row pb-2">
+                  <div class="form-row pb-4">
                       <div class="col-8">
                           <input type="text" name="joined_id" class="form-control" placeholder="Collaboration ID">
                       </div>
                       <div class="col-4">
                           <button id="join_collaboration" class="btn btn-block btn-primary">Join</button>
+                      </div>
+                  </div>
+                  <div class="form-row pb-2">
+                      <div class="col-12">
+                          <button id="leave_collaboration" class="btn btn-block btn-secondary">Leave collaboration</button>
                       </div>
                   </div>
               </div>
@@ -303,6 +308,10 @@
         const name = $("#collaboration_start [name='username']").val();
         const id = $("#collaboration_start [name='joined_id']").val();
         collabClient.connect(id, name);
+    });
+
+    $("#leave_collaboration").click(function(event) {
+        collabClient.disconnect();
     });
 
     // Start our tmapp
