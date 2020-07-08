@@ -45,8 +45,9 @@ app.get("/api/collaboration/id", (req, res) => {
 // Add websocket endpoints for collaboration
 app.ws("/collaboration/:id", (ws, req) => {
     const id = req.params.id;
+    const image = req.query.image;
     const name = req.query.name || "Unnamed";
-    collaboration.joinCollab(ws, name, id);
+    collaboration.joinCollab(ws, name, id, image);
     console.info(`Collab [${id}] - ${name} has connected.`);
 
     ws.on("message", (msg) => {
