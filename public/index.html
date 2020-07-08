@@ -91,12 +91,12 @@
                                 <div class="row">
                                     <div class="col-6">
                                         <button type="button" class="btn btn-block btn-primary" data-toggle="modal" data-target="#collaboration_menu">
-                                            Create collaboration
+                                            Collaborate
                                         </button>
                                     </div>
                                     <div class="col-6">
-                                        <button type="button" class="btn btn-block btn-primary" data-toggle="modal" data-target="#image_browser">
-                                            Join collaboration
+                                        <button type="button" class="btn btn-block btn-secondary" data-toggle="modal" data-target="#image_browser">
+                                            Leave collaboration
                                         </button>
                                     </div>
                                 </div>
@@ -215,7 +215,7 @@
 
     <!-- Collaboration menu -->
     <div class="modal fade" id="collaboration_menu" tabindex="-1" role="dialog">
-      <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title">Collaboration</h5>
@@ -224,8 +224,29 @@
             </button>
           </div>
           <div class="modal-body">
-              <button id="create_collaboration" class="btn btn-primary">Create new collaboration</button>
-              <button id="join_collaboration" class="btn btn-primary">Join collaboration</button>
+              <div id="collaboration_start">
+                  <div class="form-row pb-4">
+                      <div class="col-12">
+                          <input type="text" name="username" class="form-control" placeholder="Your name">
+                      </div>
+                  </div>
+                  <div class="form-row pb-4">
+                      <div class="col-8">
+                          <input type="text" name="active_id" readonly class="form-control" placeholder="-">
+                      </div>
+                      <div class="col-4">
+                          <button id="create_collaboration" class="btn btn-block btn-primary">Create</button>
+                      </div>
+                  </div>
+                  <div class="form-row pb-2">
+                      <div class="col-8">
+                          <input type="text" name="joined_id" class="form-control" placeholder="Collaboration ID">
+                      </div>
+                      <div class="col-4">
+                          <button id="join_collaboration" class="btn btn-block btn-primary">Join</button>
+                      </div>
+                  </div>
+              </div>
           </div>
         </div>
       </div>
@@ -274,11 +295,14 @@
     });
 
     $("#create_collaboration").click(function(event) {
-        collabClient.createCollab(prompt("Your name?"));
+        const name = $("#collaboration_start [name='username']").val();
+        collabClient.createCollab(name);
     });
 
     $("#join_collaboration").click(function(event) {
-        collabClient.connect(prompt("Collab id?"), prompt("Your name?"));
+        const name = $("#collaboration_start [name='username']").val();
+        const id = $("#collaboration_start [name='joined_id']").val();
+        collabClient.connect(id, name);
     });
 
     // Start our tmapp

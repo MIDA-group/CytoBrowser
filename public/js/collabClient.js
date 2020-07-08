@@ -59,6 +59,8 @@ collabClient = {
                 break;
             case "summary":
                 console.info("Receiving collaboration info.");
+                // TODO: Should maybe call a function in a UI namespace
+                $("#collaboration_start [name='active_id']").val(msg.id);
                 msg.points.forEach((point) => markerPoints.addPoint(point, "image", false));
                 break;
             default:
