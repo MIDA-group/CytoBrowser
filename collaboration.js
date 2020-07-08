@@ -8,10 +8,11 @@
 const collabs = {};
 
 class Collaboration {
-    constructor(id) {
+    constructor(id, image) {
         this.members = new Map();
         this.points = [];
         this.id = id;
+        this.image = image;
     }
 
     addMember(ws, name) {
@@ -75,14 +76,15 @@ class Collaboration {
         return {
             type: "summary",
             id: this.id,
+            image: this.image,
             members: Array.from(this.members.values()),
             points: this.points
         }
     }
 };
 
-function getCollab(id) {
-    return collab = collabs.id || (collabs.id = new Collaboration(id));
+function getCollab(id, image) {
+    return collab = collabs.id || (collabs.id = new Collaboration(id, image));
 }
 
 /**
@@ -107,13 +109,16 @@ function getId() {
 /**
  * Add a websocket context to a specified collaboration. The collaboration
  * takes care of the necessary initial communication with the new member
- * to make sure that they get all the necessary data.
+ * to make sure that they get all the necessary data. If the collaboration
+ * does not already exist, it is created.
  * @param {WebSocket} ws WebSocket object to add to collab.
  * @param {string} name Human-readable name for identifying the new member.
  * @param {string} id ID of the collab being joined.
+ * @param {string} image Name of the image observed in the collab. Only
+ * has an effect if the collaboration has not been created yet.
  */
-function joinCollab(ws, name, id) {
-    const collab = getCollab(id);
+function joinCollab(ws, name, id, image) {
+    const collab = getCollab(id, image);
     collab.addMember(ws, name);
 }
 

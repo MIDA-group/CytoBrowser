@@ -13,7 +13,7 @@ collabClient = {
         };
     },
     connect: function(id, name="Unnamed", callback) {
-        const address = `ws://${window.location.host}/collaboration/${id}?name=${name}`;
+        const address = `ws://${window.location.host}/collaboration/${id}?name=${name}&image=${tmapp.image_name}`;
         const ws = new WebSocket(address);
         ws.onopen = function(event) {
             console.info(`Successfully connected to collaboration ${id}.`);
