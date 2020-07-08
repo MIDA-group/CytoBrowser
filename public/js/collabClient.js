@@ -8,7 +8,7 @@ collabClient = {
             if (idReq.readyState === 4 && idReq.status === 200) {
                 const response = JSON.parse(idReq.responseText);
                 const id = response.id;
-                collabClient.connect(id, name, callback);
+                collabClient.connect(id, name, include, callback);
             }
         };
     },
