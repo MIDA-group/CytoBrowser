@@ -13,6 +13,10 @@ collabClient = {
         };
     },
     connect: function(id, name="Unnamed", callback) {
+        if (collabClient.ws) {
+            collabClient.disconnect();
+        }
+        
         const address = `ws://${window.location.host}/collaboration/${id}?name=${name}&image=${tmapp.image_name}`;
         const ws = new WebSocket(address);
         ws.onopen = function(event) {
@@ -68,6 +72,9 @@ collabClient = {
                 break;
             case "summary":
                 console.info("Receiving collaboration info.");
+                if (msg.image !== tmapp.image_name) {
+                    // TODO: Change image
+                }
                 msg.points.forEach((point) => markerPoints.addPoint(point, "image", false));
                 break;
             default:

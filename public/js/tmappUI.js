@@ -27,20 +27,32 @@ tmappUI = {
         $("#create_collaboration").click(function(event) {
             const name = $("#collaboration_start [name='username']").val();
             collabClient.createCollab(name, (connection) => {
-                $("#collaboration_start [name='active_id']").val(connection.id);
+                tmappUI.setCollabID(connection.id);
             });
         });
         $("#join_collaboration").click(function(event) {
             const name = $("#collaboration_start [name='username']").val();
             const id = $("#collaboration_start [name='joined_id']").val();
             collabClient.connect(id, name, (connection) => {
-                $("#collaboration_start [name='active_id']").val(connection.id);
+                tmappUI.setCollabID(connection.id);
             });
         });
         $("#leave_collaboration").click(function(event) {
-            $("#collaboration_start [name='active_id']").val("");
+            tmappUI.clearCollabID();
             collabClient.disconnect();
         });
+    },
+    setCollabID: function(id) {
+        $("#collaboration_start [name='active_id']").val(id);
+        $("#create_collaboration").prop("disabled", true);
+        $("#join_collaboration").prop("disabled", true);
+        $("#leave_collaboration").prop("disabled", false);
+    },
+    clearCollabID: function() {
+        $("#collaboration_start [name='active_id']").val("");
+        $("#create_collaboration").prop("disabled", false);
+        $("#join_collaboration").prop("disabled", false);
+        $("#leave_collaboration").prop("disabled", true);
     },
     addImage: function(image) {
         // Messy function, might want to do it some better way
