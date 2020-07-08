@@ -17,7 +17,7 @@ class Collaboration {
     addMember(ws, name) {
         this.members.set(ws, {name: name});
         ws.send(JSON.stringify(this.stateSummary()));
-        broadcastMessage(ws, {
+        this.broadcastMessage(ws, {
             type: "memberEvent",
             eventType: "connect",
             member: this.members.get(ws)
@@ -25,7 +25,7 @@ class Collaboration {
     }
 
     removeMember(ws) {
-        broadcastMessage(ws, {
+        this.broadcastMessage(ws, {
             type: "memberEvent",
             eventType: "disconnect",
             member: this.members.get(ws)
