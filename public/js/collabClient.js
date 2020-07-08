@@ -1,5 +1,5 @@
 collabClient = {
-    createCollab: function(name, callback) {
+    createCollab: function(name, include, callback) {
         // Get a new code for a collab first
         const idReq = new XMLHttpRequest();
         idReq.open("GET", window.location.origin + "/api/collaboration/id", true)
@@ -12,17 +12,24 @@ collabClient = {
             }
         };
     },
-    connect: function(id, name="Unnamed", callback) {
+    connect: function(id, name="Unnamed", include, callback) {
         if (collabClient.ws) {
             collabClient.disconnect();
         }
-        
+
         const address = `ws://${window.location.host}/collaboration/${id}?name=${name}&image=${tmapp.image_name}`;
         const ws = new WebSocket(address);
         ws.onopen = function(event) {
             console.info(`Successfully connected to collaboration ${id}.`);
             collabClient.ws = ws;
-            !callback || callback({id: id, name: name, ws: ws});
+            include && markerPoints.forEachPoint((point) => {
+                collabClient.send({
+                    type: "markerAction",
+                    actionType: "add",
+                    point: point
+                });
+            });
+            callback && callback({id: id, name: name, ws: ws});
         }
         ws.onmessage = function(event) {
             console.log(`Received: ${event.data}`);

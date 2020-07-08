@@ -26,14 +26,16 @@ tmappUI = {
         // Add handlers for the collaboration menu
         $("#create_collaboration").click(function(event) {
             const name = $("#collaboration_start [name='username']").val();
-            collabClient.createCollab(name, (connection) => {
+            const include = $("#include_points").val();
+            collabClient.createCollab(name, include, (connection) => {
                 tmappUI.setCollabID(connection.id);
             });
         });
         $("#join_collaboration").click(function(event) {
             const name = $("#collaboration_start [name='username']").val();
             const id = $("#collaboration_start [name='joined_id']").val();
-            collabClient.connect(id, name, (connection) => {
+            const include = $("#include_points").val();
+            collabClient.connect(id, name, include, (connection) => {
                 tmappUI.setCollabID(connection.id);
             });
         });
