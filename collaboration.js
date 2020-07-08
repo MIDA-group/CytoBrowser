@@ -84,7 +84,7 @@ class Collaboration {
 };
 
 function getCollab(id, image) {
-    return collab = collabs.id || (collabs.id = new Collaboration(id, image));
+    return collab = collabs[id] || (collabs[id] = new Collaboration(id, image));
 }
 
 /**
@@ -101,8 +101,8 @@ function getId() {
         // Convert the number to an alphanumeric string
         const str = num.toString(36);
         // Shorten the string to something more human-readable
-        id = str.match(/(?<=\.).{5}/g)[0];
-    } while (collabs.id);
+        id = str.slice(2,7);
+    } while (collabs[id]);
     return id;
 }
 
@@ -129,7 +129,7 @@ function joinCollab(ws, name, id, image) {
  * @param {string} id ID of collab to remove websocket from.
  */
 function leaveCollab(ws, id) {
-    const collab = collabs.id;
+    const collab = collabs[id];
     if (collab) {
         collab.removeMember(ws);
     }
