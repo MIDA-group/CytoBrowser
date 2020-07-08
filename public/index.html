@@ -278,46 +278,19 @@
 <script src="js/utils/markerUtils.js"></script>
 <script src="js/collabClient.js"></script>
 <script src="js/markerPoints.js"></script>
+<script src="js/tmappUI.js"></script>
 <script src="js/tmapp.js"></script>
 <script>
     markerUtils._TMCPStyle={ strokeWidth: 4, radius: 80, drawText:false, textSize:1 };
 
     document.getElementById("project_title").innerText = "Cyto Browser";
 
-    // Populate the class buttons programatically
-    bethesdaClassUtils.forEachClass(function(item, index){
-        let label = $("<label></label>");
-        label.addClass("btn btn-dark");
-        if (index == 0) { label.addClass("active"); }
-        label.attr("id", "class_" + item.name);
-        label.attr("title", item.description);
-        let input = $("<input>" + item.name + "</input>");
-        input.attr("type", "radio");
-        input.attr("name", "class_options");
-        input.attr("autocomplete", "off");
-        label.append(input);
-        $("#class_buttons").append(label);
-    });
-
-    $("#create_collaboration").click(function(event) {
-        const name = $("#collaboration_start [name='username']").val();
-        collabClient.createCollab(name);
-    });
-
-    $("#join_collaboration").click(function(event) {
-        const name = $("#collaboration_start [name='username']").val();
-        const id = $("#collaboration_start [name='joined_id']").val();
-        collabClient.connect(id, name);
-    });
-
-    $("#leave_collaboration").click(function(event) {
-        collabClient.disconnect();
-    });
+    tmappUI.initUI();
 
     // Start our tmapp
     $(document).ready(function () {
         var url = new URL(window.location.href);
-        tmapp.fixed_file = url.searchParams.get("image"); //TODO: Give sensible error message if "image" key is missing
+        tmapp.fixed_file = url.searchParams.get("image");
         tmapp.image_name = url.searchParams.get("image");
 //        tmapp.registerActions();
 
@@ -342,51 +315,6 @@
         }
         tmapp.init();
     });
-
-    // Add images to the browser
-    function addImage(image) {
-        // Messy function, might want to do it some better way
-        let deck = $("#available_images .row").last();
-        if (deck.length === 0 || deck.children().length === 3) {
-            deck = $("<div></div>");
-            deck.addClass("row mb-4");
-            $("#available_images").append(deck);
-        }
-        const col = $("<div></div>");
-        col.addClass("col-4 d-flex");
-        const card = $("<div></div>");
-        card.addClass("card w-100");
-        const overview = $("<img>", {src: image.thumbnails.overview});
-        overview.addClass("card-img-top position-absolute");
-        overview.css({height: "230px", objectFit: "cover"});
-        const detail = $("<img>", {src: image.thumbnails.detail});
-        detail.addClass("card-img-top hide fade");
-        detail.css({zIndex: 9000, pointerEvents: "none", height: "230px", objectFit: "cover"});
-        const body = $("<div></div>");
-        body.addClass("card-body");
-        const title = $("<h5></h5>");
-        title.text(image.name);
-        title.addClass("card-title");
-        const footer = $("<div></div>");
-        footer.addClass("card-footer");
-        const a = $("<a></a>");
-        a.addClass("card-link stretched-link");
-        a.attr("href", `/?image=${image.name}`);
-        a.text("Open image");
-        a.hover((e) =>
-            detail.addClass("show").removeClass("hide"),
-            (e) =>
-            detail.addClass("hide").removeClass("show")
-        );
-        footer.append(a);
-        body.append(title);
-        card.append(overview);
-        card.append(detail);
-        card.append(body);
-        card.append(footer);
-        col.append(card);
-        deck.append(col);
-    }
 
     // UI setters
     function setImageName(txt) {

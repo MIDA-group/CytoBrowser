@@ -249,7 +249,7 @@ tmapp.init = function () {
                     // Image info was successfully retrieved
                     const images = JSON.parse(imageReq.responseText);
                     tmapp.images = images.images;
-                    images.images.forEach((image) => addImage(image));
+                    images.images.forEach((image) => tmappUI.addImage(image));
 
                     // Find the specified image
                     const image = images.images.find((image) => image.name === tmapp.fixed_file);
