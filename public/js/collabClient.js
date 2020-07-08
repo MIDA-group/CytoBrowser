@@ -22,14 +22,23 @@ collabClient = {
         ws.onopen = function(event) {
             console.info(`Successfully connected to collaboration ${id}.`);
             collabClient.ws = ws;
-            include && markerPoints.forEachPoint((point) => {
-                collabClient.send({
-                    type: "markerAction",
-                    actionType: "add",
-                    point: point
-                });
-            });
             callback && callback({id: id, name: name, ws: ws});
+
+            if (include) {
+                markerPoints.forEachPoint((point) => {
+                    collabClient.send({
+                        type: "markerAction",
+                        actionType: "add",
+                        point: point
+                    });
+                });
+            }
+            else if (confirm("All your placed markers will be lost unless you have saved them. Do you want to continue anyway?")) {
+                markerPoints.clearPoints();
+            }
+            else {
+                collabClient.disconnect();
+            }
         }
         ws.onmessage = function(event) {
             console.log(`Received: ${event.data}`);
