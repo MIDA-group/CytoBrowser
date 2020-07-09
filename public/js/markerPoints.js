@@ -222,7 +222,7 @@ markerPoints = {
     clearPoints: function(transmit = true) {
         const points = markerPoints._points;
         const ids = points.map((point) => point.id);
-        ids.forEach((id) => markerPoints.removePoint(id));
+        ids.forEach((id) => markerPoints.removePoint(id, false));
 
         // Send the update to collaborators
         transmit && collabClient.send({
