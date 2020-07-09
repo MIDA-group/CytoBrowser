@@ -35,7 +35,7 @@ collabClient = {
                 msg.points.forEach((point) => markerPoints.addPoint(point, "image", false));
                 if (collabClient._joinBatch) {
                     collabClient._joinBatch.forEach((point) => {
-                        markerPoints.addPoint(point, "image", true);
+                        markerPoints.addPoint(point, "image", false);
                     });
                     delete collabClient._joinBatch;
                 }
