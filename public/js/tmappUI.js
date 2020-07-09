@@ -23,6 +23,7 @@ tmappUI = {
             $("#class_buttons").append(label);
         });
 
+        // Set up callbacks for the collaboration client
         collabClient.onConnect(function(connection) {
             tmappUI.setCollabID(connection.id);
         });
@@ -49,14 +50,12 @@ tmappUI = {
     },
     setCollabID: function(id) {
         $("#collaboration_start [name='active_id']").val(id);
-        $("#create_collaboration").prop("disabled", true);
-        $("#join_collaboration").prop("disabled", true);
+        $("#collaboration_start input, #collaboration_start button").prop("disabled", true);
         $("#leave_collaboration").prop("disabled", false);
     },
     clearCollabID: function() {
         $("#collaboration_start [name='active_id']").val("");
-        $("#create_collaboration").prop("disabled", false);
-        $("#join_collaboration").prop("disabled", false);
+        $("#collaboration_start input, #collaboration_start button").prop("disabled", false);
         $("#leave_collaboration").prop("disabled", true);
     },
     addImage: function(image) {
