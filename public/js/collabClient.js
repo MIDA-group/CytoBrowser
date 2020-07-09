@@ -90,7 +90,7 @@ collabClient = {
                 });
             }
             else if (markerPoints.empty() || confirm("All your placed markers will be lost unless you have saved them. Do you want to continue anyway?")) {
-                markerPoints.clearPoints();
+                markerPoints.clearPoints(false);
             }
             else {
                 collabClient.disconnect();

@@ -85,9 +85,10 @@ markerPoints = {
      * Add a single point to the data.
      * @param {MarkerPoint} point A data representation of the point.
      * @param {CoordSystem} [coordSystem="web"] Coordinate system used by the point.
-     * @param {boolean} [local=true] The function originated from the local client.
+     * @param {boolean} [transmit=true] Any collaborators should also be
+     * told to add the point.
      */
-    addPoint: function(point, coordSystem="web", local = true) {
+    addPoint: function(point, coordSystem="web", transmit = true) {
         const addedPoint = markerPoints._clonePoint(point);
 
         // Make sure the point has an id
@@ -113,7 +114,7 @@ markerPoints = {
         markerPoints._points.push(addedPoint);
 
         // Send the update to collaborators
-        !local || collabClient.send({
+        transmit && collabClient.send({
             type: "markerAction",
             actionType: "add",
             point: addedPoint
@@ -134,9 +135,10 @@ markerPoints = {
      * @param {number} id The initial id of the point to be updated.
      * @param {MarkerPoint} point The new values for the point to be updated.
      * @param {CoordSystem} [coordSystem="web"] Coordinate system used by the point.
-     * @param {boolean} [local=true] The function originated from the local client.
+     * @param {boolean} [transmit=true] Any collaborators should also be
+     * told to update their point.
      */
-    updatePoint: function(id, point, coordSystem="web", local = true) {
+    updatePoint: function(id, point, coordSystem="web", transmit = true) {
         const points = markerPoints._points;
         const updatedIndex = points.findIndex((point) => point.id == id);
         const updatedPoint = markerPoints.getPointById(id);
@@ -168,7 +170,7 @@ markerPoints = {
         points[updatedIndex] = updatedPoint;
 
         // Send the update to collaborators
-        !local || collabClient.send({
+        transmit && collabClient.send({
             type: "markerAction",
             actionType: "update",
             id: id,
@@ -182,9 +184,10 @@ markerPoints = {
     /**
      * Remove a point from the data.
      * @param {number} id The id of the point to be removed.
-     * @param {boolean} [local=true] The function originated from the local client.
+     * @param {boolean} [transmit=true] Any collaborators should also be
+     * told to remove the point.
      */
-    removePoint: function(id, local = true) {
+    removePoint: function(id, transmit = true) {
         const points = markerPoints._points;
         const deletedIndex = points.findIndex((point) => point.id == id);
 
@@ -197,7 +200,7 @@ markerPoints = {
         points.splice(deletedIndex, 1);
 
         // Send the update to collaborators
-        !local || collabClient.send({
+        transmit && collabClient.send({
             type: "markerAction",
             actionType: "remove",
             id: id
@@ -209,15 +212,16 @@ markerPoints = {
 
     /**
      * Remove all points from the data.
-     * @param {boolean} [local=true] The function originated from the local client.
+     * @param {boolean} [transmit=true] Any collaborators should also
+     * be told to clear their points.
      */
-    clearPoints: function(local = true) {
+    clearPoints: function(transmit = true) {
         const points = markerPoints._points;
         const ids = points.map((point) => point.id);
         ids.forEach((id) => markerPoints.removePoint(id));
 
         // Send the update to collaborators
-        !local || collabClient.send({
+        transmit && collabClient.send({
             type: "markerAction",
             actionType: "clear",
         });
