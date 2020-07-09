@@ -246,5 +246,13 @@ markerPoints = {
         }
         const pointClone = markerPoints._clonePoint(point);
         return pointClone;
+    },
+
+    /**
+     * Check whether or not the list of marker points is empty.
+     * @returns {boolean} Whether or not the list is empty.
+     */
+    empty: function() {
+        return markerPoints._points.length === 0;
     }
 };

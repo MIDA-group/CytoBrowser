@@ -86,7 +86,7 @@ collabClient = {
                     });
                 });
             }
-            else if (confirm("All your placed markers will be lost unless you have saved them. Do you want to continue anyway?")) {
+            else if (markerPoints.empty() || confirm("All your placed markers will be lost unless you have saved them. Do you want to continue anyway?")) {
                 markerPoints.clearPoints();
             }
             else {
