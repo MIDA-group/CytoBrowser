@@ -73,7 +73,7 @@ tmapp = {
         setURL("?" + params.toString());
     },
     setMClass: function(mClass) {
-        if (bethesdaClassUtils.getIDFromName >= 0) {
+        if (bethesdaClassUtils.getIDFromName(mClass) >= 0) {
             tmapp.curr_mclass = mClass;
         }
         else {
