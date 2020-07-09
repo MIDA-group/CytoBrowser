@@ -28,6 +28,8 @@ collabClient = {
                 if (msg.image !== tmapp.image_name) {
                     tmapp.changeImage(msg.image, () => {
                         msg.points.forEach((point) => markerPoints.addPoint(point, "image", false));
+                    }, () => {
+                        collabClient.disconnect();
                     });
                     break;
                 }

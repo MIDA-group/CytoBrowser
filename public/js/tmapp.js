@@ -91,12 +91,13 @@ tmapp = {
         viewer.viewport.zoomTo(25, true);
         viewer.viewport.panTo(viewportCoords, true);
     },
-    changeImage: function(imageName, callback) {
+    changeImage: function(imageName, callback, nochange) {
         if (!markerPoints.empty() && !confirm(`You are about to open ` +
             `the image "${imageName}". Do you want to ` +
             `open this image? Any markers placed on the ` +
             `current image will be lost unless you save ` +
             `them first.`)) {
+            nochange && nochange();
             return;
         }
         if (!tmapp.images.some((image) => image.name === imageName)) {
