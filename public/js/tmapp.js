@@ -91,7 +91,7 @@ tmapp = {
         viewer.viewport.zoomTo(25, true);
         viewer.viewport.panTo(viewportCoords, true);
     },
-    changeImage: function(imageName) {
+    changeImage: function(imageName, callback) {
         if (!tmapp.images.some((image) => image.name === imageName)) {
             displayImageError("badimage", 5000);
             throw new Error("Tried to change to an unknown image.");
@@ -100,7 +100,7 @@ tmapp = {
         $("#ISS_viewer").empty();
         tmapp.fixed_file = imageName;
         tmapp.image_name = imageName; // TODO: Should make case consistent throughout project
-        tmapp.initOSD();
+        tmapp.initOSD(callback);
     }
 }
 
@@ -181,8 +181,11 @@ tmapp.loadImages = function(z=-1) {
 
 
 /**
- * OSD view callbacks */
-tmapp.add_handlers = function () {
+ * Set up the event handlers for various OSD events.
+ * @param {Function} callback Function to call at the end of the "open"
+ * event handler, i.e. when the OSD viewer has been fully loaded.
+ */
+tmapp.add_handlers = function (callback) {
     viewer=tmapp.viewer;
 
     //Change-of-Page (z-level) handle
@@ -219,6 +222,7 @@ tmapp.add_handlers = function () {
 
         tmapp.setZoomName();
         tmapp.setFocusName();
+        callback && callback();
     });
 
     //Error message if we fail to load
@@ -289,8 +293,11 @@ tmapp.init = function () {
 /**
  * This method is called when the document is loaded.
  * Creates the OpenSeadragon (OSD) viewer and adds the handlers for interaction.
- * The SVG overlays for the viewer are also initialized here */
-tmapp.initOSD = function () {
+ * The SVG overlays for the viewer are also initialized here
+ * @param {Function} callback Function to call when the OSD viewer has
+ * been fully initialized.
+ */
+tmapp.initOSD = function (callback) {
     //This prefix will be called by all other utilities in js/utils
     tmapp["object_prefix"] = tmapp.options_osd.id.split("_")[0];
     var op = tmapp["object_prefix"];
@@ -302,7 +309,7 @@ tmapp.initOSD = function () {
     this.viewer = OpenSeadragon(tmapp.options_osd);
     tmapp[vname] = this.viewer; //For js/utils, this is a TissUUmaps thing. TODO: Get rid of TissUUmaps things we do not use.
 
-    this.add_handlers();
+    this.add_handlers(callback);
 
     //open the DZI xml file pointing to the tiles
     this.loadImages();

@@ -107,7 +107,12 @@ JSONUtils={
                             them first.`)) {
                             break;
                         }
-                        tmapp.changeImage(data.image);
+                        tmapp.changeImage(data.image, function() {
+                            markerPoints.clearPoints();
+                            data.points.forEach((point) => {
+                                markerPoints.addPoint(point, "image");
+                            })
+                        });
                     }
                     markerPoints.clearPoints();
                     data.points.forEach((point) => {
