@@ -31,8 +31,8 @@ tmapp = {
     },
     setFocusLevel: function( z ) {
         const count = this.viewer.world.getItemCount();
-	const max = Math.floor(count / 2);
-	const min = -max;
+        const max = Math.floor(count / 2);
+        const min = -max;
         z=Math.min(Math.max(z,min),max);
         for (i = min; i <= max; i++) {
             let idx = i + Math.floor(z_levels.length / 2);
@@ -72,6 +72,14 @@ tmapp = {
         params.set("z", this.curr_z);
         setURL("?" + params.toString());
     },
+    setMClass: function(mClass) {
+        if (bethesdaClassUtils.getIDFromName >= 0) {
+            tmapp.curr_mclass = mClass;
+        }
+        else {
+            console.warn("Tried to set the active marker class to something not defined.");
+        }
+    },
     panToPoint: function(id) { // Pan to the specified point
         const point = markerPoints.getPointById(id);
         if (point === undefined) {
@@ -80,6 +88,7 @@ tmapp = {
         // TODO: Seems like this happens a lot, should maybe just store all coordinate systems with point
         const imageCoords = new OpenSeadragon.Point(point.x, point.y);
         const viewportCoords = overlayUtils.imageToViewport(imageCoords, "ISS");
+        viewer.viewport.zoomTo(25, true);
         viewer.viewport.panTo(viewportCoords, true);
     },
     changeImage: function(imageName) {
@@ -87,10 +96,11 @@ tmapp = {
             displayImageError("badimage", 5000);
             throw new Error("Tried to change to an unknown image.");
         }
+        markerPoints.clearPoints();
         $("#ISS_viewer").empty();
         tmapp.fixed_file = imageName;
         tmapp.image_name = imageName; // TODO: Should make case consistent throughout project
-        tmapp.init();
+        tmapp.initOSD();
     }
 }
 
@@ -201,7 +211,6 @@ tmapp.add_handlers = function () {
             viewer.viewport.zoomTo(zoom, null, true);
             viewer.viewport.panTo(center, true);
             tmapp.setFocusLevel(params.z);
-	    // Currently hard-coded to 5, may want to do this better
         }
         else {
             // Otherwise move to home
@@ -302,9 +311,6 @@ tmapp.initOSD = function () {
     tmapp.svgov=tmapp.viewer.svgOverlay();
     tmapp.ISS_singleTMCPS=d3.select(tmapp.svgov.node()).append('g').attr('class', "ISS singleTMCPS");
 
-    // Set the class that will be assigned to created points
-    tmapp.curr_mclass = bethesdaClassUtils.classes[0].name;
-
     //This is the OSD click handler, when the event is quick it triggers the creation of a marker
     //Called when we are far from any existing points; if we are close to elem, then DOM code in overlayUtils is called instead
     var click_handler= function(event) {
@@ -353,19 +359,6 @@ tmapp.initOSD = function () {
         clickHandler: click_handler,
         scrollHandler: scroll_handler
     }).setTracking(true);
-
-
-    //Assign the function to the button in the document (this should be done more dynamically)
-    document.getElementById('pointstojson').addEventListener('click', JSONUtils.downloadJSON);
-    document.getElementById('jsontodata').addEventListener('click', JSONUtils.readJSONToData);
-
-    bethesdaClassUtils.forEachClass(function(item, index){
-        const className = bethesdaClassUtils.getClassFromID(index).name;
-        $("#class_" + item.name).click(function(){ tmapp.curr_mclass = className; });
-    });
-
-    document.getElementById("focus_next").addEventListener('click', function(){ tmapp.setFocusLevel(tmapp.getFocusLevel()+1); } );
-    document.getElementById("focus_prev").addEventListener('click', function(){ tmapp.setFocusLevel(tmapp.getFocusLevel()-1); } );
 
     tmapp.viewer.canvas.addEventListener('mouseover', function() { tmapp.checkFocus(); });
 

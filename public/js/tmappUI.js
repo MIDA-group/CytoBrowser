@@ -8,6 +8,9 @@
  */
 tmappUI = {
     initUI: function() {
+        // Set the initial class
+        tmapp.setMClass(bethesdaClassUtils.getClassFromID(0).name);
+
         // Add buttons for the available marker classes
         bethesdaClassUtils.forEachClass(function(item, index){
             let label = $("<label></label>");
@@ -20,8 +23,13 @@ tmappUI = {
             input.attr("name", "class_options");
             input.attr("autocomplete", "off");
             label.append(input);
+            label.click(function(){ tmapp.setMClass(item.name); });
             $("#class_buttons").append(label);
         });
+
+        // Add event listeners for local storage buttons
+        $("#pointstojson").click(JSONUtils.downloadJSON);
+        $("#jsontodata").click(JSONUtils.readJSONToData);
 
         // Set up callbacks for the collaboration client
         collabClient.onConnect(function(connection) {
