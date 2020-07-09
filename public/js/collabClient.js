@@ -24,21 +24,21 @@ collabClient = {
                 }
                 break;
             case "summary":
-                function addAllPoints() {
-                    msg.points.forEach((point) => markerPoints.addPoint(point, "image", false));
-                    if (collabClient._joinBatch) {
-                        collabClient._joinBatch.forEach((point) => {
-                            markerPoints.addPoint(point, true);
-                        });
-                        delete collabClient._joinBatch;
-                    }
-                }
                 console.info("Receiving collaboration info.");
                 if (msg.image !== tmapp.image_name) {
-                    tmapp.changeImage(msg.image, addAllPoints, disconnect);
+                    tmapp.changeImage(msg.image, () => {
+                        msg.points.forEach((point) => markerPoints.addPoint(point, "image", false));
+                        delete collabClient._joinBatch;
+                    }, collabClient.disconnect);
                     break;
                 }
-                addAllPoints();
+                msg.points.forEach((point) => markerPoints.addPoint(point, "image", false));
+                if (collabClient._joinBatch) {
+                    collabClient._joinBatch.forEach((point) => {
+                        markerPoints.addPoint(point, true);
+                    });
+                    delete collabClient._joinBatch;
+                }
                 break;
             default:
                 console.warn(`Unknown message type received in collab: ${msg.type}`);
