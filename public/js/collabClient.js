@@ -29,13 +29,15 @@ collabClient = {
                     tmapp.changeImage(msg.image, () => {
                         msg.points.forEach((point) => markerPoints.addPoint(point, "image", false));
                         delete collabClient._joinBatch;
-                    }, collabClient.disconnect);
+                    }, () => {
+                        collabClient.disconnect();
+                    );
                     break;
                 }
                 msg.points.forEach((point) => markerPoints.addPoint(point, "image", false));
                 if (collabClient._joinBatch) {
                     collabClient._joinBatch.forEach((point) => {
-                        markerPoints.addPoint(point, "image", false);
+                        markerPoints.addPoint(point, "image");
                     });
                     delete collabClient._joinBatch;
                 }
@@ -105,6 +107,7 @@ collabClient = {
             collabClient._handleMessage(JSON.parse(event.data));
         }
         ws.onclose = function(event) {
+            delete collabClient._joinBatch;
             delete collabClient.connection;
             delete collabClient.ws;
         }
