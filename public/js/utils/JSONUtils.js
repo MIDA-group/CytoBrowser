@@ -100,13 +100,6 @@ JSONUtils={
                 case "1.0":
                     // Change image if data is for another image
                     if (data.image !== tmapp.image_name) {
-                        if (!confirm(`You are trying to load data for \
-                            the image "${data.image}". Do you want to \
-                            open this image? Any markers placed on the \
-                            current image will be lost unless you save \
-                            them first.`)) {
-                            break;
-                        }
                         tmapp.changeImage(data.image, function() {
                             data.points.forEach((point) => {
                                 markerPoints.addPoint(point, "image");

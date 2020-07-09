@@ -92,6 +92,13 @@ tmapp = {
         viewer.viewport.panTo(viewportCoords, true);
     },
     changeImage: function(imageName, callback) {
+        if (!confirm(`You are trying to load data for ` +
+            `the image "${data.image}". Do you want to ` +
+            `open this image? Any markers placed on the ` +
+            `current image will be lost unless you save ` +
+            `them first.`)) {
+            return;
+        }
         if (!tmapp.images.some((image) => image.name === imageName)) {
             displayImageError("badimage", 5000);
             throw new Error("Tried to change to an unknown image.");

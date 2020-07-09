@@ -26,7 +26,10 @@ collabClient = {
             case "summary":
                 console.info("Receiving collaboration info.");
                 if (msg.image !== tmapp.image_name) {
-                    // TODO: Change image
+                    tmapp.changeImage(msg.image, () => {
+                        msg.points.forEach((point) => markerPoints.addPoint(point, "image", false));
+                    });
+                    break;
                 }
                 msg.points.forEach((point) => markerPoints.addPoint(point, "image", false));
                 break;
