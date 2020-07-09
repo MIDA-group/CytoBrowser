@@ -92,8 +92,8 @@ tmapp = {
         viewer.viewport.panTo(viewportCoords, true);
     },
     changeImage: function(imageName, callback) {
-        if (!confirm(`You are trying to load data for ` +
-            `the image "${data.image}". Do you want to ` +
+        if (!markerPoints.empty() && !confirm(`You are about to open ` +
+            `the image "${imageName}". Do you want to ` +
             `open this image? Any markers placed on the ` +
             `current image will be lost unless you save ` +
             `them first.`)) {
