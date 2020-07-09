@@ -24,16 +24,21 @@ collabClient = {
                 }
                 break;
             case "summary":
+                function addAllPoints() {
+                    msg.points.forEach((point) => markerPoints.addPoint(point, "image", false));
+                    if (collabClient._joinBatch) {
+                        collabClient._joinBatch.forEach((point) => {
+                            markerPoints.addPoint(point, true);
+                        });
+                        delete collabClient._joinBatch;
+                    }
+                }
                 console.info("Receiving collaboration info.");
                 if (msg.image !== tmapp.image_name) {
-                    tmapp.changeImage(msg.image, () => {
-                        msg.points.forEach((point) => markerPoints.addPoint(point, "image", false));
-                    }, () => {
-                        collabClient.disconnect();
-                    });
+                    tmapp.changeImage(msg.image, addAllPoints, disconnect);
                     break;
                 }
-                msg.points.forEach((point) => markerPoints.addPoint(point, "image", false));
+                addAllPoints();
                 break;
             default:
                 console.warn(`Unknown message type received in collab: ${msg.type}`);
@@ -83,12 +88,9 @@ collabClient = {
             collabClient.connectFun && collabClient.connectFun(collabClient.connection);
 
             if (include) {
+                collabClient._joinBatch = [];
                 markerPoints.forEachPoint((point) => {
-                    collabClient.send({
-                        type: "markerAction",
-                        actionType: "add",
-                        point: point
-                    });
+                    collabClient._joinBatch.push(point);
                 });
             }
             else if (markerPoints.empty() || confirm("All your placed markers will be lost unless you have saved them. Do you want to continue anyway?")) {
