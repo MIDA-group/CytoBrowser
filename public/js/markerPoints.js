@@ -99,7 +99,9 @@ markerPoints = {
             // If the id has been specified, check if it's not taken
             const existingPoint = markerPoints.getPointById(addedPoint.id);
             if (existingPoint !== undefined) {
-                throw new Error("Tried assign an already-used id.");
+                console.info("Tried to assign an already-used id, reassigning.");
+                addedPoint.originalId = addedPoint.id;
+                addedPoint.id = markerPoints._generateId();
             }
         }
 
@@ -152,7 +154,9 @@ markerPoints = {
         if (point.id !== undefined && point.id !== id) {
             const existingPoint = markerPoints.getPointById(point.id);
             if (existingPoint !== undefined) {
-                throw new Error("Tried to update to an already-used id.");
+                console.info("Tried to assign an already-used id, keeping old id.");
+                point.originalId = point.id;
+                point.id = id;
             }
         }
 
