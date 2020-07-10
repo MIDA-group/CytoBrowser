@@ -127,10 +127,10 @@ tmapp = {
         tmapp.image_name = imageName; // TODO: Should make case consistent throughout project
         tmapp.updateURLParams();
         tmapp.initOSD(() => {
-            callback();
+            callback && callback();
             collabClient.send({
                 type: "imageSwap",
-                image: image.name
+                image: imageName
             });
         });
     }
