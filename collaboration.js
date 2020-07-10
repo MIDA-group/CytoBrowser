@@ -69,6 +69,7 @@ class Collaboration {
                 break;
             case "imageSwap":
                 this.broadcastMessage(sender, msg);
+                this.points = [];
                 this.image = msg.image;
                 break;
             case "requestSummary":
