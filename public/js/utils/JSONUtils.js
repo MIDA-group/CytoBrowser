@@ -103,7 +103,7 @@ JSONUtils={
                         tmapp.changeImage(data.image, function() {
                             collabClient.send({
                                 type: "imageSwap",
-                                image: imageName
+                                image: data.image
                             });
                             data.points.forEach((point) => {
                                 markerPoints.addPoint(point, "image");

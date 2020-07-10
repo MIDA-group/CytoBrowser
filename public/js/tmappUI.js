@@ -132,7 +132,7 @@ tmappUI = {
             tmapp.changeImage(image.name, () => {
                 collabClient.send({
                     type: "imageSwap",
-                    image: imageName
+                    image: image.name
                 });
             });
         });
