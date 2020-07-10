@@ -339,7 +339,17 @@
     	    }
             tmapp.initial_params = initial_params;
         }
-        tmapp.init();
+
+        // If the URL contains a collab, instantly join it
+        const collab = url.searchParams.get("collab");
+        if (collab) {
+            tmapp.init(() => {
+                collabClient.connect(collab);
+            });
+        }
+        else {
+            tmapp.init();
+        }
     });
 
     // UI setters

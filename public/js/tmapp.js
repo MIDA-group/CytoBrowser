@@ -286,8 +286,10 @@ tmapp.add_handlers = function (callback) {
   * successfully retrieved and the specified image in the parameters is
   * found, a call is made to initOSD() initiate OpenSeadragon.
   * Otherwise, an error message is shown.
+  * @param {Function} callback Function to call when the OSD viewer has
+  * been fully initialized.
   */
-tmapp.init = function () {
+tmapp.init = function (callback) {
     // Initiate a HTTP request and send it to the image info endpoint
     const imageReq = new XMLHttpRequest();
     imageReq.open("GET", window.location.origin + "/api/images", true);
@@ -306,7 +308,7 @@ tmapp.init = function () {
                     const image = images.images.find((image) => image.name === tmapp.fixed_file);
                     if (image) {
                         // Image was found
-                        tmapp.initOSD();
+                        tmapp.initOSD(callback);
                     }
                     else {
                         if (tmapp.fixed_file) {
