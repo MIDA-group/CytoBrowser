@@ -121,8 +121,16 @@ tmappUI = {
         footer.addClass("card-footer");
         const a = $("<a></a>");
         a.addClass("card-link stretched-link");
-        a.attr("href", `/?image=${image.name}`);
+        a.attr("href", "#");
         a.text("Open image");
+        a.click((e) => {
+            tmapp.changeImage(image.name, () => {
+                collabClient.send({
+                    type: "imageSwap",
+                    image: image.name
+                });
+            });
+        });
         a.hover((e) =>
             detail.addClass("show").removeClass("hide"),
             (e) =>
