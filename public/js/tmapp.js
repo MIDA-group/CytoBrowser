@@ -125,6 +125,7 @@ tmapp = {
         $("#ISS_viewer").empty();
         tmapp.fixed_file = imageName;
         tmapp.image_name = imageName; // TODO: Should make case consistent throughout project
+        tmapp.updateURLParams();
         tmapp.initOSD(callback);
     }
 }
