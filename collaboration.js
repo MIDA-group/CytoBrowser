@@ -31,12 +31,13 @@ class Collaboration {
     }
 
     removeMember(ws) {
+        const member = this.members.get(ws);
         this.broadcastMessage(ws, {
             type: "memberEvent",
             eventType: "disconnect",
-            member: this.members.get(ws)
+            member: member
         });
-        this.log(`${name} has disconnected.`, console.info);
+        this.log(`${member.name} has disconnected.`, console.info);
         this.members.delete(ws);
     }
 
@@ -74,11 +75,12 @@ class Collaboration {
                 }
                 break;
             case "memberEvent":
+                const member = this.members.get(sender);
                 this.broadcastMessage(sender, msg);
                 switch (msg.eventType) {
                     case "nameChange":
-                        this.log(`${this.members.get(sender).name} changed their name to ${msg.name}`, console.info);
-                        this.members.get(sender).name = msg.name;
+                        this.log(`${member.name} changed their name to ${msg.name}.`, console.info);
+                        member.name = msg.name;
                         break;
                     default:
                         this.log(`Tried to handle unknown member event: ${msg.eventType}`, console.warn);
