@@ -107,7 +107,8 @@ tmapp = {
             delete this.collab;
             tmappUI.clearCollabID();
         }
-    }
+        this.updateURLParams();
+    },
     panToPoint: function(id) { // Pan to the specified point
         const point = markerPoints.getPointById(id);
         if (point === undefined) {
