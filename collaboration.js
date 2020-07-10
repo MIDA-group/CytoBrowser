@@ -16,7 +16,10 @@ class Collaboration {
     }
 
     addMember(ws, name) {
-        this.members.set(ws, {name: name});
+        this.members.set(ws, {
+            name: name,
+            ready: true,
+        });
         ws.send(JSON.stringify(this.stateSummary()));
         this.broadcastMessage(ws, {
             type: "memberEvent",
@@ -38,7 +41,7 @@ class Collaboration {
         // Forward the message to all other members
         const msgJSON = JSON.stringify(msg);
         for (let member of this.members.keys()) {
-            if (member !== sender) {
+            if (member !== sender && member.ready) {
                 member.send(msgJSON);
             }
         }
@@ -69,11 +72,17 @@ class Collaboration {
                 break;
             case "imageSwap":
                 this.broadcastMessage(sender, msg);
+                for (let [ws, member] of this.members.entries()) {
+                    if (ws !== sender) {
+                        member.ready = false;
+                    }
+                }
                 this.points = [];
                 this.image = msg.image;
                 break;
             case "requestSummary":
                 sender.send(JSON.stringify(this.stateSummary()));
+                member.get(sender).ready = true;
                 break;
             default:
                 this.broadcastMessage(sender, msg);
