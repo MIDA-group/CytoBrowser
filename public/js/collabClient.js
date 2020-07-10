@@ -42,7 +42,10 @@ collabClient = {
                 }
                 break;
             case "imageSwap":
-                tmapp.changeImage(msg.image, null, collabClient.disconnect);
+                tmapp.changeImage(msg.image, () => {
+                    // Make sure to get any new information from before you swapped
+                    collabClient.send({type: "requestSummary"});
+                }, collabClient.disconnect);
                 break;
             default:
                 console.warn(`Unknown message type received in collab: ${msg.type}`);

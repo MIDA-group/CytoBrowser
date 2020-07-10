@@ -71,6 +71,9 @@ class Collaboration {
                 this.broadcastMessage(sender, msg);
                 this.image = msg.image;
                 break;
+            case "requestSummary":
+                sender.send(JSON.stringify(this.stateSummary()));
+                break;
             default:
                 this.broadcastMessage(sender, msg);
                 console.info("Received a message with an unknown type, forwarding anyway.");
