@@ -40,9 +40,9 @@ class Collaboration {
     broadcastMessage(sender, msg) {
         // Forward the message to all other members
         const msgJSON = JSON.stringify(msg);
-        for (let member of this.members.keys()) {
-            if (member !== sender && member.ready) {
-                member.send(msgJSON);
+        for (let [ws, member] of this.members.entries()) {
+            if (ws !== sender && member.ready) {
+                ws.send(msgJSON);
             }
         }
     }
@@ -82,7 +82,7 @@ class Collaboration {
                 break;
             case "requestSummary":
                 sender.send(JSON.stringify(this.stateSummary()));
-                member.get(sender).ready = true;
+                this.members.get(sender).ready = true;
                 break;
             default:
                 this.broadcastMessage(sender, msg);
