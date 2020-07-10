@@ -128,6 +128,7 @@ tmappUI = {
         a.attr("href", "#");
         a.text("Open image");
         a.click((e) => {
+            e.preventDefault();
             tmapp.changeImage(image.name, () => {
                 collabClient.send({
                     type: "imageSwap",
