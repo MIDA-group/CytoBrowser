@@ -13,6 +13,7 @@ class Collaboration {
         this.points = [];
         this.id = id;
         this.image = image;
+        this.log(`Initializing collaboration.`, console.info);
     }
 
     addMember(ws, name) {
@@ -20,6 +21,7 @@ class Collaboration {
             name: name,
             ready: true,
         });
+        this.log(`${name} has connected.`, console.info);
         ws.send(JSON.stringify(this.stateSummary()));
         this.broadcastMessage(ws, {
             type: "memberEvent",
@@ -34,6 +36,7 @@ class Collaboration {
             eventType: "disconnect",
             member: this.members.get(ws)
         });
+        this.log(`${name} has disconnected.`, console.info);
         this.members.delete(ws);
     }
 
@@ -67,18 +70,18 @@ class Collaboration {
                         this.points = [];
                         break;
                     default:
-                        console.warn(`Tried to handle unknown marker action: ${msg.actionType}`);
+                        this.log(`Tried to handle unknown marker action: ${msg.actionType}`, console.warn);
                 }
                 break;
             case "memberEvent":
                 switch (msg.eventType) {
+                    this.broadcastMessage(sender, msg);
                     case "nameChange":
-                        console.info(`${this.members.get(sender).name} changed their name to ${msg.name}`);
+                        this.log(`${this.members.get(sender).name} changed their name to ${msg.name}`, console.info);
                         this.members.get(sender).name = msg.name;
-                        this.broadcastMessage(sender, msg);
                         break;
                     default:
-                        console.warn(`Tried to handle unknown member event: ${msg.eventType}`);
+                        this.log(`Tried to handle unknown member event: ${msg.eventType}`, console.warn);
                 }
                 break;
             case "imageSwap":
@@ -97,7 +100,7 @@ class Collaboration {
                 break;
             default:
                 this.broadcastMessage(sender, msg);
-                console.info("Received a message with an unknown type, forwarding anyway.");
+                this.log("Received a message with an unknown type, forwarding anyway.", console.info);
         }
     }
 
@@ -109,6 +112,10 @@ class Collaboration {
             members: Array.from(this.members.values()),
             points: this.points
         }
+    }
+
+    log(msg, f = console.log) {
+        f(`Collab [${this.id}] -- ${msg}`);
     }
 };
 

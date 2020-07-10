@@ -49,7 +49,7 @@ tmappUI = {
 
         // Add handlers for the collaboration menu
         let nameTimeout;
-        const keyUpTime = 5000;
+        const keyUpTime = 3000;
         $("#collaboration_start [name='username']").keyup(function(event) {
             clearTimeout(nameTimeout);
             nameTimeout = setTimeout(() => {

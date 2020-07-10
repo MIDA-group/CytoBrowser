@@ -48,7 +48,6 @@ app.ws("/collaboration/:id", (ws, req) => {
     const image = req.query.image;
     const name = req.query.name || "Unnamed";
     collaboration.joinCollab(ws, name, id, image);
-    console.info(`Collab [${id}] - ${name} has connected.`);
 
     ws.on("message", (msg) => {
         collaboration.handleMessage(ws, id, msg);
@@ -56,7 +55,6 @@ app.ws("/collaboration/:id", (ws, req) => {
 
     ws.on("close", (code, reason) => {
         collaboration.leaveCollab(ws, id);
-        console.info(`Collab [${id}] - ${name} has disconnected.`);
     });
 });
 
