@@ -7,6 +7,10 @@
  * @namespace tmappUI
  */
 tmappUI = {
+    /**
+     * Initialize UI components that need to be added programatically
+     * and add any event handlers that are needed.
+     */
     initUI: function() {
         // Set the initial class
         tmapp.setMClass(bethesdaClassUtils.getClassFromID(0).name);
@@ -56,16 +60,40 @@ tmappUI = {
             collabClient.disconnect();
         });
     },
+
+    /**
+     * Set the ID of the current collaboration so it can be displayed,
+     * disable the elements for creating and joining collaborations, and
+     * enable the button for leaving the collaboration.
+     * @param {string} id Identifier for the active collaboration.
+     */
     setCollabID: function(id) {
         $("#collaboration_start [name='active_id']").val(id);
         $("#collaboration_start input, #collaboration_start button").prop("disabled", true);
         $("#leave_collaboration").prop("disabled", false);
     },
+
+    /**
+     * Clear the information about the ongoing collaboration,
+     * reenable the buttons for joining and creating collaborations, and
+     * disable the button for leaving the collaboration.
+     */
     clearCollabID: function() {
         $("#collaboration_start [name='active_id']").val("");
         $("#collaboration_start input, #collaboration_start button").prop("disabled", false);
         $("#leave_collaboration").prop("disabled", true);
     },
+
+    /**
+     * Add an image selection element to the image browser.
+     * @param {Object} image Information about the image being added.
+     * @param {string} image.name Name of the image.
+     * @param {Object} image.thumbnails Thumbnails for image preview.
+     * @param {string} image.thumbnails.overview Address to a tile
+     * with a zoomed-out view of the image.
+     * @param {string} image.thumbnails.detail Address to a tile with
+     * a zoomed-out detail view of the image.
+     */
     addImage: function(image) {
         // Messy function, might want to do it some better way
         let deck = $("#available_images .row").last();
