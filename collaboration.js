@@ -76,6 +76,7 @@ class Collaboration {
                         console.info(`${this.members.get(sender).name} changed their name to ${msg.name}`);
                         this.members.get(sender).name = msg.name;
                         this.broadcastMessage(sender, msg);
+                        break;
                     default:
                         console.warn(`Tried to handle unknown member event: ${msg.eventType}`);
                 }
