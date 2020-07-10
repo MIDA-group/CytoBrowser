@@ -41,11 +41,11 @@ tmappUI = {
 
         // Set up callbacks for the collaboration client
         collabClient.onConnect(function(connection) {
-            tmappUI.setCollabID(connection.id);
+            tmapp.setCollab(connection.id);
         });
 
         collabClient.onDisconnect(function(connection) {
-            tmappUI.clearCollabID();
+            tmapp.setCollab();
         });
 
         // Add handlers for the collaboration menu

@@ -87,6 +87,7 @@ tmapp = {
         params.set("x", roundTo(this.curr_x, 5));
         params.set("y", roundTo(this.curr_y, 5));
         params.set("z", this.curr_z);
+        this.collab ? params.set("collab", this.collab) : params.delete("collab");
         setURL("?" + params.toString());
     },
     setMClass: function(mClass) {
@@ -97,6 +98,16 @@ tmapp = {
             throw new Error("Tried to set the active marker class to something not defined.");
         }
     },
+    setCollab: function(id) {
+        if (id) {
+            this.collab = id;
+            tmappUI.setCollabID(id);
+        }
+        else {
+            delete this.collab;
+            tmappUI.clearCollabID();
+        }
+    }
     panToPoint: function(id) { // Pan to the specified point
         const point = markerPoints.getPointById(id);
         if (point === undefined) {
