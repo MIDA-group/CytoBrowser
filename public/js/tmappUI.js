@@ -35,6 +35,10 @@ tmappUI = {
         $("#pointstojson").click(JSONUtils.downloadJSON);
         $("#jsontodata").click(JSONUtils.readJSONToData);
 
+        // Add event listeners for focus buttons
+        $("#focus_next").click(() => tmapp.setFocusLevel(tmapp.getFocusLevel() + 1));
+        $("#focus_prev").click(() => tmapp.setFocusLevel(tmapp.getFocusLevel() - 1));
+
         // Set up callbacks for the collaboration client
         collabClient.onConnect(function(connection) {
             tmappUI.setCollabID(connection.id);
