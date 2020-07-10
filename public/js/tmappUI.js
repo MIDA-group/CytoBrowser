@@ -129,7 +129,12 @@ tmappUI = {
         a.text("Open image");
         a.click((e) => {
             e.preventDefault();
-            tmapp.changeImage(image.name);
+            tmapp.changeImage(image.name, () => {
+                collabClient.send({
+                    type: "imageSwap",
+                    image: imageName
+                });
+            });
         });
         a.hover((e) =>
             detail.addClass("show").removeClass("hide"),

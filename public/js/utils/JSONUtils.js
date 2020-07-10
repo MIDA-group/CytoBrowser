@@ -101,6 +101,10 @@ JSONUtils={
                     // Change image if data is for another image
                     if (data.image !== tmapp.image_name) {
                         tmapp.changeImage(data.image, function() {
+                            collabClient.send({
+                                type: "imageSwap",
+                                image: imageName
+                            });
                             data.points.forEach((point) => {
                                 markerPoints.addPoint(point, "image");
                             });
