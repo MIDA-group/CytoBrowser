@@ -126,7 +126,13 @@ tmapp = {
         tmapp.fixed_file = imageName;
         tmapp.image_name = imageName; // TODO: Should make case consistent throughout project
         tmapp.updateURLParams();
-        tmapp.initOSD(callback);
+        tmapp.initOSD(() => {
+            callback();
+            collabClient.send({
+                type: "imageSwap",
+                image: image.name
+            });
+        });
     }
 }
 
