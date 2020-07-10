@@ -68,9 +68,11 @@ class Collaboration {
                 }
                 break;
             case "imageSwap":
+                this.broadcastMessage(sender, msg);
                 this.image = msg.image;
                 break;
             default:
+                this.broadcastMessage(sender, msg);
                 console.info("Received a message with an unknown type, forwarding anyway.");
         }
     }
