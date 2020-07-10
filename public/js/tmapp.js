@@ -23,17 +23,33 @@ tmapp = {
     curr_mclass: "",
     lost_focus: false,
 
+    /**
+     * Get the current focus level, represented by its 0-centered index.
+     * @returns {number} Current focus level.
+     */
     getFocusLevel: function() {
-        return this.curr_z;
+        return tmapp.curr_z;
     },
+
+    /**
+     * Get the index of the current focus level. As opposed to
+     * {@link getFocusLevel}, this index is not 0-centered, so the
+     * lowest focus level will have the index 0.
+     * @returns {number} Current focus index.
+     */
     getFocusIndex: function() {
         return tmapp.curr_z + Math.floor(z_levels.length / 2);
     },
-    setFocusLevel: function( z ) {
+
+    /**
+     * Set the active focus level and swap to the appropriate image.
+     * @param {number} z The 0-centered focus index to be set.
+     */
+    setFocusLevel: function(z) {
         const count = this.viewer.world.getItemCount();
         const max = Math.floor(count / 2);
         const min = -max;
-        z=Math.min(Math.max(z,min),max);
+        z = Math.min(Math.max(z,min),max);
         for (i = min; i <= max; i++) {
             let idx = i + Math.floor(z_levels.length / 2);
             tmapp.viewer.world.getItemAt(idx).setOpacity(z == i);
@@ -41,8 +57,9 @@ tmapp = {
         this.curr_z = z;
         tmapp.setFocusName();
     },
+
     checkFocus: function() {
-        tmapp.lost_focus=!document.hasFocus(); //If the document lost focus, there is no way to get it back
+        tmapp.lost_focus = !document.hasFocus(); //If the document lost focus, there is no way to get it back
     },
 
     setFocusName: function() { //Display focus level in UI
@@ -77,7 +94,7 @@ tmapp = {
             tmapp.curr_mclass = mClass;
         }
         else {
-            console.warn("Tried to set the active marker class to something not defined.");
+            throw new Error("Tried to set the active marker class to something not defined.");
         }
     },
     panToPoint: function(id) { // Pan to the specified point
