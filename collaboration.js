@@ -74,8 +74,8 @@ class Collaboration {
                 }
                 break;
             case "memberEvent":
+                this.broadcastMessage(sender, msg);
                 switch (msg.eventType) {
-                    this.broadcastMessage(sender, msg);
                     case "nameChange":
                         this.log(`${this.members.get(sender).name} changed their name to ${msg.name}`, console.info);
                         this.members.get(sender).name = msg.name;
