@@ -70,6 +70,16 @@ class Collaboration {
                         console.warn(`Tried to handle unknown marker action: ${msg.actionType}`);
                 }
                 break;
+            case "memberEvent":
+                switch (msg.eventType) {
+                    case "nameChange":
+                        console.info(`${this.members.get(sender).name} changed their name to ${msg.name}`);
+                        this.members.get(sender).name = msg.name;
+                        this.broadcastMessage(sender, msg);
+                    default:
+                        console.warn(`Tried to handle unknown member event: ${msg.eventType}`);
+                }
+                break;
             case "imageSwap":
                 this.broadcastMessage(sender, msg);
                 for (let [ws, member] of this.members.entries()) {

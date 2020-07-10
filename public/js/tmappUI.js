@@ -43,12 +43,24 @@ tmappUI = {
         collabClient.onConnect(function(connection) {
             tmapp.setCollab(connection.id);
         });
-
         collabClient.onDisconnect(function(connection) {
             tmapp.setCollab();
         });
 
         // Add handlers for the collaboration menu
+        let nameTimeout;
+        const keyUpTime = 5000;
+        $("#collaboration_start [name='username']").keyup(function(event) {
+            clearTimeout(nameTimeout);
+            nameTimeout = setTimeout(() => {
+                const name = $("#collaboration_start [name='username']").val();
+                collabClient.send({
+                    type: "memberEvent",
+                    eventType: "nameChange",
+                    name: name
+                });
+            }, keyUpTime);
+        });
         $("#create_collaboration").click(function(event) {
             const name = $("#collaboration_start [name='username']").val();
             const include = $("#include_points").prop("checked");
@@ -74,6 +86,7 @@ tmappUI = {
     setCollabID: function(id) {
         $("#collaboration_start [name='active_id']").val(id);
         $("#collaboration_start input, #collaboration_start button").prop("disabled", true);
+        $("#collaboration_start [name='username']").prop("disabled", false);
         $("#leave_collaboration").prop("disabled", false);
     },
 
@@ -85,6 +98,7 @@ tmappUI = {
     clearCollabID: function() {
         $("#collaboration_start [name='active_id']").val("");
         $("#collaboration_start input, #collaboration_start button").prop("disabled", false);
+        $("#collaboration_start [name='username']").prop("disabled", false);
         $("#leave_collaboration").prop("disabled", true);
     },
 
