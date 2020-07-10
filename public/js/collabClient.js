@@ -29,9 +29,7 @@ collabClient = {
                     tmapp.changeImage(msg.image, () => {
                         msg.points.forEach((point) => markerPoints.addPoint(point, "image", false));
                         delete collabClient._joinBatch;
-                    }, () => {
-                        collabClient.disconnect();
-                    });
+                    }, collabClient.disconnect);
                     break;
                 }
                 markerPoints.clearPoints(false);
@@ -42,6 +40,9 @@ collabClient = {
                     });
                     delete collabClient._joinBatch;
                 }
+                break;
+            case "imageSwap":
+                tmapp.changeImage(msg.image, null, collabClient.disconnect);
                 break;
             default:
                 console.warn(`Unknown message type received in collab: ${msg.type}`);

@@ -67,6 +67,9 @@ class Collaboration {
                         console.warn(`Tried to handle unknown marker action: ${msg.actionType}`);
                 }
                 break;
+            case "imageSwap":
+                this.image = msg.image;
+                break;
             default:
                 console.info("Received a message with an unknown type, forwarding anyway.");
         }
