@@ -132,7 +132,7 @@ const markerPoints = (function (){
             addedPoint.z,
             addedPoint.mclass
         );
-    },
+    }
 
     /**
      * Update the parameters of an already existing point.
@@ -185,7 +185,7 @@ const markerPoints = (function (){
 
         // Update the point in the graphics
         overlayUtils.updateTMCP(point.id, coords.viewport.x, coords.viewport.y, point.z, point.mclass);
-    },
+    }
 
     /**
      * Remove a point from the data.
@@ -214,7 +214,7 @@ const markerPoints = (function (){
 
         // Remove the point from the graphics
         overlayUtils.removeTMCP(id);
-    },
+    }
 
     /**
      * Remove all points from the data.
@@ -231,7 +231,7 @@ const markerPoints = (function (){
             type: "markerAction",
             actionType: "clear",
         });
-    },
+    }
 
     /**
      * Iterate a function for each point. The function will not change
@@ -242,7 +242,7 @@ const markerPoints = (function (){
      */
     function forEachPoint(f) {
         _points.map(_clonePoint).forEach(f);
-    },
+    }
 
     /**
      * Get a copy of a specified point by its id.
@@ -257,7 +257,7 @@ const markerPoints = (function (){
         }
         const pointClone = _clonePoint(point);
         return pointClone;
-    },
+    }
 
     /**
      * Check whether or not the list of marker points is empty.
