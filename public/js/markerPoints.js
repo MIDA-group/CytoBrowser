@@ -27,7 +27,7 @@ const markerPoints = (function (){
      * @typedef {string} CoordSystem
      */
     const _points = [];
-    const _nextId = 0;
+    let _nextId = 0;
     function _generateId() {
         let id = _nextId;
         if (getPointById(id) !== undefined) {
