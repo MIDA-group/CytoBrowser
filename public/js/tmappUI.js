@@ -202,6 +202,7 @@ const tmappUI = (function(){
         a.click((e) => {
             e.preventDefault();
             tmapp.changeImage(image.name, () => {
+                tmappUI.clearImageError();
                 collabClient.send({
                     type: "imageSwap",
                     image: image.name
