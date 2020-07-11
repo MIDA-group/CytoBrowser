@@ -8,6 +8,30 @@
  */
 const tmappUI = (function(){
     "use strict";
+    let _errorDisplayTimeout = null;
+    const _errors = {
+        noimage: {
+            message: "No image has been specified. Select one from the menu on the right.",
+            type: "alert-info"
+        },
+        badimage: {
+            message: "The specified image was not found. Select a new one from the menu on the right.",
+            type: "alert-warning"
+        },
+        servererror: {
+            message: "Something went wrong on the server. Try again or contact an administrator.",
+            type: "alert-warning"
+        },
+        unexpected: {
+            message: "An unexpected error was encountered when retrieving the image list.",
+            type: "alert-warning"
+        },
+        tilefail: {
+            message: "Failed to load image tile from server.",
+            type: "alert-danger"
+        }
+    };
+
     /**
      * Initialize UI components that need to be added programatically
      * and add any event handlers that are needed.
@@ -101,6 +125,32 @@ const tmappUI = (function(){
         $("#collaboration_start input, #collaboration_start button").prop("disabled", false);
         $("#collaboration_start [name='username']").prop("disabled", false);
         $("#leave_collaboration").prop("disabled", true);
+    }
+
+    /**
+     * Display an error message over the image viewport.
+     * @param {string} error The type of error taking place. The possible
+     * error types are "noimage", "badimage", "servererror", "unexpected",
+     * and "tilefail". If none of these are specified, this argument is
+     * instead used for the error message itself.
+     * @param {number} duration How long the message should be displayed
+     * before fading out. If falsy, the message will remain forever.
+     */
+    function displayImageError(error, duration) {
+        // Add alert to the UI
+        const alert = $("<div></div>");
+        alert.addClass(`alert ${_errors[error].type}`);
+        alert.text(_errors[error].message);
+        window.clearTimeout(_errorDisplayTimeout);
+        $("#alert_wrapper").removeClass("fade out");
+        $("#alert_wrapper").html(alert);
+
+        // Fade out the alert after the duration has passed
+        if (duration) {
+            _errorDisplayTimeout = window.setTimeout(function() {
+                $("#alert_wrapper").addClass("fade out");
+            }, duration);
+        }
     }
 
     /**

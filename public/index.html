@@ -366,47 +366,6 @@
         window.history.pushState(null, "", txt);
     }
 
-    let errorDisplayTimeout = null;
-    function displayImageError(error, duration) {
-        const errors = {
-            noimage: {
-                message: "No image has been specified. Select one from the menu on the right.",
-                type: "alert-info"
-            },
-            badimage: {
-                message: "The specified image was not found. Select a new one from the menu on the right.",
-                type: "alert-warning"
-            },
-            servererror: {
-                message: "Something went wrong on the server. Try again or contact an administrator.",
-                type: "alert-warning"
-            },
-            unexpected: {
-                message: "An unexpected error was encountered when retrieving the image list.",
-                type: "alert-warning"
-            },
-            tilefail: {
-                message: "Failed to load image tile from server.",
-                type: "alert-danger"
-            }
-        };
-
-        // Add alert to the UI
-        const alert = $("<div></div>");
-        alert.addClass(`alert ${errors[error].type}`);
-        alert.text(errors[error].message);
-        window.clearTimeout(errorDisplayTimeout);
-        $("#alert_wrapper").removeClass("fade out");
-        $("#alert_wrapper").html(alert);
-
-        // Fade out the alert after the duration has passed
-        if (duration) {
-            errorDisplayTimeout = window.setTimeout(function() {
-                $("#alert_wrapper").addClass("fade out");
-            }, duration);
-        }
-    }
-
     $(document).mousedown(function(event){
         if (!(document.hasFocus())) {
             console.log("Lost focus, ignoreing click and setting focus")

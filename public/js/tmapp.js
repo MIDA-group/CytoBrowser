@@ -130,7 +130,7 @@ tmapp = {
             return;
         }
         if (!tmapp.images.some((image) => image.name === imageName)) {
-            displayImageError("badimage", 5000);
+            tmappUI.displayImageError("badimage", 5000);
             throw new Error("Tried to change to an unknown image.");
         }
         markerPoints.clearPoints(false);
@@ -271,7 +271,7 @@ tmapp.add_handlers = function (callback) {
 
     // A tile failed to load
     viewer.addHandler("tile-load-failed", function(event) {
-        displayImageError("tilefail", 1000);
+        tmappUI.displayImageError("tilefail", 1000);
     });
 
     //pixelate at MaxZoom level (instead of blur)
@@ -312,18 +312,18 @@ tmapp.init = function (callback) {
                     }
                     else {
                         if (tmapp.fixed_file) {
-                            displayImageError("badimage");
+                            tmappUI.displayImageError("badimage");
                         }
                         else {
-                            displayImageError("noimage");
+                            tmappUI.displayImageError("noimage");
                         }
                     }
                     break;
                 case 500:
-                    displayImageError("servererror");
+                    tmappUI.displayImageError("servererror");
                     break;
                 default:
-                    displayImageError("unexpected");
+                    tmappUI.displayImageError("unexpected");
             }
         }
     }
