@@ -137,20 +137,27 @@ const tmappUI = (function(){
      * before fading out. If falsy, the message will remain forever.
      */
     function displayImageError(error, duration) {
+        const errorInfo = _errors[error] || {message: error, type: "alert-info"};
+
         // Add alert to the UI
         const alert = $("<div></div>");
-        alert.addClass(`alert ${_errors[error].type}`);
-        alert.text(_errors[error].message);
+        alert.addClass(`alert ${errorInfo.type}`);
+        alert.text(errorInfo.message);
         window.clearTimeout(_errorDisplayTimeout);
         $("#alert_wrapper").removeClass("fade out");
         $("#alert_wrapper").html(alert);
 
         // Fade out the alert after the duration has passed
         if (duration) {
-            _errorDisplayTimeout = window.setTimeout(function() {
-                $("#alert_wrapper").addClass("fade out");
-            }, duration);
+            _errorDisplayTimeout = window.setTimeout(clearImageError, duration);
         }
+    }
+
+    /**
+     * Fade out the currently displayed image error.
+     */
+    function clearImageError() {
+        $("#alert_wrapper").addClass("fade out");
     }
 
     /**
@@ -220,6 +227,8 @@ const tmappUI = (function(){
         initUI: initUI,
         setCollabID: setCollabID,
         clearCollabID: clearCollabID,
+        displayImageError: displayImageError,
+        clearImageError: clearImageError,
         addImage: addImage
     };
 })();
