@@ -6,12 +6,13 @@
  * that need to be added programatically.
  * @namespace tmappUI
  */
-tmappUI = {
+const tmappUI = (function(){
+    "use strict";
     /**
      * Initialize UI components that need to be added programatically
      * and add any event handlers that are needed.
      */
-    initUI: function() {
+    function initUI() {
         // Set the initial class
         tmapp.setMClass(bethesdaClassUtils.getClassFromID(0).name);
 
@@ -57,7 +58,7 @@ tmappUI = {
                 collabClient.send({
                     type: "memberEvent",
                     eventType: "nameChange",
-                    name: name
+                    name: name // TODO: Update self
                 });
             }, keyUpTime);
         });
@@ -75,7 +76,7 @@ tmappUI = {
         $("#leave_collaboration").click(function(event) {
             collabClient.disconnect();
         });
-    },
+    }
 
     /**
      * Set the ID of the current collaboration so it can be displayed,
@@ -83,24 +84,24 @@ tmappUI = {
      * enable the button for leaving the collaboration.
      * @param {string} id Identifier for the active collaboration.
      */
-    setCollabID: function(id) {
+    function setCollabID(id) {
         $("#collaboration_start [name='active_id']").val(id);
         $("#collaboration_start input, #collaboration_start button").prop("disabled", true);
         $("#collaboration_start [name='username']").prop("disabled", false);
         $("#leave_collaboration").prop("disabled", false);
-    },
+    }
 
     /**
      * Clear the information about the ongoing collaboration,
      * reenable the buttons for joining and creating collaborations, and
      * disable the button for leaving the collaboration.
      */
-    clearCollabID: function() {
+    function clearCollabID() {
         $("#collaboration_start [name='active_id']").val("");
         $("#collaboration_start input, #collaboration_start button").prop("disabled", false);
         $("#collaboration_start [name='username']").prop("disabled", false);
         $("#leave_collaboration").prop("disabled", true);
-    },
+    }
 
     /**
      * Add an image selection element to the image browser.
@@ -112,7 +113,7 @@ tmappUI = {
      * @param {string} image.thumbnails.detail Address to a tile with
      * a zoomed-out detail view of the image.
      */
-    addImage: function(image) {
+    function addImage(image) {
         // Messy function, might want to do it some better way
         let deck = $("#available_images .row").last();
         if (deck.length === 0 || deck.children().length === 3) {
@@ -164,4 +165,11 @@ tmappUI = {
         col.append(card);
         deck.append(col);
     }
-}
+
+    return {
+        initUI: initUI,
+        setCollabID: setCollabID,
+        clearCollabID: clearCollabID,
+        addImage: addImage
+    };
+})();
