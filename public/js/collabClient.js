@@ -195,7 +195,7 @@ const collabClient = (function(){
      * @param {CollabCallback} f Function to be called.
      */
     function onDisconnect(f) {
-        disconnectFun = f;
+        _disconnectFun = f;
     }
 
     return {
