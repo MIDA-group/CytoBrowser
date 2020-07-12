@@ -32,7 +32,7 @@ const tmappUI = (function(){
         }
     };
 
-    const _holdInterval = 100;
+    const _holdInterval = 50;
     function _addHoldableButton(key, element, f) {
         let interval;
         element.addEventListener("keydown", (event) => {
@@ -81,8 +81,9 @@ const tmappUI = (function(){
         // Add event listeners for keyboard buttons
         //1,2,... for class selection
         //z,x for focus up down
-        _addHoldableButton("c", document, () => $("#focus_prev").click());
-        _addHoldableButton("v", document, () => $("#focus_next").click());
+        // Uncomment these for smooth focus change
+        // _addHoldableButton("c", document, () => $("#focus_prev").click());
+        // _addHoldableButton("v", document, () => $("#focus_next").click());
         $(document).keypress(function(){
             switch(event.which) {
                 case "z".charCodeAt():
@@ -134,6 +135,7 @@ const tmappUI = (function(){
             const name = $("#collaboration_start [name='username']").val();
             const id = $("#collaboration_start [name='joined_id']").val();
             const include = $("#include_points").prop("checked");
+            $("#collaboration_menu").modal("hide");
             collabClient.connect(id, name, include);
         });
         $("#leave_collaboration").click(function(event) {
@@ -240,6 +242,7 @@ const tmappUI = (function(){
         a.text("Open image");
         a.click((e) => {
             e.preventDefault();
+            $("#image_browser").modal("hide");
             tmapp.changeImage(image.name, () => {
                 tmappUI.clearImageError();
                 collabClient.send({
