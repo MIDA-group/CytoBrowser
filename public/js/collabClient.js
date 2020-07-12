@@ -2,8 +2,15 @@
  * Clientside functions for collaborating.
  * @namespace collabClient
  */
-collabClient = {
-    _handleMessage: function(msg) {
+const collabClient = (function(){
+    "use strict";
+    let _ws,
+        _connection,
+        _joinBatch,
+        _connectFun,
+        _disconnectFun;
+
+    function _handleMessage(msg) {
         switch(msg.type) {
             case "markerAction":
                 switch(msg.actionType) {
@@ -28,29 +35,30 @@ collabClient = {
                 if (msg.image !== tmapp.image_name) {
                     tmapp.changeImage(msg.image, () => {
                         msg.points.forEach((point) => markerPoints.addPoint(point, "image", false));
-                        delete collabClient._joinBatch;
-                    }, collabClient.disconnect);
+                        _joinBatch = null;
+                    }, disconnect);
                     break;
                 }
                 markerPoints.clearPoints(false);
                 msg.points.forEach((point) => markerPoints.addPoint(point, "image", false));
-                if (collabClient._joinBatch) {
-                    collabClient._joinBatch.forEach((point) => {
+                if (_joinBatch) {
+                    _joinBatch.forEach((point) => {
                         markerPoints.addPoint(point, "image");
                     });
-                    delete collabClient._joinBatch;
+                    _joinBatch = null;
                 }
                 break;
             case "imageSwap":
                 tmapp.changeImage(msg.image, () => {
                     // Make sure to get any new information from before you swapped
-                    collabClient.send({type: "requestSummary"});
-                }, collabClient.disconnect);
+                    send({type: "requestSummary"});
+                }, disconnect);
                 break;
             default:
                 console.warn(`Unknown message type received in collab: ${msg.type}`);
         }
-    },
+    }
+
     /**
      * Create a new collaboration with a unique ID and automatically
      * join it.
@@ -58,7 +66,7 @@ collabClient = {
      * @param {boolean} include Whether or not already-placed markers
      * should be included in the collaborative workspace.
      */
-    createCollab: function(name, include) {
+    function createCollab(name, include) {
         // Get a new code for a collab first
         const idReq = new XMLHttpRequest();
         idReq.open("GET", window.location.origin + "/api/collaboration/id", true)
@@ -67,10 +75,10 @@ collabClient = {
             if (idReq.readyState === 4 && idReq.status === 200) {
                 const response = JSON.parse(idReq.responseText);
                 const id = response.id;
-                collabClient.connect(id, name, include);
+                connect(id, name, include);
             }
         };
-    },
+    }
 
     /**
      * Connect to a collaboration.
@@ -81,55 +89,55 @@ collabClient = {
      * @param {boolean} include Whether or not already-placed markers
      * should be included in the collaborative workspace.
      */
-    connect: function(id, name="Unnamed", include=false) {
-        if (collabClient.ws) {
-            collabClient.disconnect();
+    function connect(id, name="Unnamed", include=false) {
+        if (_ws) {
+            disconnect();
         }
 
         const address = `ws://${window.location.host}/collaboration/${id}?name=${name}&image=${tmapp.image_name}`;
         const ws = new WebSocket(address);
         ws.onopen = function(event) {
             console.info(`Successfully connected to collaboration ${id}.`);
-            collabClient.ws = ws;
-            collabClient.connection = {id: id, name: name, ws: ws};
-            collabClient.connectFun && collabClient.connectFun(collabClient.connection);
+            _ws = ws;
+            _connection = {id: id, name: name, ws: ws};
+            _connectFun && _connectFun(_connection);
 
             if (include) {
-                collabClient._joinBatch = [];
+                _joinBatch = [];
                 markerPoints.forEachPoint((point) => {
-                    collabClient._joinBatch.push(point);
+                    _joinBatch.push(point);
                 });
             }
             else if (markerPoints.empty() || confirm("All your placed markers will be lost unless you have saved them. Do you want to continue anyway?")) {
                 markerPoints.clearPoints(false);
             }
             else {
-                collabClient.disconnect();
+                disconnect();
             }
         }
         ws.onmessage = function(event) {
             console.log(`Received: ${event.data}`);
-            collabClient._handleMessage(JSON.parse(event.data));
+            _handleMessage(JSON.parse(event.data));
         }
         ws.onclose = function(event) {
-            delete collabClient._joinBatch;
-            delete collabClient.connection;
-            delete collabClient.ws;
+            _joinBatch = null;
+            connection = null;
+            ws = null;
         }
-    },
+    }
 
     /**
      * Disconnect from the currently active collaboration.
      */
-    disconnect: function() {
-        if (collabClient.ws) {
-            collabClient.disconnectFun && collabClient.disconnectFun(collabClient.connection);
-            collabClient.ws.close();
+    function disconnect() {
+        if (_ws) {
+            _disconnectFun && _disconnectFun(_connection);
+            _ws.close();
         }
         else {
             console.warn("Tried to disconnect from nonexistent collaboration.");
         }
-    },
+    }
 
     /**
      * Send a message to the currently ongoing collaboration so it can
@@ -137,28 +145,28 @@ collabClient = {
      * @param {Object} msg Message to be sent.
      * @param {string} msg.type Type of the message being sent.
      */
-    send: function(msg) {
-        if (collabClient.ws) {
+    function send(msg) {
+        if (_ws) {
             if (typeof(msg) === "object") {
-                collabClient.ws.send(JSON.stringify(msg));
+                _ws.send(JSON.stringify(msg));
             }
             else {
-                collabClient.ws.send(msg);
+                _ws.send(msg);
             }
         }
-    },
+    }
 
     /**
      * Change the name of the local collaboration member.
      * @param {string} newName The new name to be assigned to the member.
      */
-    changeName: function(newName) {
-        collabClient.send({
+    function changeName(newName) {
+        send({
             type: "memberEvent",
             eventType: "nameChange",
             name: name
         });
-    },
+    }
 
     /**
      * Function that can be set to be called at various points in the
@@ -177,16 +185,26 @@ collabClient = {
      * successfully connects to the server.
      * @param {CollabCallback} f Function to be called.
      */
-    onConnect: function(f) {
-        collabClient.connectFun = f;
-    },
+    function onConnect(f) {
+        _connectFun = f;
+    }
 
     /**
      * Set a function to be called whenever the collaboration
      * disconnects from the server.
      * @param {CollabCallback} f Function to be called.
      */
-    onDisconnect: function(f) {
-        collabClient.disconnectFun = f;
+    function onDisconnect(f) {
+        disconnectFun = f;
     }
-}
+
+    return {
+        createCollab: createCollab,
+        connect: connect,
+        disconnect: disconnect,
+        send: send,
+        changeName: changeName,
+        onConnect: onConnect,
+        onDisconnect: onDisconnect
+    };
+})();
