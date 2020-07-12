@@ -37,6 +37,7 @@ const tmappUI = (function(){
         let interval;
         element.addEventListener("keydown", (event) => {
             if (event.key === key && !event.repeat) {
+                f();
                 interval = setInterval(f, _holdInterval);
             }
         });
