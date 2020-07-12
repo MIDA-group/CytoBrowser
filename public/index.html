@@ -372,24 +372,5 @@
             tmapp.fixed_viewer.canvas.focus();
         }
     });
-
-    //1,2,... for class selection
-    //z,x for focus up down
-    $(document).keypress(function(){
-        console.log(event.which);
-        switch(event.which) {
-            case "z".charCodeAt(): document.getElementById("focus_prev").click(); break;
-            case "x".charCodeAt(): document.getElementById("focus_next").click(); break;
-            default:
-                // Handle digit keys being pressed for classes
-                const digits = Array.from({length: 10}, (v,k) => String((k+1) % 10));
-                const chars = digits.map((digit) => digit.charCodeAt());
-                chars.slice(0, bethesdaClassUtils.amountClasses).forEach((char, index) => {
-                    if (event.which == char) {
-                        $("#class_" + bethesdaClassUtils.getClassFromID(index).name).click();
-                    }
-                });
-        }
-    });
 </script>
 </html>

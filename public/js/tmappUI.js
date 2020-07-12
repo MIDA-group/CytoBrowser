@@ -32,6 +32,19 @@ const tmappUI = (function(){
         }
     };
 
+    const _holdInterval = 100;
+    function _addHoldableButton(key, element, f) {
+        let interval;
+        element.addEventListener("keydown", (event) => {
+            if (event.key === key && !event.repeat) {
+                interval = setInterval(f, _holdInterval);
+            }
+        });
+        element.addEventListener("keyup", (event) => {
+            event.key === key && clearInterval(interval);
+        });
+    }
+
     /**
      * Initialize UI components that need to be added programatically
      * and add any event handlers that are needed.
@@ -63,6 +76,31 @@ const tmappUI = (function(){
         // Add event listeners for focus buttons
         $("#focus_next").click(() => tmapp.setFocusLevel(tmapp.getFocusLevel() + 1));
         $("#focus_prev").click(() => tmapp.setFocusLevel(tmapp.getFocusLevel() - 1));
+
+        // Add event listeners for keyboard buttons
+        //1,2,... for class selection
+        //z,x for focus up down
+        _addHoldableButton("c", document, () => $("#focus_prev").click());
+        _addHoldableButton("v", document, () => $("#focus_next").click());
+        $(document).keypress(function(){
+            switch(event.which) {
+                case "z".charCodeAt():
+                    $("#focus_prev").click();
+                    break;
+                case "x".charCodeAt():
+                    $("#focus_next").click();
+                    break;
+                default:
+                    // Handle digit keys being pressed for classes
+                    const digits = Array.from({length: 10}, (v,k) => String((k+1) % 10));
+                    const chars = digits.map((digit) => digit.charCodeAt());
+                    chars.slice(0, bethesdaClassUtils.amountClasses).forEach((char, index) => {
+                        if (event.which == char) {
+                            $("#class_" + bethesdaClassUtils.getClassFromID(index).name).click();
+                        }
+                    });
+            }
+        });
 
         // Set up callbacks for the collaboration client
         collabClient.onConnect(function(connection) {
