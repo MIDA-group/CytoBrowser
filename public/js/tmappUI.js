@@ -240,7 +240,6 @@ const tmappUI = (function(){
             e.preventDefault();
             $("#image_browser").modal("hide");
             tmapp.changeImage(image.name, () => {
-                tmappUI.clearImageError();
                 collabClient.send({
                     type: "imageSwap",
                     image: image.name

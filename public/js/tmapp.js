@@ -261,6 +261,7 @@ tmapp.add_handlers = function (callback) {
         tmapp.setZoomName();
         tmapp.setFocusName();
         callback && callback();
+        tmappUI.clearImageError();
     });
 
     //Error message if we fail to load
