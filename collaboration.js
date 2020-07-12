@@ -12,12 +12,14 @@ class Collaboration {
         this.members = new Map();
         this.points = [];
         this.id = id;
+        this.nextMemberId = 0;
         this.image = image;
         this.log(`Initializing collaboration.`, console.info);
     }
 
     addMember(ws, name) {
         this.members.set(ws, {
+            id: this.nextMemberId++,
             name: name,
             ready: true,
         });
@@ -78,9 +80,15 @@ class Collaboration {
                 const member = this.members.get(sender);
                 this.broadcastMessage(sender, msg);
                 switch (msg.eventType) {
+                    // TODO: Would probably be better with just a single type of update
                     case "nameChange":
                         this.log(`${member.name} changed their name to ${msg.name}.`, console.info);
                         member.name = msg.name;
+                        this.broadcastMessage(sender, {
+                            type: "memberEvent",
+                            eventType: "update",
+                            member: member
+                        });
                         break;
                     default:
                         this.log(`Tried to handle unknown member event: ${msg.eventType}`, console.warn);
