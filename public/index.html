@@ -344,7 +344,8 @@
         const collab = url.searchParams.get("collab");
         if (collab) {
             tmapp.init(() => {
-                collabClient.connect(collab);
+                const name = collabClient.getDefaultName();
+                collabClient.connect(collab, name);
             });
         }
         else {

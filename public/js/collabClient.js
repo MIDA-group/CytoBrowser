@@ -121,8 +121,9 @@ const collabClient = (function(){
         }
         ws.onclose = function(event) {
             _joinBatch = null;
-            connection = null;
-            ws = null;
+            _connection = null;
+            _members = null;
+            _ws = null;
         }
     }
 
@@ -161,11 +162,24 @@ const collabClient = (function(){
      * @param {string} newName The new name to be assigned to the member.
      */
     function changeName(newName) {
+        document.cookie = `last_used_collab_name=${newName};samesite=strict`;
         send({
             type: "memberEvent",
             eventType: "nameChange",
             name: newName
         });
+    }
+
+    /**
+     * Get the default name for the collaboration member by retrieving
+     * their most recently used name from a cookie.
+     * @return {string|undefined} The name that should be used by default.
+     */
+    function getDefaultName() {
+        const nameCookie = document.cookie.match(/(?<=last_used_collab_name=)[^;|$]*/g);
+        if (nameCookie) {
+            return nameCookie[0];
+        }
     }
 
     /**
@@ -204,6 +218,7 @@ const collabClient = (function(){
         disconnect: disconnect,
         send: send,
         changeName: changeName,
+        getDefaultName: getDefaultName,
         onConnect: onConnect,
         onDisconnect: onDisconnect
     };

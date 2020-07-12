@@ -115,13 +115,12 @@ const tmappUI = (function(){
         // Set up the collaboration menu
         let nameTimeout;
         const keyUpTime = 3000;
-        const nameCookie = document.cookie.match(/(?<=name=)[^;|$]*/g);
-        $("#collaboration_start [name='username']").val(nameCookie || "");
+        const defaultName = collabClient.getDefaultName();
+        $("#collaboration_start [name='username']").val(defaultName || "");
         $("#collaboration_start [name='username']").keyup(function(event) {
             clearTimeout(nameTimeout);
             nameTimeout = setTimeout(() => {
                 const name = $("#collaboration_start [name='username']").val();
-                document.cookie = `name=${name}`;
                 collabClient.changeName(name);
             }, keyUpTime);
         });
