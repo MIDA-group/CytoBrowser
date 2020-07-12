@@ -164,7 +164,7 @@ const collabClient = (function(){
         send({
             type: "memberEvent",
             eventType: "nameChange",
-            name: name
+            name: newName
         });
     }
 
