@@ -149,6 +149,18 @@ collabClient = {
     },
 
     /**
+     * Change the name of the local collaboration member.
+     * @param {string} newName The new name to be assigned to the member.
+     */
+    changeName: function(newName) {
+        collabClient.send({
+            type: "memberEvent",
+            eventType: "nameChange",
+            name: name
+        });
+    },
+
+    /**
      * Function that can be set to be called at various points in the
      * collaboration lifeline.
      * @name CollabCallback

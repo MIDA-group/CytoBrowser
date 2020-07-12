@@ -119,11 +119,7 @@ const tmappUI = (function(){
             clearTimeout(nameTimeout);
             nameTimeout = setTimeout(() => {
                 const name = $("#collaboration_start [name='username']").val();
-                collabClient.send({
-                    type: "memberEvent",
-                    eventType: "nameChange",
-                    name: name // TODO: Update self
-                });
+                collabClient.changeName(name);
             }, keyUpTime);
         });
         $("#create_collaboration").click(function(event) {
