@@ -24,10 +24,10 @@ class Collaboration {
             ready: true,
         });
         this.log(`${name} has connected.`, console.info);
-        ws.send(JSON.stringify(this.stateSummary()));
+        ws.send(JSON.stringify(this.stateSummary(sender)));
         this.broadcastMessage(ws, {
             type: "memberEvent",
-            eventType: "connect",
+            eventType: "add",
             member: this.members.get(ws)
         });
     }
@@ -36,7 +36,7 @@ class Collaboration {
         const member = this.members.get(ws);
         this.broadcastMessage(ws, {
             type: "memberEvent",
-            eventType: "disconnect",
+            eventType: "remove",
             member: member
         });
         this.log(`${member.name} has disconnected.`, console.info);
@@ -80,15 +80,9 @@ class Collaboration {
                 const member = this.members.get(sender);
                 this.broadcastMessage(sender, msg);
                 switch (msg.eventType) {
-                    // TODO: Would probably be better with just a single type of update
-                    case "nameChange":
-                        this.log(`${member.name} changed their name to ${msg.name}.`, console.info);
-                        member.name = msg.name;
-                        this.broadcastMessage(sender, {
-                            type: "memberEvent",
-                            eventType: "update",
-                            member: member
-                        });
+                    case "update":
+                        Object.assign(member, msg.member);
+                        this.broadcastMessage(sender, msg);
                         break;
                     default:
                         this.log(`Tried to handle unknown member event: ${msg.eventType}`, console.warn);
@@ -105,7 +99,7 @@ class Collaboration {
                 this.image = msg.image;
                 break;
             case "requestSummary":
-                sender.send(JSON.stringify(this.stateSummary()));
+                sender.send(JSON.stringify(this.stateSummary(sender)));
                 this.members.get(sender).ready = true;
                 break;
             default:
@@ -114,10 +108,11 @@ class Collaboration {
         }
     }
 
-    stateSummary() {
+    stateSummary(sender) {
         return {
             type: "summary",
             id: this.id,
+            requesterId: this.members.get(sender).id,
             image: this.image,
             members: Array.from(this.members.values()),
             points: this.points
