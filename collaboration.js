@@ -21,10 +21,9 @@ class Collaboration {
         this.members.set(ws, {
             id: this.nextMemberId++,
             name: name,
-            ready: true,
+            ready: false,
         });
         this.log(`${name} has connected.`, console.info);
-        ws.send(JSON.stringify(this.stateSummary(ws)));
         this.broadcastMessage(ws, {
             type: "memberEvent",
             eventType: "add",

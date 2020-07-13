@@ -100,7 +100,7 @@ const collabClient = (function(){
     function _handleImageSwap(msg) {
         tmapp.changeImage(msg.image, () => {
             // Make sure to get any new information from before you swapped
-            send({type: "requestSummary"});
+            requestSummary();
         }, disconnect);
     }
 
@@ -152,9 +152,11 @@ const collabClient = (function(){
                 markerPoints.forEachPoint((point) => {
                     _joinBatch.push(point);
                 });
+                requestSummary();
             }
             else if (markerPoints.empty() || confirm("All your placed markers will be lost unless you have saved them. Do you want to continue anyway?")) {
                 markerPoints.clearPoints(false);
+                requestSummary();
             }
             else {
                 disconnect();
@@ -184,6 +186,13 @@ const collabClient = (function(){
         else {
             console.warn("Tried to disconnect from nonexistent collaboration.");
         }
+    }
+
+    /**
+     * Request a summary of the current canonical collaboration state.
+     */
+    function requestSummary() {
+        send({type: "requestSummary"});
     }
 
     /**
