@@ -94,7 +94,7 @@ const collabClient = (function(){
             _joinBatch = null;
         }
         _members = msg.members;
-        _localMember = members.find((member) => member.id === msg.localId);
+        _localMember = _members.find((member) => member.id === msg.localId);
     }
 
     function _handleImageSwap(msg) {
