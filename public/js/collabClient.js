@@ -97,10 +97,14 @@ const collabClient = (function(){
         _localMember = _members.find((member) => member.id === msg.requesterId);
     }
 
+    function _requestSummary() {
+        send({type: "requestSummary"});
+    }
+
     function _handleImageSwap(msg) {
         tmapp.changeImage(msg.image, () => {
             // Make sure to get any new information from before you swapped
-            requestSummary();
+            _requestSummary();
         }, disconnect);
     }
 
@@ -152,11 +156,11 @@ const collabClient = (function(){
                 markerPoints.forEachPoint((point) => {
                     _joinBatch.push(point);
                 });
-                requestSummary();
+                _requestSummary();
             }
             else if (markerPoints.empty() || confirm("All your placed markers will be lost unless you have saved them. Do you want to continue anyway?")) {
                 markerPoints.clearPoints(false);
-                requestSummary();
+                _requestSummary();
             }
             else {
                 disconnect();
@@ -167,6 +171,7 @@ const collabClient = (function(){
             _handleMessage(JSON.parse(event.data));
         }
         ws.onclose = function(event) {
+            _disconnectFun && _disconnectFun(_connection);
             _joinBatch = null;
             _connection = null;
             _members = null;
@@ -180,19 +185,11 @@ const collabClient = (function(){
      */
     function disconnect() {
         if (_ws) {
-            _disconnectFun && _disconnectFun(_connection);
             _ws.close();
         }
         else {
             console.warn("Tried to disconnect from nonexistent collaboration.");
         }
-    }
-
-    /**
-     * Request a summary of the current canonical collaboration state.
-     */
-    function requestSummary() {
-        send({type: "requestSummary"});
     }
 
     /**
