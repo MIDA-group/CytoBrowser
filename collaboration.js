@@ -24,7 +24,7 @@ class Collaboration {
             ready: true,
         });
         this.log(`${name} has connected.`, console.info);
-        ws.send(JSON.stringify(this.stateSummary(sender)));
+        ws.send(JSON.stringify(this.stateSummary(ws)));
         this.broadcastMessage(ws, {
             type: "memberEvent",
             eventType: "add",
