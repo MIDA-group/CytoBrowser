@@ -284,6 +284,7 @@ const tmappUI = (function(){
         initUI: initUI,
         setCollabID: setCollabID,
         clearCollabID: clearCollabID,
+        updateCollaborators: updateCollaborators,
         displayImageError: displayImageError,
         clearImageError: clearImageError,
         addImage: addImage
