@@ -58,12 +58,15 @@ const collabClient = (function(){
         switch(msg.eventType) {
             case "add":
                 _members.push(msg.member);
+                break;
             case "update":
                 const member = _members.find((member) => member.id === msg.id);
                 Object.assign(member, msg.member);
+                break;
             case "remove":
                 const memberIndex = _members.findIndex((member) => member.id === msg.id);
                 _members.splice(memberIndex, 1);
+                break;
             default:
                 console.warn(`Unknown member event: ${msg.eventType}`);
         }
