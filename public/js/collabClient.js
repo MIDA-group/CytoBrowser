@@ -9,7 +9,8 @@ const collabClient = (function(){
         _joinBatch,
         _connectFun,
         _disconnectFun,
-        _members;
+        _members,
+        _localMember;
 
     const _member = {};
 
@@ -93,6 +94,7 @@ const collabClient = (function(){
             _joinBatch = null;
         }
         _members = msg.members;
+        _localMember = members.find((member) => member.id === msg.localId);
     }
 
     function _handleImageSwap(msg) {
@@ -166,6 +168,7 @@ const collabClient = (function(){
             _joinBatch = null;
             _connection = null;
             _members = null;
+            _localMember = null;
             _ws = null;
         }
     }
@@ -206,11 +209,14 @@ const collabClient = (function(){
      */
     function changeName(newName) {
         document.cookie = `last_used_collab_name=${newName};samesite=strict`;
-        send({
-            type: "memberEvent",
-            eventType: "nameChange",
-            name: newName
-        });
+        if (_localMember) {
+            _localMember.name = newName;
+            send({
+                type: "memberEvent",
+                eventType: "update",
+                member: _localMember
+            });
+        }
     }
 
     /**
