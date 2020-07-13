@@ -59,6 +59,7 @@ const collabClient = (function(){
         switch(msg.eventType) {
             case "add":
                 _members.push(msg.member);
+                tmappUI.updateCollaborators(_localMember, _members);
                 break;
             case "update":
                 const member = _members.find((member) => member.id === msg.member.id);
@@ -67,6 +68,7 @@ const collabClient = (function(){
             case "remove":
                 const memberIndex = _members.findIndex((member) => member.id === msg.member.id);
                 _members.splice(memberIndex, 1);
+                tmappUI.updateCollaborators(_localMember, _members);
                 break;
             default:
                 console.warn(`Unknown member event: ${msg.eventType}`);
@@ -95,6 +97,7 @@ const collabClient = (function(){
         }
         _members = msg.members;
         _localMember = _members.find((member) => member.id === msg.requesterId);
+        tmappUI.updateCollaborators(_localMember, _members);
     }
 
     function _requestSummary() {

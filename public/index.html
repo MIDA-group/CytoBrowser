@@ -51,7 +51,7 @@
             <div class="col-auto d-flex flex-column">
                 <div class="row">
                     <div class="card m-2 w-100">
-                        <!-- Image browser access -->
+                        <!-- Modal access -->
                         <div class="card-body">
                             <button type="button" class="btn btn-block btn-primary" data-toggle="modal" data-target="#image_browser">
                                 Open image browser
@@ -64,6 +64,15 @@
                             </button>
                         </div>
                         <hr />
+
+                        <!-- Collaboration -->
+                        <div class="card-body">
+                            <h4 class="card-title">Collaboration</h4>
+                            <div class="card bg-secondary" style="height: 30vh; overflow-y: auto;">
+                                <div id="collaborator_list" class="list-group list-group-flush">
+                                </div>
+                            </div>
+                        </div>
 
                         <!-- Functionality buttons -->
                         <div class="card-body">
@@ -85,28 +94,6 @@
                                 </div>
                             </div>
                         </div>
-                        <hr />
-
-                        <!-- Collaboration -->
-                        <!--
-                        <div class="card-body">
-                            <h4 class="card-title">Collaboration</h4>
-                            <div class="card-block">
-                                <div class="row">
-                                    <div class="col-6">
-                                        <button type="button" class="btn btn-block btn-primary" data-toggle="modal" data-target="#collaboration_menu">
-                                            Collaborate
-                                        </button>
-                                    </div>
-                                    <div class="col-6">
-                                        <button type="button" class="btn btn-block btn-secondary" data-toggle="modal" data-target="#image_browser">
-                                            Leave collaboration
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    -->
                     </div>
                 </div>
 

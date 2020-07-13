@@ -167,6 +167,23 @@ const tmappUI = (function(){
     }
 
     /**
+     * Update the list of collaborators and add the appropriate event
+     * handlers.
+     * @param {Object} localMember Object for the local member.
+     * @param {Array} members Array of currently collaborating members.
+     */
+    function updateCollaborators(localMember, members) {
+        $("#collaborator_list").empty();
+        members.forEach((member) => {
+            const entry = $("<a></a>");
+            entry.addClass("list-group-item list-group-item-action");
+            member === localMember && entry.addClass("disabled");
+            entry.text(member.name);
+            $("#collaborator_list").append(entry);
+        });
+    }
+
+    /**
      * Display an error message over the image viewport.
      * @param {string} error The type of error taking place. The possible
      * error types are "noimage", "badimage", "servererror", "unexpected",
