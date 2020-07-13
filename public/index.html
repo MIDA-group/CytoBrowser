@@ -56,7 +56,7 @@
             </div>
 
             <div class="col-auto d-flex flex-column mb-2">
-                <div class="row">
+                <div class="row flex-fill">
                     <div class="card m-2 w-100">
                         <!-- Modal access -->
                         <div class="card-body">
@@ -92,11 +92,7 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>
 
-                <div class="row flex-grow-1">
-                    <div class="card flex-grow-1 m-2 w-100">
                         <!-- List of markers -->
                         <div class="card-body">
                             <h4 class="card-title">Markers</h4>
@@ -113,19 +109,21 @@
                                 </div>
                             </div>
                         </div>
-                        <div style="height: 30vh; overflow-y: auto;"> <!-- TODO: Table should ideally fill remaining height of menu, not a specific fraction of viewport -->
-                            <table id="tmcptable" class="table table-striped table-hover">
-                                <col width="10%"><col width="70%"> <col width="30%">
-                                <thead>
-                                    <tr>
-                                        <th>ID</th>
-                                        <th id="thimg1">Annotation</th>
-                                        <th>&nbsp;</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="tmcptablebody" class="h-20">
-                                </tbody>
-                            </table>
+                        <div class="h-100 overflow-auto">
+                            <div class="h-100">
+                                <table id="tmcptable" class="table table-striped table-hover">
+                                    <col width="10%"><col width="70%"> <col width="30%">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th id="thimg1">Annotation</th>
+                                            <th>&nbsp;</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tmcptablebody">
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
