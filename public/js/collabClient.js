@@ -61,11 +61,11 @@ const collabClient = (function(){
                 _members.push(msg.member);
                 break;
             case "update":
-                const member = _members.find((member) => member.id === msg.id);
+                const member = _members.find((member) => member.id === msg.member.id);
                 Object.assign(member, msg.member);
                 break;
             case "remove":
-                const memberIndex = _members.findIndex((member) => member.id === msg.id);
+                const memberIndex = _members.findIndex((member) => member.id === msg.member.id);
                 _members.splice(memberIndex, 1);
                 break;
             default:
@@ -94,7 +94,7 @@ const collabClient = (function(){
             _joinBatch = null;
         }
         _members = msg.members;
-        _localMember = _members.find((member) => member.id === msg.localId);
+        _localMember = _members.find((member) => member.id === msg.requesterId);
     }
 
     function _handleImageSwap(msg) {
