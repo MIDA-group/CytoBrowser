@@ -13,8 +13,15 @@
     <script src="js/jquery-3.4.1.slim.min.js"></script>
 </head>
 
+<!-- Styling required to cover full page -->
 <style>
-    head, body { height: 100%; }
+    html, body {
+        height: 100%;
+    }
+    body {
+        display: flex;
+        flex-direction: column;
+    }
 </style>
 
 <body>
@@ -41,14 +48,14 @@
     </nav>
 
     <!-- Main content -->
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col">
+    <div class="container-fluid d-flex flex-column flex-fill">
+        <div class="row flex-fill">
+            <div class="col mb-3">
                 <div id="ISS_viewer" class="ISS_viewer"></div>
                 <div id="alert_wrapper" style="height: 100%; width: 100%; display: flex; justify-content: center; align-items: center; position: absolute; top: 0; pointer-events: none"></div>
             </div>
 
-            <div class="col-auto d-flex flex-column">
+            <div class="col-auto d-flex flex-column mb-2">
                 <div class="row">
                     <div class="card m-2 w-100">
                         <!-- Modal access -->
