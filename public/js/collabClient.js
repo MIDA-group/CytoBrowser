@@ -8,55 +8,95 @@ const collabClient = (function(){
         _connection,
         _joinBatch,
         _connectFun,
-        _disconnectFun;
+        _disconnectFun,
+        _members;
+
+    const _member = {};
 
     function _handleMessage(msg) {
         switch(msg.type) {
             case "markerAction":
-                switch(msg.actionType) {
-                    case "add":
-                        markerPoints.addPoint(msg.point, "image", false);
-                        break;
-                    case "update":
-                        markerPoints.updatePoint(msg.id, msg.point, "image", false);
-                        break;
-                    case "remove":
-                        markerPoints.removePoint(msg.id, false);
-                        break;
-                    case "clear":
-                        markerPoints.clearPoints(false);
-                        break;
-                    default:
-                        console.warn(`Unknown marker action type: ${msg.actionType}`)
-                }
+                _handleMarkerAction(msg);
+                break;
+            case "memberEvent":
+                _handleMemberEvent(msg);
                 break;
             case "summary":
-                console.info("Receiving collaboration info.");
-                if (msg.image !== tmapp.image_name) {
-                    tmapp.changeImage(msg.image, () => {
-                        msg.points.forEach((point) => markerPoints.addPoint(point, "image", false));
-                        _joinBatch = null;
-                    }, disconnect);
-                    break;
-                }
-                markerPoints.clearPoints(false);
-                msg.points.forEach((point) => markerPoints.addPoint(point, "image", false));
-                if (_joinBatch) {
-                    _joinBatch.forEach((point) => {
-                        markerPoints.addPoint(point, "image");
-                    });
-                    _joinBatch = null;
-                }
+                _handleSummary(msg);
                 break;
             case "imageSwap":
-                tmapp.changeImage(msg.image, () => {
-                    // Make sure to get any new information from before you swapped
-                    send({type: "requestSummary"});
-                }, disconnect);
+                _handleImageSwap(msg);
                 break;
             default:
                 console.warn(`Unknown message type received in collab: ${msg.type}`);
         }
+    }
+
+    function _handleMarkerAction(msg) {
+        switch(msg.actionType) {
+            case "add":
+                markerPoints.addPoint(msg.point, "image", false);
+                break;
+            case "update":
+                markerPoints.updatePoint(msg.id, msg.point, "image", false);
+                break;
+            case "remove":
+                markerPoints.removePoint(msg.id, false);
+                break;
+            case "clear":
+                markerPoints.clearPoints(false);
+                break;
+            default:
+                console.warn(`Unknown marker action type: ${msg.actionType}`);
+        }
+    }
+
+    function _handleMemberEvent(msg) {
+        if (!_members) {
+            throw new Error("Tried to handle member event without an initialized member array.");
+        }
+        switch(msg.eventType) {
+            case "add":
+                _members.push(msg.member);
+            case "update":
+                const member = _members.find((member) => member.id === msg.id);
+                Object.assign(member, msg.member);
+            case "remove":
+                const memberIndex = _members.findIndex((member) => member.id === msg.id);
+                _members.splice(memberIndex, 1);
+            default:
+                console.warn(`Unknown member event: ${msg.eventType}`);
+        }
+    }
+
+    function _handleSummary(msg) {
+        if (msg.image !== tmapp.image_name) {
+            tmapp.changeImage(msg.image, () => {
+                msg.points.forEach((point) => {
+                    markerPoints.addPoint(point, "image", false)
+                });
+                _joinBatch = null;
+            }, disconnect);
+            return;
+        }
+        markerPoints.clearPoints(false);
+        msg.points.forEach((point) => {
+            markerPoints.addPoint(point, "image", false)
+        });
+        if (_joinBatch) {
+            _joinBatch.forEach((point) => {
+                markerPoints.addPoint(point, "image");
+            });
+            _joinBatch = null;
+        }
+        _members = msg.members;
+    }
+
+    function _handleImageSwap(msg) {
+        tmapp.changeImage(msg.image, () => {
+            // Make sure to get any new information from before you swapped
+            send({type: "requestSummary"});
+        }, disconnect);
     }
 
     /**
