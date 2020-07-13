@@ -82,7 +82,6 @@ class Collaboration {
                 switch (msg.eventType) {
                     case "update":
                         Object.assign(member, msg.member);
-                        this.broadcastMessage(sender, msg);
                         break;
                     default:
                         this.log(`Tried to handle unknown member event: ${msg.eventType}`, console.warn);
