@@ -184,6 +184,13 @@ const tmappUI = (function(){
     }
 
     /**
+     * Clear the list of collaborators.
+     */
+    function clearCollaborators() {
+        updateCollaborators({}, []);
+    }
+
+    /**
      * Display an error message over the image viewport.
      * @param {string} error The type of error taking place. The possible
      * error types are "noimage", "badimage", "servererror", "unexpected",
@@ -285,6 +292,7 @@ const tmappUI = (function(){
         setCollabID: setCollabID,
         clearCollabID: clearCollabID,
         updateCollaborators: updateCollaborators,
+        clearCollaborators: clearCollaborators,
         displayImageError: displayImageError,
         clearImageError: clearImageError,
         addImage: addImage

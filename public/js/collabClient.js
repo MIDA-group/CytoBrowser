@@ -180,6 +180,7 @@ const collabClient = (function(){
             _members = null;
             _localMember = null;
             _ws = null;
+            tmappUI.clearCollaborators();
         }
     }
 
