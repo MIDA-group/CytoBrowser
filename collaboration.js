@@ -97,8 +97,8 @@ class Collaboration {
                 this.image = msg.image;
                 break;
             case "requestSummary":
-                sender.send(JSON.stringify(this.stateSummary(sender)));
                 this.members.get(sender).ready = true;
+                sender.send(JSON.stringify(this.stateSummary(sender)));
                 break;
             default:
                 this.broadcastMessage(sender, msg);
