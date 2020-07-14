@@ -180,6 +180,11 @@ const tmappUI = (function(){
             member === localMember && entry.addClass("disabled");
             entry.attr("href", "#");
             entry.text(member.name);
+            entry.click((event) => {
+                event.preventDefault();
+                $("#collaboration_menu").modal("hide");
+                tmapp.moveTo(member.position.view);
+            });
             $("#collaborator_list").append(entry);
         });
     }

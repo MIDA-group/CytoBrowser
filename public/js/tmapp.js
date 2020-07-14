@@ -121,6 +121,17 @@ tmapp = {
         }
         this.updateURLParams();
     },
+    moveTo: function({x, y, z, zoom}) {
+        if (zoom) {
+            viewer.viewport.zoomTo(zoom, true);
+        }
+        if (x && y) {
+            viewer.viewport.panTo(new OpenSeadragon.Point(x, y), true);
+        }
+        if (z) {
+            this.setFocusLevel(z);
+        }
+    },
     panToPoint: function(id) { // Pan to the specified point
         const point = markerPoints.getPointById(id);
         if (point === undefined) {
@@ -129,8 +140,12 @@ tmapp = {
         // TODO: Seems like this happens a lot, should maybe just store all coordinate systems with point
         const imageCoords = new OpenSeadragon.Point(point.x, point.y);
         const viewportCoords = overlayUtils.imageToViewport(imageCoords, "ISS");
-        viewer.viewport.zoomTo(25, true);
-        viewer.viewport.panTo(viewportCoords, true);
+        this.moveTo({
+            zoom: 25,
+            x: viewportCoords.x,
+            y: viewportCoords.y,
+            z: point.z
+        });
     },
     changeImage: function(imageName, callback, nochange) {
         if (!markerPoints.empty() && !confirm(`You are about to open ` +
