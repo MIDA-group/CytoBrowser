@@ -89,7 +89,7 @@ tmapp = {
                 zoom: this.curr_zoom
             }
         });
-    }
+    },
     updateURLParams: function() { //Update the URL params
         url = new URL(window.location.href);
         let roundTo = (x, n) => Math.round(x * Math.pow(10, n)) / Math.pow(10, n);
