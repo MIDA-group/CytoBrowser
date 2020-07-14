@@ -390,7 +390,7 @@ tmapp.initOSD = function (callback) {
     //Create svgOverlay(); so that anything like D3, or any canvas library can act upon. https://d3js.org/
     tmapp.svgov=tmapp.viewer.svgOverlay();
     tmapp.ISS_singleTMCPS=d3.select(tmapp.svgov.node()).append('g').attr('class', "ISS singleTMCPS");
-    tmapp.cursorOverlay = d3.select(svgov.node()).append("g").attr("class", "cursors");
+    tmapp.cursorOverlay = d3.select(tmapp.svgov.node()).append("g").attr("class", "cursors");
 
     //This is the OSD click handler, when the event is quick it triggers the creation of a marker
     //Called when we are far from any existing points; if we are close to elem, then DOM code in overlayUtils is called instead

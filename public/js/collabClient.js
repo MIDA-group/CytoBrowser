@@ -63,7 +63,9 @@ const collabClient = (function(){
 
                 // TODO: This code should be somewhere else
                 const elem = d3.select( cursors.node());
-                elem.append("g").attr("transform", "translate(0.0,0.0)").append("path")
+                elem.append("g").attr("transform", "translate(0.0,0.0)")
+                .attr("id", `cursor-${msg.member.id}`)
+                .append("path")
             	.attr( "d", d3.symbol().size(0.000001).type(d3.symbolSquare))
             	.attr("transform", "rotate(45)")
     			.attr('stroke-width',0.000005)
