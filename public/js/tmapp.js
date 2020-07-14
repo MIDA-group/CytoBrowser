@@ -435,7 +435,7 @@ tmapp.initOSD = function (callback) {
 
     // Handler for live updates of mouse position in collaboration
     const moveHandler = function(event) {
-        const pos = event.position;
+        const pos = overlayUtils.pointFromOSDPixel(event.position, "ISS");
         tmapp.setMousePosition({x: pos.x, y: pos.y});
     }
 
