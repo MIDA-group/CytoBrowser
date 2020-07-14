@@ -64,7 +64,7 @@ const collabClient = (function(){
             case "update":
                 const member = _members.find((member) => member.id === msg.member.id);
                 Object.assign(member, msg.member);
-                if (member.hardUpdate) {
+                if (msg.hardUpdate) {
                     tmappUI.updateCollaborators(_localMember, _members);
                 }
                 break;
