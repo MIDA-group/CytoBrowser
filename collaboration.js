@@ -54,6 +54,7 @@ class Collaboration {
 
     handleMessage(sender, msg) {
         // Keep track of the current points
+        const member = this.members.get(sender);
         switch (msg.type) {
             case "markerAction":
                 this.broadcastMessage(sender, msg);
@@ -76,7 +77,6 @@ class Collaboration {
                 }
                 break;
             case "memberEvent":
-                const member = this.members.get(sender);
                 this.broadcastMessage(sender, msg);
                 switch (msg.eventType) {
                     case "update":
@@ -97,7 +97,6 @@ class Collaboration {
                 this.image = msg.image;
                 break;
             case "requestSummary":
-                const member = this.members.get(sender);
                 member.ready = true;
                 sender.send(JSON.stringify(this.stateSummary(sender)));
                 this.broadcastMessage(sender, {
