@@ -62,7 +62,7 @@ const collabClient = (function(){
                 tmappUI.updateCollaborators(_localMember, _members);
 
                 // TODO: This code should be somewhere else
-                const elem = d3.select( cursors.node());
+                const elem = d3.select( tmapp.cursorOverlay.node());
                 elem.append("g").attr("transform", "translate(0.0,0.0)")
                 .attr("id", `cursor-${msg.member.id}`)
                 .append("path")
@@ -77,6 +77,8 @@ const collabClient = (function(){
                 if (msg.hardUpdate) {
                     tmappUI.updateCollaborators(_localMember, _members);
                 }
+		// TODO: This code should be somewhere else
+		d3.select(`#cursor-${msg.member.id}`).attr("transform", `translate(${msg.member.position.mouse.x}, ${msg.member.position.mouse.y})`);
                 break;
             case "remove":
                 const memberIndex = _members.findIndex((member) => member.id === msg.member.id);
