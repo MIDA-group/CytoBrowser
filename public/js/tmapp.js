@@ -70,14 +70,26 @@ tmapp = {
         const zoom = this.viewer.viewport.getZoom();
         setImageZoom(Math.round(zoom*10)/10);
         this.curr_zoom = zoom;
+        this.updateCollabPosition();
         this.updateURLParams();
     },
     setPosition: function() { //Update the current position params
         const position = this.viewer.viewport.getCenter();
         this.curr_x = position.x;
         this.curr_y = position.y;
+        this.updateCollabPosition();
         this.updateURLParams();
     },
+    updateCollabPosition: function() {
+        collabClient.updatePosition({
+            view: {
+                x: this.curr_x,
+                y: this.curr_y,
+                z: this.curr_z,
+                zoom: this.curr_zoom
+            }
+        });
+    }
     updateURLParams: function() { //Update the URL params
         url = new URL(window.location.href);
         let roundTo = (x, n) => Math.round(x * Math.pow(10, n)) / Math.pow(10, n);
