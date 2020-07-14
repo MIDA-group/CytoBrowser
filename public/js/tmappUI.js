@@ -178,6 +178,7 @@ const tmappUI = (function(){
             const entry = $("<a></a>");
             entry.addClass("list-group-item list-group-item-action");
             member === localMember && entry.addClass("disabled");
+            entry.attr("href", "#");
             entry.text(member.name);
             $("#collaborator_list").append(entry);
         });

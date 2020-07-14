@@ -78,10 +78,9 @@ const collabClient = (function(){
     function _handleSummary(msg) {
         if (msg.image !== tmapp.image_name) {
             tmapp.changeImage(msg.image, () => {
-                msg.points.forEach((point) => {
-                    markerPoints.addPoint(point, "image", false)
-                });
                 _joinBatch = null;
+                _requestSummary();
+                // TODO: Could handle the edge case of switching image 1 -> image 2 -> image 1
             }, disconnect);
             return;
         }
