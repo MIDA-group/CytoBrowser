@@ -215,6 +215,7 @@ const tmappUI = (function(){
         alert.addClass(`alert ${errorInfo.type}`);
         alert.text(errorInfo.message);
         window.clearTimeout(_errorDisplayTimeout);
+        $("#ISS_viewer").addClass("blurred");
         $("#alert_wrapper").removeClass("fade out");
         $("#alert_wrapper").html(alert);
 
@@ -228,6 +229,7 @@ const tmappUI = (function(){
      * Fade out the currently displayed image error.
      */
     function clearImageError() {
+        $("#ISS_viewer").removeClass("blurred");
         $("#alert_wrapper").addClass("fade out");
     }
 
