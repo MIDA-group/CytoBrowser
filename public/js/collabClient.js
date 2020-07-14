@@ -64,6 +64,9 @@ const collabClient = (function(){
             case "update":
                 const member = _members.find((member) => member.id === msg.member.id);
                 Object.assign(member, msg.member);
+                if (member.hardUpdate) {
+                    tmappUI.updateCollaborators(_localMember, _members);
+                }
                 break;
             case "remove":
                 const memberIndex = _members.findIndex((member) => member.id === msg.member.id);
@@ -223,6 +226,7 @@ const collabClient = (function(){
             send({
                 type: "memberEvent",
                 eventType: "update",
+                hardUpdate: true,
                 member: _localMember
             });
         }
@@ -237,6 +241,25 @@ const collabClient = (function(){
         const nameCookie = document.cookie.match(/(?<=last_used_collab_name=)[^;|$]*/g);
         if (nameCookie) {
             return nameCookie[0];
+        }
+    }
+
+    /**
+     * Update the position of the local collaboration member in the
+     * OSD viewport.
+     * @param {Object} position The new position of the collaborator.
+     * @param {Object} position.mouse The mouse position.
+     * @param {Object} position.view The viewport position, z, and zoom.
+     */
+    function updatePosition(position) {
+        if (_localMember) {
+            _localMember.position = position;
+            send({
+                type: "memberEvent",
+                eventType: "update",
+                hardUpdate: false,
+                member: _localMember
+            })
         }
     }
 
@@ -277,6 +300,7 @@ const collabClient = (function(){
         send: send,
         changeName: changeName,
         getDefaultName: getDefaultName,
+        updatePosition: updatePosition,
         onConnect: onConnect,
         onDisconnect: onDisconnect
     };
