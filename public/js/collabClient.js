@@ -60,6 +60,14 @@ const collabClient = (function(){
             case "add":
                 _members.push(msg.member);
                 tmappUI.updateCollaborators(_localMember, _members);
+
+                // TODO: This code should be somewhere else
+                const elem = d3.select( cursors.node());
+                elem.append("g").attr("transform", "translate(0.0,0.0)").append("path")
+            	.attr( "d", d3.symbol().size(0.000001).type(d3.symbolSquare))
+            	.attr("transform", "rotate(45)")
+    			.attr('stroke-width',0.000005)
+    			.attr('stroke', "#000000").style("fill","rgba(0,0,0,0.2)" );
                 break;
             case "update":
                 const member = _members.find((member) => member.id === msg.member.id);
