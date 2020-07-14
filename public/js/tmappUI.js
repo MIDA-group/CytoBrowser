@@ -177,7 +177,9 @@ const tmappUI = (function(){
         members.forEach((member) => {
             const entry = $("<a></a>");
             entry.addClass("list-group-item list-group-item-action");
-            member === localMember && entry.addClass("disabled");
+            if (member === localMember || !member.ready) {
+                entry.addClass("disabled");
+            }
             entry.attr("href", "#");
             entry.text(member.name);
             entry.click((event) => {

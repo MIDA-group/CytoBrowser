@@ -97,8 +97,15 @@ class Collaboration {
                 this.image = msg.image;
                 break;
             case "requestSummary":
-                this.members.get(sender).ready = true;
+                const member = this.members.get(sender);
+                member.ready = true;
                 sender.send(JSON.stringify(this.stateSummary(sender)));
+                this.broadcastMessage(sender, {
+                    type: "memberEvent",
+                    eventType: "update",
+                    hardUpdate: true,
+                    member: member
+                });
                 break;
             default:
                 this.broadcastMessage(sender, msg);
