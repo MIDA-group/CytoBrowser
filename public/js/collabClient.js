@@ -173,7 +173,6 @@ const collabClient = (function(){
             }
         }
         ws.onmessage = function(event) {
-            console.log(`Received: ${event.data}`);
             _handleMessage(JSON.parse(event.data));
         }
         ws.onclose = function(event) {
