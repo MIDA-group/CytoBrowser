@@ -100,6 +100,7 @@ const collabClient = (function(){
         _members = msg.members;
         _localMember = _members.find((member) => member.id === msg.requesterId);
         tmappUI.updateCollaborators(_localMember, _members);
+        tmapp.updateCollabPosition();
     }
 
     function _requestSummary() {
