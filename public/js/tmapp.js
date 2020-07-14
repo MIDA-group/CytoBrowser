@@ -80,8 +80,13 @@ tmapp = {
         this.updateCollabPosition();
         this.updateURLParams();
     },
+    setMousePosition: function(position) {
+        this.curr_mouse_pos = position;
+        this.updateCollabPosition();
+    },
     updateCollabPosition: function() {
         collabClient.updatePosition({
+            mouse: this.curr_mouse_pos,
             view: {
                 x: this.curr_x,
                 y: this.curr_y,
@@ -428,11 +433,18 @@ tmapp.initOSD = function (callback) {
         }
     };
 
+    // Handler for live updates of mouse position in collaboration
+    const moveHandler = function(event) {
+        const pos = event.position;
+        tmapp.setMousePosition({x: pos.x, y: pos.y});
+    }
+
     //OSD handlers have to be registered using MouseTracker OSD objects
     var ISS_mouse_tracker = new OpenSeadragon.MouseTracker({
         element: this.viewer.canvas,
         clickHandler: click_handler,
-        scrollHandler: scroll_handler
+        scrollHandler: scroll_handler,
+        moveHandler: moveHandler
     }).setTracking(true);
 
     tmapp.viewer.canvas.addEventListener('mouseover', function() { tmapp.checkFocus(); });
