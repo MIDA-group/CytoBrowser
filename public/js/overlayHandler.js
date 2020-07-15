@@ -13,7 +13,7 @@ const overlayHandler = (function (){
         const visibleMembers = nonLocalMembers.filter((member) => {
             return member.position.mouse
         });
-        
+
         const selection = _cursorOverlay.selectAll("rect")
             .data(visibleMembers, (d) => d.id)
             .join("rect")
@@ -38,7 +38,7 @@ const overlayHandler = (function (){
     }
 
     return {
-        updateCursors: updateCursors,
+        updateMembers: updateMembers,
         init: init
     };
 })();
