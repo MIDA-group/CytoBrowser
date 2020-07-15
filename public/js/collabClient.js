@@ -63,7 +63,7 @@ const collabClient = (function(){
 
                 // TODO: This code should be somewhere else
                 /*
-                const elem = d3.select( cursors.node());
+                const elem = d3.select( tmapp.cursorOverlay.node());
                 elem.append("g").attr("transform", "translate(0.0,0.0)")
                 .attr("id", `cursor-${msg.member.id}`)
                 .append("path")
