@@ -10,7 +10,7 @@ const overlayHandler = (function (){
      */
     function updateCursors(cursors) {
         const selection = _cursorOverlay.selectAll("rect")
-            .data(cursors, (d) => d.id);
+            .data(cursors, (d) => d.id)
             .join("rect")
                 .attr("x", (d) => d.x)
                 .attr("y", (d) => d.y)
