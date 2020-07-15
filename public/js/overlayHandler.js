@@ -16,14 +16,14 @@ const overlayHandler = (function (){
 
         const selection = _cursorOverlay.selectAll("g")
             .data(visibleMembers, (d) => d.id)
-            .join("g")
-                .attr("transform", (d) => `translate(${d.position.mouse.x}, ${d.position.mouse.y}), scale(0.01, 0.01)`);
-                .append("rect")
-                .attr("x", 0)
-                .attr("y", 0)
-                .attr("height", 1)
-                .attr("width", 1)
-                .style("fill", "rgb(255,0,0)");
+            .join(enter => enter.append("g").attr("transform", (d) => `translate(${d.position.mouse.x}, ${d.position.mouse.y}), scale(0.01, 0.01)`)
+                                .append("rect")
+                                .attr("x", 0)
+                                .attr("y", 0)
+                                .attr("height", 1)
+                                .attr("width", 1)
+                                .style("fill", "rgb(255,0,0)"),
+                  update => update.attr("transform", (d) => `translate(${d.position.mouse.x}, ${d.position.mouse.y}), scale(0.01, 0.01)`));
     }
 
     /**
