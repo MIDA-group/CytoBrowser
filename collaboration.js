@@ -21,6 +21,7 @@ class Collaboration {
         this.members.set(ws, {
             id: this.nextMemberId++,
             name: name,
+            position: {},
             ready: false,
         });
         this.log(`${name} has connected.`, console.info);

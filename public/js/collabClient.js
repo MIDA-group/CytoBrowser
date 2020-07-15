@@ -10,6 +10,7 @@ const collabClient = (function(){
         _connectFun,
         _disconnectFun,
         _members,
+        _cursors,
         _localMember;
 
     const _member = {};
@@ -59,35 +60,31 @@ const collabClient = (function(){
         switch(msg.eventType) {
             case "add":
                 _members.push(msg.member);
-                tmappUI.updateCollaborators(_localMember, _members);
-
-                // TODO: This code should be somewhere else
-                /*
-                const elem = d3.select( tmapp.cursorOverlay.node());
-                elem.append("g").attr("transform", "translate(0.0,0.0)")
-                .attr("id", `cursor-${msg.member.id}`)
-                .append("path")
-            	.attr( "d", d3.symbol().size(0.000001).type(d3.symbolSquare))
-            	.attr("transform", "rotate(45)")
-    			.attr('stroke-width',0.000005)
-    			.attr('stroke', "#000000").style("fill","rgba(0,0,0,0.2)" );
-                */
+                _memberUpdate()
                 break;
             case "update":
                 const member = _members.find((member) => member.id === msg.member.id);
                 Object.assign(member, msg.member);
-                if (msg.hardUpdate) {
-                    tmappUI.updateCollaborators(_localMember, _members);
+
+                // Update the cursor position
+                if (msg.member.id !== _localMember.id && msg.member.position.mouse) {
+                    let cursor = _cursors.find((cursor) => cursor.id === msg.member.id);
+                    if (!cursor) {
+                        cursor = {
+                            id: msg.member.id,
+                            x: msg.member.position.mouse.x,
+                            y: msg.member.position.mouse.y
+                        };
+                        _cursors.push({id: msg.member.id})
+                    }
                 }
-                // TODO: This code should be somewhere else
-                /*
-                d3.select(`#cursor-${msg.member.id}`).attr("transform", `translate(${msg.member.position.mouse.x}, ${msg.member.position.mouse.y})`)
-                */
+
+                _memberUpdate(msg.hardUpdate);
                 break;
             case "remove":
                 const memberIndex = _members.findIndex((member) => member.id === msg.member.id);
                 _members.splice(memberIndex, 1);
-                tmappUI.updateCollaborators(_localMember, _members);
+                _memberUpdate();
                 break;
             default:
                 console.warn(`Unknown member event: ${msg.eventType}`);
@@ -115,7 +112,7 @@ const collabClient = (function(){
         }
         _members = msg.members;
         _localMember = _members.find((member) => member.id === msg.requesterId);
-        tmappUI.updateCollaborators(_localMember, _members);
+        _memberUpdate()
         tmapp.updateCollabPosition();
     }
 
@@ -128,6 +125,13 @@ const collabClient = (function(){
             // Make sure to get any new information from before you swapped
             _requestSummary();
         }, disconnect);
+    }
+
+    function _memberUpdate(hardUpdate = true) {
+        if (hardUpdate) {
+            tmappUI.updateCollaborators(_localMember, _members);
+        }
+        overlayHandler.updateCursors(_cursors);
     }
 
     /**
@@ -170,6 +174,7 @@ const collabClient = (function(){
         ws.onopen = function(event) {
             console.info(`Successfully connected to collaboration ${id}.`);
             _ws = ws;
+            _cursors = [];
             _connection = {id: id, name: name, ws: ws};
             _connectFun && _connectFun(_connection);
 
@@ -196,8 +201,10 @@ const collabClient = (function(){
             _joinBatch = null;
             _connection = null;
             _members = null;
+            _cursors = null;
             _localMember = null;
             _ws = null;
+            overlayHandler.updateCursors([]);
             tmappUI.clearCollaborators();
         }
     }
