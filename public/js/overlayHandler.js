@@ -13,12 +13,14 @@ const overlayHandler = (function (){
             .data(cursors, (d) => d.id);
 
         // Handle any incoming cursors
-        selection.enter().append("circle").attr({
-            cx: function(d) { return d.x; },
-            cy: function(y) { return d.y; },
-            r: 0.00001,
-            fill: "red"
-        });
+        selection.enter()
+            .append("circle")
+            .attr({
+                transform: function(d) { return `translate(${d.x}, ${d.y}`},
+              	d: d3.symbol().size(0.000001).type(d3.symbolCircle),
+              	strokeWidth: 0.00001,
+                stroke: "#000000"
+            });
 
         // Handle any exiting cursors
         selection.exit()
