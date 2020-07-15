@@ -16,12 +16,9 @@ const overlayHandler = (function (){
 
         const selection = _cursorOverlay.selectAll("g")
             .data(visibleMembers, (d) => d.id)
-            .join(enter => enter.append("g").attr("transform", (d) => `translate(${d.position.mouse.x}, ${d.position.mouse.y}), scale(0.01, 0.01)`)
-                                .append("rect")
-                                .attr("x", 0)
-                                .attr("y", 0)
-                                .attr("height", 1)
-                                .attr("width", 1)
+            .join(enter => enter.append("g").attr("transform", (d) => `translate(${d.position.mouse.x}, ${d.position.mouse.y}), scale(0.001, 0.001)`)
+                                .append("path")
+                                .attr("d", "M 0 0 L 0.2 1.0 L 0.42 0.66 L 0.8 0.6 Z")
                                 .style("fill", "rgb(255,0,0)"),
                   update => update.attr("transform", (d) => `translate(${d.position.mouse.x}, ${d.position.mouse.y}), scale(0.01, 0.01)`));
     }
