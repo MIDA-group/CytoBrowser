@@ -10,7 +10,6 @@ const collabClient = (function(){
         _connectFun,
         _disconnectFun,
         _members,
-        _cursors,
         _localMember;
 
     const _member = {};
@@ -65,30 +64,11 @@ const collabClient = (function(){
             case "update":
                 const member = _members.find((member) => member.id === msg.member.id);
                 Object.assign(member, msg.member);
-
-                // Update the cursor position
-                if (msg.member.id !== _localMember.id && msg.member.position.mouse) {
-                    const cursor = _cursors.find((cursor) => cursor.id === msg.member.id);
-                    const updatedCursor = {
-                        id: msg.member.id,
-                        x: msg.member.position.mouse.x,
-                        y: msg.member.position.mouse.y
-                    };
-                    if (cursor) {
-                        Object.assign(cursor, updatedCursor);
-                    }
-                    else {
-                        _cursors.push(updatedCursor);
-                    }
-                }
-
                 _memberUpdate(msg.hardUpdate);
                 break;
             case "remove":
                 const memberIndex = _members.findIndex((member) => member.id === msg.member.id);
                 _members.splice(memberIndex, 1);
-                const cursorIndex = _cursors.findIndex((cursor) => cursor.id === msg.member.id);
-                cursorIndex !== -1 && _cursorIndex.splice(cursorIndex, 1);
                 _memberUpdate();
                 break;
             default:
@@ -136,7 +116,7 @@ const collabClient = (function(){
         if (hardUpdate) {
             tmappUI.updateCollaborators(_localMember, _members);
         }
-        overlayHandler.updateCursors(_cursors);
+        overlayHandler.updateMembers(_members.filter((member) => member !== _localMember));
     }
 
     /**
@@ -179,7 +159,6 @@ const collabClient = (function(){
         ws.onopen = function(event) {
             console.info(`Successfully connected to collaboration ${id}.`);
             _ws = ws;
-            _cursors = [];
             _connection = {id: id, name: name, ws: ws};
             _connectFun && _connectFun(_connection);
 
@@ -206,10 +185,9 @@ const collabClient = (function(){
             _joinBatch = null;
             _connection = null;
             _members = null;
-            _cursors = null;
             _localMember = null;
             _ws = null;
-            overlayHandler.updateCursors([]);
+            overlayHandler.updateMembers([]);
             tmappUI.clearCollaborators();
         }
     }

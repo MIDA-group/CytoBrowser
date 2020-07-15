@@ -6,14 +6,19 @@ const overlayHandler = (function (){
     /**
      * Use d3 to update the collaboration cursors, adding new ones and
      * removing old ones.
-     * @param {Array} cursors An array of cursor data
+     * @param {Array} nonLocalMembers An array of members, excluding the
+     * local member.
      */
-    function updateCursors(cursors) {
+    function updateMembers(nonLocalMembers) {
+        const visibleMembers = nonLocalMembers.filter((member) => {
+            return member.position.mouse
+        });
+        
         const selection = _cursorOverlay.selectAll("rect")
-            .data(cursors, (d) => d.id)
+            .data(visibleMembers, (d) => d.id)
             .join("rect")
-                .attr("x", (d) => d.x)
-                .attr("y", (d) => d.y)
+                .attr("x", (d) => d.position.mouse.x)
+                .attr("y", (d) => d.position.mouse.y)
                 .attr("height", 0.01)
                 .attr("width", 0.01)
                 .style("fill", "rgb(255,0,0)");
