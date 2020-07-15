@@ -68,14 +68,17 @@ const collabClient = (function(){
 
                 // Update the cursor position
                 if (msg.member.id !== _localMember.id && msg.member.position.mouse) {
-                    let cursor = _cursors.find((cursor) => cursor.id === msg.member.id);
-                    if (!cursor) {
-                        cursor = {
-                            id: msg.member.id,
-                            x: msg.member.position.mouse.x,
-                            y: msg.member.position.mouse.y
-                        };
-                        _cursors.push({id: msg.member.id})
+                    const cursor = _cursors.find((cursor) => cursor.id === msg.member.id);
+                    const updatedCursor = {
+                        id: msg.member.id,
+                        x: msg.member.position.mouse.x,
+                        y: msg.member.position.mouse.y
+                    };
+                    if (cursor) {
+                        Object.assign(cursor, updatedCursor);
+                    }
+                    else {
+                        _cursors.push(updatedCursor);
                     }
                 }
 
@@ -84,6 +87,8 @@ const collabClient = (function(){
             case "remove":
                 const memberIndex = _members.findIndex((member) => member.id === msg.member.id);
                 _members.splice(memberIndex, 1);
+                const cursorIndex = _cursors.findIndex((cursor) => cursor.id === msg.member.id);
+                cursorIndex !== -1 && _cursorIndex.splice(cursorIndex, 1);
                 _memberUpdate();
                 break;
             default:
