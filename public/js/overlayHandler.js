@@ -11,18 +11,12 @@ const overlayHandler = (function (){
     function updateCursors(cursors) {
         const selection = _cursorOverlay.selectAll("rect")
             .data(cursors, (d) => d.id);
-
-        // Handle any incoming cursors
-        selection.enter()
-            .append("rect")
-	    .attr("x", (d) => d.x)
-	    .attr("y", (d) => d.y)
-	    .attr("height", 0.01)
-	    .attr("width", 0.01)
-	    .style("fill", "rgb(255,0,0)")
-        // Handle any exiting cursors
-        selection.exit()
-            .remove();
+            .join("rect")
+                .attr("x", (d) => d.x)
+                .attr("y", (d) => d.y)
+                .attr("height", 0.01)
+                .attr("width", 0.01)
+                .style("fill", "rgb(255,0,0)");
     }
 
     /**
