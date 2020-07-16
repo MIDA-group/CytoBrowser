@@ -38,13 +38,13 @@ const overlayHandler = (function (){
                         .transition().duration(100)
                         .style("opacity", (d) => d.cursor.inside || d.cursor.held ? 1.0 : 0.2);
                     update.select(".caret")
-                        .filter(function(d) { return _previousCursors.get(this).cursor.held !== d.cursor.held })
+                        .filter(function(d) { return _previousCursors.get(this).held !== d.cursor.held })
                         .transition().duration(200)
                         .attr("transform", (d) => `translate(0, ${d.cursor.held ? 0.05 : 0.15})`);
                 }
             );
 
-        selection.property(_previousCursors, d => d.cursor);
+        _cursorOverlay.selectAll("g").property(_previousCursors, d => d.cursor);
     }
 
     /**
