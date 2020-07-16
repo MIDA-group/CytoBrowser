@@ -1,7 +1,8 @@
 const overlayHandler = (function (){
     "use strict";
 
-    let _cursorOverlay;
+    let _cursorOverlay
+        _previousCursors;
 
     /**
      * Use d3 to update the collaboration cursors, adding new ones and
@@ -36,10 +37,11 @@ const overlayHandler = (function (){
                         .transition().duration(100)
                         .style("opacity", (d) => d.cursor.inside || d.cursor.held ? 1.0 : 0.2);
                     update.select(".caret")
+                        .filter(function(d) { return _previousCursors.get(this).cursor.held !== d.cursor.held })
                         .transition().duration(200)
                         .attr("transform", (d) => `translate(0, ${d.cursor.held ? 0.05 : 0.15})`);
                 }
-            );
+            ).each(function(d) { _previousCursors.set(this, d); });
     }
 
     /**
@@ -53,6 +55,7 @@ const overlayHandler = (function (){
             .append("g")
             .attr("id", "cursors");
         _cursorOverlay = d3.select(cursors.node());
+        _previousCursors = d3.local();
     }
 
     return {
