@@ -26,7 +26,7 @@ const overlayHandler = (function (){
                     .attr("class", "pointer")
                     .style("fill", "rgb(173, 29, 40)");
                 group.append("path")
-                    .attr("d", "M -0.4 1.0 L -0.48 1.2 L 0.48 1.2 L 0.40 1.0 L 0 0.7 Z")
+                    .attr("d", "M -0.4 1.0 L -0.36 1.2 L 0.36 1.2 L 0.4 1.0 L 0 0.7 Z")
                     .attr("class", "caret")
                     .style("fill", "rgb(173, 29, 40)")
                     .transition().duration(500)
