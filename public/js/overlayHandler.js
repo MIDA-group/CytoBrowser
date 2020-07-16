@@ -2,8 +2,9 @@ const overlayHandler = (function (){
     "use strict";
 
     let _cursorOverlay,
-        _previousCursors
-        _zoomLevel;
+        _previousCursors,
+        _zoomLevel,
+        _previousMemberList;
 
     /**
      * Use d3 to update the collaboration cursors, adding new ones and
@@ -11,10 +12,12 @@ const overlayHandler = (function (){
      * @param {Array} nonLocalMembers An array of members, excluding the
      * local member.
      */
-    function updateMembers(nonLocalMembers) {
+    function updateMembers(nonLocalMembers = _previousMemberList) {
         const visibleMembers = nonLocalMembers.filter((member) => {
             return member.cursor;
         });
+
+        _previousMemberList = nonLocalMembers;
 
         _cursorOverlay.selectAll("g")
             .data(visibleMembers, (d) => d.id)
@@ -37,7 +40,7 @@ const overlayHandler = (function (){
                 },
                 update => {
                     update
-                        .attr("transform", (d) => `translate(${d.cursor.x}, ${d.cursor.y}), rotate(-30), scale(${0.2 / _zoomLevel})`)
+                        .attr("transform", (d) => `translate(${d.cursor.x}, ${d.cursor.y}), rotate(-30), scale(${0.02 / _zoomLevel})`)
                         .transition().duration(100)
                         .style("opacity", (d) => d.cursor.inside || d.cursor.held ? 1.0 : 0.2);
                     update.select(".caret")
@@ -72,10 +75,12 @@ const overlayHandler = (function (){
             .attr("id", "cursors");
         _cursorOverlay = d3.select(cursors.node());
         _previousCursors = d3.local();
+        _previousMemberList = [];
     }
 
     return {
         updateMembers: updateMembers,
+        setOverlayZoom: setOverlayZoom,
         init: init
     };
 })();
