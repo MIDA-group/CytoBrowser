@@ -292,7 +292,7 @@ const collabClient = (function(){
             send({
                 type: "memberEvent",
                 eventType: "cursorUpdate",
-                id: _localMember.cursor,
+                id: _localMember.id,
                 cursor: _localMember.cursor
             });
         }
