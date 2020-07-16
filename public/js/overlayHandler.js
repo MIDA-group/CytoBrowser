@@ -28,7 +28,7 @@ const overlayHandler = (function (){
                     .attr("class", "caret")
                     .style("fill", "rgb(173, 29, 40)")
                     .transition().duration(500)
-                    .attr("transform", "translate(0, -0.15)");
+                    .attr("transform", "translate(0, 0.15)");
                 },
                 update => {
                     update
@@ -37,7 +37,7 @@ const overlayHandler = (function (){
                         .style("opacity", (d) => d.cursor.inside || d.cursor.held ? 1.0 : 0.2);
                     update.select(".caret")
                         .transition().duration(200)
-                        .attr("transform", (d) => `translate(0, ${d.cursor.held ? -0.05 : -0.15})`);
+                        .attr("transform", (d) => `translate(0, ${d.cursor.held ? 0.05 : 0.15})`);
                 }
             );
     }
