@@ -24,14 +24,22 @@ const overlayHandler = (function (){
                     .attr("class", "pointer")
                     .style("fill", "rgb(173, 29, 40)");
                 group.append("path")
-                    .attr("d", "M -0.4 1.1 L -0.48 1.3 L 0.48 1.3 L 0.40 1.1 L 0 0.8 Z")
+                    .attr("d", "M -0.4 1.0 L -0.48 1.2 L 0.48 1.2 L 0.40 1.0 L 0 0.7 Z")
                     .attr("class", "caret")
-                    .style("fill", "rgb(173, 29, 40)");
+                    .style("fill", "rgb(173, 29, 40)")
+                    .transition().duration(500)
+                    .attr("transform", "translate(0, -0.15)");
                 },
-                update => update
-                  .attr("transform", (d) => `translate(${d.cursor.x}, ${d.cursor.y}), rotate(-30), scale(0.003, 0.003)`)
-                  .transition().duration(100).style("opacity", (d) => d.cursor.inside ? 1.0 : 0.2)
-              );
+                update => {
+                    update
+                        .attr("transform", (d) => `translate(${d.cursor.x}, ${d.cursor.y}), rotate(-30), scale(0.003, 0.003)`)
+                        .transition().duration(100)
+                        .style("opacity", (d) => d.cursor.inside || d.cursor.held ? 1.0 : 0.2);
+                    update.select(".caret")
+                        .transition().duration(200)
+                        .attr("transform", (d) => `translate(0, ${d.cursor.held ? -0.05 : -0.15})`);
+                }
+            );
     }
 
     /**
