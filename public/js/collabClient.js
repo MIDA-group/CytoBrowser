@@ -274,18 +274,55 @@ const collabClient = (function(){
     /** Update the position and status of the local collaboration member's
       * mouse cursor.
       * @param {Object} cursor Current status of the cursor.
+      * @function
       */
-    function updateCursor(cursor) {
-        if (_localMember) {
-            _localMember.cursor = cursor;
+    const updateCursor = (function(){
+        // Limit the rate at which move updates are sent
+        const moveInterval = 200;
+        let cooldown = false;
+        let queued = false;
+
+        function sendUpdate() {
             send({
                 type: "memberEvent",
                 eventType: "update",
                 hardUpdate: false,
                 member: _localMember
-            })
+            });
         }
-    }
+
+        function updateCursor(cursor) {
+            if (_localMember) {
+                // Check if the only update is a cursor move
+                const moveOnly =
+                    _localMember.cursor.hold === cursor.hold
+                    && _localMember.cursor.inside === cursor.inside;
+
+                // Assign a copy of the cursor state so it can be compared
+                _localMember.cursor = Object.assign({}, cursor);
+                if (moveOnly) {
+                    sendUpdate();
+                }
+                else {
+                    if (cooldown) {
+                        queued = true;
+                    }
+                    else {
+                        cooldown = true;
+                        sendUpdate();
+                        window.setTimeout(() => {
+                            cooldown = false;
+                            if (queued) {
+                                queued = false;
+                                sendUpdate();
+                            }
+                        }, moveInterval);
+                    }
+                }
+            }
+        }
+        return updateCursor
+    })();
 
     /**
      * Function that can be set to be called at various points in the
