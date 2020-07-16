@@ -185,7 +185,7 @@ const tmappUI = (function(){
             entry.click((event) => {
                 event.preventDefault();
                 $("#collaboration_menu").modal("hide");
-                tmapp.moveTo(member.position.view);
+                tmapp.moveTo(member.position);
             });
             $("#collaborator_list").append(entry);
         });

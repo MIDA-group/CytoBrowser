@@ -11,18 +11,18 @@ const overlayHandler = (function (){
      */
     function updateMembers(nonLocalMembers) {
         const visibleMembers = nonLocalMembers.filter((member) => {
-            return member.position.mouse
+            return member.cursor;
         });
 
         const selection = _cursorOverlay.selectAll("g")
             .data(visibleMembers, (d) => d.id)
-            .join(enter => enter.append("g").attr("transform", (d) => `translate(${d.position.mouse.x}, ${d.position.mouse.y}), scale(0.003, 0.003)`)
+            .join(enter => enter.append("g").attr("transform", (d) => `translate(${d.cursor.x}, ${d.cursor.y}), rotate(-30), scale(0.003, 0.003)`)
                                 .append("path")
-                                .attr("d", "M 0 0 L 0.2 1.0 L 0.457129 0.72534 L 0.81584 0.61188 Z")
+                                .attr("d", "M 0 0 L -0.4 1.0 L 0 0.9 L 0.4 1.0 Z")
                                 .style("fill", "rgb(173, 29, 40)"),
-                  update => update.attr("transform", (d) => `translate(${d.position.mouse.x}, ${d.position.mouse.y}), scale(0.003, 0.003)`));
+                  update => update.attr("transform", (d) => `translate(${d.cursor.x}, ${d.cursor.y}), rotate(-30), scale(0.003, 0.003)`));
     }
-
+//M -0.4 1.1 L -0.44 1.2 L 0.44 1.2 L 0.40 1.1 L 0 1.0 Z
     /**
      * Initialize the overlay handler. Should be called whenever OSD is
      * initialized.

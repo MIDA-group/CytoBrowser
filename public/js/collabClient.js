@@ -254,12 +254,30 @@ const collabClient = (function(){
      * Update the position of the local collaboration member in the
      * OSD viewport.
      * @param {Object} position The new position of the collaborator.
-     * @param {Object} position.mouse The mouse position.
-     * @param {Object} position.view The viewport position, z, and zoom.
+     * @param {Object} position.x X position of the viewport in viewport coordinates.
+     * @param {Object} position.y Y position of the viewport in viewport coordinates.
+     * @param {Object} position.z Z level of the viewport.
+     * @param {Object} position.zoom Zoom level of the viewport.
      */
     function updatePosition(position) {
         if (_localMember) {
             _localMember.position = position;
+            send({
+                type: "memberEvent",
+                eventType: "update",
+                hardUpdate: false,
+                member: _localMember
+            })
+        }
+    }
+
+    /** Update the position and status of the local collaboration member's
+      * mouse cursor.
+      * @param {Object} cursor Current status of the cursor.
+      */
+    function updateCursor(cursor) {
+        if (_localMember) {
+            _localMember.cursor = cursor;
             send({
                 type: "memberEvent",
                 eventType: "update",
@@ -307,6 +325,7 @@ const collabClient = (function(){
         changeName: changeName,
         getDefaultName: getDefaultName,
         updatePosition: updatePosition,
+        updateCursor: updateCursor,
         onConnect: onConnect,
         onDisconnect: onDisconnect
     };

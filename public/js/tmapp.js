@@ -80,20 +80,20 @@ tmapp = {
         this.updateCollabPosition();
         this.updateURLParams();
     },
-    setMousePosition: function(position) {
-        this.curr_mouse_pos = position;
-        this.updateCollabPosition();
+    setCursorStatus: function(position) {
+        this.cursor_status = position;
+        this.updateCollabCursor();
     },
     updateCollabPosition: function() {
         collabClient.updatePosition({
-            mouse: this.curr_mouse_pos,
-            view: {
-                x: this.curr_x,
-                y: this.curr_y,
-                z: this.curr_z,
-                zoom: this.curr_zoom
-            }
+            x: this.curr_x,
+            y: this.curr_y,
+            z: this.curr_z,
+            zoom: this.curr_zoom
         });
+    },
+    updateCollabCursor: function() {
+        collabClient.updateCursor(this.cursor_status);
     },
     updateURLParams: function() { //Update the URL params
         url = new URL(window.location.href);
@@ -437,7 +437,7 @@ tmapp.initOSD = function (callback) {
     // Handler for live updates of mouse position in collaboration
     const moveHandler = function(event) {
         const pos = overlayUtils.pointFromOSDPixel(event.position, "ISS");
-        tmapp.setMousePosition({x: pos.x, y: pos.y});
+        tmapp.setCursorStatus({x: pos.x, y: pos.y});
     }
 
     //OSD handlers have to be registered using MouseTracker OSD objects
