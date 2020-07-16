@@ -15,12 +15,11 @@ const overlayHandler = (function (){
             return member.cursor;
         });
 
-        const selection = _cursorOverlay.selectAll("g");
-
-        selection.data(visibleMembers, (d) => d.id)
+        _cursorOverlay.selectAll("g")
+            .data(visibleMembers, (d) => d.id)
             .join(enter => {
                 const group = enter.append("g")
-                    .attr("transform", (d) => `translate(${d.cursor.x}, ${d.cursor.y}), rotate(-30), scale(0.003, 0.003)`);
+                    .attr("transform", (d) => `translate(${d.cursor.x}, ${d.cursor.y}), rotate(-30), scale(0.003)`);
                 group.append("path")
                     .attr("d", "M 0 0 L -0.4 1.0 L 0 0.7 L 0.4 1.0 Z")
                     .attr("class", "pointer")
@@ -34,9 +33,10 @@ const overlayHandler = (function (){
                 },
                 update => {
                     update
-                        .attr("transform", (d) => `translate(${d.cursor.x}, ${d.cursor.y}), rotate(-30), scale(0.003, 0.003)`)
+                        .attr("transform", (d) => `translate(${d.cursor.x}, ${d.cursor.y}), rotate(-30), scale(0.003)`)
                         .transition().duration(100)
-                        .style("opacity", (d) => d.cursor.inside || d.cursor.held ? 1.0 : 0.2);
+                        .style("opacity", (d) => d.cursor.inside || d.cursor.held ? 1.0 : 0.2)
+                        .attr("transform", (d) => `translate(${d.cursor.x}, ${d.cursor.y}), rotate(-30), scale(${d.cursor.inside || d.cursor.held ? 0.003 : 0.002})`);
                     update.select(".caret")
                         .filter(function(d) { return _previousCursors.get(this).held !== d.cursor.held })
                         .transition().duration(200)
