@@ -294,12 +294,13 @@ const collabClient = (function(){
         function updateCursor(cursor) {
             if (_localMember) {
                 // Check if the only update is a cursor move
+                const prevCursor = _localMember.cursor || (_localMember.cursor = {});
                 const moveOnly =
-                    _localMember.cursor.hold === cursor.hold
-                    && _localMember.cursor.inside === cursor.inside;
+                    prevCursor.hold === cursor.hold
+                    && prevCursor.inside === cursor.inside;
 
                 // Assign a copy of the cursor state so it can be compared
-                _localMember.cursor = Object.assign({}, cursor);
+                Object.assign(prevCursor, cursor);
                 if (moveOnly) {
                     sendUpdate();
                 }
