@@ -16,17 +16,24 @@ const overlayHandler = (function (){
 
         const selection = _cursorOverlay.selectAll("g")
             .data(visibleMembers, (d) => d.id)
-            .join(enter => enter.append("g")
-                  .attr("transform", (d) => `translate(${d.cursor.x}, ${d.cursor.y}), rotate(-30), scale(0.003, 0.003)`)
-                    .append("path")
-                    .attr("d", "M 0 0 L -0.4 1.0 L 0 0.9 L 0.4 1.0 Z")
-                    .style("fill", "rgb(173, 29, 40)"),
-                  update => update
+            .join(enter => {
+                const group = enter.append("g")
+                    .attr("transform", (d) => `translate(${d.cursor.x}, ${d.cursor.y}), rotate(-30), scale(0.003, 0.003)`);
+                group.append("path")
+                    .attr("d", "M 0 0 L -0.4 1.0 L 0 0.7 L 0.4 1.0 Z")
+                    .attr("class", "pointer")
+                    .style("fill", "rgb(173, 29, 40)");
+                group.append("path")
+                    .attr("d", "-0.4 1.1 L -0.44 1.2 L 0.44 1.2 L 0.40 1.1 L 0 0.8 Z")
+                    .attr("class", "caret")
+                    .style("fill", "rgb(173, 29, 40)");
+                },
+                update => update
                   .attr("transform", (d) => `translate(${d.cursor.x}, ${d.cursor.y}), rotate(-30), scale(0.003, 0.003)`)
                   .transition().duration(100).style("opacity", (d) => d.cursor.inside ? 1.0 : 0.2)
               );
     }
-//M -0.4 1.1 L -0.44 1.2 L 0.44 1.2 L 0.40 1.1 L 0 1.0 Z
+
     /**
      * Initialize the overlay handler. Should be called whenever OSD is
      * initialized.
