@@ -56,15 +56,19 @@ const collabClient = (function(){
         if (!_members) {
             throw new Error("Tried to handle member event without an initialized member array.");
         }
+        const member = _members.find((member) => member.id === msg.member.id);
         switch(msg.eventType) {
             case "add":
                 _members.push(msg.member);
                 _memberUpdate()
                 break;
             case "update":
-                const member = _members.find((member) => member.id === msg.member.id);
                 Object.assign(member, msg.member);
                 _memberUpdate(msg.hardUpdate);
+                break;
+            case "cursorUpdate":
+                member.cursor = msg.cursor;
+                _memberUpdate(false);
                 break;
             case "remove":
                 const memberIndex = _members.findIndex((member) => member.id === msg.member.id);
@@ -285,16 +289,17 @@ const collabClient = (function(){
         function sendUpdate() {
             send({
                 type: "memberEvent",
-                eventType: "update",
-                hardUpdate: false,
-                member: _localMember
+                eventType: "cursorUpdate",
+                cursor: _localMember.cursor;
             });
         }
 
         function updateCursor(cursor) {
             if (_localMember) {
                 // Check if the only update is a cursor move
-                const prevCursor = _localMember.cursor || (_localMember.cursor = {});
+                const prevCursor =
+                    _localMember.cursor
+                    || (_localMember.cursor = {});
                 const moveOnly =
                     prevCursor.hold === cursor.hold
                     && prevCursor.inside === cursor.inside;

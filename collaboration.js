@@ -83,6 +83,9 @@ class Collaboration {
                     case "update":
                         Object.assign(member, msg.member);
                         break;
+                    case "cursorUpdate":
+                        member.cursor = msg.cursor;
+                        break;
                     default:
                         this.log(`Tried to handle unknown member event: ${msg.eventType}`, console.warn);
                 }
