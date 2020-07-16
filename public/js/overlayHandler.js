@@ -42,7 +42,7 @@ const overlayHandler = (function (){
                         .transition().duration(200)
                         .attr("transform", (d) => `translate(0, ${d.cursor.held ? 0.05 : 0.15})`);
                 }
-            ).each(function(d) { _previousCursors.set(this, d); });
+            );
 
         selection.property(_previousCursors, d => d.cursor);
     }
