@@ -1,7 +1,7 @@
 const overlayHandler = (function (){
     "use strict";
 
-    let _cursorOverlay
+    let _cursorOverlay,
         _previousCursors;
 
     /**
@@ -15,8 +15,9 @@ const overlayHandler = (function (){
             return member.cursor;
         });
 
-        const selection = _cursorOverlay.selectAll("g")
-            .data(visibleMembers, (d) => d.id)
+        const selection = _cursorOverlay.selectAll("g");
+
+        selection.data(visibleMembers, (d) => d.id)
             .join(enter => {
                 const group = enter.append("g")
                     .attr("transform", (d) => `translate(${d.cursor.x}, ${d.cursor.y}), rotate(-30), scale(0.003, 0.003)`);
@@ -42,6 +43,8 @@ const overlayHandler = (function (){
                         .attr("transform", (d) => `translate(0, ${d.cursor.held ? 0.05 : 0.15})`);
                 }
             ).each(function(d) { _previousCursors.set(this, d); });
+
+        selection.property(_previousCursors, d => d.cursor);
     }
 
     /**
