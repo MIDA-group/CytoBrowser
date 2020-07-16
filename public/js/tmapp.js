@@ -80,8 +80,13 @@ tmapp = {
         this.updateCollabPosition();
         this.updateURLParams();
     },
-    setCursorStatus: function(position) {
-        this.cursor_status = position;
+    setCursorStatus: function(status) {
+        if (this.cursor_status) {
+            Object.assign(this.cursor_status, status);
+        }
+        else {
+            this.cursor_status = status;
+        }
         this.updateCollabCursor();
     },
     updateCollabPosition: function() {
@@ -434,10 +439,20 @@ tmapp.initOSD = function (callback) {
         }
     };
 
-    // Handler for live updates of mouse position in collaboration
+    // Live updates of mouse position in collaboration
     const moveHandler = function(event) {
         const pos = overlayUtils.pointFromOSDPixel(event.position, "ISS");
         tmapp.setCursorStatus({x: pos.x, y: pos.y});
+    }
+
+    // Live updates of whether or not the mouse is held down
+    const heldHandler = function(held) {
+        return function() { tmapp.setCursorStatus({held: held}); };
+    }
+
+    // Live update of whether or not the mouse is in the viewport
+    const insideHandler = function(inside) {
+        return function() { tmapp.setCursorStatus({inside: inside}); };
     }
 
     //OSD handlers have to be registered using MouseTracker OSD objects
@@ -445,7 +460,11 @@ tmapp.initOSD = function (callback) {
         element: this.viewer.canvas,
         clickHandler: click_handler,
         scrollHandler: scroll_handler,
-        moveHandler: moveHandler
+        moveHandler: moveHandler,
+        enterHandler: insideHandler(true),
+        exitHandler: insideHandler(false),
+        pressHandler: heldHandler(true),
+        releaseHandler: heldHandler(false)
     }).setTracking(true);
 
     tmapp.viewer.canvas.addEventListener('mouseover', function() { tmapp.checkFocus(); });
