@@ -68,6 +68,7 @@ tmapp = {
     },
     setZoomName: function() { //Display zoom level in UI
         const zoom = this.viewer.viewport.getZoom();
+        overlayHandler.setOverlayZoom(zoom);
         setImageZoom(Math.round(zoom*10)/10);
         this.curr_zoom = zoom;
         this.updateCollabPosition();

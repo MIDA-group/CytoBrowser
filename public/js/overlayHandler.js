@@ -2,7 +2,8 @@ const overlayHandler = (function (){
     "use strict";
 
     let _cursorOverlay,
-        _previousCursors;
+        _previousCursors
+        _zoomLevel;
 
     /**
      * Use d3 to update the collaboration cursors, adding new ones and
@@ -36,10 +37,9 @@ const overlayHandler = (function (){
                 },
                 update => {
                     update
-                        .attr("transform", (d) => `translate(${d.cursor.x}, ${d.cursor.y}), rotate(-30), scale(${d.cursor.inside || d.cursor.held ? 0.003 : 0.0028})`)
+                        .attr("transform", (d) => `translate(${d.cursor.x}, ${d.cursor.y}), rotate(-30), scale(${0.2 / _zoomLevel})`)
                         .transition().duration(100)
-                        .style("opacity", (d) => d.cursor.inside || d.cursor.held ? 1.0 : 0.2)
-                        .attr("transform", (d) => `translate(${d.cursor.x}, ${d.cursor.y}), rotate(-30), scale(${d.cursor.inside || d.cursor.held ? 0.003 : 0.0028})`);
+                        .style("opacity", (d) => d.cursor.inside || d.cursor.held ? 1.0 : 0.2);
                     update.select(".caret")
                         .filter(function(d) { return _previousCursors.get(this).held !== d.cursor.held })
                         .transition().duration(200)
@@ -48,6 +48,16 @@ const overlayHandler = (function (){
             );
 
         _cursorOverlay.selectAll("g").property(_previousCursors, d => d.cursor);
+    }
+
+    /**
+     * Let the overlay handler know the current zoom level of the viewer
+     * in order to properly scale elements.
+     * @param {number} zoomLevel The current zoom level of the OSD viewer.
+     */
+    function setOverlayZoom(zoomLevel) {
+        _zoomLevel = zoomLevel;
+        updateMembers();
     }
 
     /**
