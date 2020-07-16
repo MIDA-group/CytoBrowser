@@ -56,7 +56,9 @@ const collabClient = (function(){
         if (!_members) {
             throw new Error("Tried to handle member event without an initialized member array.");
         }
-        const member = _members.find((member) => member.id === msg.member.id);
+        const member = _members.find((member) =>
+            msg.member ? member.id === msg.member.id : member.id === msg.id
+        );
         switch(msg.eventType) {
             case "add":
                 _members.push(msg.member);
@@ -290,7 +292,8 @@ const collabClient = (function(){
             send({
                 type: "memberEvent",
                 eventType: "cursorUpdate",
-                cursor: _localMember.cursor;
+                id: _localMember.cursor,
+                cursor: _localMember.cursor
             });
         }
 
