@@ -44,16 +44,17 @@ const overlayHandler = (function (){
         // https://drafts.csswg.org/css-transforms/#svg-syntax
     }
 
-    function _cursorSize(d) {
-        const normalSize = d.cursor.inside || d.cursor.held;
+    function _cursorSize(cursor) {
+        const normalSize = cursor.inside || cursor.held;
         return (normalSize ? 15 : 12) / _scale;
     }
 
     function _resizeMembers() {
         _cursorOverlay.selectAll("g")
             .attr("transform", function() {
+                const cursor = _previousCursors.get(this);
                 const currTrans = this.getAttribute("transform");
-                const newTrans = _editTransform(currTrans, {scale: _cursorSize(d)});
+                const newTrans = _editTransform(currTrans, {scale: _cursorSize(cursor)});
                 return newTrans;
             });
     }
@@ -73,7 +74,7 @@ const overlayHandler = (function (){
             .data(visibleMembers, (d) => d.id)
             .join(enter => {
                 const group = enter.append("g")
-                    .attr("transform", (d) => `translate(${d.cursor.x}, ${d.cursor.y}), rotate(-30), scale(${_cursorSize(d)})`)
+                    .attr("transform", (d) => `translate(${d.cursor.x}, ${d.cursor.y}), rotate(-30), scale(${_cursorSize(d.cursor)})`)
                     .attr("opacity", 0.0)
                     .style("fill", (d) => d.color);
                 group.append("path")
@@ -101,7 +102,7 @@ const overlayHandler = (function (){
                         .attr("transform", function(d) {
                             const currTrans = this.getAttribute("transform");
                             const newTrans = _editTransform(currTrans, {
-                                scale: _cursorSize(d)
+                                scale: _cursorSize(d.cursor)
                             });
                             return newTrans;
                         });
