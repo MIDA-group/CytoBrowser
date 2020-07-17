@@ -6,7 +6,7 @@ const overlayHandler = (function (){
         _scale,
         _previousMemberList;
 
-    function _editTranform(transformString, changes) {
+    function _editTransform(transformString, changes) {
         // Turn the transform string into an object
         // Start by finding all the transforms
         const transforms = transformString.match(/[^\s,]+\([^)]*\)/g);
@@ -21,18 +21,19 @@ const overlayHandler = (function (){
         });
 
         // Assign the changes
-        result = "";
+        let result = "";
         names.forEach((name) => {
             const value = changes[name];
             if (!value) {
+                result += `${name}(${transObj[name].toString()})`;
                 return;
             }
 
             if (Array.isArray(value)) {
                 transObj[name] = value;
             }
-            else if (typeof value === "function" && transObj[key]) {
-                transObj[name].map(value);
+            else if (typeof value === "function") {
+                transObj[name] = transObj[name].map(value);
             }
             else if (typeof value !== "object") {
                 transObj[name] = [value];
