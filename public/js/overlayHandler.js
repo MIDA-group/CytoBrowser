@@ -3,8 +3,47 @@ const overlayHandler = (function (){
 
     let _cursorOverlay,
         _previousCursors,
-        _zoomLevel,
+        _scale,
         _previousMemberList;
+
+    function _editTranform(transformString, changes) {
+        // Turn the transform string into an object
+        // Start by finding all the transforms
+        const transforms = transformString.match(/[^, ]+\([^)]*\)/g);
+
+        // Structure the transform as an object
+        const transObj = {};
+        const names = transforms.map((transform) => transform.match(/.+(?=\()/g)[0]);
+        transforms.forEach((transform) => {
+            const name = transform.match(/.+(?=\()/g);
+            const values = transform.match(/(?<=\(.*)[^, ]+(?=.*\))/g);
+            transObj[name] = values;
+        });
+
+        // Assign the changes
+        Object.entries(changes).forEach(([key, value]) => {
+            if (Array.isArray(value)) {
+                transObj[key] = value;
+            }
+            else if (typeof value === "function" && transObj[key]) {
+                transObj[key].map(value);
+            }
+            else if (typeof value !== "object") {
+                transObj[key] = [value];
+            }
+            else {
+                throw new Error("Invalid transform change.");
+            }
+        });
+
+        // Convert back to string
+        let result = "";
+        Object.entries(transObj).forEach(([key, value]) => {
+
+        });
+
+        // https://drafts.csswg.org/css-transforms/#svg-syntax
+    }
 
     /**
      * Use d3 to update the collaboration cursors, adding new ones and
@@ -23,7 +62,7 @@ const overlayHandler = (function (){
             .data(visibleMembers, (d) => d.id)
             .join(enter => {
                 const group = enter.append("g")
-                    .attr("transform", (d) => `translate(${d.cursor.x}, ${d.cursor.y}), rotate(-30), scale(0.003)`)
+                    .attr("transform", (d) => `translate(${d.cursor.x}, ${d.cursor.y}), rotate(-30), scale(${2 / _scale})`)
                     .attr("opacity", 0.0);
                 group.append("path")
                     .attr("d", "M 0 0 L -0.4 1.0 L 0 0.7 L 0.4 1.0 Z")
@@ -40,7 +79,7 @@ const overlayHandler = (function (){
                 },
                 update => {
                     update
-                        .attr("transform", (d) => `translate(${d.cursor.x}, ${d.cursor.y}), rotate(-30), scale(${0.02 / _zoomLevel})`)
+                        .attr("transform", (d) => `translate(${d.cursor.x}, ${d.cursor.y}), rotate(-30), scale(${2 / _scale})`)
                         .transition().duration(100)
                         .style("opacity", (d) => d.cursor.inside || d.cursor.held ? 1.0 : 0.2);
                     update.select(".caret")
@@ -54,12 +93,14 @@ const overlayHandler = (function (){
     }
 
     /**
-     * Let the overlay handler know the current zoom level of the viewer
-     * in order to properly scale elements.
-     * @param {number} zoomLevel The current zoom level of the OSD viewer.
+     * Let the overlay handler know the current zoom level and container
+     * size of the viewer in order to properly scale elements.
+     * @param {number} zoomLevel The current zoom level of the OSD viewport.
+     * @param {number} wContainer The width in pixels of the OSD viewport.
+     * @param {number} hContainer The height in pixels of the OSD viewport.
      */
-    function setOverlayZoom(zoomLevel) {
-        _zoomLevel = zoomLevel;
+    function setOverlayScale(zoomLevel, wContainer, hContainer) {
+        _scale = zoomLevel * wContainer;
         updateMembers();
     }
 
