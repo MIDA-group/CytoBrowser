@@ -449,7 +449,7 @@ tmapp.initOSD = function (callback) {
 
     // Live updates of whether or not the mouse is held down
     const heldHandler = function(held) {
-        return function() {
+        return function(event) {
             const pos = overlayUtils.pointFromOSDPixel(event.position, "ISS");
             tmapp.setCursorStatus({
                 held: held,
@@ -461,7 +461,7 @@ tmapp.initOSD = function (callback) {
 
     // Live update of whether or not the mouse is in the viewport
     const insideHandler = function(inside) {
-        return function() {
+        return function(event) {
             const pos = overlayUtils.pointFromOSDPixel(event.position, "ISS");
             tmapp.setCursorStatus({
                 inside: inside,
