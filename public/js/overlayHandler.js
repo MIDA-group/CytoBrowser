@@ -80,14 +80,27 @@ const overlayHandler = (function (){
                     .style("fill", "rgb(173, 29, 40)")
                     .transition().duration(500)
                     .attr("transform", "translate(0, 0.15)");
-                group.transition().duration(500)
+                group.transition().duration(100)
                     .attr("opacity", 1.0);
                 },
                 update => {
-                    update
-                        .attr("transform", (d) => `translate(${d.cursor.x}, ${d.cursor.y}), rotate(-30), scale(${15 / _scale})`)
-                        .transition().duration(100)
-                        .style("opacity", (d) => d.cursor.inside || d.cursor.held ? 1.0 : 0.2);
+                    update.transition().duration(200)
+                        .attr("transform", function(d) {
+                            const currTrans = this.getAttribute("transform");
+                            const newTrans = _editTransform(currTrans, {
+                                translate: [d.cursor.x, d.cursor.y]
+                            });
+                            return newTrans;
+                        })
+                        .filter(function(d) { return _previousCursors.get(this).inside !== d.cursor.inside })
+                        .style("opacity", (d) => d.cursor.inside || d.cursor.held ? 1.0 : 0.2)
+                        .attr("transform", function(d) {
+                            const currTrans = this.getAttribute("transform");
+                            const newTrans = _editTransform(currTrans, {
+                                scale: (s) => (d.cursor.inside || d.cursor.held ? 0.8 : (1/0.8)) * s;
+                            });
+                            return newTrans;
+                        });
                     update.select(".caret")
                         .filter(function(d) { return _previousCursors.get(this).held !== d.cursor.held })
                         .transition().duration(150)
