@@ -64,6 +64,7 @@ tmapp = {
 
     setFocusName: function() { //Display focus level in UI
         setImageZLevel(z_levels[tmapp.getFocusIndex()]);
+        this.updateCollabPosition();
         this.updateURLParams();
     },
     setZoomName: function() { //Display zoom level in UI
