@@ -62,7 +62,7 @@ const overlayHandler = (function (){
             .data(visibleMembers, (d) => d.id)
             .join(enter => {
                 const group = enter.append("g")
-                    .attr("transform", (d) => `translate(${d.cursor.x}, ${d.cursor.y}), rotate(-30), scale(${2 / _scale})`)
+                    .attr("transform", (d) => `translate(${d.cursor.x}, ${d.cursor.y}), rotate(-30), scale(${15 / _scale})`)
                     .attr("opacity", 0.0);
                 group.append("path")
                     .attr("d", "M 0 0 L -0.4 1.0 L 0 0.7 L 0.4 1.0 Z")
@@ -79,12 +79,12 @@ const overlayHandler = (function (){
                 },
                 update => {
                     update
-                        .attr("transform", (d) => `translate(${d.cursor.x}, ${d.cursor.y}), rotate(-30), scale(${2 / _scale})`)
+                        .attr("transform", (d) => `translate(${d.cursor.x}, ${d.cursor.y}), rotate(-30), scale(${15 / _scale})`)
                         .transition().duration(100)
                         .style("opacity", (d) => d.cursor.inside || d.cursor.held ? 1.0 : 0.2);
                     update.select(".caret")
                         .filter(function(d) { return _previousCursors.get(this).held !== d.cursor.held })
-                        .transition().duration(200)
+                        .transition().duration(150)
                         .attr("transform", (d) => `translate(0, ${d.cursor.held ? 0.05 : 0.15})`);
                 }
             );
@@ -121,7 +121,7 @@ const overlayHandler = (function (){
 
     return {
         updateMembers: updateMembers,
-        setOverlayZoom: setOverlayZoom,
+        setOverlayScale: setOverlayScale,
         init: init
     };
 })();
