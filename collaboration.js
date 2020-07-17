@@ -8,11 +8,12 @@
 const collabs = {};
 
 // Utility for generating member colors
+let nextH = 0;
 function generateColor() {
-    const h = Math.floor(Math.random() * 180);
-    const roof = 1 / (1 + Math.tan(Math.PI * (h % 90) / 180));
-    const s = Math.random() * 40 * roof + 60;
-    const l = (Math.random() * 15) + 50;
+    const h = nextH;
+    nextH = (nextH + Math.PI * 25) % 360;
+    const s = (Math.cos(Math.PI * h / 180) * 40) + 60;
+    const l = (Math.cos(Math.PI * h / 180) * 20) + 50;
     return `hsl(${h}, ${s}%, ${l}%)`;
 }
 
