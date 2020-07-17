@@ -241,6 +241,7 @@ const collabClient = (function(){
                 hardUpdate: true,
                 member: _localMember
             });
+            tmappUI.updateCollaborators(_localMember, _members);
         }
     }
 
