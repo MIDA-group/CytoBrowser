@@ -12,7 +12,7 @@ function generateColor() {
     const h = Math.floor(Math.random() * 100);
     const s = Math.random() * 100;
     const l = (Math.random() * 40) + 30;
-    return `hsl(${h}, ${s}, ${l})`;
+    return `hsl(${h}, ${s}%, ${l}%)`;
 }
 
 class Collaboration {
