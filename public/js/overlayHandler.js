@@ -3,8 +3,7 @@ const overlayHandler = (function (){
 
     let _cursorOverlay,
         _previousCursors,
-        _scale,
-        _previousMemberList;
+        _scale;
 
     function _editTransform(transformString, changes) {
         // Turn the transform string into an object
@@ -48,18 +47,25 @@ const overlayHandler = (function (){
         // https://drafts.csswg.org/css-transforms/#svg-syntax
     }
 
+    function _resizeMembers() {
+        _cursorOverlay.selectAll("g")
+            .attr("transform", function() {
+                const currTrans = this.getAttribute("transform");
+                const newTrans = _editTransform(currTrans, {scale: 15 / _scale});
+                return newTrans;
+            });
+    }
+
     /**
      * Use d3 to update the collaboration cursors, adding new ones and
      * removing old ones.
      * @param {Array} nonLocalMembers An array of members, excluding the
      * local member.
      */
-    function updateMembers(nonLocalMembers = _previousMemberList) {
+    function updateMembers(nonLocalMembers) {
         const visibleMembers = nonLocalMembers.filter((member) => {
             return member.cursor;
         });
-
-        _previousMemberList = nonLocalMembers;
 
         _cursorOverlay.selectAll("g")
             .data(visibleMembers, (d) => d.id)
@@ -104,7 +110,7 @@ const overlayHandler = (function (){
      */
     function setOverlayScale(zoomLevel, wContainer, hContainer) {
         _scale = zoomLevel * wContainer;
-        updateMembers();
+        _resizeMembers();
     }
 
     /**
@@ -119,7 +125,6 @@ const overlayHandler = (function (){
             .attr("id", "cursors");
         _cursorOverlay = d3.select(cursors.node());
         _previousCursors = d3.local();
-        _previousMemberList = [];
     }
 
     return {
