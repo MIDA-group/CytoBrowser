@@ -9,39 +9,41 @@ const overlayHandler = (function (){
     function _editTranform(transformString, changes) {
         // Turn the transform string into an object
         // Start by finding all the transforms
-        const transforms = transformString.match(/[^, ]+\([^)]*\)/g);
+        const transforms = transformString.match(/[^\s,]+\([^)]*\)/g);
 
         // Structure the transform as an object
         const transObj = {};
         const names = transforms.map((transform) => transform.match(/.+(?=\()/g)[0]);
         transforms.forEach((transform) => {
             const name = transform.match(/.+(?=\()/g);
-            const values = transform.match(/(?<=\(.*)[^, ]+(?=.*\))/g);
+            const values = transform.match(/(?<=\(.*)[^\s,]+(?=.*\))/g);
             transObj[name] = values;
         });
 
         // Assign the changes
-        Object.entries(changes).forEach(([key, value]) => {
+        result = "";
+        names.forEach((name) => {
+            const value = changes[name];
+            if (!value) {
+                return;
+            }
+
             if (Array.isArray(value)) {
-                transObj[key] = value;
+                transObj[name] = value;
             }
             else if (typeof value === "function" && transObj[key]) {
-                transObj[key].map(value);
+                transObj[name].map(value);
             }
             else if (typeof value !== "object") {
-                transObj[key] = [value];
+                transObj[name] = [value];
             }
             else {
                 throw new Error("Invalid transform change.");
             }
+            result += `${name}(${transObj[name].toString()}) `;
         });
 
-        // Convert back to string
-        let result = "";
-        Object.entries(transObj).forEach(([key, value]) => {
-
-        });
-
+        return result;
         // https://drafts.csswg.org/css-transforms/#svg-syntax
     }
 
