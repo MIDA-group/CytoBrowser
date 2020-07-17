@@ -23,22 +23,19 @@ const overlayHandler = (function (){
         let result = "";
         names.forEach((name) => {
             const value = changes[name];
-            if (!value) {
-                result += `${name}(${transObj[name].toString()})`;
-                return;
-            }
-
-            if (Array.isArray(value)) {
-                transObj[name] = value;
-            }
-            else if (typeof value === "function") {
-                transObj[name] = transObj[name].map(value);
-            }
-            else if (typeof value !== "object") {
-                transObj[name] = [value];
-            }
-            else {
-                throw new Error("Invalid transform change.");
+            if (value) {
+                if (Array.isArray(value)) {
+                    transObj[name] = value;
+                }
+                else if (typeof value === "function") {
+                    transObj[name] = transObj[name].map(value);
+                }
+                else if (typeof value !== "object") {
+                    transObj[name] = [value];
+                }
+                else {
+                    throw new Error("Invalid transform change.");
+                }
             }
             result += `${name}(${transObj[name].toString()}) `;
         });
