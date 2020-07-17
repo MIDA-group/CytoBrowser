@@ -7,6 +7,14 @@
 // Object for storing all ongoing collaborations
 const collabs = {};
 
+// Utility for generating member colors
+function generateColor() {
+    const h = Math.floor(Math.random() * 100);
+    const s = Math.random() * 100;
+    const l = (Math.random() * 40) + 30;
+    return `hsl(${h}, ${s}, ${l})`;
+}
+
 class Collaboration {
     constructor(id, image) {
         this.members = new Map();
@@ -21,6 +29,7 @@ class Collaboration {
         this.members.set(ws, {
             id: this.nextMemberId++,
             name: name,
+            color: generateColor(),
             position: {},
             ready: false,
         });

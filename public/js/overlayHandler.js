@@ -70,14 +70,13 @@ const overlayHandler = (function (){
                 const group = enter.append("g")
                     .attr("transform", (d) => `translate(${d.cursor.x}, ${d.cursor.y}), rotate(-30), scale(${15 / _scale})`)
                     .attr("opacity", 0.0);
+                    .style("fill", (d) => d.color);
                 group.append("path")
                     .attr("d", "M 0 0 L -0.4 1.0 L 0 0.7 L 0.4 1.0 Z")
                     .attr("class", "pointer")
-                    .style("fill", "rgb(173, 29, 40)");
                 group.append("path")
                     .attr("d", "M -0.4 1.0 L -0.36 1.2 L 0.36 1.2 L 0.4 1.0 L 0 0.7 Z")
                     .attr("class", "caret")
-                    .style("fill", "rgb(173, 29, 40)")
                     .transition().duration(500)
                     .attr("transform", "translate(0, 0.15)");
                 group.transition().duration(100)
@@ -97,7 +96,7 @@ const overlayHandler = (function (){
                         .attr("transform", function(d) {
                             const currTrans = this.getAttribute("transform");
                             const newTrans = _editTransform(currTrans, {
-                                scale: (s) => (d.cursor.inside || d.cursor.held ? 0.8 : (1/0.8)) * s;
+                                scale: (s) => (d.cursor.inside || d.cursor.held ? 0.8 : (1/0.8)) * s
                             });
                             return newTrans;
                         });
