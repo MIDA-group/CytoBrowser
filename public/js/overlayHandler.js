@@ -69,7 +69,7 @@ const overlayHandler = (function (){
             .join(enter => {
                 const group = enter.append("g")
                     .attr("transform", (d) => `translate(${d.cursor.x}, ${d.cursor.y}), rotate(-30), scale(${15 / _scale})`)
-                    .attr("opacity", 0.0);
+                    .attr("opacity", 0.0)
                     .style("fill", (d) => d.color);
                 group.append("path")
                     .attr("d", "M 0 0 L -0.4 1.0 L 0 0.7 L 0.4 1.0 Z")
