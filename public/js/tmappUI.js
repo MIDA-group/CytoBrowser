@@ -175,13 +175,17 @@ const tmappUI = (function(){
     function updateCollaborators(localMember, members) {
         $("#collaborator_list").empty();
         members.forEach((member) => {
+            const color = $("<span></span>");
+            color.addClass("badge badge-pill");
+            color.css("background-color", member.color);
+            color.html("&nbsp;");
             const entry = $("<a></a>");
             entry.addClass("list-group-item list-group-item-action");
             if (member === localMember || !member.ready) {
                 entry.addClass("disabled");
             }
             entry.attr("href", "#");
-            entry.text(member.name);
+            entry.html(`&nbsp;&nbsp;&nbsp;${member.name}`);
             entry.click((event) => {
                 event.preventDefault();
                 $("#collaboration_menu").modal("hide");
