@@ -9,9 +9,10 @@ const collabs = {};
 
 // Utility for generating member colors
 function generateColor() {
-    const h = Math.floor(Math.random() * 100);
-    const s = Math.random() * 100;
-    const l = (Math.random() * 40) + 30;
+    const h = Math.floor(Math.random() * 180);
+    const roof = 1 / (1 + Math.tan(Math.PI * (h % 90) / 180));
+    const s = Math.random() * 40 * roof + 60;
+    const l = (Math.random() * 15) + 50;
     return `hsl(${h}, ${s}%, ${l}%)`;
 }
 
