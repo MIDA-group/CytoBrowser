@@ -449,12 +449,26 @@ tmapp.initOSD = function (callback) {
 
     // Live updates of whether or not the mouse is held down
     const heldHandler = function(held) {
-        return function() { tmapp.setCursorStatus({held: held}); };
+        return function() {
+            const pos = overlayUtils.pointFromOSDPixel(event.position, "ISS");
+            tmapp.setCursorStatus({
+                held: held,
+                x: pos.x,
+                y: pos.y
+            });
+        };
     }
 
     // Live update of whether or not the mouse is in the viewport
     const insideHandler = function(inside) {
-        return function() { tmapp.setCursorStatus({inside: inside}); };
+        return function() {
+            const pos = overlayUtils.pointFromOSDPixel(event.position, "ISS");
+            tmapp.setCursorStatus({
+                inside: inside,
+                x: pos.x,
+                y: pos.y
+            });
+        };
     }
 
     //OSD handlers have to be registered using MouseTracker OSD objects
