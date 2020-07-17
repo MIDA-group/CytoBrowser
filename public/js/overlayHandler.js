@@ -83,8 +83,7 @@ const overlayHandler = (function (){
                     .attr("opacity", 1.0);
                 },
                 update => {
-                    update.transition().duration(200)
-                        .attr("transform", function(d) {
+                    update.attr("transform", function(d) {
                             const currTrans = this.getAttribute("transform");
                             const newTrans = _editTransform(currTrans, {
                                 translate: [d.cursor.x, d.cursor.y]
@@ -92,11 +91,12 @@ const overlayHandler = (function (){
                             return newTrans;
                         })
                         .filter(function(d) { return _previousCursors.get(this).inside !== d.cursor.inside })
+                        .transition().duration(200)
                         .style("opacity", (d) => d.cursor.inside || d.cursor.held ? 1.0 : 0.2)
                         .attr("transform", function(d) {
                             const currTrans = this.getAttribute("transform");
                             const newTrans = _editTransform(currTrans, {
-                                scale: (s) => (d.cursor.inside || d.cursor.held ? 0.8 : (1/0.8)) * s
+                                scale: d.cursor.inside || d.cursor.held ? 15 / _scale : 12 / _scale
                             });
                             return newTrans;
                         });
