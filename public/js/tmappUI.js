@@ -186,6 +186,7 @@ const tmappUI = (function(){
             }
             entry.attr("href", "#");
             entry.html(`&nbsp;&nbsp;&nbsp;${member.name}`);
+            entry.prepend(color);
             entry.click((event) => {
                 event.preventDefault();
                 $("#collaboration_menu").modal("hide");
