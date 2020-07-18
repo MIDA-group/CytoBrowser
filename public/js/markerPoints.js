@@ -48,8 +48,8 @@ const markerPoints = (function (){
          */
         return Object.assign({}, point);
     }
-    function _isDuplicatePoint(point) {
-        return _points.some((existingPoint) =>
+    function _findDuplicatePoint(point) {
+        return _points.find((existingPoint) =>
             existingPoint.x === point.x
             && existingPoint.y === point.y
             && existingPoint.z === point.z
@@ -101,12 +101,6 @@ const markerPoints = (function (){
     function addPoint(point, coordSystem="web", transmit = true) {
         const addedPoint = _clonePoint(point);
 
-        // Check if an identical point already exists
-        if (_isDuplicatePoint(addedPoint)) {
-            console.warn("Tried to add a point with identical properties to an existing point, ignoring.");
-            return;
-        }
-
         // Make sure the point has an id
         if (addedPoint.id === undefined) {
             addedPoint.id = _generateId();
@@ -137,6 +131,13 @@ const markerPoints = (function (){
             actionType: "add",
             point: addedPoint
         });
+
+        // Check if an identical point already exists, remove old one if it does
+        let replacedPoint = _findDuplicatePoint(addedPoint);
+        if (replacedPoint) {
+            console.warn("Added a point with identical properties to an existing point, replacing.");
+            removePoint(replacedPoint.id, false);
+        }
 
         // Add a graphical representation of the point
         overlayUtils.addTMCP(
