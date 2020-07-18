@@ -122,6 +122,13 @@ const markerPoints = (function (){
             addedPoint.y = coords.image.y;
         }
 
+        // Check if an identical point already exists, remove old one if it does
+        let replacedPoint = _findDuplicatePoint(addedPoint);
+        if (replacedPoint) {
+            console.warn("Added a point with identical properties to an existing point, replacing.");
+            removePoint(replacedPoint.id, false);
+        }
+
         // Store a data representation of the point
         _points.push(addedPoint);
 
@@ -131,13 +138,6 @@ const markerPoints = (function (){
             actionType: "add",
             point: addedPoint
         });
-
-        // Check if an identical point already exists, remove old one if it does
-        let replacedPoint = _findDuplicatePoint(addedPoint);
-        if (replacedPoint) {
-            console.warn("Added a point with identical properties to an existing point, replacing.");
-            removePoint(replacedPoint.id, false);
-        }
 
         // Add a graphical representation of the point
         overlayUtils.addTMCP(
