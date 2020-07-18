@@ -13,7 +13,7 @@ function generateColor() {
     return function() {
         const h = nextH;
         nextH = (nextH + Math.PI * 25) % 360;
-        const s = (Math.cos(Math.PI * h / 180) * 40) + 60;
+        const s = (Math.cos(Math.PI * h / 180) * 20) + 80;
         const l = (Math.cos(Math.PI * h / 180) * 20) + 50;
         return `hsl(${h}, ${s}%, ${l}%)`;
     }
