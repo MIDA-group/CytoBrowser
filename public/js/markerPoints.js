@@ -101,6 +101,13 @@ const markerPoints = (function (){
     function addPoint(point, coordSystem="web", transmit = true) {
         const addedPoint = _clonePoint(point);
 
+        // Check if an identical point already exists, remove old one if it does
+        let replacedPoint = _findDuplicatePoint(addedPoint);
+        if (replacedPoint) {
+            console.warn("Adding a point with identical properties to an existing point, replacing.");
+            removePoint(replacedPoint.id, false);
+        }
+
         // Make sure the point has an id
         if (addedPoint.id === undefined) {
             addedPoint.id = _generateId();
@@ -120,13 +127,6 @@ const markerPoints = (function (){
         if (coordSystem != "image") {
             addedPoint.x = coords.image.x;
             addedPoint.y = coords.image.y;
-        }
-
-        // Check if an identical point already exists, remove old one if it does
-        let replacedPoint = _findDuplicatePoint(addedPoint);
-        if (replacedPoint) {
-            console.warn("Added a point with identical properties to an existing point, replacing.");
-            removePoint(replacedPoint.id, false);
         }
 
         // Store a data representation of the point
