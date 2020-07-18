@@ -103,6 +103,9 @@ overlayUtils={
                 const newX = viewportCoords.x + delta.x;
                 const newY = viewportCoords.y + delta.y;
                 */
+                const d3node = d3.select(node);
+                const htmlid = d3node.attr("id");
+                const id = Number(htmlid.split("-")[2]);
                 const point = markerPoints.getPointById(id);
                 point.x = cursorCoords.x;
                 point.y = cursorCoords.y;
