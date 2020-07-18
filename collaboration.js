@@ -74,7 +74,7 @@ class Collaboration {
             case "markerAction":
                 switch (msg.actionType) {
                     case "add":
-                        if (!this.duplicatePoint(msg.point)) {
+                        if (!this.isDuplicatePoint(msg.point)) {
                             this.points.push(msg.point);
                             this.broadcastMessage(sender, msg);
                         }
@@ -150,7 +150,7 @@ class Collaboration {
         }
     }
 
-    duplicatePoint(point) {
+    isDuplicatePoint(point) {
         return this.points.some((existingPoint) =>
             existingPoint.x === point.x
             && existingPoint.y === point.y

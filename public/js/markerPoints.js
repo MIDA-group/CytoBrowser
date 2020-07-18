@@ -48,6 +48,14 @@ const markerPoints = (function (){
          */
         return Object.assign({}, point);
     }
+    function _isDuplicatePoint(point) {
+        return _points.some((existingPoint) =>
+            existingPoint.x === point.x
+            && existingPoint.y === point.y
+            && existingPoint.z === point.z
+            && existingPoint.mclass === point.mclass
+        );
+    }
     function _getCoordSystems(point, coordSystem) {
         const originalPoint = new OpenSeadragon.Point(point.x, point.y);
         let webPoint, viewportPoint, imagePoint;
@@ -92,6 +100,12 @@ const markerPoints = (function (){
      */
     function addPoint(point, coordSystem="web", transmit = true) {
         const addedPoint = _clonePoint(point);
+
+        // Check if an identical point already exists
+        if (_isDuplicatePoint(addedPoint)) {
+            console.warn("Tried to add a point with identical properties to an existing point, ignoring.");
+            return;
+        }
 
         // Make sure the point has an id
         if (addedPoint.id === undefined) {
