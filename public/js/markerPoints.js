@@ -117,7 +117,7 @@ const markerPoints = (function (){
             const existingPoint = getPointById(addedPoint.id);
             if (existingPoint !== undefined) {
                 console.info("Tried to assign an already-used id, reassigning.");
-                addedPoint.originalId = addedPoint.id;
+                addedPoint.originalId === undefined && (addedPoint.originalId = addedPoint.id);
                 addedPoint.id = _generateId();
             }
         }

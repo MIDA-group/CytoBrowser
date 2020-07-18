@@ -72,6 +72,10 @@ class Collaboration {
         const member = this.members.get(sender);
         switch (msg.type) {
             case "markerAction":
+                if (!member.ready) {
+                    // Members who aren't ready shouldn't do anything with points
+                    break;
+                }
                 switch (msg.actionType) {
                     case "add":
                         if (!this.isDuplicatePoint(msg.point)) {
@@ -79,7 +83,7 @@ class Collaboration {
                             this.broadcastMessage(sender, msg);
                         }
                         else {
-                            this.log(`${this.members.get(sender).name} tried to add a duplicate point, ignoring.`, console.info);
+                            this.log(`${member.name} tried to add a duplicate point, ignoring.`, console.info);
                         }
                         break;
                     case "update":

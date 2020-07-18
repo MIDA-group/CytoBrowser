@@ -41,7 +41,6 @@ const overlayHandler = (function (){
         });
 
         return result;
-        // https://drafts.csswg.org/css-transforms/#svg-syntax
     }
 
     function _cursorSize(cursor) {

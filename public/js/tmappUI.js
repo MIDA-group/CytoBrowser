@@ -109,6 +109,7 @@ const tmappUI = (function(){
             tmapp.setCollab(connection.id);
         });
         collabClient.onDisconnect(function(connection) {
+            clearCollaborators();
             tmapp.setCollab();
         });
 
