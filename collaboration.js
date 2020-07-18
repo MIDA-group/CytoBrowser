@@ -72,23 +72,32 @@ class Collaboration {
         const member = this.members.get(sender);
         switch (msg.type) {
             case "markerAction":
-                this.broadcastMessage(sender, msg);
                 switch (msg.actionType) {
                     case "add":
-                        this.points.push(msg.point);
+                        if (!this.duplicatePoint(msg.point)) {
+                            this.points.push(msg.point);
+                            this.broadcastMessage(sender, msg);
+                        }
+                        else {
+                            this.log(`${this.members.get(sender).name} tried to add a duplicate point, ignoring.`, console.info);
+                        }
                         break;
                     case "update":
-                        Object.assign(this.points.find((point) => point.id === msg.id), msg.point)
+                        Object.assign(this.points.find((point) => point.id === msg.id), msg.point);
+                        this.broadcastMessage(sender, msg);
                         break;
                     case "remove":
                         const index = this.points.findIndex((point) => point.id === msg.id);
                         this.points.splice(index, 1);
+                        this.broadcastMessage(sender, msg);
                         break;
                     case "clear":
                         this.points = [];
+                        this.broadcastMessage(sender, msg);
                         break;
                     default:
                         this.log(`Tried to handle unknown marker action: ${msg.actionType}`, console.warn);
+                        this.broadcastMessage(sender, msg);
                 }
                 break;
             case "memberEvent":
@@ -139,6 +148,15 @@ class Collaboration {
             members: Array.from(this.members.values()),
             points: this.points
         }
+    }
+
+    duplicatePoint(point) {
+        return this.points.some((existingPoint) =>
+            existingPoint.x === point.x
+            && existingPoint.y === point.y
+            && existingPoint.z === point.z
+            && existingPoint.mclass === point.mclass
+        );
     }
 
     log(msg, f = console.log) {
