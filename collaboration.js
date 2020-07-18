@@ -8,13 +8,15 @@
 const collabs = {};
 
 // Utility for generating member colors
-let nextH = 0;
 function generateColor() {
-    const h = nextH;
-    nextH = (nextH + Math.PI * 25) % 360;
-    const s = (Math.cos(Math.PI * h / 180) * 40) + 60;
-    const l = (Math.cos(Math.PI * h / 180) * 20) + 50;
-    return `hsl(${h}, ${s}%, ${l}%)`;
+    let nextH = 0;
+    return function() {
+        const h = nextH;
+        nextH = (nextH + Math.PI * 25) % 360;
+        const s = (Math.cos(Math.PI * h / 180) * 40) + 60;
+        const l = (Math.cos(Math.PI * h / 180) * 20) + 50;
+        return `hsl(${h}, ${s}%, ${l}%)`;
+    }
 }
 
 class Collaboration {
@@ -23,6 +25,7 @@ class Collaboration {
         this.points = [];
         this.id = id;
         this.nextMemberId = 0;
+        this.nextColor = generateColor();
         this.image = image;
         this.log(`Initializing collaboration.`, console.info);
     }
@@ -31,7 +34,7 @@ class Collaboration {
         this.members.set(ws, {
             id: this.nextMemberId++,
             name: name,
-            color: generateColor(),
+            color: this.nextColor(),
             position: {},
             ready: false,
         });
