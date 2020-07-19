@@ -302,6 +302,7 @@ tmapp.add_handlers = function (callback) {
         tmapp.setFocusName();
         callback && callback();
         tmappUI.clearImageError();
+        tmappUI.enableCollabCreation();
     });
 
     //Error message if we fail to load
@@ -349,6 +350,7 @@ tmapp.init = function (callback) {
                     // TODO: This feels sloppy, should refactor later
                     // If there is no image specified, run the callback function
                     if (!tmapp.fixed_file) {
+                        tmappUI.displayImageError("noimage");
                         callback && callback();
                         return;
                     }
