@@ -308,6 +308,7 @@ tmapp.add_handlers = function (callback) {
     viewer.addHandler('open-failed', function ( event ) {
         //alert( "ERROR!\nOpenFailed: "+ event.message + "\n" );
         console.log("Open failed!");
+        tmappUI.displayImageError("servererror");
     });
 
     // A tile failed to load
@@ -344,6 +345,13 @@ tmapp.init = function (callback) {
                     const images = JSON.parse(imageReq.responseText);
                     tmapp.images = images.images;
                     images.images.forEach((image) => tmappUI.addImage(image));
+
+                    // TODO: This feels sloppy, should refactor later
+                    // If there is no image specified, run the callback function
+                    if (!tmapp.fixed_file) {
+                        callback && callback();
+                        return;
+                    }
 
                     // Find the specified image
                     const image = images.images.find((image) => image.name === tmapp.fixed_file);
