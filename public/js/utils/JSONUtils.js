@@ -37,6 +37,7 @@ JSONUtils={
     dataToJSON: function(){
         const data = {
             version: "1.0", // Version of the JSON formatting
+            image: tmapp.image_name,
             points: []
         };
         markerPoints.forEachPoint(function(point) {data.points.push(point)});
@@ -90,7 +91,6 @@ JSONUtils={
             alert("File should be json");
             return;
         }
-        markerPoints.clearPoints();
         var reader = new FileReader();
         reader.readAsText(file);
         reader.onload=function(event) {
@@ -98,6 +98,20 @@ JSONUtils={
             // In case the data representation changes but we want compatibility
             switch (data.version) {
                 case "1.0":
+                    // Change image if data is for another image
+                    if (data.image !== tmapp.image_name) {
+                        tmapp.changeImage(data.image, function() {
+                            collabClient.send({
+                                type: "imageSwap",
+                                image: data.image
+                            });
+                            data.points.forEach((point) => {
+                                markerPoints.addPoint(point, "image");
+                            });
+                        });
+                        break;
+                    }
+                    markerPoints.clearPoints();
                     data.points.forEach((point) => {
                         markerPoints.addPoint(point, "image");
                     })

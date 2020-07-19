@@ -1,7 +1,7 @@
 .ISS_viewer{
-    height:90vh;
-    //width:97vh;
-	background-color:#676767;
+    height: 100%;
+	background-color: #676767;
+    overflow: hidden;
 }
 
 .ISS_menu{
@@ -16,3 +16,8 @@
     cursor: default;
 }
 
+/* Blurring for error messages */
+.blurrable.blurred > * {
+    transition: 1s ease-in-out all;
+    filter: blur(4px);
+}

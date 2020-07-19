@@ -84,6 +84,15 @@ overlayUtils={
             element: node,
 
             dragHandler: function(event) { //called repeatedly during drag
+                // Ugly solution for making sure collaboration cursors are updated when dragging
+                const original = event.originalEvent;
+                const mouseX = original.pageX - $("#ISS_viewer").offset().left;
+                const mouseY = original.pageY - $("#ISS_viewer").offset().top;
+                const webCoords = new OpenSeadragon.Point(mouseX, mouseY);
+                const cursorCoords = overlayUtils.pointFromOSDPixel(webCoords, "ISS");
+                //tmapp.setCursorStatus({x: cursorCoords.x, y: cursorCoords.y, held: true});
+
+                /*
                 const delta = overlayUtils.viewportDelta(event.delta, "ISS");
                 const d3node = d3.select(node);
                 const htmlid = d3node.attr("id");
@@ -93,8 +102,13 @@ overlayUtils={
                 const viewportCoords = overlayUtils.imageToViewport(imageCoords, "ISS");
                 const newX = viewportCoords.x + delta.x;
                 const newY = viewportCoords.y + delta.y;
-                point.x = newX;
-                point.y = newY;
+                */
+                const d3node = d3.select(node);
+                const htmlid = d3node.attr("id");
+                const id = Number(htmlid.split("-")[2]);
+                const point = markerPoints.getPointById(id);
+                point.x = cursorCoords.x;
+                point.y = cursorCoords.y;
                 markerPoints.updatePoint(id, point, "viewport");
             },
 

@@ -8,13 +8,20 @@
     <link rel="stylesheet" href="css/tm-icon-style.css">
     <title>TissUUmaps</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <script src="js/d3.v4.min.js"></script>
+    <script src="js/d3.min.js"></script>
     <script src="js/d3-scale-chromatic.v0.3.min.js"></script>
     <script src="js/jquery-3.4.1.slim.min.js"></script>
 </head>
 
+<!-- Styling required to cover full page -->
 <style>
-    head, body { height: 100%; }
+    html, body {
+        height: 100%;
+    }
+    body {
+        display: flex;
+        flex-direction: column;
+    }
 </style>
 
 <body>
@@ -41,20 +48,23 @@
     </nav>
 
     <!-- Main content -->
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col">
-                <div id="ISS_viewer" class="ISS_viewer"></div>
+    <div class="container-fluid d-flex flex-column flex-fill">
+        <div class="row flex-fill">
+            <div class="col mb-3">
+                <div id="ISS_viewer" class="ISS_viewer blurrable"></div>
                 <div id="alert_wrapper" style="height: 100%; width: 100%; display: flex; justify-content: center; align-items: center; position: absolute; top: 0; pointer-events: none"></div>
             </div>
 
-            <div class="col-auto d-flex flex-column">
-                <div class="row">
+            <div class="col-auto d-flex flex-column mb-2">
+                <div class="row flex-fill">
                     <div class="card m-2 w-100">
-                        <!-- Image browser access -->
+                        <!-- Modal access -->
                         <div class="card-body">
                             <button type="button" class="btn btn-block btn-primary" data-toggle="modal" data-target="#image_browser">
                                 Open image browser
+                            </button>
+                            <button type="button" class="btn btn-block btn-primary" data-toggle="modal" data-target="#collaboration_menu">
+                                Open collaboration menu
                             </button>
                             <button type="button" class="btn btn-block btn-secondary" data-toggle="modal" data-target="#instructions">
                                 Usage instructions
@@ -64,7 +74,7 @@
 
                         <!-- Functionality buttons -->
                         <div class="card-body">
-                            <h4 class="card-title">Options</h4>
+                            <!--<h4 class="card-title">Options</h4>-->
                             <div class="card-block">
                                 <div class="row">
                                     <div class="col-auto">
@@ -82,13 +92,10 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-                <div class="row flex-grow-1">
-                    <div class="card flex-grow-1 m-2 w-100">
+
                         <!-- List of markers -->
                         <div class="card-body">
-                            <h4 class="card-title">Markers</h4>
+                            <!--<h4 class="card-title">Markers</h4>-->
                             <div class="row pb-3">
                                 <div class="col-3">
                                     <button id="pointstojson" class="btn btn-primary btn-block" type="button"> Download</button>
@@ -102,8 +109,8 @@
                                 </div>
                             </div>
                         </div>
-                        <div style="height: 40vh; overflow-y: auto;"> <!-- TODO: Table should ideally fill remaining height of menu, not a specific fraction of viewport -->
-                            <table id="tmcptable" class="table table-striped table-hover">
+                        <div class="h-100 overflow-auto position-relative">
+                            <table id="tmcptable" class="table table-striped table-hover position-absolute">
                                 <col width="10%"><col width="70%"> <col width="30%">
                                 <thead>
                                     <tr>
@@ -112,7 +119,7 @@
                                         <th>&nbsp;</th>
                                     </tr>
                                 </thead>
-                                <tbody id="tmcptablebody" class="h-20">
+                                <tbody id="tmcptablebody">
                                 </tbody>
                             </table>
                         </div>
@@ -122,7 +129,7 @@
         </div>
     </div> <!-- End of container -->
 
-    <!-- Image browser TODO -->
+    <!-- Image browser -->
     <div class="modal fade" id="image_browser" tabindex="-1" role="dialog">
       <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
@@ -150,6 +157,17 @@
             </button>
           </div>
           <div class="modal-body">
+              <h5>Collaboration</h5>
+              <p>
+                  A collaboration can be started from the <strong>Collaboration
+                  menu</strong>, which can be opened from the right side of the
+                  page. You can either create a new collaboration or join
+                  an existing one. You can also decide whether or not
+                  markers you have placed before the collaboration should
+                  be added to the collaborative workspace or if they
+                  should be removed. When collaborating, all participants
+                  see the same points and can update them in real time.
+              </p>
               <h5>Loading images</h5>
               <p>
                   Click the button labeled <strong>Image browser</strong>
@@ -191,6 +209,76 @@
         </div>
       </div>
     </div> <!-- End of instructions -->
+
+    <!-- Collaboration menu -->
+    <div class="modal fade" id="collaboration_menu" tabindex="-1" role="dialog">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Collaboration</h5>
+            <button type="button" class="close" data-dismiss="modal">
+              <span>&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+              <div id="collaboration_start">
+                  <div class="form-row pb-4">
+                      <div class="col-12">
+                          <input type="text" name="username" class="form-control" placeholder="Your name">
+                      </div>
+                  </div>
+                  <div class="form-row pb-4">
+                      <div class="col-8">
+                          <input type="text" name="active_id" readonly class="form-control" placeholder="-">
+                      </div>
+                      <div class="col-4">
+                          <button id="create_collaboration" class="btn btn-block btn-primary" disabled>Create</button>
+                      </div>
+                  </div>
+                  <div class="form-row pb-4">
+                      <div class="col-8">
+                          <input type="text" name="joined_id" class="form-control" placeholder="Collaboration ID">
+                      </div>
+                      <div class="col-4">
+                          <button id="join_collaboration" class="btn btn-block btn-primary">Join</button>
+                      </div>
+                  </div>
+                  <div class="form-row pb-4">
+                      <div class="col-12">
+                          <div class="form-check">
+                              <input class="form-check-input" type="checkbox" id="include_points">
+                              <label class="form-check-label" for="include_points">
+                                  Add existing markers to collaboration
+                              </label>
+                          </div>
+                      </div>
+                  </div>
+                  <h5>Collaboration members</h5>
+                  <div class="card bg-secondary mb-4" style="height: 25vh; overflow-y: auto;">
+                      <div id="collaborator_list" class="list-group list-group-flush">
+                      </div>
+                  </div>
+                  <div class="form-row pb-4">
+                      <div class="col-12">
+                          <div class="input-group">
+                              <input type="text" class="form-control" placeholder="Collaboration URL" readonly name="collab_url" disabled>
+                              <div class="input-group-append">
+                                  <button id="copy_collaboration" type="button" class="btn btn-primary" disabled>Copy URL</button>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+                  <div class="form-row pb-2">
+                      <div class="col-12">
+                          <button id="leave_collaboration" class="btn btn-block btn-secondary" disabled>Leave collaboration</button>
+                      </div>
+                  </div>
+              </div>
+          </div>
+        </div>
+      </div>
+    </div> <!-- End of image browser -->
+
 </body>
 
 <script src="js/bootstrap.4.0.0.bundle.min.js" ></script>
@@ -210,32 +298,23 @@
 <script src="js/utils/JSONUtils.js"></script>
 <script src="js/utils/overlayUtils.js"></script>
 <script src="js/utils/markerUtils.js"></script>
+<script src="js/collabClient.js"></script>
 <script src="js/markerPoints.js"></script>
+<script src="js/overlayHandler.js"></script>
+<script src="js/tmappUI.js"></script>
 <script src="js/tmapp.js"></script>
 <script>
     markerUtils._TMCPStyle={ strokeWidth: 4, radius: 80, drawText:false, textSize:1 };
 
     document.getElementById("project_title").innerText = "Cyto Browser";
 
-    // Populate the class buttons programatically
-    bethesdaClassUtils.forEachClass(function(item, index){
-        let label = $("<label></label>");
-        label.addClass("btn btn-dark");
-        if (index == 0) { label.addClass("active"); }
-        label.attr("id", "class_" + item.name);
-        label.attr("title", item.description);
-        let input = $("<input>" + item.name + "</input>");
-        input.attr("type", "radio");
-        input.attr("name", "class_options");
-        input.attr("autocomplete", "off");
-        label.append(input);
-        $("#class_buttons").append(label);
-    });
+    tmappUI.initUI();
 
     // Start our tmapp
     $(document).ready(function () {
         var url = new URL(window.location.href);
-        tmapp.fixed_file = url.searchParams.get("image"); //TODO: Give sensible error message if "image" key is missing
+        tmapp.fixed_file = url.searchParams.get("image");
+        tmapp.image_name = url.searchParams.get("image");
 //        tmapp.registerActions();
 
         // Get the viewport params from the URL
@@ -257,52 +336,19 @@
     	    }
             tmapp.initial_params = initial_params;
         }
-        tmapp.init();
-    });
 
-    // Add images to the browser
-    function addImage(image) {
-        // Messy function, might want to do it some better way
-        let deck = $("#available_images .row").last();
-        if (deck.length === 0 || deck.children().length === 3) {
-            deck = $("<div></div>");
-            deck.addClass("row mb-4");
-            $("#available_images").append(deck);
+        // If the URL contains a collab, instantly join it
+        const collab = url.searchParams.get("collab");
+        if (collab) {
+            tmapp.init(() => {
+                const name = collabClient.getDefaultName();
+                collabClient.connect(collab, name);
+            });
         }
-        const col = $("<div></div>");
-        col.addClass("col-4 d-flex");
-        const card = $("<div></div>");
-        card.addClass("card w-100");
-        const overview = $("<img>", {src: image.thumbnails.overview});
-        overview.addClass("card-img-top position-absolute");
-        const detail = $("<img>", {src: image.thumbnails.detail});
-        detail.addClass("card-img-top hide fade");
-        detail.css({zIndex: 9000, pointerEvents: "none"});
-        const body = $("<div></div>");
-        body.addClass("card-body");
-        const title = $("<h5></h5>");
-        title.text(image.name);
-        title.addClass("card-title");
-        const footer = $("<div></div>");
-        footer.addClass("card-footer");
-        const a = $("<a></a>");
-        a.addClass("card-link stretched-link");
-        a.attr("href", `/?image=${image.name}`);
-        a.text("Open image");
-        a.hover((e) =>
-            detail.addClass("show").removeClass("hide"),
-            (e) =>
-            detail.addClass("hide").removeClass("show")
-        );
-        footer.append(a);
-        body.append(title);
-        card.append(overview);
-        card.append(detail);
-        card.append(body);
-        card.append(footer);
-        col.append(card);
-        deck.append(col);
-    }
+        else {
+            tmapp.init();
+        }
+    });
 
     // UI setters
     function setImageName(txt) {
@@ -318,70 +364,10 @@
         window.history.pushState(null, "", txt);
     }
 
-    let errorDisplayTimeout = null;
-    function displayImageError(error, duration) {
-        const errors = {
-            noimage: {
-                message: "No image has been specified. Select one from the menu on the right.",
-                type: "alert-info"
-            },
-            badimage: {
-                message: "The specified image was not found. Select a new one from the menu on the right.",
-                type: "alert-warning"
-            },
-            servererror: {
-                message: "Something went wrong on the server. Try again or contact an administrator.",
-                type: "alert-warning"
-            },
-            unexpected: {
-                message: "An unexpected error was encountered when retrieving the image list.",
-                type: "alert-warning"
-            },
-            tilefail: {
-                message: "Failed to load image tile from server.",
-                type: "alert-danger"
-            }
-        };
-
-        // Add alert to the UI
-        const alert = $("<div></div>");
-        alert.addClass(`alert ${errors[error].type}`);
-        alert.text(errors[error].message);
-        window.clearTimeout(errorDisplayTimeout);
-        $("#alert_wrapper").removeClass("fade out");
-        $("#alert_wrapper").html(alert);
-
-        // Fade out the alert after the duration has passed
-        if (duration) {
-            errorDisplayTimeout = window.setTimeout(function() {
-                $("#alert_wrapper").addClass("fade out");
-            }, duration);
-        }
-    }
-
     $(document).mousedown(function(event){
         if (!(document.hasFocus())) {
             console.log("Lost focus, ignoreing click and setting focus")
-            tmcpoints.fixed_viewer.canvas.focus();
-        }
-    });
-
-    //1,2,... for class selection
-    //z,x for focus up down
-    $(document).keypress(function(){
-        console.log(event.which);
-        switch(event.which) {
-            case "z".charCodeAt(): document.getElementById("focus_prev").click(); break;
-            case "x".charCodeAt(): document.getElementById("focus_next").click(); break;
-            default:
-                // Handle digit keys being pressed for classes
-                const digits = Array.from({length: 10}, (v,k) => String((k+1) % 10));
-                const chars = digits.map((digit) => digit.charCodeAt());
-                chars.slice(0, bethesdaClassUtils.amountClasses).forEach((char, index) => {
-                    if (event.which == char) {
-                        $("#class_" + bethesdaClassUtils.getClassFromID(index).name).click();
-                    }
-                });
+            tmapp.fixed_viewer.canvas.focus();
         }
     });
 </script>
