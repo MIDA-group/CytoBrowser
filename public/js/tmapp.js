@@ -169,12 +169,9 @@ tmapp = {
             nochange && nochange();
             return;
         }
-        if (imageName && !tmapp.images.some((image) => image.name === imageName)) {
+        if (!tmapp.images.some((image) => image.name === imageName)) {
             tmappUI.displayImageError("badimage", 5000);
             throw new Error("Tried to change to an unknown image.");
-        }
-        else if (!imageName) {
-            tmappUI.displayImageError("noimage");
         }
         markerPoints.clearPoints(false);
         $("#ISS_viewer").empty();
@@ -352,7 +349,7 @@ tmapp.init = function (callback) {
                     const image = images.images.find((image) => image.name === tmapp.fixed_file);
                     if (image) {
                         // Image was found
-                        tmapp.changeImage(tmapp.fixed_file, callback);
+                        tmapp.initOSD(callback);
                     }
                     else {
                         if (tmapp.fixed_file) {
