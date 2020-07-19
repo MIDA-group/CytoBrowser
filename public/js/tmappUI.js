@@ -217,6 +217,13 @@ const tmappUI = (function(){
     }
 
     /**
+     * Enable the collaboration creation functionality.
+     */
+    function enableCollabCreation() {
+        $("#create_collaboration").prop("disabled", false);
+    }
+
+    /**
      * Display an error message over the image viewport.
      * @param {string} error The type of error taking place. The possible
      * error types are "noimage", "badimage", "servererror", "unexpected",
