@@ -149,7 +149,10 @@ const tmappUI = (function(){
      * @param {string} id Identifier for the active collaboration.
      */
     function setCollabID(id) {
-        $("#collaboration_start [name='active_id']").val(id);
+        const collabUrl = new URL(window.location.href.split('?')[0]);
+        collabUrl.searchParams.set("collab", id);
+        $("#collaboration_start [name='active_id']").val(collabUrl.href);
+        $("#collaboration_start [name='collab_url']").val(id);
         $("#collaboration_start input, #collaboration_start button").prop("disabled", true);
         $("#collaboration_start [name='username']").prop("disabled", false);
         $("#leave_collaboration").prop("disabled", false);
@@ -162,6 +165,7 @@ const tmappUI = (function(){
      */
     function clearCollabID() {
         $("#collaboration_start [name='active_id']").val("");
+        $("#collaboration_start [name='collab_url']").val("");
         $("#collaboration_start input, #collaboration_start button").prop("disabled", false);
         $("#collaboration_start [name='username']").prop("disabled", false);
         $("#leave_collaboration").prop("disabled", true);
