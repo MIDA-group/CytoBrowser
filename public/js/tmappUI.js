@@ -137,6 +137,10 @@ const tmappUI = (function(){
             $("#collaboration_menu").modal("hide");
             collabClient.connect(id, name, include);
         });
+        $("#copy_collaboration").click(function(event) {
+            $("#collaboration_start [name='collab_url']").select();
+            document.execCommand("copy");
+        });
         $("#leave_collaboration").click(function(event) {
             collabClient.disconnect();
         });
@@ -155,6 +159,8 @@ const tmappUI = (function(){
         $("#collaboration_start [name='collab_url']").val(id);
         $("#collaboration_start input, #collaboration_start button").prop("disabled", true);
         $("#collaboration_start [name='username']").prop("disabled", false);
+        $("#collaboration_start [name='collab_url']").prop("disabled", false);
+        $("#copy_collaboration").prop("disabled", false);
         $("#leave_collaboration").prop("disabled", false);
     }
 
@@ -168,6 +174,8 @@ const tmappUI = (function(){
         $("#collaboration_start [name='collab_url']").val("");
         $("#collaboration_start input, #collaboration_start button").prop("disabled", false);
         $("#collaboration_start [name='username']").prop("disabled", false);
+        $("#collaboration_start [name='collab_url']").prop("disabled", true);
+        $("#copy_collaboration").prop("disabled", true);
         $("#leave_collaboration").prop("disabled", true);
     }
 
