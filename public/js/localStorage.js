@@ -52,6 +52,20 @@ const localStorage = (function (){
             alert("File should be json");
             return;
         }
+
+        function loadFile(resolve, reject) {
+            const reader = new FileReader();
+            reader.readAsText(file);
+            reader.onload = function(event) {
+                const data = JSON.parse(event.target.result);
+                resolve(data);
+            }
+            reader.onabort = function() {
+                reject(new Error("File upload aborted."));
+            }
+        }
+
+        return new Promise(loadFile);
     }
 
     return {
