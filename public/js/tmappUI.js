@@ -77,7 +77,7 @@ const tmappUI = (function(){
         });
         $("#points_to_json").click(() => {
             const markerData = tmapp.getMarkerStorageData();
-            localStorage.saveJSON();
+            localStorage.saveJSON(markerData);
         });
 
         // Add event listeners for focus buttons
