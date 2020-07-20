@@ -298,9 +298,6 @@
 <script src="js/localStorage.js"></script>
 <script>
     markerUtils._TMCPStyle={ strokeWidth: 4, radius: 80, drawText:false, textSize:1 };
-
-    document.getElementById("project_title").innerText = "Cyto Browser";
-
     tmappUI.initUI();
 
     // Start our tmapp
@@ -308,7 +305,6 @@
         var url = new URL(window.location.href);
         tmapp.fixed_file = url.searchParams.get("image");
         tmapp.image_name = url.searchParams.get("image");
-//        tmapp.registerActions();
 
         // Get the viewport params from the URL
         const initial_params = {
@@ -342,20 +338,6 @@
             tmapp.init();
         }
     });
-
-    // UI setters
-    function setImageName(txt) {
-        document.getElementById("img_name").innerText=txt;
-    }
-    function setImageZLevel(txt) {
-        document.getElementById("img_zlevel").innerText=txt;
-    }
-    function setImageZoom(txt) {
-        document.getElementById("img_zoom").innerText=txt;
-    }
-    function setURL(txt) {
-        window.history.pushState(null, "", txt);
-    }
 
     $(document).mousedown(function(event){
         if (!(document.hasFocus())) {

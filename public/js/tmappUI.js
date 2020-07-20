@@ -51,6 +51,9 @@ const tmappUI = (function(){
      * and add any event handlers that are needed.
      */
     function initUI() {
+        // Set the title
+        $("#project_title").text("Cyto Browser");
+
         // Set the initial class
         tmapp.setMClass(bethesdaClassUtils.getClassFromID(0).name);
 
@@ -328,6 +331,38 @@ const tmappUI = (function(){
         deck.append(col);
     }
 
+    /**
+     * Set the displayed image name in the UI.
+     * @param {string} txt The image name to display.
+     */
+    function setImageName(txt) {
+        $("#img_name")text(txt);
+    }
+
+    /**
+     * Set the displayed image name in the UI.
+     * @param {string} txt The image name to display.
+     */
+    function setImageZLevel(txt) {
+        $("#img_zlevel").text(txt);
+    }
+
+    /**
+     * Set the displayed image name in the UI.
+     * @param {string} txt The image name to display.
+     */
+    function setImageZoom(txt) {
+        $("#img_zoom").text(txt);
+    }
+
+    /**
+     * Set the displayed image name in the UI.
+     * @param {string} txt The image name to display.
+     */
+    function setURL(txt) {
+        window.history.pushState(null, "", txt);
+    }
+
     return {
         initUI: initUI,
         setCollabID: setCollabID,
@@ -337,6 +372,10 @@ const tmappUI = (function(){
         enableCollabCreation: enableCollabCreation,
         displayImageError: displayImageError,
         clearImageError: clearImageError,
-        addImage: addImage
+        addImage: addImage,
+        setImageName: setImageName,
+        setImageZLevel: setImageZLevel,
+        setImageZoom: setImageZoom,
+        setURL: setURL
     };
 })();

@@ -63,7 +63,7 @@ tmapp = {
     },
 
     setFocusName: function() { //Display focus level in UI
-        setImageZLevel(z_levels[tmapp.getFocusIndex()]);
+        tmappUI.setImageZLevel(z_levels[tmapp.getFocusIndex()]);
         this.updateCollabPosition();
         this.updateURLParams();
     },
@@ -71,7 +71,7 @@ tmapp = {
         const zoom = this.viewer.viewport.getZoom();
         const size = this.viewer.viewport.getContainerSize();
         overlayHandler.setOverlayScale(zoom, size.x, size.y);
-        setImageZoom(Math.round(zoom*10)/10);
+        tmappUI.setImageZoom(Math.round(zoom*10)/10);
         this.curr_zoom = zoom;
         this.updateCollabPosition();
         this.updateURLParams();
@@ -113,7 +113,7 @@ tmapp = {
         params.set("y", roundTo(this.curr_y, 5));
         params.set("z", this.curr_z);
         this.collab ? params.set("collab", this.collab) : params.delete("collab");
-        setURL("?" + params.toString());
+        tmappUI.setURL("?" + params.toString());
     },
     setMClass: function(mClass) {
         if (bethesdaClassUtils.getIDFromName(mClass) >= 0) {
@@ -191,7 +191,7 @@ tmapp.expandImageName = function(img) {
         }
     }
 
-    setImageName(img);
+    tmappUI.setImageName(img);
 
     //Hard coded z-ranges based on image number
     //TODO: glob for z-range
