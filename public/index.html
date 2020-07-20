@@ -301,42 +301,44 @@
     tmappUI.initUI();
 
     // Start our tmapp
-    $(document).ready(function () {
-        var url = new URL(window.location.href);
-        tmapp.fixed_file = url.searchParams.get("image");
-        tmapp.image_name = url.searchParams.get("image");
+    $(document).ready(() => {
+        // Options when initializing tmapp
+        const tmappOptions = {};
 
-        // Get the viewport params from the URL
-        const initial_params = {
-            zoom: url.searchParams.get("zoom"),
-            x: url.searchParams.get("x"),
-            y: url.searchParams.get("y"),
-            z: url.searchParams.get("z")
+        // Get search params from URL
+        const url = new URL(window.location.href);
+        const params = url.searchParams;
+        const imageName = params.get("image");
+        const collab = params.get("collab");
+        const initialState = {
+            zoom: params.get("zoom"),
+            x: params.get("x"),
+            y: params.get("y"),
+            z: params.get("z")
         };
-        // Check if all params are present
-        const values = Object.values(initial_params);
-        const params_defined = values.every(value => value != null);
 
-        // Set the initial params if all are defined
-        if (params_defined) {
+        if (imageName !== null) {
+            tmappOptions.imageName = imageName;
+        }
+        if (collab !== null) {
+            tmappOptions.collab = collab;
+        }
+
+        // Check if full state is present
+        const values = Object.values(initialParams);
+        const stateDefined = values.every(value => value !== null);
+
+        // Set the initial state if defined
+        if (stateDefined) {
             // Convert to numbers first
-    	    for (const [key, value] of Object.entries(initial_params)) {
-                    initial_params[key] = Number(value);
+    	    for (const [key, value] of Object.entries(initialState)) {
+                    initialParams[key] = Number(value);
     	    }
-            tmapp.initial_params = initial_params;
+            tmappOptions.initialState = initialState;
         }
 
-        // If the URL contains a collab, instantly join it
-        const collab = url.searchParams.get("collab");
-        if (collab) {
-            tmapp.init(() => {
-                const name = collabClient.getDefaultName();
-                collabClient.connect(collab, name);
-            });
-        }
-        else {
-            tmapp.init();
-        }
+        // Initialize tmapp
+        tmapp.init(tmappOptions);
     });
 
     $(document).mousedown(function(event){

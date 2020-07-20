@@ -155,7 +155,7 @@ const collabClient = (function(){
      * @param {boolean} include Whether or not already-placed markers
      * should be included in the collaborative workspace.
      */
-    function connect(id, name="Unnamed", include=false) {
+    function connect(id, name=getDefaultName(), include=false) {
         if (_ws) {
             disconnect();
         }

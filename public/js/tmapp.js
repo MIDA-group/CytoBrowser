@@ -254,6 +254,7 @@ tmapp.add_handlers = function (callback) {
         console.log("Done loading!");
         tmapp.viewer.canvas.focus();
 
+        /*
         const params = tmapp.initial_params;
         if (params !== null) {
             // Move the viewport to the initial params if defined
@@ -267,7 +268,9 @@ tmapp.add_handlers = function (callback) {
             // Otherwise move to home
             viewer.viewport.goHome();
         }
+        */
 
+        viewer.viewport.goHome();
         tmapp.setZoomName();
         tmapp.setFocusName();
         callback && callback();
@@ -297,55 +300,64 @@ tmapp.add_handlers = function (callback) {
   * loading. This method contacts the server to retrieve a list of
   * available images and their Z values. If this information is
   * successfully retrieved and the specified image in the parameters is
-  * found, a call is made to initOSD() initiate OpenSeadragon.
+  * found, a call is made to initOSD() to initiate OpenSeadragon.
   * Otherwise, an error message is shown.
-  * @param {Function} callback Function to call when the OSD viewer has
-  * been fully initialized.
+  * @param {Object} options Options for the tmapp initialization.
+  * @param {string} options.imageName Name of the initial image to load.
+  * @param {string} options.collab Id of the initial collab to join.
+  * @param {Object} options.initialState The initial state of the viewport.
+  * @param {number} options.initialState.x X position in the viewport.
+  * @param {number} options.initialState.y Y position in the viewport.
+  * @param {number} options.initialState.z Z level in the viewport.
+  * @param {number} options.initialState.zoom Zoom level in the viewport.
   */
-tmapp.init = function (callback) {
+tmapp.init = function ({imageName, collab, initialState}) {
     // Initiate a HTTP request and send it to the image info endpoint
     const imageReq = new XMLHttpRequest();
     imageReq.open("GET", window.location.origin + "/api/images", true);
     imageReq.send(null);
 
     imageReq.onreadystatechange = function() {
-        if (imageReq.readyState === 4) {
-            switch (imageReq.status) {
-                case 200:
-                    // Image info was successfully retrieved
-                    const images = JSON.parse(imageReq.responseText);
-                    tmapp.images = images.images;
-                    images.images.forEach((image) => tmappUI.addImage(image));
+        if (imageReq.readyState !== 4) {
+            return;
+        }
+        switch (imageReq.status) {
+            case 200:
+                // Image info was successfully retrieved
+                // Add the images to the image browser
+                const images = JSON.parse(imageReq.responseText).images;
+                tmapp.images = images;
+                images.forEach((image) => tmappUI.addImage(image));
 
-                    // TODO: This feels sloppy, should refactor later
-                    // If there is no image specified, run the callback function
-                    if (!tmapp.fixed_file) {
-                        tmappUI.displayImageError("noimage");
-                        callback && callback();
-                        return;
-                    }
-
-                    // Find the specified image
-                    const image = images.images.find((image) => image.name === tmapp.fixed_file);
+                // Go to the initial image and/or join the collab
+                if (imageName) {
+                    const image = images.find((image) => image.name === imageName);
                     if (image) {
-                        // Image was found
-                        tmapp.initOSD(callback);
+                        tmapp.changeImage(imageName, () => {
+                            if (collab) {
+                                collabClient.connect(collab);
+                            }
+                            if (initialState) {
+                                tmapp.moveTo(initialState);
+                            }
+                        });
                     }
                     else {
-                        if (tmapp.fixed_file) {
-                            tmappUI.displayImageError("badimage");
-                        }
-                        else {
-                            tmappUI.displayImageError("noimage");
-                        }
+                        tmappUI.displayImageError("badimage");
                     }
-                    break;
-                case 500:
-                    tmappUI.displayImageError("servererror");
-                    break;
-                default:
-                    tmappUI.displayImageError("unexpected");
-            }
+                }
+                else {
+                    tmappUI.displayImageError("noimage");
+                }
+                if (collab) {
+                    collabClient.connect(collab);
+                }
+                break;
+            case 500:
+                tmappUI.displayImageError("servererror");
+                break;
+            default:
+                tmappUI.displayImageError("unexpected");
         }
     }
 }
