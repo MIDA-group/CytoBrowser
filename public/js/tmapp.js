@@ -476,7 +476,7 @@ tmapp.initOSD = function (callback) {
  * @param {boolean} clear Whether or not existing markers should be
  * removed before adding the new markers.
  */
-tmapp.addMarkerStorageData(data, clear = false) {
+tmapp.addMarkerStorageData = function(data, clear = false) {
     switch (data.version) {
         case "1.0":
             // Change image if data is for another image
@@ -507,7 +507,7 @@ tmapp.addMarkerStorageData(data, clear = false) {
  * markers.
  * @returns {Object} Representation of the currently stored markers.
  */
-tmapp.getMarkerStorageData() {
+tmapp.getMarkerStorageData = function() {
     const data = {
         version: "1.0", // Version of the formatting
         image: tmapp.image_name,
