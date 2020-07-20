@@ -10,15 +10,19 @@ const localStorage = (function (){
      * and saved.
      */
     function saveJSON(data) {
-        const a = $("<a></a>");
-        const dataJSON = encodeURIComponent(JSON.stringify(data, 0, 4));
+        // Check if the data is actually an object first
+        const type = typeof data;
+        if (type !== "object") {
+            throw new Error(`Expected an object, got a ${type} instead.`);
+        }
+
+        const dataJSON = encodeURIComponent(JSON.stringify(data, null, 4));
         const fileData = `text/json;charset=utf-8,${dataJSON}`;
-        a.attr({
-            href: `data:${fileData}`,
-            download: "data.json",
-            visibility: "hidden",
-            display: "none"
-        });
+        const a = document.createElement("a");
+        a.setAttribute("href", `data:${fileData}`);
+        a.setAttribute("download", "data.json");
+        a.setAttribute('visibility', 'hidden');
+        a.setAttribute('display', 'none');
         a.click();
         a.remove();
     }
