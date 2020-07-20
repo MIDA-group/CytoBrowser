@@ -325,14 +325,14 @@
         }
 
         // Check if full state is present
-        const values = Object.values(initialParams);
+        const values = Object.values(initialState);
         const stateDefined = values.every(value => value !== null);
 
         // Set the initial state if defined
         if (stateDefined) {
             // Convert to numbers first
     	    for (const [key, value] of Object.entries(initialState)) {
-                    initialParams[key] = Number(value);
+                    initialState[key] = Number(value);
     	    }
             tmappOptions.initialState = initialState;
         }
