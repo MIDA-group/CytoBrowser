@@ -71,8 +71,14 @@ const tmappUI = (function(){
         });
 
         // Add event listeners for local storage buttons
-        $("#pointstojson").click(JSONUtils.downloadJSON);
-        $("#jsontodata").click(JSONUtils.readJSONToData);
+        $("#points_to_json").click(() => {
+            const loadedJSON = localStorage.loadJSON("data_files_import");
+            loadJSON.then(markerPoints.addMarkerStorageData);
+        });
+        $("#json_to_data").click(() => {
+            const markerData = tmapp.getMarkerStorageData();
+            localStorage.saveJSON();
+        });
 
         // Add event listeners for focus buttons
         $("#focus_next").click(() => tmapp.setFocusLevel(tmapp.getFocusLevel() + 1));

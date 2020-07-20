@@ -98,11 +98,11 @@
                             <!--<h4 class="card-title">Markers</h4>-->
                             <div class="row pb-3">
                                 <div class="col-3">
-                                    <button id="pointstojson" class="btn btn-primary btn-block" type="button"> Download</button>
+                                    <button id="points_to_json" class="btn btn-primary btn-block" type="button"> Download</button>
                                 </div>
                                 <div class="col-3">
                                     <input type="file" id="fileElem" multiple accept="image/*" style="display:none" onchange="handleFiles(this.files)">
-                                    <button id="jsontodata" class="btn btn-primary btn-block" type="button"> Import </button>
+                                    <button id="json_to_data" class="btn btn-primary btn-block" type="button"> Import </button>
                                 </div>
                                 <div class="col-6">
                                     <input class="form-control form-control-file" type="file" id="data_files_import" name="files[]">
@@ -303,6 +303,7 @@
 <script src="js/overlayHandler.js"></script>
 <script src="js/tmappUI.js"></script>
 <script src="js/tmapp.js"></script>
+<script src="js/localStorage.js"></script>
 <script>
     markerUtils._TMCPStyle={ strokeWidth: 4, radius: 80, drawText:false, textSize:1 };
 

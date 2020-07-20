@@ -182,36 +182,6 @@ tmapp = {
     }
 }
 
-
-/**
- * Get all the buttons from the interface and assign all the functions associated to them */
-/* tmapp.registerActions = function () {
-    tmapp["object_prefix"] = tmapp.options_osd.id.split("_")[0];
-    var op = tmapp["object_prefix"];
-    var cpop="CP";
-
-    interfaceUtils.listen(op + '_bringmarkers_btn','click', function () { dataUtils.processISSRawData(); },false);
-    interfaceUtils.listen(op + '_searchmarkers_btn','click', function () { markerUtils.hideRowsThatDontContain(); },false);
-    interfaceUtils.listen(op + '_cancelsearch_btn','click', function () { markerUtils.showAllRows(); },false);
-    interfaceUtils.listen(op + '_drawall_btn','click', function () { markerUtils.drawAllToggle(); },false);
-    interfaceUtils.listen(op + '_drawregions_btn','click', function () { regionUtils.regionsOnOff() },false);
-    interfaceUtils.listen(op + '_export_regions','click', function () { regionUtils.exportRegionsToJSON() },false);
-    interfaceUtils.listen(op + '_import_regions','click', function () { regionUtils.importRegionsFromJSON() },false);
-    interfaceUtils.listen(op + '_export_regions_csv','click', function () { regionUtils.pointsInRegionsToCSV() },false);
-    interfaceUtils.listen(op + '_fillregions_btn','click', function () { regionUtils.fillAllRegions(); },false);
-    interfaceUtils.listen(cpop + '_bringmarkers_btn','click', function () { CPDataUtils.processISSRawData() },false);
-
-    var uls=document.getElementsByTagName("ul");
-    for(var i=0;i<uls.length;i++){
-        var as=uls[i].getElementsByTagName("a");
-        for(var j=0;j<as.length;j++){
-            as[j].addEventListener("click",function(){interfaceUtils.hideTabsExcept($(this))});
-        }
-    }
-//    interfaceUtils.activateMainChildTabs("markers-gui");
-}
- */
-
 /**
  * Expand single image name into z-stack array of names */
 tmapp.expandImageName = function(img) {
@@ -498,6 +468,56 @@ tmapp.initOSD = function (callback) {
 
     console.log("Finish init");
 } //finish init
+
+/**
+ * Read the markers stored in a marker storage object and add them
+ * to the currently placed markers.
+ * @param {Object} data The data of the markers to be added.
+ * @param {boolean} clear Whether or not existing markers should be
+ * removed before adding the new markers.
+ */
+tmapp.addMarkerStorageData(data, clear = false) {
+    switch (data.version) {
+        case "1.0":
+            // Change image if data is for another image
+            if (data.image !== tmapp.image_name) {
+                tmapp.changeImage(data.image, function() {
+                    collabClient.send({
+                        type: "imageSwap",
+                        image: data.image
+                    });
+                    data.points.forEach((point) => {
+                        markerPoints.addPoint(point, "image");
+                    });
+                });
+                break;
+            }
+            clear && markerPoints.clearPoints();
+            data.points.forEach((point) => {
+                markerPoints.addPoint(point, "image");
+            })
+            break;
+        default:
+            throw new Error(`Data format version ${points.version} not implemented.`);
+    }
+}
+
+/**
+ * Get a marker storage object representation of the currently placed
+ * markers.
+ * @returns {Object} Representation of the currently stored markers.
+ */
+tmapp.getMarkerStorageData() {
+    const data = {
+        version: "1.0", // Version of the formatting
+        image: tmapp.image_name,
+        points: []
+    };
+    markerPoints.forEachPoint((point) => {
+        data.points.push(point)
+    });
+    return data;
+}
 
 
 /**

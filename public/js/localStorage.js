@@ -3,8 +3,6 @@
  * @namespace localStorage
  */
 const localStorage = (function (){
-    const _fileInputId = "data_files_import";
-
     /**
      * General function for saving an arbitrary object as a JSON file
      * with UTF-8 encoding on the local machine.
@@ -31,12 +29,14 @@ const localStorage = (function (){
     }
 
     /**
-     * Load a JSON file from the predetermined input element of the DOM.
+     * Load a JSON file from a specified input element.
+     * @param {string} fileInputId The id of the input DOM element to
+     * which the file has been uploaded.
      * @returns {Promise<Object>} A promise that resolves with the loaded
      * JSON file converted to an Object.
      */
-    function loadJSON() {
-        const input = $(`#${_fileInputId}`);
+    function loadJSON(fileInputId) {
+        const input = $(`#${fileInputId}`);
         if (!input.length) {
             throw new Error("Unable to find specified file input element.");
         }
