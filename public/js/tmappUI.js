@@ -336,7 +336,7 @@ const tmappUI = (function(){
      * @param {string} txt The image name to display.
      */
     function setImageName(txt) {
-        $("#img_name")text(txt);
+        $("#img_name").text(txt);
     }
 
     /**
