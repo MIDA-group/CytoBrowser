@@ -5,14 +5,16 @@ const coordinateHelper = (function() {
         if (!_activeImage) {
             throw new Error("Can't find coordinates without setting an image first.");
         }
-        return _activeImage.imageToViewportCoordinates(x, y);
+        const point = new OpenSeadragon.Point(x, y);
+        return _activeImage.imageToViewportCoordinates(point);
     }
 
     function viewportToImage({x, y}){
         if (!_activeImage) {
             throw new Error("Can't find coordinates without setting an image first.");
         }
-        return _activeImage.viewportToImageCoordinates(x, y);
+        const point = new OpenSeadragon.Point(x, y);
+        return _activeImage.viewportToImageCoordinates(point);
     }
 
     function imageToWeb({x, y}){
