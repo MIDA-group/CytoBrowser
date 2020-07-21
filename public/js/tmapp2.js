@@ -1,23 +1,6 @@
 const tmapp = (function() {
     "use strict";
 
-    let _currentImage,
-        _images,
-        _collab,
-        _viewer,
-        _imageStack = [],
-        _currX = 0.5,
-        _currY = 0.5,
-        _currZ = 0,
-        _currZoom = 1,
-        _currMclass = "",
-        _cursorStatus = {
-            x: 0.5,
-            y: 0.5,
-            held: false,
-            inside: false
-        };
-
     const _imageDir = "data/";
     const _optionsOSD = {
         id: "ISS_viewer", //cybr_viewer
@@ -43,6 +26,24 @@ const tmapp = (function() {
         preload: true
     };
 
+    let _currentImage,
+        _images,
+        _collab,
+        _viewer,
+        _imageStack = [],
+        _currX = 0.5,
+        _currY = 0.5,
+        _currZ = 0,
+        _currZoom = 1,
+        _currMclass = "",
+        _cursorStatus = {
+            x: 0.5,
+            y: 0.5,
+            held: false,
+            inside: false
+        };
+
+
     function _getFocusIndex() {
         return _currZ + Math.floor(_currentImage.zLevels.length / 2);
     }
@@ -64,7 +65,9 @@ const tmapp = (function() {
         if (!_viewer) {
             throw new Error("Tried to update focus of nonexistent viewer.");
         }
-        tmappUI.setImageZLevel(_currentImage.zLevels[_getFocusIndex()]);
+        const index = _getFocusIndex();
+        tmappUI.setImageZLevel(_currentImage.zLevels[index]);
+        coordinateHelper.setImage(_viewer.world.getItemAt(index));
         _updateCollabPosition();
         _updateURLParams();
     }
@@ -245,14 +248,14 @@ const tmapp = (function() {
 
         // Live updates of mouse position in collaboration
         const moveHandler = function(event) {
-            const pos = overlayUtils.pointFromOSDPixel(event.position, "ISS");
+            const pos = coordinateHelper.webToViewport(event.position);
             _setCursorStatus({x: pos.x, y: pos.y});
         }
 
         // Live updates of whether or not the mouse is held down
         const heldHandler = function(held) {
             return function(event) {
-                const pos = overlayUtils.pointFromOSDPixel(event.position, "ISS");
+                const pos = coordinateHelper.webToViewport(event.position);
                 _setCursorStatus({
                     held: held,
                     x: pos.x,
@@ -264,7 +267,7 @@ const tmapp = (function() {
         // Live update of whether or not the mouse is in the viewport
         const insideHandler = function(inside) {
             return function(event) {
-                const pos = overlayUtils.pointFromOSDPixel(event.position, "ISS");
+                const pos = coordinateHelper.webToViewport(event.position);
                 _setCursorStatus({
                     inside: inside,
                     x: pos.x,
@@ -356,6 +359,7 @@ const tmapp = (function() {
         }
         markerPoints.clearPoints(false);
         $("#ISS_viewer").empty();
+        coordinateHelper.clearImage();
         _currentImage = image;
         _updateURLParams();
         _initOSD(callback);
@@ -381,9 +385,7 @@ const tmapp = (function() {
         if (point === undefined) {
             throw new Error("Tried to move to an unused point id.");
         }
-        // TODO: Seems like this happens a lot, should maybe just store all coordinate systems with point
-        const imageCoords = new OpenSeadragon.Point(point.x, point.y);
-        const viewportCoords = overlayUtils.imageToViewport(imageCoords, "ISS");
+        const viewportCoords = coordinateHelper.imageToViewport(point);
         moveTo({
             zoom: 25,
             x: viewportCoords.x,
