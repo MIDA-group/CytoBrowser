@@ -461,6 +461,10 @@ const tmapp = (function() {
         return data;
     }
 
+    function getImageName() {
+        return _currentImage && _currentImage.name;
+    }
+
     return {
         init: init,
         openImage: openImage,
@@ -471,6 +475,7 @@ const tmapp = (function() {
         incrementFocus: incrementFocus,
         decrementFocus: decrementFocus,
         addMarkerStorageData: addMarkerStorageData,
-        getMarkerStorageData: getMarkerStorageData
+        getMarkerStorageData: getMarkerStorageData,
+        getImageName: getImageName
     };
 })();
