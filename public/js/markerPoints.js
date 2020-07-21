@@ -80,7 +80,7 @@ const markerPoints = (function (){
                 };
             case "image":
                 webPoint = coordinateHelper.imageToWeb(point);
-                imagePoint = coordinateHelper.imageToViewport(point);
+                viewportPoint = coordinateHelper.imageToViewport(point);
                 return {
                     web: {x: webPoint.x, y: webPoint.y},
                     viewport: {x: viewportPoint.x, y: viewportPoint.y},
