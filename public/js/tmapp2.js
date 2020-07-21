@@ -3,8 +3,18 @@ const tmapp2 = (function() {
 
     let _currentImage,
         _collab,
-        _imageStack,
-        _viewer;
+        _viewer,
+        _imageStack = [],
+        _currX = 0.5,
+        _currY = 0.5,
+        _currZ = 0,
+        _currZoom = 1,
+        _cursorStatus = {
+            x: 0.5,
+            y: 0.5,
+            held: false,
+            inside: false
+        };
 
     const _optionsOSD = {
         id: "ISS_viewer", //cybr_viewer
@@ -30,33 +40,87 @@ const tmapp2 = (function() {
         preload: true
     };
 
+    function _getFocusIndex() {
+        return _currZ + Math.floor(_currentImage.zLevels.length / 2);
+    }
+
+    function _updateFocus() {
+        if (!_viewer) {
+            throw new Error("Tried to update focus of nonexistent viewer.");
+        }
+        tmappUI.setImageZLevel(_currentImage.zLevels[_getFocusIndex()]);
+        _updateCollabPosition();
+        _updateURLParams();
+    }
+
+    function _updateZoom() {
+        if (!_viewer) {
+            throw new Error("Tried to update zoom of nonexistent viewer.");
+        }
+        const zoom = _viewer.viewport.getZoom();
+        const size = _viewer.viewport.getContainerSize();
+        overlayHandler.setOverlayScale(zoom, size.x, size.y);
+        tmappUI.setImageZoom(Math.round(zoom*10)/10);
+        _currZoom = zoom;
+        _updateCollabPosition();
+        _updateURLParams();
+    }
+
+    function _updatePosition() {
+        if (!_viewer) {
+            throw new Error("Tried to update position of nonexistent viewer.");
+        }
+        const position = _viewer.viewport.getCenter();
+        _currX = position.x; // TODO: Maybe put all curr in a currState object?
+        _currY = position.y;
+        _updateCollabPosition();
+        _updateURLParams();
+    }
+
     function _updateURLParams() {
         const url = new URL(window.location.href);
         const roundTo = (x, n) => Math.round(x * Math.pow(10, n)) / Math.pow(10, n);
         const params = url.searchParams;
-        params.set("image", tmapp.image_name);
-        params.set("zoom", roundTo(this.curr_zoom, 2));
-        params.set("x", roundTo(this.curr_x, 5));
-        params.set("y", roundTo(this.curr_y, 5));
-        params.set("z", this.curr_z);
+        params.set("image", _currentImage.name);
+        params.set("zoom", roundTo(_currZoom, 2));
+        params.set("x", roundTo(_currX, 5));
+        params.set("y", roundTo(_currY, 5));
+        params.set("z", _currZ);
         _collab ? params.set("collab", _collab) : params.delete("collab");
-        tmappUI.setURL("?" + params.toString());
+        tmappUI.setURL("?" + params.toString()); // TODO: weird args
+    }
+
+    function _setCursorStatus(status) {
+        Object.assign(_cursorStatus, status);
+        _updateCollabCursor();
+    }
+
+    function _updateCollabPosition() {
+        collabClient.updatePosition({
+            x: _currX,
+            y: _currY,
+            z: _currZ,
+            zoom: _currZoom
+        });
+    }
+
+    function _updateCollabCursor() {
+        collabClient.updateCursor(_cursorStatus);
     }
 
     function _expandImageName(imageName) {
         // Get the full image names based on the data from the server
         _imageStack = [];
-        const imageInfo = _images.find((image) => image.name === _currentImage);
-        imageInfo.zLevels.sort((a, b) => +a - +b).map((zLevel) => {
+        _currentImage.zLevels.forEach((zLevel) => {
             _imageStack.push(`${imageName}_z${zLevel}.dzi`);
         });
     }
 
     function _loadImages(z =  -1) {
         if (z < 0) {
-            z = Math.floor(this.fixed_file.length / 2);
+            z = Math.floor(_imageStack.length / 2);
         }
-        curr_z = z;
+        _currZ = z;
 
         console.info(`Opening: ${_imageStack}`);
         _imageStack.forEach((image, i) => {
@@ -77,32 +141,25 @@ const tmapp2 = (function() {
     }
 
     function _addHandlers (viewer, callback) {
-        //Change-of-Page (z-level) handler
-        viewer.addHandler("page", function (data) {
-            tmapp.setFocusName();
-        });
+        // Change-of-Page (z-level) handler
+        viewer.addHandler("page", _updateFocus);
+        viewer.addHandler("zoom", _updateZoom);
+        viewer.addHandler("pan", _updatePosition);
 
-        viewer.addHandler("zoom", function (data) {
-            tmapp.setZoomName();
-        });
-
-        viewer.addHandler("pan", function (data) {
-            tmapp.setPosition();
-        });
-
-        //When we're done loading
-        viewer.addHandler("open", function ( event ) {
-            console.log("Done loading!");
+        // When we're done loading
+        viewer.addHandler("open", function (event) {
+            console.info("Done loading!");
             viewer.canvas.focus();
             viewer.viewport.goHome();
-            tmapp.setZoomName();
-            tmapp.setFocusName();
+            _updateZoom();
+            _updateFocus();
+            _updatePosition();
             callback && callback();
             tmappUI.clearImageError();
             tmappUI.enableCollabCreation();
         });
 
-        //Error message if we fail to load
+        // Error message if we fail to load
         viewer.addHandler('open-failed', function (event) {
             console.warn("Open failed!");
             tmappUI.displayImageError("servererror");
@@ -122,29 +179,32 @@ const tmapp2 = (function() {
         _addHandlers(_viewer, callback);
 
         //open the DZI xml file pointing to the tiles
-        loadImages();
+        _loadImages();
 
         //Create svgOverlay(); so that anything like D3, or any canvas library can act upon. https://d3js.org/
-        const overlay =  viewer.svgOverlay();
-        tmapp.ISS_singleTMCPS=d3.select(tmapp.svgov.node()).append('g').attr('class', "ISS singleTMCPS"); // TODO: handle elsewhere
+        const overlay =  _viewer.svgOverlay();
+        // tmapp.ISS_singleTMCPS=d3.select(overlay.node()).append('g').attr('class', "ISS singleTMCPS"); // TODO: handle elsewhere
         overlayHandler.init(overlay);
 
         //This is the OSD click handler, when the event is quick it triggers the creation of a marker
         //Called when we are far from any existing points; if we are close to elem, then DOM code in overlayUtils is called instead
         const clickHandler = function(event) {
             if(event.quick){
+                // TODO: Fix focus
+                /*
                 if (tmapp.lost_focus) { //We get document focus back before getting the event
                     console.log("Lost document focus, ignoring click and just setting (element) focus"); //Since it's irritating to get TMCP by asking for focus
                     tmapp.fixed_viewer.canvas.focus();
                     tmapp.checkFocus();
                 }
-                else if (!event.ctrlKey) {
+                */
+                if (!event.ctrlKey) {
                     console.log("Adding point");
                     const point = {
                         x: event.position.x,
                         y: event.position.y,
-                        z: tmapp.curr_z,
-                        mclass: tmapp.curr_mclass
+                        z: _currZ,
+                        mclass: _currMclass
                     };
                     markerPoints.addPoint(point);
                 }
@@ -159,7 +219,7 @@ const tmapp2 = (function() {
             if (event.originalEvent.ctrlKey) {
                 event.preventDefaultAction = true;
                 if (event.scroll > 0) {
-                    $("#focus_next").click();
+                    $("#focus_next").click(); // TODO: tmapp shouldn't care about DOM
                 }
                 else if (event.scroll < 0) {
                     $("#focus_prev").click();
@@ -170,14 +230,14 @@ const tmapp2 = (function() {
         // Live updates of mouse position in collaboration
         const moveHandler = function(event) {
             const pos = overlayUtils.pointFromOSDPixel(event.position, "ISS");
-            tmapp.setCursorStatus({x: pos.x, y: pos.y});
+            _setCursorStatus({x: pos.x, y: pos.y});
         }
 
         // Live updates of whether or not the mouse is held down
         const heldHandler = function(held) {
             return function(event) {
                 const pos = overlayUtils.pointFromOSDPixel(event.position, "ISS");
-                tmapp.setCursorStatus({
+                _setCursorStatus({
                     held: held,
                     x: pos.x,
                     y: pos.y
@@ -189,7 +249,7 @@ const tmapp2 = (function() {
         const insideHandler = function(inside) {
             return function(event) {
                 const pos = overlayUtils.pointFromOSDPixel(event.position, "ISS");
-                tmapp.setCursorStatus({
+                _setCursorStatus({
                     inside: inside,
                     x: pos.x,
                     y: pos.y
@@ -273,13 +333,15 @@ const tmapp2 = (function() {
             nochange && nochange();
             return;
         }
-        if (!_images.some((image) => image.name === imageName)) {
+
+        const image = _images.find((image) => image.name === imageName);
+        if (!image) {
             tmappUI.displayImageError("badimage", 5000);
             throw new Error("Tried to change to an unknown image.");
         }
         markerPoints.clearPoints(false);
         $("#ISS_viewer").empty();
-        _currentImage = imageName;
+        _currentImage = image;
         _updateURLParams();
         _initOSD(callback);
     }
