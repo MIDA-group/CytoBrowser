@@ -83,7 +83,7 @@ const collabClient = (function(){
     }
 
     function _handleSummary(msg) {
-        if (msg.image !== tmapp.image_name) {
+        if (msg.image !== tmapp.getImageName()) {
             tmapp.changeImage(msg.image, () => {
                 _joinBatch = null;
                 _requestSummary();
@@ -160,7 +160,8 @@ const collabClient = (function(){
             disconnect();
         }
 
-        const address = `ws://${window.location.host}/collaboration/${id}?name=${name}&image=${tmapp.image_name}`;
+        const address = `ws://${window.location.host}/collaboration/`+
+            `${id}?name=${name}&image=${tmapp.getImageName()}`;
         const ws = new WebSocket(address);
         ws.onopen = function(event) {
             console.info(`Successfully connected to collaboration ${id}.`);
