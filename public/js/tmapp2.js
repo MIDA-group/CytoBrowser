@@ -1,7 +1,8 @@
-const tmapp2 = (function() {
+const tmapp = (function() {
     "use strict";
 
     let _currentImage,
+        _images,
         _collab,
         _viewer,
         _imageStack = [],
@@ -9,6 +10,7 @@ const tmapp2 = (function() {
         _currY = 0.5,
         _currZ = 0,
         _currZoom = 1,
+        _currMclass = "",
         _cursorStatus = {
             x: 0.5,
             y: 0.5,
@@ -16,6 +18,7 @@ const tmapp2 = (function() {
             inside: false
         };
 
+    const _imageDir = "data/";
     const _optionsOSD = {
         id: "ISS_viewer", //cybr_viewer
         prefixUrl: "js/openseadragon/images/", //Location of button graphics
@@ -49,8 +52,8 @@ const tmapp2 = (function() {
         const max = Math.floor(count / 2);
         const min = -max;
         z = Math.min(Math.max(z,min),max);
-        for (i = min; i <= max; i++) {
-            let idx = i + Math.floor(z_levels.length / 2);
+        for (let i = min; i <= max; i++) {
+            let idx = i + Math.floor(_currentImage.zLevels.length / 2);
             _viewer.world.getItemAt(idx).setOpacity(z == i);
         }
         _currZ = z;
@@ -125,7 +128,7 @@ const tmapp2 = (function() {
         // Get the full image names based on the data from the server
         _imageStack = [];
         _currentImage.zLevels.forEach((zLevel) => {
-            _imageStack.push(`${imageName}_z${zLevel}.dzi`);
+            _imageStack.push(`${_imageDir}${imageName}_z${zLevel}.dzi`);
         });
     }
 
@@ -139,7 +142,7 @@ const tmapp2 = (function() {
         _imageStack.forEach((image, i) => {
             _viewer.addTiledImage({
                 tileSource: image,
-                opacity: i === curr_z,
+                opacity: i === _currZ,
                 index: i++,
                 success: () => {
                     if (_viewer.world.getItemCount() === _imageStack.length) {
@@ -185,7 +188,7 @@ const tmapp2 = (function() {
     }
 
     function _initOSD(callback) {
-        _expandImageName(imageName);
+        _expandImageName(_currentImage.name);
 
         //init OSD viewer
         _viewer = OpenSeadragon(_optionsOSD);
@@ -272,7 +275,7 @@ const tmapp2 = (function() {
 
         //OSD handlers have to be registered using MouseTracker OSD objects
         const ISS_mouse_tracker = new OpenSeadragon.MouseTracker({
-            element: this.viewer.canvas,
+            element: _viewer.canvas,
             clickHandler: clickHandler,
             scrollHandler: scrollHandler,
             moveHandler: moveHandler,
@@ -312,7 +315,7 @@ const tmapp2 = (function() {
                                     collabClient.connect(collab);
                                 }
                                 if (initialState) {
-                                    _moveTo(initialState);
+                                    moveTo(initialState);
                                 }
                             });
                         }
@@ -415,7 +418,7 @@ const tmapp2 = (function() {
             case "1.0":
                 // Change image if data is for another image
                 if (data.image !== _currentImage.name) {
-                    changeImage(data.image, function() {
+                    openImage(data.image, function() {
                         collabClient.send({
                             type: "imageSwap", // TODO: Should maybe leave message formatting to collabClient
                             image: data.image

@@ -309,7 +309,7 @@ const tmappUI = (function(){
         a.click((e) => {
             e.preventDefault();
             $("#image_browser").modal("hide");
-            tmapp.changeImage(image.name, () => {
+            tmapp.openImage(image.name, () => {
                 collabClient.send({
                     type: "imageSwap",
                     image: image.name
