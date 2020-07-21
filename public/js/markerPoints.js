@@ -39,6 +39,7 @@ const markerPoints = (function (){
         _nextId = id + 1;
         return id;
     }
+
     function _clonePoint(point) {
         /**
          * Note: This implementation copies references, so if the
@@ -48,6 +49,7 @@ const markerPoints = (function (){
          */
         return Object.assign({}, point);
     }
+
     function _findDuplicatePoint(point) {
         return _points.find((existingPoint) =>
             existingPoint.x === point.x
@@ -56,30 +58,29 @@ const markerPoints = (function (){
             && existingPoint.mclass === point.mclass
         );
     }
+
     function _getCoordSystems(point, coordSystem) {
-        const originalPoint = new OpenSeadragon.Point(point.x, point.y);
         let webPoint, viewportPoint, imagePoint;
-        // TODO: Doesn't convert to web coordinates, but not sure if needed
         switch(coordSystem) {
             case "web":
-                viewportPoint = overlayUtils.pointFromOSDPixel(originalPoint, "ISS");
-                imagePoint = overlayUtils.pointToImage(viewportPoint, "ISS");
+                viewportPoint = coordinateHelper.webToViewport(point);
+                imagePoint = coordinateHelper.webToImage(point);
                 return {
                     web: {x: point.x, y: point.y},
                     viewport: {x: viewportPoint.x, y: viewportPoint.y},
                     image: {x: imagePoint.x, y: imagePoint.y}
                 };
             case "viewport":
-                webPoint = {};
-                imagePoint = overlayUtils.pointToImage(originalPoint, "ISS");
+                webPoint = coordinateHelper.viewportToWeb(point);
+                imagePoint = coordinateHelper.viewportToImage(point);
                 return {
                     web: {x: webPoint.x, y: webPoint.y},
                     viewport: {x: point.x, y: point.y},
                     image: {x: imagePoint.x, y: imagePoint.y}
                 };
             case "image":
-                webPoint = {};
-                viewportPoint = overlayUtils.imageToViewport(originalPoint, "ISS");
+                webPoint = coordinateHelper.imageToWeb(point);
+                imagePoint = coordinateHelper.imageToViewport(point);
                 return {
                     web: {x: webPoint.x, y: webPoint.y},
                     viewport: {x: viewportPoint.x, y: viewportPoint.y},
@@ -140,6 +141,8 @@ const markerPoints = (function (){
         });
 
         // Add a graphical representation of the point
+        overlayHandler.updateMarkers(_points);
+        /*
         overlayUtils.addTMCP(
             addedPoint.id,
             coords.viewport.x,
@@ -147,6 +150,7 @@ const markerPoints = (function (){
             addedPoint.z,
             addedPoint.mclass
         );
+        */
     }
 
     /**
@@ -199,7 +203,8 @@ const markerPoints = (function (){
         });
 
         // Update the point in the graphics
-        overlayUtils.updateTMCP(point.id, coords.viewport.x, coords.viewport.y, point.z, point.mclass);
+        overlayHandler.updateMarkers(_points);
+        //overlayUtils.updateTMCP(point.id, coords.viewport.x, coords.viewport.y, point.z, point.mclass);
     }
 
     /**
@@ -228,7 +233,8 @@ const markerPoints = (function (){
         });
 
         // Remove the point from the graphics
-        overlayUtils.removeTMCP(id);
+        overlayHandler.updateMarkers(_points);
+        //overlayUtils.removeTMCP(id);
     }
 
     /**
