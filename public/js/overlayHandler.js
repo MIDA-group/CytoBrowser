@@ -115,6 +115,12 @@ const overlayHandler = (function (){
         _cursorOverlay.selectAll("g").property(_previousCursors, d => d.cursor);
     }
 
+    function updateMarkers(points){ // TODO: Inconsistent naming, go with either points or markers
+        // TODO: Implement this
+        console.log("Not yet implemented.");
+        console.log(points);
+    }
+
     /**
      * Let the overlay handler know the current zoom level and container
      * size of the viewer in order to properly scale elements.
@@ -143,6 +149,7 @@ const overlayHandler = (function (){
 
     return {
         updateMembers: updateMembers,
+        updateMarkers: updateMarkers,
         setOverlayScale: setOverlayScale,
         init: init
     };
