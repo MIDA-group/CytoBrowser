@@ -44,6 +44,19 @@ const tmapp2 = (function() {
         return _currZ + Math.floor(_currentImage.zLevels.length / 2);
     }
 
+    function _setFocusLevel(z) {
+        const count = _viewer.world.getItemCount();
+        const max = Math.floor(count / 2);
+        const min = -max;
+        z = Math.min(Math.max(z,min),max);
+        for (i = min; i <= max; i++) {
+            let idx = i + Math.floor(z_levels.length / 2);
+            _viewer.world.getItemAt(idx).setOpacity(z == i);
+        }
+        _currZ = z;
+        _updateFocus();
+    }
+
     function _updateFocus() {
         if (!_viewer) {
             throw new Error("Tried to update focus of nonexistent viewer.");
@@ -323,7 +336,6 @@ const tmapp2 = (function() {
         }
     }
 
-
     function openImage(imageName, callback, nochange) {
         if (!markerPoints.empty() && !confirm(`You are about to open ` +
             `the image "${imageName}". Do you want to ` +
@@ -346,8 +358,104 @@ const tmapp2 = (function() {
         _initOSD(callback);
     }
 
+    function moveTo({x, y, z, zoom}) {
+        if (!_viewer) {
+            throw new Error("Tried to move viewport without a viewer.");
+        }
+        if (zoom) {
+            _viewer.viewport.zoomTo(zoom, true);
+        }
+        if (x && y) {
+            _viewer.viewport.panTo(new OpenSeadragon.Point(x, y), true);
+        }
+        if (z) {
+            _setFocusLevel(z);
+        }
+    }
+
+    function moveToPoint(id) {
+        const point = markerPoints.getPointById(id);
+        if (point === undefined) {
+            throw new Error("Tried to move to an unused point id.");
+        }
+        // TODO: Seems like this happens a lot, should maybe just store all coordinate systems with point
+        const imageCoords = new OpenSeadragon.Point(point.x, point.y);
+        const viewportCoords = overlayUtils.imageToViewport(imageCoords, "ISS");
+        moveTo({
+            zoom: 25,
+            x: viewportCoords.x,
+            y: viewportCoords.y,
+            z: point.z
+        });
+    }
+
+    function setMClass(mClass) {
+        if (bethesdaClassUtils.getIDFromName(mClass) >= 0) {
+            _currMclass = mClass; // TODO: mClass or mclass?
+        }
+        else {
+            throw new Error("Tried to set the active marker class to something not defined.");
+        }
+    }
+
+    function setCollab(id) {
+        if (id) {
+            _collab = id;
+            tmappUI.setCollabID(id);
+        }
+        else {
+            _collab = null;
+            tmappUI.clearCollabID();
+        }
+        _updateURLParams();
+    }
+
+    function addMarkerStorageData(data, clear = false) {
+        switch (data.version) {
+            case "1.0":
+                // Change image if data is for another image
+                if (data.image !== _currentImage.name) {
+                    changeImage(data.image, function() {
+                        collabClient.send({
+                            type: "imageSwap", // TODO: Should maybe leave message formatting to collabClient
+                            image: data.image
+                        });
+                        data.points.forEach((point) => {
+                            markerPoints.addPoint(point, "image");
+                        });
+                    });
+                    break;
+                }
+                clear && markerPoints.clearPoints();
+                data.points.forEach((point) => {
+                    markerPoints.addPoint(point, "image");
+                })
+                break;
+            default:
+                throw new Error(`Data format version ${points.version} not implemented.`);
+        }
+    }
+
+    function getMarkerStorageData() {
+        const data = {
+            version: "1.0", // Version of the formatting
+            image: _currentImage.name,
+            points: []
+        };
+        markerPoints.forEachPoint((point) => {
+            data.points.push(point)
+        });
+        return data;
+    }
+
     return {
         init: init,
-        openImage: openImage
+        openImage: openImage,
+        moveTo: moveTo,
+        moveToPoint: moveToPoint,
+        setMClass: setMClass,
+        setCollab: setCollab,
+        addMarkerStorageData: addMarkerStorageData,
+        getMarkerStorageData: getMarkerStorageData
     };
 })();
