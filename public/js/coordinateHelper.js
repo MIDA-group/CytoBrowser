@@ -19,7 +19,8 @@ const coordinateHelper = (function() {
         if (!_activeImage) {
             throw new Error("Can't find coordinates without setting an image first.");
         }
-        return _activeImage.imageToViewerElementCoordinates(x, y);
+        const point = new OpenSeadragon.Point(x, y);
+        return _activeImage.imageToViewerElementCoordinates(point);
 
     }
 
@@ -27,7 +28,8 @@ const coordinateHelper = (function() {
         if (!_activeImage) {
             throw new Error("Can't find coordinates without setting an image first.");
         }
-        return _activeImage.viewerElementToImageCoordinates(x, y);
+        const point = new OpenSeadragon.Point(x, y);
+        return _activeImage.viewerElementToImageCoordinates(point);
 
     }
 
