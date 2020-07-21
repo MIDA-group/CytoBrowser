@@ -238,10 +238,10 @@ const tmapp = (function() {
             if (event.originalEvent.ctrlKey) {
                 event.preventDefaultAction = true;
                 if (event.scroll > 0) {
-                    $("#focus_next").click(); // TODO: tmapp shouldn't care about DOM
+                    incrementFocus();
                 }
                 else if (event.scroll < 0) {
-                    $("#focus_prev").click();
+                    decrementFocus();
                 }
             }
         };
@@ -415,6 +415,14 @@ const tmapp = (function() {
         _updateURLParams();
     }
 
+    function incrementFocus() {
+        _setFocusLevel(_currZ + 1);
+    }
+
+    function decrementFocus() {
+        _setFocusLevel(_currZ - 1);
+    }
+
     function addMarkerStorageData(data, clear = false) {
         switch (data.version) {
             case "1.0":
@@ -460,6 +468,8 @@ const tmapp = (function() {
         moveToPoint: moveToPoint,
         setMClass: setMClass,
         setCollab: setCollab,
+        incrementFocus: incrementFocus,
+        decrementFocus: decrementFocus,
         addMarkerStorageData: addMarkerStorageData,
         getMarkerStorageData: getMarkerStorageData
     };

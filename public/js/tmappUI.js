@@ -84,8 +84,8 @@ const tmappUI = (function(){
         });
 
         // Add event listeners for focus buttons
-        $("#focus_next").click(() => tmapp.setFocusLevel(tmapp.getFocusLevel() + 1));
-        $("#focus_prev").click(() => tmapp.setFocusLevel(tmapp.getFocusLevel() - 1));
+        $("#focus_next").click(tmapp.incrementFocus);
+        $("#focus_prev").click(tmapp.decrementFocus);
 
         // Add event listeners for keyboard buttons
         //1,2,... for class selection
