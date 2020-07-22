@@ -127,8 +127,9 @@ const tmapp = (function() {
         collabClient.updateCursor(_cursorStatus);
     }
 
-    function _expandImageName(imageName) {
+    function _expandImageName() {
         // Get the full image names based on the data from the server
+        const imageName = _currentImage.name;
         _imageStack = [];
         _currentImage.zLevels.forEach((zLevel) => {
             _imageStack.push(`${_imageDir}${imageName}_z${zLevel}.dzi`);
@@ -159,6 +160,91 @@ const tmapp = (function() {
         });
     }
 
+    function _addMouseTracking(viewer) {
+        //This is the OSD click handler, when the event is quick it triggers the creation of a marker
+        //Called when we are far from any existing points; if we are close to elem, then DOM code in overlayUtils is called instead
+        function clickHandler(event) {
+            if(event.quick){
+                // TODO: Fix focus
+                /*
+                if (tmapp.lost_focus) { //We get document focus back before getting the event
+                    console.log("Lost document focus, ignoring click and just setting (element) focus"); //Since it's irritating to get TMCP by asking for focus
+                    tmapp.fixed_viewer.canvas.focus();
+                    tmapp.checkFocus();
+                }
+                */
+                if (!event.ctrlKey) {
+                    console.log("Adding point");
+                    const point = {
+                        x: event.position.x,
+                        y: event.position.y,
+                        z: _currZ,
+                        mclass: _currMclass
+                    };
+                    markerPoints.addPoint(point);
+                }
+            }
+            else {
+                //if it is not quick then it is dragged
+                console.log("drag thing");
+            }
+        };
+
+        function scrollHandler(event){
+            if (event.originalEvent.ctrlKey) {
+                event.preventDefaultAction = true;
+                if (event.scroll > 0) {
+                    incrementFocus();
+                }
+                else if (event.scroll < 0) {
+                    decrementFocus();
+                }
+            }
+        };
+
+        // Live updates of mouse position in collaboration
+        function moveHandler(event) {
+            const pos = coordinateHelper.webToViewport(event.position);
+            _setCursorStatus({x: pos.x, y: pos.y});
+        }
+
+        // Live updates of whether or not the mouse is held down
+        function heldHandler(held) {
+            return function(event) {
+                const pos = coordinateHelper.webToViewport(event.position);
+                _setCursorStatus({
+                    held: held,
+                    x: pos.x,
+                    y: pos.y
+                });
+            };
+        }
+
+        // Live update of whether or not the mouse is in the viewport
+        function insideHandler(inside) {
+            return function(event) {
+                const pos = coordinateHelper.webToViewport(event.position);
+                _setCursorStatus({
+                    inside: inside,
+                    x: pos.x,
+                    y: pos.y
+                });
+            };
+        }
+
+        //OSD handlers have to be registered using MouseTracker OSD objects
+        const ISS_mouse_tracker = new OpenSeadragon.MouseTracker({
+            element: viewer.canvas,
+            clickHandler: clickHandler,
+            scrollHandler: scrollHandler,
+            moveHandler: moveHandler,
+            enterHandler: insideHandler(true),
+            exitHandler: insideHandler(false),
+            pressHandler: heldHandler(true),
+            releaseHandler: heldHandler(false)
+        }).setTracking(true);
+    }
+
     function _addHandlers (viewer, callback) {
         // Change-of-Page (z-level) handler
         viewer.addHandler("page", _updateFocus);
@@ -168,6 +254,7 @@ const tmapp = (function() {
         // When we're done loading
         viewer.addHandler("open", function (event) {
             console.info("Done loading!");
+            _addMouseTracking(viewer);
             viewer.canvas.focus();
             viewer.viewport.goHome();
             _updateZoom();
@@ -204,89 +291,6 @@ const tmapp = (function() {
         const overlay =  _viewer.svgOverlay();
         // tmapp.ISS_singleTMCPS=d3.select(overlay.node()).append('g').attr('class', "ISS singleTMCPS"); // TODO: handle elsewhere
         overlayHandler.init(overlay);
-
-        //This is the OSD click handler, when the event is quick it triggers the creation of a marker
-        //Called when we are far from any existing points; if we are close to elem, then DOM code in overlayUtils is called instead
-        const clickHandler = function(event) {
-            if(event.quick){
-                // TODO: Fix focus
-                /*
-                if (tmapp.lost_focus) { //We get document focus back before getting the event
-                    console.log("Lost document focus, ignoring click and just setting (element) focus"); //Since it's irritating to get TMCP by asking for focus
-                    tmapp.fixed_viewer.canvas.focus();
-                    tmapp.checkFocus();
-                }
-                */
-                if (!event.ctrlKey) {
-                    console.log("Adding point");
-                    const point = {
-                        x: event.position.x,
-                        y: event.position.y,
-                        z: _currZ,
-                        mclass: _currMclass
-                    };
-                    markerPoints.addPoint(point);
-                }
-            }
-            else {
-                //if it is not quick then it is dragged
-                console.log("drag thing");
-            }
-        };
-
-        const scrollHandler = function(event){
-            if (event.originalEvent.ctrlKey) {
-                event.preventDefaultAction = true;
-                if (event.scroll > 0) {
-                    incrementFocus();
-                }
-                else if (event.scroll < 0) {
-                    decrementFocus();
-                }
-            }
-        };
-
-        // Live updates of mouse position in collaboration
-        const moveHandler = function(event) {
-            const pos = coordinateHelper.webToViewport(event.position);
-            _setCursorStatus({x: pos.x, y: pos.y});
-        }
-
-        // Live updates of whether or not the mouse is held down
-        const heldHandler = function(held) {
-            return function(event) {
-                const pos = coordinateHelper.webToViewport(event.position);
-                _setCursorStatus({
-                    held: held,
-                    x: pos.x,
-                    y: pos.y
-                });
-            };
-        }
-
-        // Live update of whether or not the mouse is in the viewport
-        const insideHandler = function(inside) {
-            return function(event) {
-                const pos = coordinateHelper.webToViewport(event.position);
-                _setCursorStatus({
-                    inside: inside,
-                    x: pos.x,
-                    y: pos.y
-                });
-            };
-        }
-
-        //OSD handlers have to be registered using MouseTracker OSD objects
-        const ISS_mouse_tracker = new OpenSeadragon.MouseTracker({
-            element: _viewer.canvas,
-            clickHandler: clickHandler,
-            scrollHandler: scrollHandler,
-            moveHandler: moveHandler,
-            enterHandler: insideHandler(true),
-            exitHandler: insideHandler(false),
-            pressHandler: heldHandler(true),
-            releaseHandler: heldHandler(false)
-        }).setTracking(true);
 
         // TODO: What does this do?
         // tmapp.viewer.canvas.addEventListener('mouseover', function() { tmapp.checkFocus(); });

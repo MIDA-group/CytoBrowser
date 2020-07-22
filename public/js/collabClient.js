@@ -276,11 +276,12 @@ const collabClient = (function(){
         }
     }
 
-    /** Update the position and status of the local collaboration member's
-      * mouse cursor.
-      * @param {Object} cursor Current status of the cursor.
-      * @function
-      */
+    /**
+     * Update the position and status of the local collaboration member's
+     * mouse cursor.
+     * @param {Object} cursor Current status of the cursor.
+     * @function
+     */
     const updateCursor = (function(){
         // Limit the rate at which move updates are sent
         const moveInterval = 200;
