@@ -143,15 +143,15 @@ const overlayHandler = (function (){
                         .attr("transform", d => {
                             const coords = coordinateHelper.imageToViewport(d);
                             return `translate(${coords.x}, ${coords.y}) scale(${radius})`;
-                        })
-                        .each(function() {_addMarkerMouseEvents(this);});
-                    group.append("path")
+                        });
+                    const square = group.append("path")
                         .attr("d", d3.symbol().size(1/8).type(d3.symbolSquare))
                     	.attr("transform", "rotate(0) scale(0)")
             			.attr("stroke-width", strokeWidth)
             			.attr("stroke", d => bethesdaClassUtils.classColor(d.mclass))
-                        .style("fill","rgba(0,0,0,0.2)")
-                        .transition().duration(500)
+                        .style("fill","rgba(0,0,0,0.2)");
+                    square.each(function() {_addMarkerMouseEvents(this);});
+                    square.transition().duration(500)
                         .attr("transform", function(d) {
                             const currTrans = this.getAttribute("transform");
                             const newTrans = _editTransform(currTrans, {
