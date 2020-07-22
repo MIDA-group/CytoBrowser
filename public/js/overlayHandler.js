@@ -2,6 +2,7 @@ const overlayHandler = (function (){
     "use strict";
 
     let _cursorOverlay,
+        _markerOverlay,
         _previousCursors,
         _scale;
 
@@ -119,6 +120,62 @@ const overlayHandler = (function (){
         // TODO: Implement this
         console.log("Not yet implemented.");
         console.log(points);
+
+        // TODO: put these options somewhere else
+        const radius = 0.001;
+        const strokeWidth = 20;
+        const strokeColor = "#F00";
+
+
+        _markerOverlay.selectAll("g")
+            .data(points, (d) => d.id)
+            .join(
+                enter => {
+                    const group = enter.append("g")
+                        .attr("transform", d => {
+                            const coords = coordinateHelper.imageToViewport(d);
+                            `translate(${coords.x}, ${coords.y})`
+                        });
+                    group.append("path")
+                        .attr("d", d3.symbol().size(radius * radius).type(d3.symbolSquare))
+                    	.attr("transform", "rotate(45) scale(0)")
+            			.attr("stroke-width", strokeWidth)
+            			.attr("stroke", strokeColor)
+                        .style("fill","rgba(0,0,0,0.2)")
+                        .transition().duration(500)
+                        .attr("transform", d => function(d) {
+                            const currTrans = this.getAttribute("transform");
+                            const newTrans = _editTransform(currTrans, {
+                                scale: 1
+                            });
+                            return newTrans;
+                        });
+                    group.append("path")
+                        .attr("d", d3.symbol().size(radius * radius /4).type(d3.symbolCircle))
+                        .attr("transform", "scale(0)");
+                        .attr("stroke-width", strokeWidth / 2)
+                        .attr("stroke", "gray")
+                        .style("fill", "transparent")
+                        .transition().delay(500).duration(200)
+                        .attr("transform", d => function(d) {
+                            const currTrans = this.getAttribute("transform");
+                            const newTrans = _editTransform(currTrans, {
+                                scale: 1
+                            });
+                            return newTrans;
+                        });
+                },
+                update => {
+                    update.attr("transform", function(d) {
+                            const currTrans = this.getAttribute("transform");
+                            const coords = coordinateHelper.imageToViewport(d);
+                            const newTrans = _editTransform(currTrans, {
+                                translate: [coords.x, coords.y]
+                            });
+                            return newTrans;
+                        });
+                }
+            );
     }
 
     /**
@@ -143,7 +200,11 @@ const overlayHandler = (function (){
         const cursors = d3.select(svgOverlay.node())
             .append("g")
             .attr("id", "cursors");
+        const markers = d3.select(svgOverlay.node())
+            .append("g")
+            .attr("id", "markers");
         _cursorOverlay = d3.select(cursors.node());
+        _markerOverlay = d3.select(markers.node());
         _previousCursors = d3.local();
     }
 
