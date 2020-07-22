@@ -62,8 +62,20 @@ const overlayHandler = (function (){
     function _addMarkerMouseEvents(node) {
         new OpenSeadragon.MouseTracker({
             element: node,
-            enterHandler: function(){console.log("Mouse entered!")},
-            exitHandler: function(){console.log("Mouse exited!")}
+            dragHandler: function(event) {
+
+            },
+            clickHandler: function(event) {
+                if (event.originalEvent.ctrlKey) {
+                    const id = d3.select(node).attr("markerId");
+                    markerPoints.removePoint(id);
+                }
+            },
+            enterHandler: function(){
+                d3.select(node);
+            },
+            exitHandler: function(){
+            }
         }).setTracking(true);
     }
 
@@ -143,14 +155,15 @@ const overlayHandler = (function (){
                         .attr("transform", d => {
                             const coords = coordinateHelper.imageToViewport(d);
                             return `translate(${coords.x}, ${coords.y}) scale(${radius})`;
-                        });
+                        })
+                        .attr("markerId", d => d.id);
                     const square = group.append("path")
                         .attr("d", d3.symbol().size(1/8).type(d3.symbolSquare))
                     	.attr("transform", "rotate(0) scale(0)")
             			.attr("stroke-width", strokeWidth)
             			.attr("stroke", d => bethesdaClassUtils.classColor(d.mclass))
                         .style("fill","rgba(0,0,0,0.2)");
-                    square.each(function() {_addMarkerMouseEvents(this);});
+                    group.each(function() {_addMarkerMouseEvents(this);});
                     square.transition().duration(500)
                         .attr("transform", function(d) {
                             const currTrans = this.getAttribute("transform");
