@@ -335,7 +335,7 @@ const tmapp = (function() {
                     else {
                         tmappUI.displayImageError("noimage");
                     }
-                    if (collab) {
+                    if (collab && !image) {
                         collabClient.connect(collab);
                     }
                     break;
