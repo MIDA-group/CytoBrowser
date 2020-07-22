@@ -75,7 +75,7 @@ const coordinateHelper = (function() {
      * @returns {Object} The same point in viewport coordinates.
      */
     function webToViewport({x, y}){
-        return webToImage(imageToViewport({x, y}));
+        return imageToViewport(webToImage({x, y}));
     }
 
     /**
@@ -86,7 +86,7 @@ const coordinateHelper = (function() {
      * @returns {Object} The same point in web coordinates.
      */
     function viewportToWeb({x, y}){
-        return viewportToImage(imageToWeb({x, y}));
+        return imageToWeb(viewportToImage({x, y}));
     }
 
     /**
