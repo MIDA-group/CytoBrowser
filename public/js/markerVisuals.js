@@ -18,7 +18,7 @@ const markerVisuals = (function() {
                         .text(d =>
                             `(x: ${Math.round(d.x)}, y: ${Math.round(d.y)}, z: ${Math.round(d.z)})`)
                         .append("span")
-                            .attr("class", "badge text-light float-right")
+                            .attr("class", "badge text-white ml-4")
                             .style("background-color", d =>
                                 bethesdaClassUtils.classColor(d.mclass))
                             .text(d => d.mclass);
