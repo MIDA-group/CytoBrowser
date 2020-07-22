@@ -100,11 +100,13 @@ const tmapp = (function() {
         const url = new URL(window.location.href);
         const roundTo = (x, n) => Math.round(x * Math.pow(10, n)) / Math.pow(10, n);
         const params = url.searchParams;
-        params.set("image", _currentImage.name);
-        params.set("zoom", roundTo(_currZoom, 2));
-        params.set("x", roundTo(_currX, 5));
-        params.set("y", roundTo(_currY, 5));
-        params.set("z", _currZ);
+        if (_currentImage) {
+            params.set("image", _currentImage.name);
+            params.set("zoom", roundTo(_currZoom, 2));
+            params.set("x", roundTo(_currX, 5));
+            params.set("y", roundTo(_currY, 5));
+            params.set("z", _currZ);
+        }
         _collab ? params.set("collab", _collab) : params.delete("collab");
         tmappUI.setURL("?" + params.toString()); // TODO: weird args
     }
