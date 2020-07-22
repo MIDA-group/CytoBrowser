@@ -75,9 +75,16 @@ const overlayHandler = (function (){
                 }
             },
             enterHandler: function(){
-                d3.select(node);
+                d3.select(node)
+                    .selectAll("rect")
+                    .transition().duration(200)
+                    .attr("transform", "scale(1.2) rotate(45)");
             },
             exitHandler: function(){
+                d3.select(node)
+                    .selectAll("rect")
+                    .transition().duration(200)
+                    .attr("transform", "scale(1) rotate(45)");
             }
         }).setTracking(true);
     }
@@ -185,7 +192,7 @@ const overlayHandler = (function (){
                         .attr("stroke", "gray")
                         .style("fill", "transparent")
                         .style("pointer-events", "none")
-                        .transition().delay(500).duration(200)
+                        .transition().delay(300).duration(200)
                         .attr("transform", function(d) {
                             const currTrans = this.getAttribute("transform");
                             const newTrans = _editTransform(currTrans, {
