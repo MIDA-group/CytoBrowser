@@ -78,13 +78,15 @@ const overlayHandler = (function (){
                 d3.select(node)
                     .selectAll("rect")
                     .transition().duration(200)
-                    .attr("transform", "scale(1.2) rotate(45)");
+                    .attr("width", 1.2)
+                    .attr("height", 1.2);
             },
             exitHandler: function(){
                 d3.select(node)
                     .selectAll("rect")
                     .transition().duration(200)
-                    .attr("transform", "scale(1) rotate(45)");
+                    .attr("width", 1)
+                    .attr("height", 1);
             }
         }).setTracking(true);
     }

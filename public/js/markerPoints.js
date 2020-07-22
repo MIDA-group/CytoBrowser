@@ -137,7 +137,7 @@ const markerPoints = (function (){
         transmit && collabClient.addPoint(addedPoint);
 
         // Add a graphical representation of the point
-        overlayHandler.updateMarkers(_points);
+        markerVisuals.update(_points);
         /*
         overlayUtils.addTMCP(
             addedPoint.id,
@@ -194,7 +194,7 @@ const markerPoints = (function (){
         transmit && collabClient.updatePoint(id, updatedPoint);
 
         // Update the point in the graphics
-        overlayHandler.updateMarkers(_points);
+        markerVisuals.update(_points);
         //overlayUtils.updateTMCP(point.id, coords.viewport.x, coords.viewport.y, point.z, point.mclass);
     }
 
@@ -220,7 +220,7 @@ const markerPoints = (function (){
         transmit && collabClient.removePoint(id);
 
         // Remove the point from the graphics
-        overlayHandler.updateMarkers(_points);
+        markerVisuals.update(_points);
         //overlayUtils.removeTMCP(id);
     }
 
