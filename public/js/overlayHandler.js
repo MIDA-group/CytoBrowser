@@ -59,6 +59,14 @@ const overlayHandler = (function (){
             });
     }
 
+    function _addMarkerMouseEvents(node) {
+        new OpenSeadragon.MouseTracker({
+            element: node,
+            enterHandler: () => console.log("Mouse entered!"),
+            exitHandler: () => console.log("Mouse exited!")
+        }).setTracking(true);
+    }
+
     /**
      * Use d3 to update the collaboration cursors, adding new ones and
      * removing old ones.
@@ -135,7 +143,8 @@ const overlayHandler = (function (){
                         .attr("transform", d => {
                             const coords = coordinateHelper.imageToViewport(d);
                             return `translate(${coords.x}, ${coords.y}) scale(${radius})`;
-                        });
+                        })
+                        .each(function() {_addMarkerMouseEvents(this);});
                     group.append("path")
                         .attr("d", d3.symbol().size(1/8).type(d3.symbolSquare))
                     	.attr("transform", "rotate(0) scale(0)")
