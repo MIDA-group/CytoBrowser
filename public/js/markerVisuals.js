@@ -11,17 +11,15 @@ const markerVisuals = (function() {
                 enter => {
                     const row = enter.append("tr");
                     row.append("td")
-                        .class("align-middle")
+                        .attr("class", "align-middle")
                         .text(d => d.id);
                     row.append("td")
-                        .class("align-middle")
+                        .attr("class", "align-middle")
                         .text(d => d);
                     row.append("td")
-                        .class("align-middle")
+                        .attr("class", "align-middle")
                         .append("button")
-                            .class("btn")
-                            .class("btn-sm")
-                            .class("btn-link")
+                            .attr("class", "btn btn-sm btn-link")
                             .attr("type", "button")
                             .text("Move to marker")
                             .on("click", d => tmapp.moveToPoint(d.id));
