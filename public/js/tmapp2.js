@@ -465,6 +465,11 @@ const tmapp = (function() {
         return _currentImage && _currentImage.name;
     }
 
+    function updateCollabStatus() {
+        _updateCollabCursor();
+        _updateCollabPosition();
+    }
+
     return {
         init: init,
         openImage: openImage,
@@ -476,6 +481,7 @@ const tmapp = (function() {
         decrementFocus: decrementFocus,
         addMarkerStorageData: addMarkerStorageData,
         getMarkerStorageData: getMarkerStorageData,
-        getImageName: getImageName
+        getImageName: getImageName,
+        updateCollabStatus: updateCollabStatus
     };
 })();

@@ -50,7 +50,6 @@ const coordinateHelper = (function() {
         }
         const point = new OpenSeadragon.Point(x, y);
         return _activeImage.imageToViewerElementCoordinates(point);
-
     }
 
     /**
@@ -66,7 +65,6 @@ const coordinateHelper = (function() {
         }
         const point = new OpenSeadragon.Point(x, y);
         return _activeImage.viewerElementToImageCoordinates(point);
-
     }
 
     /**
