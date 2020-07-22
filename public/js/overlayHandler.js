@@ -59,16 +59,20 @@ const overlayHandler = (function (){
             });
     }
 
-    function _addMarkerMouseEvents(node) {
+    function _addMarkerMouseEvents(d, node) {
         new OpenSeadragon.MouseTracker({
             element: node,
             dragHandler: function(event) {
-
+                const reference = coordinateHelper.webToImage({x: 0, y: 0});
+                const delta = coordinateHelper.webToImage(event.delta);
+                d.x += delta.x - reference.x;
+                d.y += delta.y - reference.y;
+		console.log(delta, d);
+                markerPoints.updatePoint(d.id, d, "image");
             },
             clickHandler: function(event) {
                 if (event.originalEvent.ctrlKey) {
-                    const id = d3.select(node).attr("markerId");
-                    markerPoints.removePoint(id);
+                    markerPoints.removePoint(d.id);
                 }
             },
             enterHandler: function(){
@@ -163,7 +167,7 @@ const overlayHandler = (function (){
             			.attr("stroke-width", strokeWidth)
             			.attr("stroke", d => bethesdaClassUtils.classColor(d.mclass))
                         .style("fill","rgba(0,0,0,0.2)");
-                    group.each(function() {_addMarkerMouseEvents(this);});
+                    group.each(function(d) {_addMarkerMouseEvents(d, this);});
                     square.transition().duration(500)
                         .attr("transform", function(d) {
                             const currTrans = this.getAttribute("transform");
