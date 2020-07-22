@@ -410,14 +410,14 @@ const tmapp = (function() {
     }
 
     function setCollab(id) {
-        if (id) {
-            _collab = id;
-            tmappUI.setCollabID(id);
-        }
-        else {
-            _collab = null;
-            tmappUI.clearCollabID();
-        }
+        _collab = id;
+        tmappUI.setCollabID(id);
+        _updateURLParams();
+    }
+
+    function clearCollab() {
+        _collab = null;
+        tmappUI.clearCollabID();
         _updateURLParams();
     }
 
@@ -483,6 +483,7 @@ const tmapp = (function() {
         moveToPoint: moveToPoint,
         setMClass: setMClass,
         setCollab: setCollab,
+        clearCollab: clearCollab,
         incrementFocus: incrementFocus,
         decrementFocus: decrementFocus,
         addMarkerStorageData: addMarkerStorageData,
