@@ -140,7 +140,7 @@ const overlayHandler = (function (){
                         .attr("d", d3.symbol().size(1/8).type(d3.symbolSquare))
                     	.attr("transform", "rotate(0) scale(0)")
             			.attr("stroke-width", strokeWidth)
-            			.attr("stroke", strokeColor)
+            			.attr("stroke", d => bethesdaClassUtils.classColor(d.class))
                         .style("fill","rgba(0,0,0,0.2)")
                         .transition().duration(500)
                         .attr("transform", function(d) {
