@@ -134,11 +134,7 @@ const markerPoints = (function (){
         _points.push(addedPoint);
 
         // Send the update to collaborators
-        transmit && collabClient.send({
-            type: "markerAction",
-            actionType: "add",
-            point: addedPoint
-        });
+        transmit && collabClient.addPoint(addedPoint);
 
         // Add a graphical representation of the point
         overlayHandler.updateMarkers(_points);
@@ -195,12 +191,7 @@ const markerPoints = (function (){
         points[updatedIndex] = updatedPoint;
 
         // Send the update to collaborators
-        transmit && collabClient.send({
-            type: "markerAction",
-            actionType: "update",
-            id: id,
-            point: updatedPoint
-        });
+        transmit && collabClient.updatePoint(id, updatedPoint);
 
         // Update the point in the graphics
         overlayHandler.updateMarkers(_points);
@@ -226,11 +217,7 @@ const markerPoints = (function (){
         points.splice(deletedIndex, 1);
 
         // Send the update to collaborators
-        transmit && collabClient.send({
-            type: "markerAction",
-            actionType: "remove",
-            id: id
-        });
+        transmit && collabClient.removePoint(id);
 
         // Remove the point from the graphics
         overlayHandler.updateMarkers(_points);
@@ -248,10 +235,7 @@ const markerPoints = (function (){
         ids.forEach((id) => removePoint(id, false));
 
         // Send the update to collaborators
-        transmit && collabClient.send({
-            type: "markerAction",
-            actionType: "clear",
-        });
+        transmit && collabClient.clearPoints();
     }
 
     /**

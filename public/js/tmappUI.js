@@ -301,10 +301,7 @@ const tmappUI = (function(){
             e.preventDefault();
             $("#image_browser").modal("hide");
             tmapp.openImage(image.name, () => {
-                collabClient.send({
-                    type: "imageSwap",
-                    image: image.name
-                });
+                collabClient.swapImage(image.name);
             });
         });
         a.hover((e) =>

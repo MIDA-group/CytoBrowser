@@ -434,11 +434,8 @@ const tmapp = (function() {
             case "1.0":
                 // Change image if data is for another image
                 if (data.image !== _currentImage.name) {
-                    openImage(data.image, function() {
-                        collabClient.send({
-                            type: "imageSwap", // TODO: Should maybe leave message formatting to collabClient
-                            image: data.image
-                        });
+                    openImage(data.image, () => {
+                        collabClient.swapImage(data.image);
                         data.points.forEach((point) => {
                             markerPoints.addPoint(point, "image");
                         });

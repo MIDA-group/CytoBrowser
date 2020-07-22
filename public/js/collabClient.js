@@ -224,6 +224,65 @@ const collabClient = (function(){
     }
 
     /**
+     * Notify collaborators about an image being swapped.
+     * @param {string} imageName Name of the image being swapped to.
+     */
+    function swapImage(imageName) {
+        send({
+            type: "imageSwap",
+            image: imageName
+        });
+    }
+
+    /**
+     * Notify collaborators about a point being added.
+     * @param {Object} point Data for the added point.
+     */
+    function addPoint(point) {
+        send({
+            type: "markerAction",
+            actionType: "add",
+            point: point
+        });
+    }
+
+    /**
+     * Notify collaborators about a point being updated.
+     * @param {number} id The original id of the point being updated.
+     * @param {Object} point Data for the updated point.
+     */
+    function updatePoint(id, point) {
+        send({
+            type: "markerAction",
+            actionType: "update",
+            id: id,
+            point: point
+        });
+    }
+
+    /**
+     * Notify collaborators about a point being removed.
+     * @param {number} id The id of the point being removed.
+     */
+    function removePoint(id) {
+        send({
+            type: "markerAction",
+            actionType: "remove",
+            id: id
+        });
+    }
+
+    /**
+     * Notify collaborators of all points being cleared.
+     */
+    function clearPoints() {
+        send({
+            type: "markerAction",
+            actionType: "clear"
+        });
+    }
+
+    /**
      * Change the name of the local collaboration member.
      * @param {string} newName The new name to be assigned to the member.
      */
@@ -338,6 +397,11 @@ const collabClient = (function(){
         connect: connect,
         disconnect: disconnect,
         send: send,
+        swapImage: swapImage,
+        addPoint: addPoint,
+        updatePoint: updatePoint,
+        removePoint: removePoint,
+        clearPoints: clearPoints,
         changeName: changeName,
         getDefaultName: getDefaultName,
         updatePosition: updatePosition,
