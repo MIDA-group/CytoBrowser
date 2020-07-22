@@ -15,7 +15,12 @@ const markerVisuals = (function() {
                         .text(d => d.id);
                     row.append("td")
                         .attr("class", "align-middle")
-                        .text(d => d);
+                        .text(d => `(x: ${d.x}, y: ${d.y}, z: ${d.z})`)
+                        .append("span")
+                            .attr("class", "badge text-light")
+                            .style("background-color", d =>
+                                bethesdaClassUtils.classColor(d.mclass))
+                            .text(d => d.mclass);
                     row.append("td")
                         .attr("class", "align-middle")
                         .append("button")
