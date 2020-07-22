@@ -67,7 +67,6 @@ const overlayHandler = (function (){
                 const delta = coordinateHelper.webToImage(event.delta);
                 d.x += delta.x - reference.x;
                 d.y += delta.y - reference.y;
-		console.log(delta, d);
                 markerPoints.updatePoint(d.id, d, "image");
             },
             clickHandler: function(event) {
@@ -142,14 +141,11 @@ const overlayHandler = (function (){
 
     function updateMarkers(points){ // TODO: Inconsistent naming, go with either points or markers
         // TODO: Implement this
-        console.log("Not yet implemented.");
-        console.log(points);
 
         // TODO: put these options somewhere else
-        const radius = 0.01;
-        const strokeWidth = 0.02;
+        const radius = 0.001;
+        const strokeWidth = 0.04;
         const strokeColor = "#F00";
-
 
         _markerOverlay.selectAll("g")
             .data(points, (d) => d.id)
@@ -161,8 +157,11 @@ const overlayHandler = (function (){
                             return `translate(${coords.x}, ${coords.y}) scale(${radius})`;
                         })
                         .attr("markerId", d => d.id);
-                    const square = group.append("path")
-                        .attr("d", d3.symbol().size(1/8).type(d3.symbolSquare))
+                    const square = group.append("rect")
+                        .attr("width", 1)
+                        .attr("height", 1)
+                        .attr("x", -0.5)
+                        .attr("y", -0.5)
                     	.attr("transform", "rotate(0) scale(0)")
             			.attr("stroke-width", strokeWidth)
             			.attr("stroke", d => bethesdaClassUtils.classColor(d.mclass))
@@ -177,8 +176,10 @@ const overlayHandler = (function (){
                             });
                             return newTrans;
                         });
-                    group.append("path")
-                        .attr("d", d3.symbol().size(1/32).type(d3.symbolCircle))
+                    group.append("circle")
+                        .attr("cx", 0)
+                        .attr("cy", 0)
+                        .attr("r", 0.25)
                         .attr("transform", "scale(0)")
                         .attr("stroke-width", strokeWidth / 2)
                         .attr("stroke", "gray")
