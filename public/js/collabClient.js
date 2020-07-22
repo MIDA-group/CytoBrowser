@@ -84,7 +84,7 @@ const collabClient = (function(){
 
     function _handleSummary(msg) {
         if (msg.image !== tmapp.getImageName()) {
-            tmapp.changeImage(msg.image, () => {
+            tmapp.openImage(msg.image, () => {
                 _joinBatch = null;
                 _requestSummary();
                 // TODO: Could handle the edge case of switching image 1 -> image 2 -> image 1
@@ -112,7 +112,7 @@ const collabClient = (function(){
     }
 
     function _handleImageSwap(msg) {
-        tmapp.changeImage(msg.image, () => {
+        tmapp.openImage(msg.image, () => {
             // Make sure to get any new information from before you swapped
             _requestSummary();
         }, disconnect);
