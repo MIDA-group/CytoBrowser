@@ -62,8 +62,8 @@ const overlayHandler = (function (){
     function _addMarkerMouseEvents(node) {
         new OpenSeadragon.MouseTracker({
             element: node,
-            enterHandler: () => console.log("Mouse entered!"),
-            exitHandler: () => console.log("Mouse exited!")
+            enterHandler: function(){console.log("Mouse entered!")},
+            exitHandler: function(){console.log("Mouse exited!")}
         }).setTracking(true);
     }
 
@@ -166,6 +166,7 @@ const overlayHandler = (function (){
                         .attr("stroke-width", strokeWidth / 2)
                         .attr("stroke", "gray")
                         .style("fill", "transparent")
+                        .style("pointer-events", "none")
                         .transition().delay(500).duration(200)
                         .attr("transform", function(d) {
                             const currTrans = this.getAttribute("transform");
