@@ -113,15 +113,6 @@ const tmappUI = (function(){
             }
         });
 
-        // Set up callbacks for the collaboration client
-        collabClient.onConnect(function(connection) {
-            tmapp.setCollab(connection.id);
-        });
-        collabClient.onDisconnect(function(connection) {
-            clearCollaborators();
-            tmapp.setCollab();
-        });
-
         // Set up the collaboration menu
         let nameTimeout;
         const keyUpTime = 3000;

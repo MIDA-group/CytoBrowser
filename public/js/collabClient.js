@@ -5,10 +5,7 @@
 const collabClient = (function(){
     "use strict";
     let _ws,
-        _connection,
         _joinBatch,
-        _connectFun,
-        _disconnectFun,
         _members,
         _localMember;
 
@@ -166,8 +163,7 @@ const collabClient = (function(){
         ws.onopen = function(event) {
             console.info(`Successfully connected to collaboration ${id}.`);
             _ws = ws;
-            _connection = {id: id, name: name, ws: ws};
-            _connectFun && _connectFun(_connection);
+            tmapp.setCollab(id);
 
             if (include) {
                 _joinBatch = [];
@@ -188,13 +184,13 @@ const collabClient = (function(){
             _handleMessage(JSON.parse(event.data));
         }
         ws.onclose = function(event) {
-            _disconnectFun && _disconnectFun(_connection);
             _joinBatch = null;
-            _connection = null;
             _members = null;
             _localMember = null;
             _ws = null;
             overlayHandler.updateMembers([]);
+            tmappUI.clearCollaborators();
+            tmapp.clearCollab();
         }
     }
 
@@ -243,7 +239,7 @@ const collabClient = (function(){
                 hardUpdate: true,
                 member: _localMember
             });
-            tmappUI.updateCollaborators(_localMember, _members);
+            _memberUpdate(_localMember, _members);
         }
     }
 
@@ -336,36 +332,6 @@ const collabClient = (function(){
         return updateCursor
     })();
 
-    /**
-     * Function that can be set to be called at various points in the
-     * collaboration lifeline.
-     * @name CollabCallback
-     * @function
-     * @param {Object} connection Collaboration connection information.
-     * @param {string} id Identifier for the collaboration.
-     * @param {string} name Name used for this client's participant.
-     * @param {WebSocket} ws Websocket object used to communicate with
-     * the collaboration on the server.
-     */
-
-    /**
-     * Set a function to be called whenever the collaboration
-     * successfully connects to the server.
-     * @param {CollabCallback} f Function to be called.
-     */
-    function onConnect(f) {
-        _connectFun = f;
-    }
-
-    /**
-     * Set a function to be called whenever the collaboration
-     * disconnects from the server.
-     * @param {CollabCallback} f Function to be called.
-     */
-    function onDisconnect(f) {
-        _disconnectFun = f;
-    }
-
     return {
         createCollab: createCollab,
         connect: connect,
@@ -374,8 +340,6 @@ const collabClient = (function(){
         changeName: changeName,
         getDefaultName: getDefaultName,
         updatePosition: updatePosition,
-        updateCursor: updateCursor,
-        onConnect: onConnect,
-        onDisconnect: onDisconnect
+        updateCursor: updateCursor
     };
 })();
