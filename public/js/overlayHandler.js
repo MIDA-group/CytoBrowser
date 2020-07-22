@@ -122,7 +122,7 @@ const overlayHandler = (function (){
         console.log(points);
 
         // TODO: put these options somewhere else
-        const radius = 0.001;
+        const radius = 9/10000000;
         const strokeWidth = 20;
         const strokeColor = "#F00";
 
@@ -134,7 +134,7 @@ const overlayHandler = (function (){
                     const group = enter.append("g")
                         .attr("transform", d => {
                             const coords = coordinateHelper.imageToViewport(d);
-                            `translate(${coords.x}, ${coords.y})`
+                            return `translate(${coords.x}, ${coords.y})`;
                         });
                     group.append("path")
                         .attr("d", d3.symbol().size(radius * radius).type(d3.symbolSquare))
@@ -143,7 +143,7 @@ const overlayHandler = (function (){
             			.attr("stroke", strokeColor)
                         .style("fill","rgba(0,0,0,0.2)")
                         .transition().duration(500)
-                        .attr("transform", d => function(d) {
+                        .attr("transform", function(d) {
                             const currTrans = this.getAttribute("transform");
                             const newTrans = _editTransform(currTrans, {
                                 scale: 1
@@ -152,12 +152,12 @@ const overlayHandler = (function (){
                         });
                     group.append("path")
                         .attr("d", d3.symbol().size(radius * radius /4).type(d3.symbolCircle))
-                        .attr("transform", "scale(0)");
+                        .attr("transform", "scale(0)")
                         .attr("stroke-width", strokeWidth / 2)
                         .attr("stroke", "gray")
                         .style("fill", "transparent")
                         .transition().delay(500).duration(200)
-                        .attr("transform", d => function(d) {
+                        .attr("transform", function(d) {
                             const currTrans = this.getAttribute("transform");
                             const newTrans = _editTransform(currTrans, {
                                 scale: 1
