@@ -122,8 +122,8 @@ const overlayHandler = (function (){
         console.log(points);
 
         // TODO: put these options somewhere else
-        const radius = 9/10000000;
-        const strokeWidth = 20;
+        const radius = 0.01;
+        const strokeWidth = 0.02;
         const strokeColor = "#F00";
 
 
@@ -134,11 +134,11 @@ const overlayHandler = (function (){
                     const group = enter.append("g")
                         .attr("transform", d => {
                             const coords = coordinateHelper.imageToViewport(d);
-                            return `translate(${coords.x}, ${coords.y})`;
+                            return `translate(${coords.x}, ${coords.y}) scale(${radius})`;
                         });
                     group.append("path")
-                        .attr("d", d3.symbol().size(radius * radius).type(d3.symbolSquare))
-                    	.attr("transform", "rotate(45) scale(0)")
+                        .attr("d", d3.symbol().size(1/8).type(d3.symbolSquare))
+                    	.attr("transform", "rotate(0) scale(0)")
             			.attr("stroke-width", strokeWidth)
             			.attr("stroke", strokeColor)
                         .style("fill","rgba(0,0,0,0.2)")
@@ -146,12 +146,13 @@ const overlayHandler = (function (){
                         .attr("transform", function(d) {
                             const currTrans = this.getAttribute("transform");
                             const newTrans = _editTransform(currTrans, {
+                                rotate: 45,
                                 scale: 1
                             });
                             return newTrans;
                         });
                     group.append("path")
-                        .attr("d", d3.symbol().size(radius * radius /4).type(d3.symbolCircle))
+                        .attr("d", d3.symbol().size(1/32).type(d3.symbolCircle))
                         .attr("transform", "scale(0)")
                         .attr("stroke-width", strokeWidth / 2)
                         .attr("stroke", "gray")
