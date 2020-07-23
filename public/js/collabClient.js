@@ -84,9 +84,13 @@ const collabClient = (function(){
             tmapp.openImage(msg.image, () => {
                 _joinBatch = null;
                 _requestSummary();
-                // TODO: Could handle the edge case of switching image 1 -> image 2 -> image 1
             }, disconnect);
             return;
+        }
+        if (_joinBatch) {
+            markerHandler.forEachMarker((marker) => {
+                _joinBatch.push(marker);
+            });
         }
         markerHandler.clearMarkers(false);
         msg.markers.forEach((marker) => {
@@ -167,9 +171,6 @@ const collabClient = (function(){
 
             if (include) {
                 _joinBatch = [];
-                markerHandler.forEachMarker((marker) => {
-                    _joinBatch.push(marker);
-                });
                 _requestSummary();
             }
             else if (markerHandler.empty() || confirm("All your placed markers will be lost unless you have saved them. Do you want to continue anyway?")) {
