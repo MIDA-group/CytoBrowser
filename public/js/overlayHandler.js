@@ -1,3 +1,7 @@
+/**
+ * Functions for updating the OpenSeadragon overlay.
+ * @namespace overlayHandler
+ **/
 const overlayHandler = (function (){
     "use strict";
 
@@ -160,6 +164,11 @@ const overlayHandler = (function (){
         _cursorOverlay.selectAll("g").property(_previousCursors, d => d.cursor);
     }
 
+    /**
+     * Use d3 to update markers, adding new ones and removing old ones.
+     * The markers are identified by their id.
+     * @param {Array} points The currently placed markers.
+     */
     function updateMarkers(points){ // TODO: Inconsistent naming, go with either points or markers
         // TODO: Implement this
 
@@ -216,6 +225,17 @@ const overlayHandler = (function (){
                             const coords = coordinateHelper.imageToViewport(d);
                             const newTrans = _editTransform(currTrans, {
                                 translate: [coords.x, coords.y]
+                            });
+                            return newTrans;
+                        });
+                },
+                exit => {
+                    exit.transition().duration(200)
+                        .attr("opacity", 0)
+                        .attr("transform", function(d) {
+                            const currTrans = this.getAttribute("transform");
+                            const newTrans = _editTransform(currTrans, {
+                                scale: 2.0
                             });
                             return newTrans;
                         });
