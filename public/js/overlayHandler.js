@@ -243,9 +243,11 @@ const overlayHandler = (function (){
                         });
                 },
                 exit => {
-                    exit.transition().duration(200)
+                    // Since removing takes time, quickly readding a node
+                    // wouldn't work if we didn't reassign the selection id
+                    exit.data(points, d => -d.id).transition().duration(200)
                         .attr("opacity", 0)
-                        .attr("transform", function(d) {
+                        .attr("transform", function() {
                             const currTrans = this.getAttribute("transform");
                             const newTrans = _editTransform(currTrans, {
                                 scale: s => 2 * s
