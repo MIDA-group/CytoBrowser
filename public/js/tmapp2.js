@@ -206,18 +206,14 @@ const tmapp = (function() {
         // Live updates of mouse position in collaboration
         function moveHandler(event) {
             const pos = coordinateHelper.webToViewport(event.position);
-            _setCursorStatus({x: pos.x, y: pos.y});
+            _setCursorStatus({x: pos.x, y: pos.y);
         }
 
         // Live updates of whether or not the mouse is held down
         function heldHandler(held) {
             return function(event) {
                 const pos = coordinateHelper.webToViewport(event.position);
-                _setCursorStatus({
-                    held: held,
-                    x: pos.x,
-                    y: pos.y
-                });
+                _setCursorStatus({held: held});
             };
         }
 
@@ -225,11 +221,7 @@ const tmapp = (function() {
         function insideHandler(inside) {
             return function(event) {
                 const pos = coordinateHelper.webToViewport(event.position);
-                _setCursorStatus({
-                    inside: inside,
-                    x: pos.x,
-                    y: pos.y
-                });
+                _setCursorStatus({inside: inside});
             };
         }
 
