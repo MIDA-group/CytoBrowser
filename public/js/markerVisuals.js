@@ -13,7 +13,7 @@ const markerVisuals = (function() {
      */
     function update(markers){
         // Update the markers in the overlay
-        overlayHandler.updateMarkers(markers);
+	overlayHandler.updateMarkers(markers)
 
         // Update the marker list
         const table = d3.select(`#${_tableId}`);
@@ -58,7 +58,22 @@ const markerVisuals = (function() {
             );
     }
 
+    /**
+     * Clear all markers from the overlay. This function should
+     * be called whenever markers are to be quickly cleared and 
+     * readded, e.g. when loading markers from a collab summary.
+     * Since the marker elements will remain until their animation
+     * has finished when removing them, d3 will think that they
+     * still exist when calling update() before calling this function.
+     */
+    function clear(){
+	// TODO: This function shouldn't have to exist, update() should be enough
+	overlayHandler.clearMarkers();
+    }
+
+
     return {
-        update: update
+        update: update,
+        clear: clear
     };
 })();

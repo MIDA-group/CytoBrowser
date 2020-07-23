@@ -194,6 +194,17 @@ const overlayHandler = (function (){
     }
 
     /**
+     * Clear all markers currently in the overlay, in case you need to quickly replace them.
+     */
+    function clearMarkers(){
+        if (!_markerOverlay) {
+            return;
+        }
+        _markerOverlay.selectAll("g").remove();
+    }
+
+
+    /**
      * Use d3 to update markers, adding new ones and removing old ones.
      * The markers are identified by their id.
      * @param {Array} markers The currently placed markers.
@@ -253,8 +264,7 @@ const overlayHandler = (function (){
                     }
                 },
                 update => {
-                    update.interrupt() // Need to interrupt removal in case we immediately re-add
-                        .attr("transform", function(d) {
+                    update.attr("transform", function(d) {
                             const currTrans = this.getAttribute("transform");
                             const coords = coordinateHelper.imageToViewport(d);
                             const newTrans = _editTransform(currTrans, {
@@ -273,17 +283,7 @@ const overlayHandler = (function (){
                             });
                             return newTrans;
                         })
-                        .on("end", function() {this.remove();})
-                        .transition().duration(0)
-                        .attr("opacity", 1)
-                        .attr("transform", function() {
-                            const currTrans = this.getAttribute("transform");
-                            const newTrans = _editTransform(currTrans, {
-                                scale: s => s / 2
-                            });
-                            return newTrans;
-                        })
-
+                        .remove();
                 }
             );
     }
@@ -322,6 +322,7 @@ const overlayHandler = (function (){
     return {
         updateMembers: updateMembers,
         updateMarkers: updateMarkers,
+        clearMarkers: clearMarkers,
         setOverlayScale: setOverlayScale,
         init: init
     };

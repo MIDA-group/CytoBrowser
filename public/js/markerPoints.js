@@ -106,7 +106,8 @@ const markerHandler = (function (){
         let replacedMarker = _findDuplicateMarker(addedMarker);
         if (replacedMarker) {
             console.warn("Adding a marker with identical properties to an existing marker, replacing.");
-            removeMarker(replacedMarker.id, false);
+            updateMarker(replacedMarker.id, addedMarker, coordSystem, false);
+            return;
         }
 
         // Make sure the marker has an id
@@ -225,6 +226,9 @@ const markerHandler = (function (){
 
         // Send the update to collaborators
         transmit && collabClient.clearMarkers();
+
+        // Clear the overlay
+        markerVisuals.clear();
     }
 
     /**
