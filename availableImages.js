@@ -1,3 +1,15 @@
+/**
+ * @module availableImages
+ * @desc Used to look for available images in the /data directory. The
+ * function programatically looks for any .dzi images with names ending
+ * with a z level, in the format "_z(value).dzi". It provides a list of
+ * all z levels for a given image name, as well as paths to two images
+ * that can be used as thumbnails for the given image, one overview and
+ * one detail image. If a request has been made to the function within
+ * a set period of time, the previous result is cached and returned as
+ * it is assumed to not change often.
+ */
+
 // Declare required modules
 const fs = require("fs");
 
@@ -98,6 +110,12 @@ function updateImages() {
     });
 }
 
+/**
+ * Get the currently available images from the /data directory on the
+ * server.
+ * @returns {Array} An array of image information, each entry including
+ * an image name, an array of z levels, and two thumbnail routes.
+ */
 function getAvailableImages() {
     // Update the available images if enough time has passed
     if (Date.now() - checkInterval > lastCheck) {
