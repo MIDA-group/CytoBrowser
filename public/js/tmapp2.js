@@ -176,14 +176,13 @@ const tmapp = (function() {
                 }
                 */
                 if (!event.ctrlKey) {
-                    console.log("Adding point");
-                    const point = {
+                    const marker = {
                         x: event.position.x,
                         y: event.position.y,
                         z: _currZ,
                         mclass: _currMclass
                     };
-                    markerPoints.addPoint(point);
+                    markers.addMarker(marker);
                 }
             }
             else {
@@ -349,7 +348,7 @@ const tmapp = (function() {
     }
 
     function openImage(imageName, callback, nochange) {
-        if (!markerPoints.empty() && !confirm(`You are about to open ` +
+        if (!markers.empty() && !confirm(`You are about to open ` +
             `the image "${imageName}". Do you want to ` +
             `open this image? Any markers placed on the ` +
             `current image will be lost unless you save ` +
@@ -363,7 +362,7 @@ const tmapp = (function() {
             tmappUI.displayImageError("badimage", 5000);
             throw new Error("Tried to change to an unknown image.");
         }
-        markerPoints.clearPoints(false);
+        markers.clearMarkers(false);
         $("#ISS_viewer").empty();
         coordinateHelper.clearImage();
         _currentImage = image;
@@ -386,17 +385,17 @@ const tmapp = (function() {
         }
     }
 
-    function moveToPoint(id) {
-        const point = markerPoints.getPointById(id);
-        if (point === undefined) {
-            throw new Error("Tried to move to an unused point id.");
+    function moveToMarker(id) {
+        const marker = markers.getMarkerById(id);
+        if (marker === undefined) {
+            throw new Error("Tried to move to an unused marker id.");
         }
-        const viewportCoords = coordinateHelper.imageToViewport(point);
+        const viewportCoords = coordinateHelper.imageToViewport(marker);
         moveTo({
             zoom: 25,
             x: viewportCoords.x,
             y: viewportCoords.y,
-            z: point.z
+            z: marker.z
         });
     }
 
@@ -436,19 +435,19 @@ const tmapp = (function() {
                 if (data.image !== _currentImage.name) {
                     openImage(data.image, () => {
                         collabClient.swapImage(data.image);
-                        data.points.forEach((point) => {
-                            markerPoints.addPoint(point, "image");
+                        data.markers.forEach((marker) => {
+                            markers.addMarker(marker, "image");
                         });
                     });
                     break;
                 }
-                clear && markerPoints.clearPoints();
-                data.points.forEach((point) => {
-                    markerPoints.addPoint(point, "image");
+                clear && markers.clearMarkers();
+                data.markers.forEach((marker) => {
+                    markers.addMarker(marker, "image");
                 })
                 break;
             default:
-                throw new Error(`Data format version ${points.version} not implemented.`);
+                throw new Error(`Data format version ${markers.version} not implemented.`);
         }
     }
 
@@ -456,10 +455,10 @@ const tmapp = (function() {
         const data = {
             version: "1.0", // Version of the formatting
             image: _currentImage.name,
-            points: []
+            markers: []
         };
-        markerPoints.forEachPoint((point) => {
-            data.points.push(point)
+        markers.forEachMarker((marker) => {
+            data.markers.push(marker)
         });
         return data;
     }
@@ -477,7 +476,7 @@ const tmapp = (function() {
         init: init,
         openImage: openImage,
         moveTo: moveTo,
-        moveToPoint: moveToPoint,
+        moveToMarker: moveToMarker,
         setMClass: setMClass,
         setCollab: setCollab,
         clearCollab: clearCollab,

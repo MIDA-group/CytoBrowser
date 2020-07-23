@@ -9,16 +9,16 @@ const markerVisuals = (function() {
 
     /**
      * Update the current visuals for the markers.
-     * @param {Array} points All currently placed markers.
+     * @param {Array} markers All currently placed markers.
      */
-    function update(points){
+    function update(markers){
         // Update the markers in the overlay
-        overlayHandler.updateMarkers(points);
+        overlayHandler.updateMarkers(markers);
 
         // Update the marker list
         const table = d3.select(`#${_tableId}`);
         table.selectAll("tr")
-            .data(points, d => d.id)
+            .data(markers, d => d.id)
             .join(
                 enter => {
                     const row = enter.append("tr");
@@ -40,7 +40,7 @@ const markerVisuals = (function() {
                             .attr("class", "btn btn-sm btn-link")
                             .attr("type", "button")
                             .text("Move to marker")
-                            .on("click", d => tmapp.moveToPoint(d.id));
+                            .on("click", d => tmapp.moveToMarker(d.id));
                 },
                 update => {
                     const cells = update.selectAll("td");
