@@ -1,23 +1,23 @@
 /**
- * Namespace for handling marker points. Deals with both the data
- * representation of the points and the graphical representation. All
- * manipulation of the points should go through this namespace's
+ * Namespace for handling markers. Deals with both the data
+ * representation of the markers and the graphical representation. All
+ * manipulation of the markers should go through this namespace's
  * functions to ensure that all necessary steps are performed.
- * @namespace markerPoints
+ * @namespace markers
  */
-const markerPoints = (function (){
+const markers = (function (){
     "use strict";
     /**
-     * Data representation of a point that should be used when adding or
-     * updating information about it. While all points that have already
+     * Data representation of a marker that should be used when adding or
+     * updating information about it. While all markers that have already
      * been added will have an id property, it can optionally be included
-     * when adding information about the point to force an id.
-     * @typedef {Object} MarkerPoint
-     * @property {number} x X position of the point.
-     * @property {number} y Y position of the point.
-     * @property {number} z Z value when the point was placed.
-     * @property {string} mclass Class name of the point.
-     * @property {number} [id] Hard-coded ID of the point.
+     * when adding information about the marker to force an id.
+     * @typedef {Object} Marker
+     * @property {number} x X position of the marker.
+     * @property {number} y Y position of the marker.
+     * @property {number} z Z value when the marker was placed.
+     * @property {string} mclass Class name of the marker.
+     * @property {number} [id] Hard-coded ID of the marker.
      */
     /**
      * Representation of the OpenSeadragon coordinate system used to
@@ -26,36 +26,36 @@ const markerPoints = (function (){
      * systems {@link https://openseadragon.github.io/examples/viewport-coordinates/|here.}
      * @typedef {string} CoordSystem
      */
-    const _points = [];
+    const _markers = [];
     let _nextId = 0;
     function _generateId() {
         let id = _nextId;
-        if (getPointById(id) !== undefined) {
+        if (getMarkerById(id) !== undefined) {
             // If for some reason the next id has already been taken
-            const points = _points;
-            const maxId = Math.max(...points.map((point) => point.id));
+            const markers = _markers;
+            const maxId = Math.max(...markers.map((marker) => marker.id));
             id = maxId + 1;
         }
         _nextId = id + 1;
         return id;
     }
 
-    function _clonePoint(point) {
+    function _cloneMarker(marker) {
         /**
          * Note: This implementation copies references, so if the
-         * representation of a point is ever changed to include a
+         * representation of a marker is ever changed to include a
          * reference to an Object, this function should be changed to
          * take this into account.
          */
-        return Object.assign({}, point);
+        return Object.assign({}, marker);
     }
 
-    function _findDuplicatePoint(point) {
-        return _points.find((existingPoint) =>
-            existingPoint.x === point.x
-            && existingPoint.y === point.y
-            && existingPoint.z === point.z
-            && existingPoint.mclass === point.mclass
+    function _findDuplicateMarker(marker) {
+        return _markers.find((existingMarker) =>
+            existingMarker.x === marker.x
+            && existingMarker.y === marker.y
+            && existingMarker.z === marker.z
+            && existingMarker.mclass === marker.mclass
         );
     }
 
@@ -93,193 +93,182 @@ const markerPoints = (function (){
 
 
     /**
-     * Add a single point to the data.
-     * @param {MarkerPoint} point A data representation of the point.
-     * @param {CoordSystem} [coordSystem="web"] Coordinate system used by the point.
+     * Add a single marker to the data.
+     * @param {Marker} marker A data representation of the marker.
+     * @param {CoordSystem} [coordSystem="web"] Coordinate system used by the marker.
      * @param {boolean} [transmit=true] Any collaborators should also be
-     * told to add the point.
+     * told to add the marker.
      */
-    function addPoint(point, coordSystem="web", transmit = true) {
-        const addedPoint = _clonePoint(point);
+    function addMarker(marker, coordSystem="web", transmit = true) {
+        const addedMarker = _cloneMarker(marker);
 
-        // Check if an identical point already exists, remove old one if it does
-        let replacedPoint = _findDuplicatePoint(addedPoint);
-        if (replacedPoint) {
-            console.warn("Adding a point with identical properties to an existing point, replacing.");
-            removePoint(replacedPoint.id, false);
+        // Check if an identical marker already exists, remove old one if it does
+        let replacedMarker = _findDuplicateMarker(addedMarker);
+        if (replacedMarker) {
+            console.warn("Adding a marker with identical properties to an existing marker, replacing.");
+            removeMarker(replacedMarker.id, false);
         }
 
-        // Make sure the point has an id
-        if (addedPoint.id === undefined) {
-            addedPoint.id = _generateId();
+        // Make sure the marker has an id
+        if (addedMarker.id === undefined) {
+            addedMarker.id = _generateId();
         }
         else {
             // If the id has been specified, check if it's not taken
-            const existingPoint = getPointById(addedPoint.id);
-            if (existingPoint !== undefined) {
+            const existingMarker = getMarkerById(addedMarker.id);
+            if (existingMarker !== undefined) {
                 console.info("Tried to assign an already-used id, reassigning.");
-                addedPoint.originalId === undefined && (addedPoint.originalId = addedPoint.id);
-                addedPoint.id = _generateId();
+                addedMarker.originalId === undefined && (addedMarker.originalId = addedMarker.id);
+                addedMarker.id = _generateId();
             }
         }
 
         // Store the coordinates in all systems and set the image coordinates
-        const coords = _getCoordSystems(addedPoint, coordSystem);
+        const coords = _getCoordSystems(addedMarker, coordSystem);
         if (coordSystem != "image") {
-            addedPoint.x = coords.image.x;
-            addedPoint.y = coords.image.y;
+            addedMarker.x = coords.image.x;
+            addedMarker.y = coords.image.y;
         }
 
-        // Store a data representation of the point
-        _points.push(addedPoint);
+        // Store a data representation of the marker
+        _markers.push(addedMarker);
 
         // Send the update to collaborators
-        transmit && collabClient.addPoint(addedPoint);
+        transmit && collabClient.addMarker(addedMarker);
 
-        // Add a graphical representation of the point
-        markerVisuals.update(_points);
-        /*
-        overlayUtils.addTMCP(
-            addedPoint.id,
-            coords.viewport.x,
-            coords.viewport.y,
-            addedPoint.z,
-            addedPoint.mclass
-        );
-        */
+        // Add a graphical representation of the marker
+        markerVisuals.update(_markers);
     }
 
     /**
-     * Update the parameters of an already existing point.
-     * @param {number} id The initial id of the point to be updated.
-     * @param {MarkerPoint} point The new values for the point to be updated.
-     * @param {CoordSystem} [coordSystem="web"] Coordinate system used by the point.
+     * Update the parameters of an already existing marker.
+     * @param {number} id The initial id of the marker to be updated.
+     * @param {Marker} marker The new values for the marker to be updated.
+     * @param {CoordSystem} [coordSystem="web"] Coordinate system used by the marker.
      * @param {boolean} [transmit=true] Any collaborators should also be
-     * told to update their point.
+     * told to update their marker.
      */
-    function updatePoint(id, point, coordSystem="web", transmit = true) {
-        const points = _points;
-        const updatedIndex = points.findIndex((point) => point.id == id);
-        const updatedPoint = getPointById(id);
+    function updateMarker(id, marker, coordSystem="web", transmit = true) {
+        const markers = _markers;
+        const updatedIndex = markers.findIndex((marker) => marker.id == id);
+        const updatedMarker = getMarkerById(id);
 
-        // Check if the point being updated exists first
-        if (updatedPoint === undefined) {
-            throw new Error("Tried to update a point that doesn't exist.");
+        // Check if the marker being updated exists first
+        if (updatedMarker === undefined) {
+            throw new Error("Tried to update a marker that doesn't exist.");
         }
 
         // If the id is being changed, check if it's not taken
-        if (point.id !== undefined && point.id !== id) {
-            const existingPoint = getPointById(point.id);
-            if (existingPoint !== undefined) {
+        if (marker.id !== undefined && marker.id !== id) {
+            const existingMarker = getMarkerById(marker.id);
+            if (existingMarker !== undefined) {
                 console.info("Tried to assign an already-used id, keeping old id.");
-                point.originalId = point.id;
-                point.id = id;
+                marker.originalId = marker.id;
+                marker.id = id;
             }
         }
 
         // Copy over the updated properties
-        Object.assign(updatedPoint, point);
+        Object.assign(updatedMarker, marker);
 
         // Make sure the data is stored in the image coordinate system
-        const coords = _getCoordSystems(updatedPoint, coordSystem);
+        const coords = _getCoordSystems(updatedMarker, coordSystem);
         if (coordSystem != "image") {
-            updatedPoint.x = coords.image.x;
-            updatedPoint.y = coords.image.y;
+            updatedMarker.x = coords.image.x;
+            updatedMarker.y = coords.image.y;
         }
 
-        // Store the point in data
-        points[updatedIndex] = updatedPoint;
+        // Store the marker in data
+        markers[updatedIndex] = updatedMarker;
 
         // Send the update to collaborators
-        transmit && collabClient.updatePoint(id, updatedPoint);
+        transmit && collabClient.updateMarker(id, updatedMarker);
 
-        // Update the point in the graphics
-        markerVisuals.update(_points);
-        //overlayUtils.updateTMCP(point.id, coords.viewport.x, coords.viewport.y, point.z, point.mclass);
+        // Update the marker in the graphics
+        markerVisuals.update(_markers);
     }
 
     /**
-     * Remove a point from the data.
-     * @param {number} id The id of the point to be removed.
+     * Remove a marker from the data.
+     * @param {number} id The id of the marker to be removed.
      * @param {boolean} [transmit=true] Any collaborators should also be
-     * told to remove the point.
+     * told to remove the marker.
      */
-    function removePoint(id, transmit = true) {
-        const points = _points;
-        const deletedIndex = points.findIndex((point) => point.id == id);
+    function removeMarker(id, transmit = true) {
+        const markers = _markers;
+        const deletedIndex = markers.findIndex((marker) => marker.id == id);
 
-        // Check if the point exists first
+        // Check if the marker exists first
         if (deletedIndex === -1) {
-            throw new Error("Tried to remove a point that doesn't exist");
+            throw new Error("Tried to remove a marker that doesn't exist");
         }
 
-        // Remove the point from the data
-        points.splice(deletedIndex, 1);
+        // Remove the marker from the data
+        markers.splice(deletedIndex, 1);
 
         // Send the update to collaborators
-        transmit && collabClient.removePoint(id);
+        transmit && collabClient.removeMarker(id);
 
-        // Remove the point from the graphics
-        markerVisuals.update(_points);
-        //overlayUtils.removeTMCP(id);
+        // Remove the marker from the graphics
+        markerVisuals.update(_markers);
     }
 
     /**
-     * Remove all points from the data.
+     * Remove all markers from the data.
      * @param {boolean} [transmit=true] Any collaborators should also
-     * be told to clear their points.
+     * be told to clear their markers.
      */
-    function clearPoints(transmit = true) {
-        const points = _points;
-        const ids = points.map((point) => point.id);
-        ids.forEach((id) => removePoint(id, false));
+    function clearMarkers(transmit = true) {
+        const markers = _markers;
+        const ids = markers.map((marker) => marker.id);
+        ids.forEach((id) => removeMarker(id, false));
 
         // Send the update to collaborators
-        transmit && collabClient.clearPoints();
+        transmit && collabClient.clearMarkers();
     }
 
     /**
-     * Iterate a function for each point. The function will not change
-     * the values of the point, and will instead work on clones of them,
-     * effectively making them read-only. If the point values should be
-     * updated, updatePoint() can be run in the passed function.
-     * @param {function} f Function to be called with each point.
+     * Iterate a function for each marker. The function will not change
+     * the values of the marker, and will instead work on clones of them,
+     * effectively making them read-only. If the marker values should be
+     * updated, updateMarker() can be run in the passed function.
+     * @param {function} f Function to be called with each marker.
      */
-    function forEachPoint(f) {
-        _points.map(_clonePoint).forEach(f);
+    function forEachMarker(f) {
+        _markers.map(_cloneMarker).forEach(f);
     }
 
     /**
-     * Get a copy of a specified point by its id.
-     * @param {number} id The id used for looking up the point.
-     * @returns {Object} A clone of the point with the specified id,
+     * Get a copy of a specified marker by its id.
+     * @param {number} id The id used for looking up the marker.
+     * @returns {Object} A clone of the marker with the specified id,
      * or undefined if not in use.
      */
-    function getPointById(id) {
-        const point = _points.find((point) => point.id == id);
-        if (point === undefined) {
+    function getMarkerById(id) {
+        const marker = _markers.find((marker) => marker.id == id);
+        if (marker === undefined) {
             return undefined;
         }
-        const pointClone = _clonePoint(point);
-        return pointClone;
+        const markerClone = _cloneMarker(marker);
+        return markerClone;
     }
 
     /**
-     * Check whether or not the list of marker points is empty.
+     * Check whether or not the list of marker markers is empty.
      * @returns {boolean} Whether or not the list is empty.
      */
     function empty() {
-        return _points.length === 0;
+        return _markers.length === 0;
     }
 
     // Return public members of the closure
     return {
-        addPoint: addPoint,
-        updatePoint: updatePoint,
-        removePoint: removePoint,
-        clearPoints: clearPoints,
-        forEachPoint: forEachPoint,
-        getPointById: getPointById,
+        addMarker: addMarker,
+        updateMarker: updateMarker,
+        removeMarker: removeMarker,
+        clearMarkers: clearMarkers,
+        forEachMarker: forEachMarker,
+        getMarkerById: getMarkerById,
         empty: empty
     };
 })();

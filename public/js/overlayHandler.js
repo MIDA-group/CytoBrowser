@@ -91,11 +91,11 @@ const overlayHandler = (function (){
                 const delta = coordinateHelper.webToImage(event.delta);
                 d.x += delta.x - reference.x;
                 d.y += delta.y - reference.y;
-                markerPoints.updatePoint(d.id, d, "image");
+                markers.updateMarker(d.id, d, "image");
             },
             clickHandler: function(event) {
                 if (event.originalEvent.ctrlKey) {
-                    markerPoints.removePoint(d.id);
+                    markers.removeMarker(d.id);
                 }
             },
             enterHandler: function(){
@@ -187,11 +187,11 @@ const overlayHandler = (function (){
     /**
      * Use d3 to update markers, adding new ones and removing old ones.
      * The markers are identified by their id.
-     * @param {Array} points The currently placed markers.
+     * @param {Array} markers The currently placed markers.
      */
-    function updateMarkers(points){ // TODO: Inconsistent naming, go with either points or markers
+    function updateMarkers(markers){ // TODO: Inconsistent naming, go with either points or markers
         _markerOverlay.selectAll("g")
-            .data(points, (d) => d.id)
+            .data(markers, (d) => d.id)
             .join(
                 enter => {
                     const group = enter.append("g")

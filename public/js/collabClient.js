@@ -33,16 +33,16 @@ const collabClient = (function(){
     function _handleMarkerAction(msg) {
         switch(msg.actionType) {
             case "add":
-                markerPoints.addPoint(msg.point, "image", false);
+                markers.addMarker(msg.marker, "image", false);
                 break;
             case "update":
-                markerPoints.updatePoint(msg.id, msg.point, "image", false);
+                markers.updateMarker(msg.id, msg.marker, "image", false);
                 break;
             case "remove":
-                markerPoints.removePoint(msg.id, false);
+                markers.removeMarker(msg.id, false);
                 break;
             case "clear":
-                markerPoints.clearPoints(false);
+                markers.clearMarkers(false);
                 break;
             default:
                 console.warn(`Unknown marker action type: ${msg.actionType}`);
@@ -88,13 +88,13 @@ const collabClient = (function(){
             }, disconnect);
             return;
         }
-        markerPoints.clearPoints(false);
-        msg.points.forEach((point) => {
-            markerPoints.addPoint(point, "image", false)
+        markers.clearMarkers(false);
+        msg.markers.forEach((marker) => {
+            markers.addMarker(marker, "image", false)
         });
         if (_joinBatch) {
-            _joinBatch.forEach((point) => {
-                markerPoints.addPoint(point, "image");
+            _joinBatch.forEach((marker) => {
+                markers.addMarker(marker, "image");
             });
             _joinBatch = null;
         }
@@ -167,13 +167,13 @@ const collabClient = (function(){
 
             if (include) {
                 _joinBatch = [];
-                markerPoints.forEachPoint((point) => {
-                    _joinBatch.push(point);
+                markers.forEachMarker((marker) => {
+                    _joinBatch.push(marker);
                 });
                 _requestSummary();
             }
-            else if (markerPoints.empty() || confirm("All your placed markers will be lost unless you have saved them. Do you want to continue anyway?")) {
-                markerPoints.clearPoints(false);
+            else if (markers.empty() || confirm("All your placed markers will be lost unless you have saved them. Do you want to continue anyway?")) {
+                markers.clearMarkers(false);
                 _requestSummary();
             }
             else {
@@ -235,36 +235,36 @@ const collabClient = (function(){
     }
 
     /**
-     * Notify collaborators about a point being added.
-     * @param {Object} point Data for the added point.
+     * Notify collaborators about a marker being added.
+     * @param {Object} marker Data for the added marker.
      */
-    function addPoint(point) {
+    function addMarker(marker) {
         send({
             type: "markerAction",
             actionType: "add",
-            point: point
+            marker: marker
         });
     }
 
     /**
-     * Notify collaborators about a point being updated.
-     * @param {number} id The original id of the point being updated.
-     * @param {Object} point Data for the updated point.
+     * Notify collaborators about a marker being updated.
+     * @param {number} id The original id of the marker being updated.
+     * @param {Object} marker Data for the updated marker.
      */
-    function updatePoint(id, point) {
+    function updateMarker(id, marker) {
         send({
             type: "markerAction",
             actionType: "update",
             id: id,
-            point: point
+            marker: marker
         });
     }
 
     /**
-     * Notify collaborators about a point being removed.
-     * @param {number} id The id of the point being removed.
+     * Notify collaborators about a marker being removed.
+     * @param {number} id The id of the marker being removed.
      */
-    function removePoint(id) {
+    function removeMarker(id) {
         send({
             type: "markerAction",
             actionType: "remove",
@@ -273,9 +273,9 @@ const collabClient = (function(){
     }
 
     /**
-     * Notify collaborators of all points being cleared.
+     * Notify collaborators of all markers being cleared.
      */
-    function clearPoints() {
+    function clearMarkers() {
         send({
             type: "markerAction",
             actionType: "clear"
@@ -398,10 +398,10 @@ const collabClient = (function(){
         disconnect: disconnect,
         send: send,
         swapImage: swapImage,
-        addPoint: addPoint,
-        updatePoint: updatePoint,
-        removePoint: removePoint,
-        clearPoints: clearPoints,
+        addMarker: addMarker,
+        updateMarker: updateMarker,
+        removeMarker: removeMarker,
+        clearMarkers: clearMarkers,
         changeName: changeName,
         getDefaultName: getDefaultName,
         updatePosition: updatePosition,
