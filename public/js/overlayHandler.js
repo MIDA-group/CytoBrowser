@@ -189,7 +189,7 @@ const overlayHandler = (function (){
      * The markers are identified by their id.
      * @param {Array} markers The currently placed markers.
      */
-    function updateMarkers(markers){ // TODO: Inconsistent naming, go with either points or markers
+    function updateMarkers(markers){
         _markerOverlay.selectAll("g")
             .data(markers, d => d.id)
             .join(
@@ -233,7 +233,8 @@ const overlayHandler = (function (){
                         });
                 },
                 update => {
-                    update.attr("transform", function(d) {
+                    update.interrupt() // Need to interrupt removal in case we immediately re-add
+                        .attr("transform", function(d) {
                             const currTrans = this.getAttribute("transform");
                             const coords = coordinateHelper.imageToViewport(d);
                             const newTrans = _editTransform(currTrans, {
@@ -243,9 +244,7 @@ const overlayHandler = (function (){
                         });
                 },
                 exit => {
-                    // Since removing takes time, quickly readding a node
-                    // wouldn't work if we didn't reassign the selection id
-                    exit.data(points, d => -d.id).transition().duration(200)
+                    exit.transition().duration(200)
                         .attr("opacity", 0)
                         .attr("transform", function() {
                             const currTrans = this.getAttribute("transform");
@@ -254,7 +253,17 @@ const overlayHandler = (function (){
                             });
                             return newTrans;
                         })
-                        .remove();
+                        .on("end", function() {this.remove();})
+                        .transition().duration(0)
+                        .attr("opacity", 1)
+                        .attr("transform", function() {
+                            const currTrans = this.getAttribute("transform");
+                            const newTrans = _editTransform(currTrans, {
+                                scale: s => s / 2
+                            });
+                            return newTrans;
+                        })
+
                 }
             );
     }
