@@ -73,6 +73,11 @@ const tmappUI = (function(){
             $("#class_buttons").append(label);
         });
 
+        // Prevent ctrl+scroll zooming in the viewer, since that's for focus
+        $("#ISS_viewer").bind("mousewheel DOMMouseScroll", event => {
+            event.preventDefaultAction();
+        });
+
         // Add event listeners for local storage buttons
         $("#json_to_data").click(() => {
             const loadedJSON = localStorage.loadJSON("data_files_import");
