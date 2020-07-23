@@ -53,7 +53,7 @@ const collabClient = (function(){
         if (!_members) {
             throw new Error("Tried to handle member event without an initialized member array.");
         }
-        const member = _members.find((member) =>
+        const member = _members.find(member =>
             msg.member ? member.id === msg.member.id : member.id === msg.id
         );
         switch(msg.eventType) {
@@ -70,7 +70,7 @@ const collabClient = (function(){
                 _memberUpdate(false);
                 break;
             case "remove":
-                const memberIndex = _members.findIndex((member) => member.id === msg.member.id);
+                const memberIndex = _members.findIndex(member => member.id === msg.member.id);
                 _members.splice(memberIndex, 1);
                 _memberUpdate();
                 break;
@@ -88,22 +88,22 @@ const collabClient = (function(){
             return;
         }
         if (_joinBatch) {
-            markerHandler.forEachMarker((marker) => {
+            markerHandler.forEachMarker(marker => {
                 _joinBatch.push(marker);
             });
         }
         markerHandler.clearMarkers(false);
-        msg.markers.forEach((marker) => {
+        msg.markers.forEach(marker => {
             markerHandler.addMarker(marker, "image", false)
         });
         if (_joinBatch) {
-            _joinBatch.forEach((marker) => {
+            _joinBatch.forEach(marker => {
                 markerHandler.addMarker(marker, "image");
             });
             _joinBatch = null;
         }
         _members = msg.members;
-        _localMember = _members.find((member) => member.id === msg.requesterId);
+        _localMember = _members.find(member => member.id === msg.requesterId);
         _memberUpdate();
         tmapp.updateCollabStatus();
     }
@@ -123,7 +123,7 @@ const collabClient = (function(){
         if (hardUpdate) {
             tmappUI.updateCollaborators(_localMember, _members);
         }
-        overlayHandler.updateMembers(_members.filter((member) => member !== _localMember));
+        overlayHandler.updateMembers(_members.filter(member => member !== _localMember));
     }
 
     /**

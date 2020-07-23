@@ -22,8 +22,8 @@ const overlayHandler = (function (){
 
         // Structure the transform as an object
         const transObj = {};
-        const names = transforms.map((transform) => transform.match(/.+(?=\()/g)[0]);
-        transforms.forEach((transform) => {
+        const names = transforms.map(transform => transform.match(/.+(?=\()/g)[0]);
+        transforms.forEach(transform => {
             const name = transform.match(/.+(?=\()/g);
             const values = transform.match(/(?<=\(.*)[^\s,]+(?=.*\))/g);
             transObj[name] = values;
@@ -31,7 +31,7 @@ const overlayHandler = (function (){
 
         // Assign the changes
         let result = "";
-        names.forEach((name) => {
+        names.forEach(name => {
             const value = changes[name];
             if (value) {
                 if (Array.isArray(value)) {
@@ -134,17 +134,17 @@ const overlayHandler = (function (){
      * local member.
      */
     function updateMembers(nonLocalMembers) {
-        const visibleMembers = nonLocalMembers.filter((member) => {
+        const visibleMembers = nonLocalMembers.filter(member => {
             return member.cursor;
         });
 
         _cursorOverlay.selectAll("g")
-            .data(visibleMembers, (d) => d.id)
+            .data(visibleMembers, d => d.id)
             .join(enter => {
                 const group = enter.append("g")
-                    .attr("transform", (d) => `translate(${d.cursor.x}, ${d.cursor.y}), rotate(-30), scale(${_cursorSize(d.cursor)})`)
+                    .attr("transform", d => `translate(${d.cursor.x}, ${d.cursor.y}), rotate(-30), scale(${_cursorSize(d.cursor)})`)
                     .attr("opacity", 0.0)
-                    .style("fill", (d) => d.color);
+                    .style("fill", d => d.color);
                 group.append("path")
                     .attr("d", "M 0 0 L -0.4 1.0 L 0 0.7 L 0.4 1.0 Z")
                     .attr("class", "pointer")
@@ -166,7 +166,7 @@ const overlayHandler = (function (){
                         })
                         .filter(function(d) { return _previousCursors.get(this).inside !== d.cursor.inside })
                         .transition().duration(200)
-                        .style("opacity", (d) => d.cursor.inside || d.cursor.held ? 1.0 : 0.2)
+                        .style("opacity", d => d.cursor.inside || d.cursor.held ? 1.0 : 0.2)
                         .attr("transform", function(d) {
                             const currTrans = this.getAttribute("transform");
                             const newTrans = _editTransform(currTrans, {
@@ -177,7 +177,7 @@ const overlayHandler = (function (){
                     update.select(".caret")
                         .filter(function(d) { return _previousCursors.get(this).held !== d.cursor.held })
                         .transition().duration(150)
-                        .attr("transform", (d) => `translate(0, ${d.cursor.held ? 0.05 : 0.15})`);
+                        .attr("transform", d => `translate(0, ${d.cursor.held ? 0.05 : 0.15})`);
                 }
             );
 
@@ -191,7 +191,7 @@ const overlayHandler = (function (){
      */
     function updateMarkers(markers){
         _markerOverlay.selectAll("g")
-            .data(markers, (d) => d.id)
+            .data(markers, d => d.id)
             .join(
                 enter => {
                     const group = enter.append("g")

@@ -35,13 +35,13 @@ const tmappUI = (function(){
     const _holdInterval = 50;
     function _addHoldableButton(key, element, f) {
         let interval;
-        element.addEventListener("keydown", (event) => {
+        element.addEventListener("keydown", event => {
             if (event.key === key && !event.repeat) {
                 f();
                 interval = setInterval(f, _holdInterval);
             }
         });
-        element.addEventListener("keyup", (event) => {
+        element.addEventListener("keyup", event => {
             event.key === key && clearInterval(interval);
         });
     }
@@ -103,8 +103,8 @@ const tmappUI = (function(){
                     break;
                 default:
                     // Handle digit keys being pressed for classes
-                    const digits = Array.from({length: 10}, (v,k) => String((k+1) % 10));
-                    const chars = digits.map((digit) => digit.charCodeAt());
+                    const digits = Array.from({length: 10}, (v, k) => String((k+1) % 10));
+                    const chars = digits.map(digit => digit.charCodeAt());
                     chars.slice(0, bethesdaClassUtils.amountClasses).forEach((char, index) => {
                         if (event.which == char) {
                             $("#class_" + bethesdaClassUtils.getClassFromID(index).name).click();
@@ -187,7 +187,7 @@ const tmappUI = (function(){
      */
     function updateCollaborators(localMember, members) {
         $("#collaborator_list").empty();
-        members.forEach((member) => {
+        members.forEach(member => {
             const color = $("<span></span>");
             color.addClass("badge badge-pill");
             color.css("background-color", member.color);
@@ -200,7 +200,7 @@ const tmappUI = (function(){
             entry.attr("href", "#");
             entry.html(`&nbsp;&nbsp;&nbsp;${member.name}`);
             entry.prepend(color);
-            entry.click((event) => {
+            entry.click(event => {
                 event.preventDefault();
                 $("#collaboration_menu").modal("hide");
                 tmapp.moveTo(member.position);
@@ -297,16 +297,16 @@ const tmappUI = (function(){
         a.addClass("card-link stretched-link");
         a.attr("href", "#");
         a.text("Open image");
-        a.click((e) => {
+        a.click(e => {
             e.preventDefault();
             $("#image_browser").modal("hide");
             tmapp.openImage(image.name, () => {
                 collabClient.swapImage(image.name);
             });
         });
-        a.hover((e) =>
+        a.hover(event =>
             detail.addClass("show").removeClass("hide"),
-            (e) =>
+            e =>
             detail.addClass("hide").removeClass("show")
         );
         footer.append(a);

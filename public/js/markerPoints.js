@@ -33,7 +33,7 @@ const markerHandler = (function (){
         if (getMarkerById(id) !== undefined) {
             // If for some reason the next id has already been taken
             const markers = _markers;
-            const maxId = Math.max(...markers.map((marker) => marker.id));
+            const maxId = Math.max(...markers.map(marker => marker.id));
             id = maxId + 1;
         }
         _nextId = id + 1;
@@ -51,7 +51,7 @@ const markerHandler = (function (){
     }
 
     function _findDuplicateMarker(marker) {
-        return _markers.find((existingMarker) =>
+        return _markers.find(existingMarker =>
             existingMarker.x === marker.x
             && existingMarker.y === marker.y
             && existingMarker.z === marker.z
@@ -150,7 +150,7 @@ const markerHandler = (function (){
      */
     function updateMarker(id, marker, coordSystem="web", transmit = true) {
         const markers = _markers;
-        const updatedIndex = markers.findIndex((marker) => marker.id == id);
+        const updatedIndex = markers.findIndex(marker => marker.id == id);
         const updatedMarker = getMarkerById(id);
 
         // Check if the marker being updated exists first
@@ -196,7 +196,7 @@ const markerHandler = (function (){
      */
     function removeMarker(id, transmit = true) {
         const markers = _markers;
-        const deletedIndex = markers.findIndex((marker) => marker.id == id);
+        const deletedIndex = markers.findIndex(marker => marker.id == id);
 
         // Check if the marker exists first
         if (deletedIndex === -1) {
@@ -220,8 +220,8 @@ const markerHandler = (function (){
      */
     function clearMarkers(transmit = true) {
         const markers = _markers;
-        const ids = markers.map((marker) => marker.id);
-        ids.forEach((id) => removeMarker(id, false));
+        const ids = markers.map(marker => marker.id);
+        ids.forEach(id => removeMarker(id, false));
 
         // Send the update to collaborators
         transmit && collabClient.clearMarkers();
@@ -245,7 +245,7 @@ const markerHandler = (function (){
      * or undefined if not in use.
      */
     function getMarkerById(id) {
-        const marker = _markers.find((marker) => marker.id == id);
+        const marker = _markers.find(marker => marker.id == id);
         if (marker === undefined) {
             return undefined;
         }
