@@ -111,6 +111,10 @@ const overlayHandler = (function (){
                         });
                         return newTrans;
                     });
+                d3.select(node)
+                    .selectAll("text")
+                    .transition().duration(200)
+                    .style("opacity", 1);
             },
             exitHandler: function(){
                 d3.select(node)
@@ -124,6 +128,10 @@ const overlayHandler = (function (){
                         });
                         return newTrans;
                     });
+                d3.select(node)
+                    .selectAll("text")
+                    .transition().duration(200)
+                    .style("opacity", 0);
             }
         }).setTracking(true);
     }
@@ -234,11 +242,13 @@ const overlayHandler = (function (){
                         });
                     if (_markerText) {
                         group.append("text")
-                            .style("fill", "blue")
-                            .style("stroke", "white")
-                            .style("stroke-width", 0.004)
-                			.style("font-size", "1%").attr("text-anchor", "middle")
-                            .attr("transform","translate(0,0.010) scale(1)")
+                            .style("fill", d => bethesdaClassUtils.classColor(d.mclass))
+                            .style("font-size", "1%")
+                            .style("font-weight", "700")
+                            .style("pointer-events", "none")
+                            .style("opacity", 0)
+                            .attr("text-anchor", "left")
+                            .attr("transform", "translate(0.2, -0.2)")
                             .text(d => `#${d.id}: ${d.mclass}`);
                     }
                 },
