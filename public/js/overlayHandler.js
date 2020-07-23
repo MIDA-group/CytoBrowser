@@ -166,11 +166,8 @@ const overlayHandler = (function (){
                             return `translate(${coords.x}, ${coords.y}) scale(${radius})`;
                         })
                         .attr("markerId", d => d.id);
-                    const square = group.append("rect")
-                        .attr("width", 1)
-                        .attr("height", 1)
-                        .attr("x", -0.5)
-                        .attr("y", -0.5)
+                    const square = group.append("path")
+                        .attr("d", d3.symbol().size(1/8).type(d3.symbolSquare))
                     	.attr("transform", "rotate(0) scale(0)")
             			.attr("stroke-width", strokeWidth)
             			.attr("stroke", d => bethesdaClassUtils.classColor(d.mclass))
@@ -185,10 +182,8 @@ const overlayHandler = (function (){
                             });
                             return newTrans;
                         });
-                    group.append("circle")
-                        .attr("cx", 0)
-                        .attr("cy", 0)
-                        .attr("r", 0.25)
+                    group.append("path")
+                        .attr("d", d3.symbol().size(1/32).type(d3.symbolCircle))
                         .attr("transform", "scale(0)")
                         .attr("stroke-width", strokeWidth / 2)
                         .attr("stroke", "gray")
