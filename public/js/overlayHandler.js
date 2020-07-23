@@ -59,7 +59,7 @@ const overlayHandler = (function (){
     }
 
     function _markerSize() {
-        return 0.01 / _scale;
+        return 100 / Math.max(_scale, 20000);
     }
 
     function _resizeMembers() {
@@ -197,7 +197,7 @@ const overlayHandler = (function (){
                     const group = enter.append("g")
                         .attr("transform", d => {
                             const coords = coordinateHelper.imageToViewport(d);
-                            return `translate(${coords.x}, ${coords.y}) scale(${radius})`;
+                            return `translate(${coords.x}, ${coords.y}) scale(${_markerSize()})`;
                         })
                         .attr("opacity", 1);
                     const square = group.append("path")
@@ -267,6 +267,7 @@ const overlayHandler = (function (){
     function setOverlayScale(zoomLevel, wContainer, hContainer) {
         _scale = zoomLevel * wContainer;
         _resizeMembers();
+        _resizeMarkers();
     }
 
     /**
