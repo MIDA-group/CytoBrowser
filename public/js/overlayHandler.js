@@ -78,15 +78,25 @@ const overlayHandler = (function (){
                 d3.select(node)
                     .selectAll("rect")
                     .transition().duration(200)
-                    .attr("width", 1.2)
-                    .attr("height", 1.2);
+                    .attr("transform", function() {
+                        const currTrans = this.getAttribute("transform");
+                        const newTrans = _editTransform(currTrans, {
+                            scale: 1.25
+                        });
+                        return newTrans;
+                    });
             },
             exitHandler: function(){
                 d3.select(node)
                     .selectAll("rect")
                     .transition().duration(200)
-                    .attr("width", 1)
-                    .attr("height", 1);
+                    .attr("transform", function() {
+                        const currTrans = this.getAttribute("transform");
+                        const newTrans = _editTransform(currTrans, {
+                            scale: 1.0
+                        });
+                        return newTrans;
+                    });
             }
         }).setTracking(true);
     }
