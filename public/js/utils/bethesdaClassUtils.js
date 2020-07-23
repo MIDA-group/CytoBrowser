@@ -1,6 +1,21 @@
-bethesdaClassUtils = {
-    amountClasses: 0,
-    classes: [
+/**
+ * Information about the representation of the different classes from
+ * The Bethesda System of classification.
+ * @namespace bethesdaClassUtils
+ */
+const bethesdaClassUtils = (function(){
+    "use strict";
+
+    /**
+     * Information for a specific class in The Bethesda System, including
+     * information about its visual representation in the user interface.
+     * @typedef {Object} BClass
+     * @property {string} name The abbreviated name of the class.
+     * @property {string} description The extended description of the
+     * class name.
+     * @property {string} color The color used to represent the class.
+     */
+    const _classes = [
         {
             name: "NILM",
             description: "Negative for intraepithelial lesion or malignancy",
@@ -36,23 +51,53 @@ bethesdaClassUtils = {
             description: "Adenocarcinoma",
             color: "#FC6"
         }
-    ],
-    classColor: function(idOrName) {
+    ];
+
+    /**
+     * Get the color assigned for a given class.
+     * @param {number|string} idOrName Either the id of the given class
+     * or its name.
+     * @returns {string} An RGB hex representation of the color.
+     */
+    function classColor(idOrName) {
         let id = idOrName;
         if (typeof(id) === "string") {
             id = bethesdaClassUtils.getIDFromName(idOrName);
         }
-        return bethesdaClassUtils.classes[id].color;
-    },
-    getClassFromID: function(id) {
-        return bethesdaClassUtils.classes[id];
-    },
-    getIDFromName: function(name) {
-        return bethesdaClassUtils.classes.findIndex((entry) => name == entry.name);
-    },
-    forEachClass: function(f) {
-        bethesdaClassUtils.classes.forEach(f);
+        return bethesdaClassUtils._classes[id].color;
     }
-}
 
-bethesdaClassUtils.amountClasses = bethesdaClassUtils.classes.length;
+    /**
+     * Get a glass based on its id.
+     * @param {number} id The id of the sought class.
+     * @returns {BClass} The class with the corresponding id.
+     */
+    function getClassFromID(id) {
+        return bethesdaClassUtils._classes[id];
+    }
+
+    /**
+     * Get the id of a class based on its name.
+     * @param {string} name The name of the class.
+     * @returns {number} The id of the class.
+     */
+    function getIDFromName(name) {
+        return bethesdaClassUtils._classes.findIndex((entry) => name == entry.name);
+    }
+
+    /**
+     * Execute a function with each class as an argument.
+     * @param {Function} f The function to be executed with the classes.
+     */
+    function forEachClass(f) {
+        bethesdaClassUtils._classes.forEach(f);
+    }
+
+    return {
+        count: () => _classes.length,
+        classColor: classColor,
+        getClassFromID: getClassFromID,
+        getIDFromName: getIDFromName,
+        forEachClass: forEachClass
+    }
+})();

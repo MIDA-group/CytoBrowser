@@ -105,7 +105,7 @@ const tmappUI = (function(){
                     // Handle digit keys being pressed for classes
                     const digits = Array.from({length: 10}, (v, k) => String((k+1) % 10));
                     const chars = digits.map(digit => digit.charCodeAt());
-                    chars.slice(0, bethesdaClassUtils.amountClasses).forEach((char, index) => {
+                    chars.slice(0, bethesdaClassUtils.count()).forEach((char, index) => {
                         if (event.which == char) {
                             $("#class_" + bethesdaClassUtils.getClassFromID(index).name).click();
                         }
