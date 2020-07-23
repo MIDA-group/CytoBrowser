@@ -191,18 +191,6 @@ const tmapp = (function() {
             }
         };
 
-        function scrollHandler(event){
-            if (event.originalEvent.ctrlKey) {
-                event.preventDefaultAction = true;
-                if (event.scroll > 0) {
-                    incrementFocus();
-                }
-                else if (event.scroll < 0) {
-                    decrementFocus();
-                }
-            }
-        };
-
         // Live updates of mouse position in collaboration
         function moveHandler(event) {
             const pos = coordinateHelper.webToViewport(event.position);
@@ -226,16 +214,36 @@ const tmapp = (function() {
         }
 
         //OSD handlers have to be registered using MouseTracker OSD objects
-        const ISS_mouse_tracker = new OpenSeadragon.MouseTracker({
+        new OpenSeadragon.MouseTracker({
             element: viewer.canvas,
             clickHandler: clickHandler,
-            scrollHandler: scrollHandler,
             moveHandler: moveHandler,
             enterHandler: insideHandler(true),
             exitHandler: insideHandler(false),
             pressHandler: heldHandler(true),
             releaseHandler: heldHandler(false)
         }).setTracking(true);
+
+        // Add hook to scroll without zooming
+        function scrollHook(event){
+            if (event.originalEvent.ctrlKey) {
+                event.preventDefaultAction = true;
+                if (event.scroll > 0) {
+                    incrementFocus();
+                }
+                else if (event.scroll < 0) {
+                    decrementFocus();
+                }
+            }
+        };
+
+        viewer.addViewerInputHook({hooks: [
+            {
+                tracker: "viewer",
+                handler: "scrollHandler",
+                hookHandler: scrollHook
+            }
+        ]});
     }
 
     function _addHandlers (viewer, callback) {
@@ -282,7 +290,6 @@ const tmapp = (function() {
 
         //Create svgOverlay(); so that anything like D3, or any canvas library can act upon. https://d3js.org/
         const overlay =  _viewer.svgOverlay();
-        // tmapp.ISS_singleTMCPS=d3.select(overlay.node()).append('g').attr('class', "ISS singleTMCPS"); // TODO: handle elsewhere
         overlayHandler.init(overlay);
 
         // TODO: What does this do?
