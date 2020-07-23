@@ -76,24 +76,26 @@ const overlayHandler = (function (){
             },
             enterHandler: function(){
                 d3.select(node)
-                    .selectAll("rect")
+                    .selectAll("path")
                     .transition().duration(200)
                     .attr("transform", function() {
                         const currTrans = this.getAttribute("transform");
                         const newTrans = _editTransform(currTrans, {
-                            scale: 1.25
+                            scale: 1.25,
+                            rotate: 45
                         });
                         return newTrans;
                     });
             },
             exitHandler: function(){
                 d3.select(node)
-                    .selectAll("rect")
+                    .selectAll("path")
                     .transition().duration(200)
                     .attr("transform", function() {
                         const currTrans = this.getAttribute("transform");
                         const newTrans = _editTransform(currTrans, {
-                            scale: 1.0
+                            scale: 1.0,
+                            rotate: 45
                         });
                         return newTrans;
                     });
