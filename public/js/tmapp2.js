@@ -206,7 +206,7 @@ const tmapp = (function() {
         // Live updates of mouse position in collaboration
         function moveHandler(event) {
             const pos = coordinateHelper.webToViewport(event.position);
-            _setCursorStatus({x: pos.x, y: pos.y);
+            _setCursorStatus({x: pos.x, y: pos.y});
         }
 
         // Live updates of whether or not the mouse is held down
