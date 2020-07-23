@@ -133,7 +133,7 @@ const tmapp = (function() {
         // Get the full image names based on the data from the server
         const imageName = _currentImage.name;
         _imageStack = [];
-        _currentImage.zLevels.forEach((zLevel) => {
+        _currentImage.zLevels.forEach(zLevel => {
             _imageStack.push(`${_imageDir}${imageName}_z${zLevel}.dzi`);
         });
     }
@@ -303,12 +303,12 @@ const tmapp = (function() {
                 case 200:
                     // Add the images to the image browser
                     const images = JSON.parse(imageReq.responseText).images;
-                    images.forEach((image) => tmappUI.addImage(image));
+                    images.forEach(image => tmappUI.addImage(image));
                     _images = images;
 
                     // Go to the initial image and/or join the collab
                     if (imageName) {
-                        const image = images.find((image) => image.name === imageName);
+                        const image = images.find(image => image.name === imageName);
                         if (image) {
                             openImage(imageName, () => {
                                 if (collab) {
@@ -349,7 +349,7 @@ const tmapp = (function() {
             return;
         }
 
-        const image = _images.find((image) => image.name === imageName);
+        const image = _images.find(image => image.name === imageName);
         if (!image) {
             tmappUI.displayImageError("badimage", 5000);
             throw new Error("Tried to change to an unknown image.");
@@ -427,14 +427,14 @@ const tmapp = (function() {
                 if (data.image !== _currentImage.name) {
                     openImage(data.image, () => {
                         collabClient.swapImage(data.image);
-                        data.markers.forEach((marker) => {
+                        data.markers.forEach(marker => {
                             markerHandler.addMarker(marker, "image");
                         });
                     });
                     break;
                 }
                 clear && markerHandler.clearMarkers();
-                data.markers.forEach((marker) => {
+                data.markers.forEach(marker => {
                     markerHandler.addMarker(marker, "image");
                 })
                 break;
@@ -449,7 +449,7 @@ const tmapp = (function() {
             image: _currentImage.name,
             markers: []
         };
-        markerHandler.forEachMarker((marker) => {
+        markerHandler.forEachMarker(marker => {
             data.markers.push(marker)
         });
         return data;

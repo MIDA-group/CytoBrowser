@@ -87,11 +87,11 @@ class Collaboration {
                         }
                         break;
                     case "update":
-                        Object.assign(this.markers.find((marker) => marker.id === msg.id), msg.marker);
+                        Object.assign(this.markers.find(marker => marker.id === msg.id), msg.marker);
                         this.broadcastMessage(sender, msg);
                         break;
                     case "remove":
-                        const index = this.markers.findIndex((marker) => marker.id === msg.id);
+                        const index = this.markers.findIndex(marker => marker.id === msg.id);
                         this.markers.splice(index, 1);
                         this.broadcastMessage(sender, msg);
                         break;
@@ -155,7 +155,7 @@ class Collaboration {
     }
 
     isDuplicateMarker(marker) {
-        return this.markers.some((existingMarker) =>
+        return this.markers.some(existingMarker =>
             existingMarker.x === marker.x
             && existingMarker.y === marker.y
             && existingMarker.z === marker.z

@@ -15,17 +15,17 @@ const zEx = /(?<=_z).*(?=\.dzi)/g;
 function getZLevels(dir, image) {
     // Only look at dzi files for the right name
     const nameFilter = RegExp(`^${image.name}.*\.dzi$`);
-    const names = dir.filter((name) => nameFilter.test(name));
+    const names = dir.filter(name => nameFilter.test(name));
 
     // Isolate the z levels in the dzi filenames
-    const zLevels = names.map((name) => name.match(zEx)).flat();
+    const zLevels = names.map(name => name.match(zEx)).flat();
     image.zLevels = zLevels.sort((a, b) => +a - +b);
 }
 
 function getThumbnails(dir, image) {
     // Find the file directories for the image name
     const nameFilter = RegExp(`^${image.name}.*_files$`);
-    const names = dir.filter((name) => nameFilter.test(name));
+    const names = dir.filter(name => nameFilter.test(name));
 
     // Look through the middle file directory
     const fileDir = names[Math.floor(names.length / 2)];
@@ -54,14 +54,14 @@ function getThumbnails(dir, image) {
                 else if (dir.length > 64) {
                     const rows = [];
                     const cols = [];
-                    dir.map((name) => {
+                    dir.map(name => {
                         const nums = name.split(/[_\.]/);
                         rows.push(+nums[0]);
                         cols.push(+nums[1]);
                     });
-                    const row = rows.sort((a,b)=>a-b)[Math.floor(rows.length / 2)];
-                    const col = cols.sort((a,b)=>a-b)[Math.floor(cols.length / 2)];
-                    const choice = dir.find((file) => RegExp(`${row}[^0-9]+${col}`).test(file));
+                    const row = rows.sort((a,b) => a - b)[Math.floor(rows.length / 2)];
+                    const col = cols.sort((a,b) => a - b)[Math.floor(cols.length / 2)];
+                    const choice = dir.find(file => RegExp(`${row}[^0-9]+${col}`).test(file));
                     thumbnails.detail = `${path}/${choice}`.slice(1);
                 }
 
@@ -83,13 +83,13 @@ function updateImages() {
             return;
         }
 
-        let names = dir.map((name) => name.match(nameEx)).flat();
-        names = names.filter((name) => name !== null);
+        let names = dir.map(name => name.match(nameEx)).flat();
+        names = names.filter(name => name !== null);
         const uniqueNames = [... new Set(names)];
 
         const images = [];
-        uniqueNames.map((name) => images.push({name: name}));
-        images.map((image) => {
+        uniqueNames.map(name => images.push({name: name}));
+        images.map(image => {
             getZLevels(dir, image);
             getThumbnails(dir, image);
         });

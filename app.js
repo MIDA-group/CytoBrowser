@@ -49,7 +49,7 @@ app.ws("/collaboration/:id", (ws, req) => {
     const name = req.query.name || "Unnamed";
     collaboration.joinCollab(ws, name, id, image);
 
-    ws.on("message", (msg) => {
+    ws.on("message", msg => {
         collaboration.handleMessage(ws, id, msg);
     });
 
