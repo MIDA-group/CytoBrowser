@@ -64,7 +64,7 @@ const bethesdaClassUtils = (function(){
         if (typeof(id) === "string") {
             id = bethesdaClassUtils.getIDFromName(idOrName);
         }
-        return bethesdaClassUtils._classes[id].color;
+        return _classes[id].color;
     }
 
     /**
@@ -73,7 +73,7 @@ const bethesdaClassUtils = (function(){
      * @returns {BClass} The class with the corresponding id.
      */
     function getClassFromID(id) {
-        return bethesdaClassUtils._classes[id];
+        return _classes[id];
     }
 
     /**
@@ -82,7 +82,7 @@ const bethesdaClassUtils = (function(){
      * @returns {number} The id of the class.
      */
     function getIDFromName(name) {
-        return bethesdaClassUtils._classes.findIndex((entry) => name == entry.name);
+        return _classes.findIndex((entry) => name == entry.name);
     }
 
     /**
@@ -90,7 +90,7 @@ const bethesdaClassUtils = (function(){
      * @param {Function} f The function to be executed with the classes.
      */
     function forEachClass(f) {
-        bethesdaClassUtils._classes.forEach(f);
+        _classes.forEach(f);
     }
 
     return {
