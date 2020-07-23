@@ -1,10 +1,22 @@
+/**
+ * Namespace for handling any local visual representation of markers.
+ * @namespace markerVisuals
+ */
 const markerVisuals = (function() {
+    "use strict";
+    
+    const tableId = "tmcptablebody";
+
+    /**
+     * Update the current visuals for the markers.
+     * @param {Array} points All currently placed markers.
+     */
     function update(points){
         // Update the markers in the overlay
         overlayHandler.updateMarkers(points);
 
         // Update the marker list
-        const table = d3.select("#tmcptablebody");
+        const table = d3.select(`#${tableId}`);
         table.selectAll("tr")
             .data(points)
             .join(
