@@ -5,6 +5,11 @@
 const overlayHandler = (function (){
     "use strict";
 
+    const _markerSquareSize = 1/8,
+        _markerCircleSize = 1/32,
+        _markerSquareStrokeWidth = 0.02,
+        _markerCircleStrokeWidth = 0.01;
+
     let _cursorOverlay,
         _markerOverlay,
         _previousCursors,
@@ -53,12 +58,27 @@ const overlayHandler = (function (){
         return (normalSize ? 15 : 12) / _scale;
     }
 
+    function _markerSize() {
+        return 0.01 / _scale;
+    }
+
     function _resizeMembers() {
         _cursorOverlay.selectAll("g")
             .attr("transform", function() {
                 const cursor = _previousCursors.get(this);
                 const currTrans = this.getAttribute("transform");
                 const newTrans = _editTransform(currTrans, {scale: _cursorSize(cursor)});
+                return newTrans;
+            });
+    }
+
+    function _resizeMarkers() {
+        _markerOverlay.selectAll("g")
+            .attr("transform", function() {
+                const currTrans = this.getAttribute("transform");
+                const newTrans = _editTransform(currTrans, {
+                    scale: _markerSize()
+                });
                 return newTrans;
             });
     }
@@ -170,13 +190,6 @@ const overlayHandler = (function (){
      * @param {Array} points The currently placed markers.
      */
     function updateMarkers(points){ // TODO: Inconsistent naming, go with either points or markers
-        // TODO: Implement this
-
-        // TODO: put these options somewhere else
-        const radius = 0.001;
-        const strokeWidth = 0.04;
-        const strokeColor = "#F00";
-
         _markerOverlay.selectAll("g")
             .data(points, (d) => d.id)
             .join(
@@ -188,9 +201,9 @@ const overlayHandler = (function (){
                         })
                         .attr("opacity", 1);
                     const square = group.append("path")
-                        .attr("d", d3.symbol().size(1/8).type(d3.symbolSquare))
+                        .attr("d", d3.symbol().size(_markerSquareSize).type(d3.symbolSquare))
                     	.attr("transform", "rotate(0) scale(0)")
-            			.attr("stroke-width", strokeWidth)
+            			.attr("stroke-width", _markerSquareStrokeWidth)
             			.attr("stroke", d => bethesdaClassUtils.classColor(d.mclass))
                         .style("fill","rgba(0,0,0,0.2)");
                     group.each(function(d) {_addMarkerMouseEvents(d, this);});
@@ -204,9 +217,9 @@ const overlayHandler = (function (){
                             return newTrans;
                         });
                     group.append("path")
-                        .attr("d", d3.symbol().size(1/32).type(d3.symbolCircle))
+                        .attr("d", d3.symbol().size(_markerCircleSize).type(d3.symbolCircle))
                         .attr("transform", "scale(0)")
-                        .attr("stroke-width", strokeWidth / 2)
+                        .attr("stroke-width", _markerCircleStrokeWidth)
                         .attr("stroke", "gray")
                         .style("fill", "transparent")
                         .style("pointer-events", "none")
