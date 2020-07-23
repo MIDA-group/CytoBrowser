@@ -8,7 +8,8 @@ const overlayHandler = (function (){
     const _markerSquareSize = 1/8,
         _markerCircleSize = 1/32,
         _markerSquareStrokeWidth = 0.02,
-        _markerCircleStrokeWidth = 0.01;
+        _markerCircleStrokeWidth = 0.01,
+        _markerText = true;
 
     let _cursorOverlay,
         _markerOverlay,
@@ -231,6 +232,15 @@ const overlayHandler = (function (){
                             });
                             return newTrans;
                         });
+                    if (_markerText) {
+                        group.append("text")
+                            .style("fill", "blue")
+                            .style("stroke", "white")
+                            .style("stroke-width", 0.004)
+                			.style("font-size", "1%").attr("text-anchor", "middle")
+                            .attr("transform","translate(0,0.010) scale(1)")
+                            .text(d => `#${d.id}: ${d.mclass}`);
+                    }
                 },
                 update => {
                     update.interrupt() // Need to interrupt removal in case we immediately re-add
