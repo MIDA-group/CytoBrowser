@@ -3,9 +3,9 @@
  * representation of the markers and the graphical representation. All
  * manipulation of the markers should go through this namespace's
  * functions to ensure that all necessary steps are performed.
- * @namespace markers
+ * @namespace markerHandler
  */
-const markers = (function (){
+const markerHandler = (function (){
     "use strict";
     /**
      * Data representation of a marker that should be used when adding or

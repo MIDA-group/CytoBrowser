@@ -182,7 +182,7 @@ const tmapp = (function() {
                         z: _currZ,
                         mclass: _currMclass
                     };
-                    markers.addMarker(marker);
+                    markerHandler.addMarker(marker);
                 }
             }
             else {
@@ -348,7 +348,7 @@ const tmapp = (function() {
     }
 
     function openImage(imageName, callback, nochange) {
-        if (!markers.empty() && !confirm(`You are about to open ` +
+        if (!markerHandler.empty() && !confirm(`You are about to open ` +
             `the image "${imageName}". Do you want to ` +
             `open this image? Any markers placed on the ` +
             `current image will be lost unless you save ` +
@@ -362,7 +362,7 @@ const tmapp = (function() {
             tmappUI.displayImageError("badimage", 5000);
             throw new Error("Tried to change to an unknown image.");
         }
-        markers.clearMarkers(false);
+        markerHandler.clearMarkers(false);
         $("#ISS_viewer").empty();
         coordinateHelper.clearImage();
         _currentImage = image;
@@ -386,7 +386,7 @@ const tmapp = (function() {
     }
 
     function moveToMarker(id) {
-        const marker = markers.getMarkerById(id);
+        const marker = markerHandler.getMarkerById(id);
         if (marker === undefined) {
             throw new Error("Tried to move to an unused marker id.");
         }
@@ -436,18 +436,18 @@ const tmapp = (function() {
                     openImage(data.image, () => {
                         collabClient.swapImage(data.image);
                         data.markers.forEach((marker) => {
-                            markers.addMarker(marker, "image");
+                            markerHandler.addMarker(marker, "image");
                         });
                     });
                     break;
                 }
-                clear && markers.clearMarkers();
+                clear && markerHandler.clearMarkers();
                 data.markers.forEach((marker) => {
-                    markers.addMarker(marker, "image");
+                    markerHandler.addMarker(marker, "image");
                 })
                 break;
             default:
-                throw new Error(`Data format version ${markers.version} not implemented.`);
+                throw new Error(`Data format version ${data.version} not implemented.`);
         }
     }
 
@@ -457,7 +457,7 @@ const tmapp = (function() {
             image: _currentImage.name,
             markers: []
         };
-        markers.forEachMarker((marker) => {
+        markerHandler.forEachMarker((marker) => {
             data.markers.push(marker)
         });
         return data;

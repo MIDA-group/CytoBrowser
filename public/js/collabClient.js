@@ -33,16 +33,16 @@ const collabClient = (function(){
     function _handleMarkerAction(msg) {
         switch(msg.actionType) {
             case "add":
-                markers.addMarker(msg.marker, "image", false);
+                markerHandler.addMarker(msg.marker, "image", false);
                 break;
             case "update":
-                markers.updateMarker(msg.id, msg.marker, "image", false);
+                markerHandler.updateMarker(msg.id, msg.marker, "image", false);
                 break;
             case "remove":
-                markers.removeMarker(msg.id, false);
+                markerHandler.removeMarker(msg.id, false);
                 break;
             case "clear":
-                markers.clearMarkers(false);
+                markerHandler.clearMarkers(false);
                 break;
             default:
                 console.warn(`Unknown marker action type: ${msg.actionType}`);
@@ -88,13 +88,13 @@ const collabClient = (function(){
             }, disconnect);
             return;
         }
-        markers.clearMarkers(false);
+        markerHandler.clearMarkers(false);
         msg.markers.forEach((marker) => {
-            markers.addMarker(marker, "image", false)
+            markerHandler.addMarker(marker, "image", false)
         });
         if (_joinBatch) {
             _joinBatch.forEach((marker) => {
-                markers.addMarker(marker, "image");
+                markerHandler.addMarker(marker, "image");
             });
             _joinBatch = null;
         }
@@ -167,13 +167,13 @@ const collabClient = (function(){
 
             if (include) {
                 _joinBatch = [];
-                markers.forEachMarker((marker) => {
+                markerHandler.forEachMarker((marker) => {
                     _joinBatch.push(marker);
                 });
                 _requestSummary();
             }
-            else if (markers.empty() || confirm("All your placed markers will be lost unless you have saved them. Do you want to continue anyway?")) {
-                markers.clearMarkers(false);
+            else if (markerHandler.empty() || confirm("All your placed markers will be lost unless you have saved them. Do you want to continue anyway?")) {
+                markerHandler.clearMarkers(false);
                 _requestSummary();
             }
             else {

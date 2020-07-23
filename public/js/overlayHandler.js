@@ -91,11 +91,11 @@ const overlayHandler = (function (){
                 const delta = coordinateHelper.webToImage(event.delta);
                 d.x += delta.x - reference.x;
                 d.y += delta.y - reference.y;
-                markers.updateMarker(d.id, d, "image");
+                markerHandler.updateMarker(d.id, d, "image");
             },
             clickHandler: function(event) {
                 if (event.originalEvent.ctrlKey) {
-                    markers.removeMarker(d.id);
+                    markerHandler.removeMarker(d.id);
                 }
             },
             enterHandler: function(){
