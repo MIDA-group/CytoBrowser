@@ -5,7 +5,7 @@
 const markerVisuals = (function() {
     "use strict";
 
-    const tableId = "tmcptablebody";
+    const _tableId = "tmcptablebody";
 
     /**
      * Update the current visuals for the markers.
@@ -16,7 +16,7 @@ const markerVisuals = (function() {
         overlayHandler.updateMarkers(points);
 
         // Update the marker list
-        const table = d3.select(`#${tableId}`);
+        const table = d3.select(`#${_tableId}`);
         table.selectAll("tr")
             .data(points, d => d.id)
             .join(
@@ -44,8 +44,8 @@ const markerVisuals = (function() {
                 },
                 update => {
                     const cells = update.selectAll("td");
-                    const idCell = d3.select(cells[0]);
-                    const annotationCell = d3.select(cells[1]);
+                    const idCell = cells.filter((d, i) => i === 0);
+                    const annotationCell = cells.filter((d, i) => i === 1);
                     idCell.text(d => d.id);
                     annotationCell.text(d =>
                         `(x: ${Math.round(d.x)}, y: ${Math.round(d.y)}, z: ${Math.round(d.z)})`)
