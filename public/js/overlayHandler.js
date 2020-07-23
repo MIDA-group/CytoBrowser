@@ -186,7 +186,7 @@ const overlayHandler = (function (){
                             const coords = coordinateHelper.imageToViewport(d);
                             return `translate(${coords.x}, ${coords.y}) scale(${radius})`;
                         })
-                        .attr("markerId", d => d.id);
+                        .attr("opacity", 1);
                     const square = group.append("path")
                         .attr("d", d3.symbol().size(1/8).type(d3.symbolSquare))
                     	.attr("transform", "rotate(0) scale(0)")
@@ -235,10 +235,11 @@ const overlayHandler = (function (){
                         .attr("transform", function(d) {
                             const currTrans = this.getAttribute("transform");
                             const newTrans = _editTransform(currTrans, {
-                                scale: 2.0
+                                scale: s => 2 * s
                             });
                             return newTrans;
-                        });
+                        })
+                        .remove();
                 }
             );
     }
