@@ -75,7 +75,7 @@ const tmappUI = (function(){
 
         // Prevent ctrl+scroll zooming in the viewer, since that's for focus
         $("#ISS_viewer").bind("mousewheel DOMMouseScroll", event => {
-            event.preventDefaultAction();
+            event.preventDefault();
         });
 
         // Add event listeners for local storage buttons
