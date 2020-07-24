@@ -1,4 +1,23 @@
+/**
+ * Deals with converting between marker storage objects and placed marker
+ * data. Functions in this namespace can either be used to get the
+ * currently placed markers as a storage object, which can be used for
+ * either local or remote storage in a JSON file, or to add markers from
+ * an already existing marker storage object.
+ * @namespace markerStorageConversion
+ */
 const markerStorageConversion = (function() {
+    /**
+     * A JSON representation of currently placed markers.
+     * @typedef {Object} MarkerStorage
+     * @param {number} version The specific version of the marker storage
+     * object, for back-compatibility reasons.
+     * @param {string} name The name of the image where the markers were
+     * initially placed.
+     * @param {Array<markerHandler.Marker>} markers The actual data for 
+     * the markers.
+     */
+
     /**
      * Add markers from a marker storage object.
      * @param {Object} data The storage object containing marker
@@ -36,7 +55,7 @@ const markerStorageConversion = (function() {
     function getMarkerStorageData() {
         const data = {
             version: "1.0", // Version of the formatting
-            image: _currentImage.name,
+            image: tmapp.getImageName(),
             markers: []
         };
         markerHandler.forEachMarker(marker => {
