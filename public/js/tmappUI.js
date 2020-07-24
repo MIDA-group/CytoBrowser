@@ -79,7 +79,9 @@ const tmappUI = (function(){
             event.preventDefault();
         });
         $(document).focus(() => {
-            _pageInFocus = true;
+            // A small delay since this seems to fire before any other handlers
+            // TODO: Find a cleaner way for clicks to check for focus
+            setTimeout(() => _pageInFocus = true, 100);
         });
         $(document).blur(() => {
             _pageInFocus = false;
