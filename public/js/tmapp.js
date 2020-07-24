@@ -1,3 +1,8 @@
+/**
+ * Functions related to interaction with the OpenSeadragon viewer, including
+ * initialization, image information, updating the current URL state, etc.
+ * @namespace tmapp
+ */
 const tmapp = (function() {
     "use strict";
 
