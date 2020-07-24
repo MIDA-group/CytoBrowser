@@ -36,10 +36,12 @@ const tmapp = (function() {
         _collab,
         _viewer,
         _imageStack = [],
-        _currX = 0.5,
-        _currY = 0.5,
-        _currZ = 0,
-        _currZoom = 1,
+        _currState = {
+            x = 0.5,
+            y = 0.5,
+            z = 0,
+            zoom = 1
+        },
         _currMclass = "",
         _cursorStatus = {
             x: 0.5,
@@ -50,7 +52,7 @@ const tmapp = (function() {
 
 
     function _getFocusIndex() {
-        return _currZ + Math.floor(_currentImage.zLevels.length / 2);
+        return _currState.z + Math.floor(_currentImage.zLevels.length / 2);
     }
 
     function _setFocusLevel(z) {
@@ -62,7 +64,7 @@ const tmapp = (function() {
             let idx = i + Math.floor(_currentImage.zLevels.length / 2);
             _viewer.world.getItemAt(idx).setOpacity(z === i);
         }
-        _currZ = z;
+        _currState.z = z;
         _updateFocus();
     }
 
@@ -85,7 +87,7 @@ const tmapp = (function() {
         const size = _viewer.viewport.getContainerSize();
         overlayHandler.setOverlayScale(zoom, size.x, size.y);
         tmappUI.setImageZoom(Math.round(zoom*10)/10);
-        _currZoom = zoom;
+        _currState.zoom = zoom;
         _updateCollabPosition();
         _updateURLParams();
     }
@@ -95,8 +97,8 @@ const tmapp = (function() {
             throw new Error("Tried to update position of nonexistent viewer.");
         }
         const position = _viewer.viewport.getCenter();
-        _currX = position.x; // TODO: Maybe put all curr in a currState object?
-        _currY = position.y;
+        _currState.x = position.x;
+        _currState.y = position.y;
         _updateCollabPosition();
         _updateURLParams();
     }
@@ -107,10 +109,10 @@ const tmapp = (function() {
         const params = url.searchParams;
         if (_currentImage) {
             params.set("image", _currentImage.name);
-            params.set("zoom", roundTo(_currZoom, 2));
-            params.set("x", roundTo(_currX, 5));
-            params.set("y", roundTo(_currY, 5));
-            params.set("z", _currZ);
+            params.set("zoom", roundTo(_currState.zoom, 2));
+            params.set("x", roundTo(_currState.x, 5));
+            params.set("y", roundTo(_currState.y, 5));
+            params.set("z", _currState.z);
         }
         _collab ? params.set("collab", _collab) : params.delete("collab");
         tmappUI.setURL("?" + params.toString()); // TODO: weird args
@@ -122,12 +124,7 @@ const tmapp = (function() {
     }
 
     function _updateCollabPosition() {
-        collabClient.updatePosition({
-            x: _currX,
-            y: _currY,
-            z: _currZ,
-            zoom: _currZoom
-        });
+        collabClient.updatePosition(_currState);
     }
 
     function _updateCollabCursor() {
@@ -147,13 +144,13 @@ const tmapp = (function() {
         if (z < 0) {
             z = Math.floor(_imageStack.length / 2);
         }
-        _currZ = z;
+        _currState.x = z;
 
         console.info(`Opening: ${_imageStack}`);
         _imageStack.forEach((image, i) => {
             _viewer.addTiledImage({
                 tileSource: image,
-                opacity: i === _currZ,
+                opacity: i === _currState.z,
                 index: i++,
                 success: () => {
                     if (_viewer.world.getItemCount() === _imageStack.length) {
@@ -171,14 +168,11 @@ const tmapp = (function() {
         // Handle quick and slow clicks
         function clickHandler(event) {
             if(event.quick){
-                if ($.contains($("#ISS_viewer").get(0), document.activeElement)) {
-                    console.log("Lost focus, ignoring marker placement");
-                }
-                else if (!event.ctrlKey) {
+                if (/*tmappUI.viewerInFocus() &&*/ !event.ctrlKey) {
                     const marker = {
                         x: event.position.x,
                         y: event.position.y,
-                        z: _currZ,
+                        z: _currState.z,
                         mclass: _currMclass
                     };
                     markerHandler.addMarker(marker);
@@ -286,9 +280,6 @@ const tmapp = (function() {
         //Create svgOverlay(); so that anything like D3, or any canvas library can act upon. https://d3js.org/
         const overlay =  _viewer.svgOverlay();
         overlayHandler.init(overlay);
-
-        // TODO: What does this do?
-        // tmapp.viewer.canvas.addEventListener('mouseover', function() { tmapp.checkFocus(); });
     }
 
     /**
@@ -471,14 +462,14 @@ const tmapp = (function() {
      * Increment the Z level by 1, if possible.
      */
     function incrementFocus() {
-        _setFocusLevel(_currZ + 1);
+        _setFocusLevel(_currState.z + 1);
     }
 
     /**
      * Decrement the Z level by 1, if possible.
      */
     function decrementFocus() {
-        _setFocusLevel(_currZ - 1);
+        _setFocusLevel(_currState.z - 1);
     }
 
     /**
