@@ -427,11 +427,11 @@ const tmapp = (function() {
 
     /**
      * Set the current marker class being assigned.
-     * @param {string} mClass The currently active marker class.
+     * @param {string} mclass The currently active marker class.
      */
-    function setMClass(mClass) {
-        if (bethesdaClassUtils.getIDFromName(mClass) >= 0) {
-            _currMclass = mClass; // TODO: mClass or mclass?
+    function setMclass(mclass) {
+        if (bethesdaClassUtils.getIDFromName(mclass) >= 0) {
+            _currMclass = mclass;
         }
         else {
             throw new Error("Tried to set the active marker class to something not defined.");
@@ -494,7 +494,7 @@ const tmapp = (function() {
         openImage: openImage,
         moveTo: moveTo,
         moveToMarker: moveToMarker,
-        setMClass: setMClass,
+        setMclass: setMclass,
         setCollab: setCollab,
         clearCollab: clearCollab,
         incrementFocus: incrementFocus,

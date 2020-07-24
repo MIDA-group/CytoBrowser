@@ -56,7 +56,7 @@ const tmappUI = (function(){
         $("#project_title").text("Cyto Browser");
 
         // Set the initial class
-        tmapp.setMClass(bethesdaClassUtils.getClassFromID(0).name);
+        tmapp.setMclass(bethesdaClassUtils.getClassFromID(0).name);
 
         // Add buttons for the available marker classes
         bethesdaClassUtils.forEachClass(function(item, index){
@@ -70,7 +70,7 @@ const tmappUI = (function(){
             input.attr("name", "class_options");
             input.attr("autocomplete", "off");
             label.append(input);
-            label.click(function(){ tmapp.setMClass(item.name); });
+            label.click(function(){ tmapp.setMclass(item.name); });
             $("#class_buttons").append(label);
         });
 
