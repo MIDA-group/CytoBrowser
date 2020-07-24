@@ -168,7 +168,7 @@ const tmapp = (function() {
         // Handle quick and slow clicks
         function clickHandler(event) {
             if(event.quick){
-                if (/*tmappUI.viewerInFocus() &&*/ !event.ctrlKey) {
+                if (tmappUI.inFocus() && !event.ctrlKey) {
                     const marker = {
                         x: event.position.x,
                         y: event.position.y,

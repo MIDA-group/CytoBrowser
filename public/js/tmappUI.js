@@ -8,6 +8,7 @@
  */
 const tmappUI = (function(){
     "use strict";
+    let _pageInFocus = true;
     let _errorDisplayTimeout = null;
     const _errors = {
         noimage: {
@@ -76,6 +77,12 @@ const tmappUI = (function(){
         // Prevent ctrl+scroll zooming in the viewer, since that's for focus
         $("#ISS_viewer").bind("mousewheel DOMMouseScroll", event => {
             event.preventDefault();
+        });
+        $(document).focus(() => {
+            _pageInFocus = true;
+        });
+        $(document).blur(() => {
+            _pageInFocus = false;
         });
 
         // Add event listeners for local storage buttons
@@ -333,27 +340,35 @@ const tmappUI = (function(){
     }
 
     /**
-     * Set the displayed image name in the UI.
-     * @param {string} txt The image name to display.
+     * Set the displayed z level in the UI.
+     * @param {string} txt The z level to display.
      */
     function setImageZLevel(txt) {
         $("#img_zlevel").text(txt);
     }
 
     /**
-     * Set the displayed image name in the UI.
-     * @param {string} txt The image name to display.
+     * Set the displayed zoom in the UI.
+     * @param {string} txt The zoom value to display.
      */
     function setImageZoom(txt) {
         $("#img_zoom").text(txt);
     }
 
     /**
-     * Set the displayed image name in the UI.
-     * @param {string} txt The image name to display.
+     * Push a new state to the URL.
+     * @param {string} txt The new state to push.
      */
     function setURL(txt) {
         window.history.pushState(null, "", txt);
+    }
+
+    /**
+     * Check whether or not the page is in focus.
+     * @returns {boolean} Whether or not the page is in focus.
+     */
+    function inFocus() {
+        return _pageInFocus;
     }
 
     return {
@@ -369,6 +384,7 @@ const tmappUI = (function(){
         setImageName: setImageName,
         setImageZLevel: setImageZLevel,
         setImageZoom: setImageZoom,
-        setURL: setURL
+        setURL: setURL,
+        inFocus: inFocus
     };
 })();
