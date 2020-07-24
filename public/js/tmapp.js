@@ -115,7 +115,7 @@ const tmapp = (function() {
             params.set("z", _currState.z);
         }
         _collab ? params.set("collab", _collab) : params.delete("collab");
-        tmappUI.setURL("?" + params.toString()); // TODO: weird args
+        tmappUI.setURL("?" + params.toString());
     }
 
     function _setCursorStatus(status) {

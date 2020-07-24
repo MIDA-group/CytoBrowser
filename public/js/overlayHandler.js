@@ -54,6 +54,21 @@ const overlayHandler = (function (){
         return result;
     }
 
+    function _transformFunction(transform) {
+        function f(d, i) {
+            let appliedTransform;
+            if (typeof transform === "function") {
+                appliedTransform = transform(d, i);
+            }
+            else {
+                appliedTransform = transform;
+            }
+            const currTransform = this.getAttribute("transform");
+            return _editTransform(currTransform, appliedTransform);
+        }
+        return f;
+    }
+
     function _cursorSize(cursor) {
         const normalSize = cursor.inside || cursor.held;
         return (normalSize ? 15 : 12) / _scale;
@@ -65,23 +80,15 @@ const overlayHandler = (function (){
 
     function _resizeMembers() {
         _cursorOverlay.selectAll("g")
-            .attr("transform", function() {
+            .attr("transform", _transformFunction(function() {
                 const cursor = _previousCursors.get(this);
-                const currTrans = this.getAttribute("transform");
-                const newTrans = _editTransform(currTrans, {scale: _cursorSize(cursor)});
-                return newTrans;
+                return {scale: _cursorSize(cursor)};
             });
     }
 
     function _resizeMarkers() {
         _markerOverlay.selectAll("g")
-            .attr("transform", function() {
-                const currTrans = this.getAttribute("transform");
-                const newTrans = _editTransform(currTrans, {
-                    scale: _markerSize()
-                });
-                return newTrans;
-            });
+            .attr("transform", _transformFunction({scale: _markerSize()}));
     }
 
     function _addMarkerMouseEvents(d, node) {
@@ -103,14 +110,10 @@ const overlayHandler = (function (){
                 d3.select(node)
                     .selectAll("path")
                     .transition().duration(200)
-                    .attr("transform", function() {
-                        const currTrans = this.getAttribute("transform");
-                        const newTrans = _editTransform(currTrans, {
-                            scale: 1.25,
-                            rotate: 45
-                        });
-                        return newTrans;
-                    });
+                    .attr("transform", _transformFunction({
+                        scale: 1.25,
+                        rotate: 45
+                    }));
                 d3.select(node)
                     .selectAll("text")
                     .transition().duration(200)
@@ -120,14 +123,10 @@ const overlayHandler = (function (){
                 d3.select(node)
                     .selectAll("path")
                     .transition().duration(200)
-                    .attr("transform", function() {
-                        const currTrans = this.getAttribute("transform");
-                        const newTrans = _editTransform(currTrans, {
-                            scale: 1.0,
-                            rotate: 45
-                        });
-                        return newTrans;
-                    });
+                    .attr("transform", _transformFunction({
+                        scale: 1.0,
+                        rotate: 45
+                    }));
                 d3.select(node)
                     .selectAll("text")
                     .transition().duration(200)
@@ -166,23 +165,15 @@ const overlayHandler = (function (){
                     .attr("opacity", 1.0);
                 },
                 update => {
-                    update.attr("transform", function(d) {
-                            const currTrans = this.getAttribute("transform");
-                            const newTrans = _editTransform(currTrans, {
-                                translate: [d.cursor.x, d.cursor.y]
-                            });
-                            return newTrans;
-                        })
+                    update.attr("transform", _transformFunction(function(d) {
+                            return {translate: [d.cursor.x, d.cursor.y]};
+                        }))
                         .filter(function(d) { return _previousCursors.get(this).inside !== d.cursor.inside })
                         .transition().duration(200)
                         .style("opacity", d => d.cursor.inside || d.cursor.held ? 1.0 : 0.2)
-                        .attr("transform", function(d) {
-                            const currTrans = this.getAttribute("transform");
-                            const newTrans = _editTransform(currTrans, {
-                                scale: _cursorSize(d.cursor)
-                            });
-                            return newTrans;
-                        });
+                        .attr("transform", _transformFunction(function(d) {
+                            return {scale: _cursorSize(d.cursor)};
+                        }));
                     update.select(".caret")
                         .filter(function(d) { return _previousCursors.get(this).held !== d.cursor.held })
                         .transition().duration(150)
@@ -228,14 +219,10 @@ const overlayHandler = (function (){
                         .style("fill","rgba(0,0,0,0.2)");
                     group.each(function(d) {_addMarkerMouseEvents(d, this);});
                     square.transition().duration(500)
-                        .attr("transform", function(d) {
-                            const currTrans = this.getAttribute("transform");
-                            const newTrans = _editTransform(currTrans, {
-                                rotate: 45,
-                                scale: 1
-                            });
-                            return newTrans;
-                        });
+                        .attr("transform", _transformFunction({
+                            rotate: 45,
+                            scale: 1
+                        }));
                     group.append("path")
                         .attr("d", d3.symbol().size(_markerCircleSize).type(d3.symbolCircle))
                         .attr("transform", "scale(0)")
@@ -244,13 +231,9 @@ const overlayHandler = (function (){
                         .style("fill", "transparent")
                         .style("pointer-events", "none")
                         .transition().delay(300).duration(200)
-                        .attr("transform", function(d) {
-                            const currTrans = this.getAttribute("transform");
-                            const newTrans = _editTransform(currTrans, {
-                                scale: 1
-                            });
-                            return newTrans;
-                        });
+                        .attr("transform", _transformFunction({
+                            scale: 1
+                        }));
                     if (_markerText) {
                         group.append("text")
                             .style("fill", d => bethesdaClassUtils.classColor(d.mclass))
@@ -264,25 +247,17 @@ const overlayHandler = (function (){
                     }
                 },
                 update => {
-                    update.attr("transform", function(d) {
-                            const currTrans = this.getAttribute("transform");
+                    update.attr("transform", _transformFunction(function(d) {
                             const coords = coordinateHelper.imageToViewport(d);
-                            const newTrans = _editTransform(currTrans, {
-                                translate: [coords.x, coords.y]
-                            });
-                            return newTrans;
-                        });
+                            return {translate: [coords.x, coords.y]};
+                        }));
                 },
                 exit => {
                     exit.transition().duration(200)
                         .attr("opacity", 0)
-                        .attr("transform", function() {
-                            const currTrans = this.getAttribute("transform");
-                            const newTrans = _editTransform(currTrans, {
-                                scale: s => 2 * s
-                            });
-                            return newTrans;
-                        })
+                        .attr("transform", _transformFunction({
+                            scale: s => 2 * s
+                        }))
                         .remove();
                 }
             );
