@@ -37,10 +37,10 @@ const tmapp = (function() {
         _viewer,
         _imageStack = [],
         _currState = {
-            x = 0.5,
-            y = 0.5,
-            z = 0,
-            zoom = 1
+            x: 0.5,
+            y: 0.5,
+            z: 0,
+            zoom: 1
         },
         _currMclass = "",
         _cursorStatus = {
