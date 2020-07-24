@@ -81,10 +81,10 @@ const tmappUI = (function(){
         // Add event listeners for local storage buttons
         $("#json_to_data").click(() => {
             const loadedJSON = localStorage.loadJSON("data_files_import");
-            loadedJSON.then(tmapp.addMarkerStorageData);
+            loadedJSON.then(markerStorageConversion.addMarkerStorageData);
         });
         $("#points_to_json").click(() => {
-            const markerData = tmapp.getMarkerStorageData();
+            const markerData = markerStorageConversion.getMarkerStorageData();
             localStorage.saveJSON(markerData);
         });
 
