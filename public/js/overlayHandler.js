@@ -58,7 +58,7 @@ const overlayHandler = (function (){
         function f(d, i) {
             let appliedTransform;
             if (typeof transform === "function") {
-                appliedTransform = transform(d, i);
+                appliedTransform = transform.call(this, d, i);
             }
             else {
                 appliedTransform = transform;
@@ -81,8 +81,7 @@ const overlayHandler = (function (){
     function _resizeMembers() {
         _cursorOverlay.selectAll("g")
             .attr("transform", _transformFunction(function() {
-                const cursor = _previousCursors.get(this);
-                return {scale: _cursorSize(cursor)};
+                return {scale: _cursorSize(_previousCursors.get(this))};
             }));
     }
 
