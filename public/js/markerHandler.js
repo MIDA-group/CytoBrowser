@@ -7,7 +7,7 @@
  */
 const markerHandler = (function (){
     "use strict";
-    
+
     /**
      * Data representation of a marker that should be used when adding or
      * updating information about it. While all markers that have already
@@ -127,7 +127,7 @@ const markerHandler = (function (){
 
         // Store the coordinates in all systems and set the image coordinates
         const coords = _getCoordSystems(addedMarker, coordSystem);
-        if (coordSystem != "image") {
+        if (coordSystem !== "image") {
             addedMarker.x = coords.image.x;
             addedMarker.y = coords.image.y;
         }
@@ -152,7 +152,7 @@ const markerHandler = (function (){
      */
     function updateMarker(id, marker, coordSystem="web", transmit = true) {
         const markers = _markers;
-        const updatedIndex = markers.findIndex(marker => marker.id == id);
+        const updatedIndex = markers.findIndex(marker => marker.id === id);
         const updatedMarker = getMarkerById(id);
 
         // Check if the marker being updated exists first
@@ -175,7 +175,7 @@ const markerHandler = (function (){
 
         // Make sure the data is stored in the image coordinate system
         const coords = _getCoordSystems(updatedMarker, coordSystem);
-        if (coordSystem != "image") {
+        if (coordSystem !== "image") {
             updatedMarker.x = coords.image.x;
             updatedMarker.y = coords.image.y;
         }
@@ -198,7 +198,7 @@ const markerHandler = (function (){
      */
     function removeMarker(id, transmit = true) {
         const markers = _markers;
-        const deletedIndex = markers.findIndex(marker => marker.id == id);
+        const deletedIndex = markers.findIndex(marker => marker.id === id);
 
         // Check if the marker exists first
         if (deletedIndex === -1) {
@@ -250,7 +250,7 @@ const markerHandler = (function (){
      * or undefined if not in use.
      */
     function getMarkerById(id) {
-        const marker = _markers.find(marker => marker.id == id);
+        const marker = _markers.find(marker => marker.id === id);
         if (marker === undefined) {
             return undefined;
         }

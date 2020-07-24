@@ -60,7 +60,7 @@ const tmapp = (function() {
         z = Math.min(Math.max(z,min),max);
         for (let i = min; i <= max; i++) {
             let idx = i + Math.floor(_currentImage.zLevels.length / 2);
-            _viewer.world.getItemAt(idx).setOpacity(z == i);
+            _viewer.world.getItemAt(idx).setOpacity(z === i);
         }
         _currZ = z;
         _updateFocus();

@@ -61,7 +61,7 @@ const tmappUI = (function(){
         bethesdaClassUtils.forEachClass(function(item, index){
             let label = $("<label></label>");
             label.addClass("btn btn-dark");
-            if (index == 0) { label.addClass("active"); }
+            if (index === 0) { label.addClass("active"); }
             label.attr("id", "class_" + item.name);
             label.attr("title", item.description);
             let input = $("<input>" + item.name + "</input>");
@@ -111,7 +111,7 @@ const tmappUI = (function(){
                     const digits = Array.from({length: 10}, (v, k) => String((k+1) % 10));
                     const chars = digits.map(digit => digit.charCodeAt());
                     chars.slice(0, bethesdaClassUtils.count()).forEach((char, index) => {
-                        if (event.which == char) {
+                        if (event.which === char) {
                             $("#class_" + bethesdaClassUtils.getClassFromID(index).name).click();
                         }
                     });
