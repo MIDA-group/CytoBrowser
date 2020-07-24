@@ -83,7 +83,7 @@ const overlayHandler = (function (){
             .attr("transform", _transformFunction(function() {
                 const cursor = _previousCursors.get(this);
                 return {scale: _cursorSize(cursor)};
-            });
+            }));
     }
 
     function _resizeMarkers() {
