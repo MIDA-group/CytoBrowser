@@ -23,7 +23,7 @@ const tmapp = (function() {
         zoomPerClick: 1.4,
         constrainDuringPan: true,
         visibilityRatio: 1,
-        showNavigationControl: true, //FIX: After Full screen, interface stops working
+        showNavigationControl: true,
         //imageSmoothingEnabled: false,
         sequenceMode: false, // true,
         preserveViewport: true,
@@ -171,15 +171,10 @@ const tmapp = (function() {
         // Handle quick and slow clicks
         function clickHandler(event) {
             if(event.quick){
-                // TODO: Fix focus
-                /*
-                if (tmapp.lost_focus) { //We get document focus back before getting the event
-                    console.log("Lost document focus, ignoring click and just setting (element) focus"); //Since it's irritating to get TMCP by asking for focus
-                    tmapp.fixed_viewer.canvas.focus();
-                    tmapp.checkFocus();
+                if ($.contains($("#ISS_viewer").get(0), document.activeElement)) {
+                    console.log("Lost focus, ignoring marker placement");
                 }
-                */
-                if (!event.ctrlKey) {
+                else if (!event.ctrlKey) {
                     const marker = {
                         x: event.position.x,
                         y: event.position.y,

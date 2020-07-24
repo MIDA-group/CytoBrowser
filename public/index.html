@@ -339,12 +339,5 @@
         // Initialize tmapp
         tmapp.init(tmappOptions);
     });
-
-    $(document).mousedown(function(event){
-        if (!(document.hasFocus())) {
-            console.log("Lost focus, ignoreing click and setting focus")
-            tmapp.fixed_viewer.canvas.focus();
-        }
-    });
 </script>
 </html>
