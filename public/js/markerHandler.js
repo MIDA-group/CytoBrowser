@@ -7,6 +7,7 @@
  */
 const markerHandler = (function (){
     "use strict";
+    
     /**
      * Data representation of a marker that should be used when adding or
      * updating information about it. While all markers that have already

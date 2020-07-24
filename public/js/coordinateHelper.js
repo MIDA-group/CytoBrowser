@@ -7,6 +7,7 @@
  * @namespace coordinateHelper
  */
 const coordinateHelper = (function() {
+    "use strict";
     let _activeImage;
 
     /**

@@ -3,6 +3,8 @@
  * @namespace localStorage
  */
 const localStorage = (function (){
+    "use strict";
+
     /**
      * General function for saving an arbitrary object as a JSON file
      * with UTF-8 encoding on the local machine.

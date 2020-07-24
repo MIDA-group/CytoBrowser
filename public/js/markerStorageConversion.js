@@ -7,6 +7,8 @@
  * @namespace markerStorageConversion
  */
 const markerStorageConversion = (function() {
+    "use strict";
+    
     /**
      * A JSON representation of currently placed markers.
      * @typedef {Object} MarkerStorage
@@ -14,7 +16,7 @@ const markerStorageConversion = (function() {
      * object, for back-compatibility reasons.
      * @param {string} name The name of the image where the markers were
      * initially placed.
-     * @param {Array<markerHandler.Marker>} markers The actual data for 
+     * @param {Array<markerHandler.Marker>} markers The actual data for
      * the markers.
      */
 
