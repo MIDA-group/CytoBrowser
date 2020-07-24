@@ -163,8 +163,7 @@ const tmapp = (function() {
     }
 
     function _addMouseTracking(viewer) {
-        //This is the OSD click handler, when the event is quick it triggers the creation of a marker
-        //Called when we are far from any existing points; if we are close to elem, then DOM code in overlayUtils is called instead
+        // Handle quick and slow clicks
         function clickHandler(event) {
             if(event.quick){
                 // TODO: Fix focus
@@ -184,10 +183,6 @@ const tmapp = (function() {
                     };
                     markerHandler.addMarker(marker);
                 }
-            }
-            else {
-                //if it is not quick then it is dragged
-                console.log("drag thing");
             }
         };
 
@@ -224,7 +219,7 @@ const tmapp = (function() {
             releaseHandler: heldHandler(false)
         }).setTracking(true);
 
-        // Add hook to scroll without zooming
+        // Add hook to scroll without zooming, didn't seem possible without
         function scrollHook(event){
             if (event.originalEvent.ctrlKey) {
                 event.preventDefaultAction = true;
@@ -296,6 +291,22 @@ const tmapp = (function() {
         // tmapp.viewer.canvas.addEventListener('mouseover', function() { tmapp.checkFocus(); });
     }
 
+    /**
+     * Initiate tmapp by fetching a list of images from the server,
+     * filling the image browser, and going to the image specified
+     * in the search parameters of the URL. If a collab and an initial
+     * state are also specified in the URL, these are also set up.
+     * @param {Object} options The initial tmapp options specified in
+     * the URL.
+     * @param {string} options.imageName The name of the initial image
+     * to be opened.
+     * @param {string} options.collab The id of the initial collab.
+     * @param {Object} options.initialState The initial viewport state.
+     * @param {number} options.initialState.x X position of viewport.
+     * @param {number} options.initialState.y Y position of viewport.
+     * @param {number} options.initialState.z Z level in viewport.
+     * @param {number} options.initialState.zoom Zoom in viewport.
+     */
     function init({imageName, collab, initialState}) {
         // Initiate a HTTP request and send it to the image info endpoint
         const imageReq = new XMLHttpRequest();
@@ -346,6 +357,17 @@ const tmapp = (function() {
         }
     }
 
+    /**
+     * Open a specified image in the viewport. If markers have been
+     * placed, the user is first prompted to see if they actually want
+     * to open the image or if they want to cancel.
+     * @param {string} imageName The name of the image being opened.
+     * @param {Function} callback Function to call if and only if the
+     * image is successfully opened.
+     * @param {Function} nochange Function to call if the user is
+     * prompted on whether or not they want to change images and they
+     * decide not to change.
+     */
     function openImage(imageName, callback, nochange) {
         if (!markerHandler.empty() && !confirm(`You are about to open ` +
             `the image "${imageName}". Do you want to ` +
@@ -369,6 +391,16 @@ const tmapp = (function() {
         _initOSD(callback);
     }
 
+    /**
+     * Move to a specified state in the viewport. If the state is only
+     * partially defined, the rest of the viewport state will remain
+     * the same as it was.
+     * @param {Object} state The viewport state to move to.
+     * @param {number} state.x The x position of the viewport.
+     * @param {number} state.y The y position of the viewport.
+     * @param {number} state.z The z level in the viewport.
+     * @param {number} state.zoom The zoom in the viewport.
+     */
     function moveTo({x, y, z, zoom}) {
         if (!_viewer) {
             throw new Error("Tried to move viewport without a viewer.");
@@ -384,6 +416,10 @@ const tmapp = (function() {
         }
     }
 
+    /**
+     * Move the viewport to look at a specific marker.
+     * @param {number} id The id of the marker being moved to.
+     */
     function moveToMarker(id) {
         const marker = markerHandler.getMarkerById(id);
         if (marker === undefined) {
@@ -398,6 +434,10 @@ const tmapp = (function() {
         });
     }
 
+    /**
+     * Set the current marker class being assigned.
+     * @param {string} mClass The currently active marker class.
+     */
     function setMClass(mClass) {
         if (bethesdaClassUtils.getIDFromName(mClass) >= 0) {
             _currMclass = mClass; // TODO: mClass or mclass?
@@ -407,26 +447,47 @@ const tmapp = (function() {
         }
     }
 
+    /**
+     * Set the current collaboration id, update the URL parameters and
+     * set the appropriate URL parameters.
+     @param {string} id The collaboration id being set.
+     */
     function setCollab(id) {
         _collab = id;
         tmappUI.setCollabID(id);
         _updateURLParams();
     }
 
+    /**
+     * Clear the currently set collaboration and update the URL parameters.
+     */
     function clearCollab() {
         _collab = null;
         tmappUI.clearCollabID();
         _updateURLParams();
     }
 
+    /**
+     * Increment the Z level by 1, if possible.
+     */
     function incrementFocus() {
         _setFocusLevel(_currZ + 1);
     }
 
+    /**
+     * Decrement the Z level by 1, if possible.
+     */
     function decrementFocus() {
         _setFocusLevel(_currZ - 1);
     }
 
+    /**
+     * Add markers from a marker storage object.
+     * @param {Object} data The storage object containing marker
+     * information.
+     * @param {boolean} [clear = false] Whether or not the already
+     * placed markers should be removed before adding the new markers.
+     */
     function addMarkerStorageData(data, clear = false) {
         switch (data.version) {
             case "1.0":
@@ -450,6 +511,10 @@ const tmapp = (function() {
         }
     }
 
+    /**
+     * Convert the currently placed markers to a marker storage object.
+     * @returns {Object} The marker storage representation of the markers.
+     */
     function getMarkerStorageData() {
         const data = {
             version: "1.0", // Version of the formatting
@@ -462,10 +527,18 @@ const tmapp = (function() {
         return data;
     }
 
+    /**
+     * Get the name of the currently opened image.
+     * @returns {string} The current image name.
+     */
     function getImageName() {
         return _currentImage && _currentImage.name;
     }
 
+    /**
+     * Update the current status of tmapp, viewport position and cursor
+     * position, to the collaborators.
+     */
     function updateCollabStatus() {
         _updateCollabCursor();
         _updateCollabPosition();
