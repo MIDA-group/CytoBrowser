@@ -134,7 +134,7 @@ const collabClient = (function(){
 
         if (_followedMember) {
             if (_followedMember.updated) {
-                tmapp.moveTo(member.position);
+                tmapp.moveTo(_followedMember.position);
                 _followedMember.updated = false;
             }
             if (_followedMember.removed) {
