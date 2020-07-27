@@ -417,6 +417,7 @@ const collabClient = (function(){
      */
     function followView(member) {
         _followedMember = member;
+        tmapp.moveTo(member.position);
     }
 
     /**

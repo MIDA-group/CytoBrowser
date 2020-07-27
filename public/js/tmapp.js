@@ -87,8 +87,9 @@ const tmapp = (function() {
         overlayHandler.setOverlayScale(zoom, size.x, size.y);
         tmappUI.setImageZoom(Math.round(zoom*10)/10);
         _currState.zoom = zoom;
-        _updateCollabPosition();
-        _updateURLParams();
+
+        // Zooming often changes the position too, based on cursor position
+        _updatePosition();
     }
 
     function _updatePosition() {
