@@ -47,7 +47,8 @@ const tmapp = (function() {
             y: 0.5,
             held: false,
             inside: false
-        };
+        },
+        _disabledControls;
 
 
     function _getFocusIndex() {
@@ -413,6 +414,12 @@ const tmapp = (function() {
      * @param {number} id The id of the marker being moved to.
      */
     function moveToMarker(id) {
+        // Only move if you're not following anyone
+        if (_disabledControls) {
+            console.warn("Can't move to marker when following someone.");
+            return;
+        }
+
         const marker = markerHandler.getMarkerById(id);
         if (marker === undefined) {
             throw new Error("Tried to move to an unused marker id.");
@@ -494,14 +501,29 @@ const tmapp = (function() {
      * Enable all control over the viewport state.
      */
     function enableControls() {
+        if (!_disabledControls) {
+            throw new Error("The controls were never disabled.");
+        }
         _viewer.setMouseNavEnabled(true);
+        _disabledControls.forEach(control => {
+            _viewer.addControl(control.element, control);
+        });
+        _disabledControls = null;
     }
 
     /**
      * Disable all control over the viewport state.
      */
     function disableControls() {
+        if (_disabledControls) {
+            throw new Error("Tried to disable already-disabled controls");
+        }
         _viewer.setMouseNavEnabled(false);
+
+        // Store a copy of the current control buttons
+        // API docs suggest setControlsEnabled(), doesn't seem to work
+        _disabledControls = Array.from(_viewer.controls);
+        _viewer.clearControls();
     }
 
     return {
