@@ -226,6 +226,7 @@ const tmappUI = (function(){
             follow.click(event => {
                 event.stopPropagation();
                 console.log("Following!");
+                collabClient.followView(member);
             })
             $("#collaborator_list").append(entry);
         });
