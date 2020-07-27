@@ -8,9 +8,9 @@
     <link rel="stylesheet" href="css/tm-icon-style.css">
     <title>TissUUmaps</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <script src="js/d3.min.js"></script>
-    <script src="js/d3-scale-chromatic.v0.3.min.js"></script>
-    <script src="js/jquery-3.4.1.slim.min.js"></script>
+    <script src="js/d3/d3.min.js"></script>
+    <script src="js/d3/d3-scale-chromatic.v0.3.min.js"></script>
+    <script src="js/jquery/jquery-3.4.1.slim.min.js"></script>
 </head>
 
 <!-- Styling required to cover full page -->
@@ -98,14 +98,14 @@
                             <!--<h4 class="card-title">Markers</h4>-->
                             <div class="row pb-3">
                                 <div class="col-3">
-                                    <button id="pointstojson" class="btn btn-primary btn-block" type="button"> Download</button>
+                                    <button id="points_to_json" class="btn btn-primary btn-block" type="button"> Download</button>
                                 </div>
                                 <div class="col-3">
                                     <input type="file" id="fileElem" multiple accept="image/*" style="display:none" onchange="handleFiles(this.files)">
-                                    <button id="jsontodata" class="btn btn-primary btn-block" type="button"> Import </button>
+                                    <button id="json_to_data" class="btn btn-primary btn-block" type="button"> Import </button>
                                 </div>
-                                <div class="col-6">
-                                    <input class="form-control form-control-file" type="file" id="data_files_import" name="files[]">
+                                <div class="col-6 d-flex align-items-center">
+                                    <input class="form-control-file" type="file" id="data_files_import" name="files[]">
                                 </div>
                             </div>
                         </div>
@@ -281,94 +281,63 @@
 
 </body>
 
-<script src="js/bootstrap.4.0.0.bundle.min.js" ></script>
-<script src="js/openseadragon.2.4.0.min.js"></script>
-<script src="js/openseadragon-filtering.js"></script>
-<script src="js/openseadragon-svg-overlay.js"></script>
-<!-- <script src="js/tm_utils/interfaceUtils.js"></script> -->
-<!-- <script src="js/tm_utils/dataUtils.js"></script> -->
-<!-- <script src="js/tm_utils/CPDataUtils.js"></script> -->
-<!-- <script src="js/tm_utils/markerUtils.js"></script> -->
-<script src="js/tm_utils/OSDViewerUtils.js"></script>
-<!-- <script src="js/tm_utils/HTMLElementUtils.js"></script> -->
-<!-- <script src="js/tm_utils/regionUtils.js"></script> -->
-<!-- <script src="js/tm_utils/overlayUtils.js"></script> -->
-<!-- <script src="js/tm_utils/geometryUtils.js"></script> -->
+<script src="js/bootstrap/bootstrap.4.0.0.bundle.min.js" ></script>
+<script src="js/openseadragon/openseadragon.2.4.0.min.js"></script>
+<script src="js/openseadragon/openseadragon-viewerinputhook.js"></script>
+<script src="js/openseadragon/openseadragon-filtering.js"></script>
+<script src="js/openseadragon/openseadragon-svg-overlay.js"></script>
 <script src="js/utils/bethesdaClassUtils.js"></script>
-<script src="js/utils/JSONUtils.js"></script>
-<script src="js/utils/overlayUtils.js"></script>
-<script src="js/utils/markerUtils.js"></script>
 <script src="js/collabClient.js"></script>
-<script src="js/markerPoints.js"></script>
+<script src="js/markerHandler.js"></script>
 <script src="js/overlayHandler.js"></script>
 <script src="js/tmappUI.js"></script>
 <script src="js/tmapp.js"></script>
+<script src="js/markerVisuals.js"></script>
+<script src="js/markerStorageConversion.js"></script>
+<script src="js/coordinateHelper.js"></script>
+<script src="js/localStorage.js"></script>
 <script>
-    markerUtils._TMCPStyle={ strokeWidth: 4, radius: 80, drawText:false, textSize:1 };
-
-    document.getElementById("project_title").innerText = "Cyto Browser";
-
     tmappUI.initUI();
 
     // Start our tmapp
-    $(document).ready(function () {
-        var url = new URL(window.location.href);
-        tmapp.fixed_file = url.searchParams.get("image");
-        tmapp.image_name = url.searchParams.get("image");
-//        tmapp.registerActions();
+    $(document).ready(() => {
+        // Options when initializing tmapp
+        const tmappOptions = {};
 
-        // Get the viewport params from the URL
-        const initial_params = {
-            zoom: url.searchParams.get("zoom"),
-            x: url.searchParams.get("x"),
-            y: url.searchParams.get("y"),
-            z: url.searchParams.get("z")
+        // Get search params from URL
+        const url = new URL(window.location.href);
+        const params = url.searchParams;
+        const imageName = params.get("image");
+        const collab = params.get("collab");
+        const initialState = {
+            zoom: params.get("zoom"),
+            x: params.get("x"),
+            y: params.get("y"),
+            z: params.get("z")
         };
-        // Check if all params are present
-        const values = Object.values(initial_params);
-        const params_defined = values.every(value => value != null);
 
-        // Set the initial params if all are defined
-        if (params_defined) {
+        if (imageName !== null) {
+            tmappOptions.imageName = imageName;
+        }
+        if (collab !== null) {
+            tmappOptions.collab = collab;
+        }
+
+        // Check if full state is present
+        const values = Object.values(initialState);
+        const stateDefined = values.every(value => value !== null);
+
+        // Set the initial state if defined
+        if (stateDefined) {
             // Convert to numbers first
-    	    for (const [key, value] of Object.entries(initial_params)) {
-                    initial_params[key] = Number(value);
+    	    for (const [key, value] of Object.entries(initialState)) {
+                    initialState[key] = Number(value);
     	    }
-            tmapp.initial_params = initial_params;
+            tmappOptions.initialState = initialState;
         }
 
-        // If the URL contains a collab, instantly join it
-        const collab = url.searchParams.get("collab");
-        if (collab) {
-            tmapp.init(() => {
-                const name = collabClient.getDefaultName();
-                collabClient.connect(collab, name);
-            });
-        }
-        else {
-            tmapp.init();
-        }
-    });
-
-    // UI setters
-    function setImageName(txt) {
-        document.getElementById("img_name").innerText=txt;
-    }
-    function setImageZLevel(txt) {
-        document.getElementById("img_zlevel").innerText=txt;
-    }
-    function setImageZoom(txt) {
-        document.getElementById("img_zoom").innerText=txt;
-    }
-    function setURL(txt) {
-        window.history.pushState(null, "", txt);
-    }
-
-    $(document).mousedown(function(event){
-        if (!(document.hasFocus())) {
-            console.log("Lost focus, ignoreing click and setting focus")
-            tmapp.fixed_viewer.canvas.focus();
-        }
+        // Initialize tmapp
+        tmapp.init(tmappOptions);
     });
 </script>
 </html>

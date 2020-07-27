@@ -1,373 +1,342 @@
 /**
- * @file tmapp.js Main base for TissUUmaps to work
- * @author Leslie Solorzano
- * @see {@link tmapp}
- */
-
-/**
+ * Functions related to interaction with the OpenSeadragon viewer, including
+ * initialization, image information, updating the current URL state, etc.
  * @namespace tmapp
- * @version tmapp 2.0
- * @classdesc The root namespace for tmapp.
  */
-tmapp = {
-    _url_suffix: "",
-    _scrollDelay: 900,
-    _image_dir: "data/", //subdirectory where dzi images are stored
-    fixed_file: "",
-    viewer: null,
-    initial_params: null,
-    curr_zoom: 0.7,
-    curr_x: 0,
-    curr_y: 0,
-    curr_z: 0,
-    curr_mclass: "",
-    lost_focus: false,
+const tmapp = (function() {
+    "use strict";
 
-    /**
-     * Get the current focus level, represented by its 0-centered index.
-     * @returns {number} Current focus level.
-     */
-    getFocusLevel: function() {
-        return tmapp.curr_z;
-    },
+    const _imageDir = "data/";
+    const _optionsOSD = {
+        id: "ISS_viewer", //cybr_viewer
+        prefixUrl: "js/openseadragon/images/", //Location of button graphics
+        navigatorSizeRatio: 1,
+        wrapHorizontal: false,
+        showNavigator: true,
+        navigatorPosition: "BOTTOM_LEFT",
+        navigatorSizeRatio: 0.25,
+        animationTime: 0.0,
+        blendTime: 0,
+        minZoomImageRatio: 1,
+        maxZoomPixelRatio: 4,
+        gestureSettingsMouse: {clickToZoom: false},
+        zoomPerClick: 1.4,
+        constrainDuringPan: true,
+        visibilityRatio: 1,
+        showNavigationControl: true,
+        //imageSmoothingEnabled: false,
+        sequenceMode: false, // true,
+        preserveViewport: true,
+        preserveOverlays: true,
+        preload: true
+    };
 
-    /**
-     * Get the index of the current focus level. As opposed to
-     * {@link getFocusLevel}, this index is not 0-centered, so the
-     * lowest focus level will have the index 0.
-     * @returns {number} Current focus index.
-     */
-    getFocusIndex: function() {
-        return tmapp.curr_z + Math.floor(z_levels.length / 2);
-    },
+    let _currentImage,
+        _images,
+        _collab,
+        _viewer,
+        _currState = {
+            x: 0.5,
+            y: 0.5,
+            z: 0,
+            zoom: 1
+        },
+        _currMclass = "",
+        _cursorStatus = {
+            x: 0.5,
+            y: 0.5,
+            held: false,
+            inside: false
+        };
 
-    /**
-     * Set the active focus level and swap to the appropriate image.
-     * @param {number} z The 0-centered focus index to be set.
-     */
-    setFocusLevel: function(z) {
-        const count = this.viewer.world.getItemCount();
+
+    function _getFocusIndex() {
+        return _currState.z + Math.floor(_currentImage.zLevels.length / 2);
+    }
+
+    function _setFocusLevel(z) {
+        const count = _viewer.world.getItemCount();
         const max = Math.floor(count / 2);
         const min = -max;
         z = Math.min(Math.max(z,min),max);
-        for (i = min; i <= max; i++) {
-            let idx = i + Math.floor(z_levels.length / 2);
-            tmapp.viewer.world.getItemAt(idx).setOpacity(z == i);
+        for (let i = min; i <= max; i++) {
+            let idx = i + Math.floor(_currentImage.zLevels.length / 2);
+            _viewer.world.getItemAt(idx).setOpacity(z === i);
         }
-        this.curr_z = z;
-        tmapp.setFocusName();
-    },
+        _currState.z = z;
+        _updateFocus();
+    }
 
-    checkFocus: function() {
-        tmapp.lost_focus = !document.hasFocus(); //If the document lost focus, there is no way to get it back
-    },
+    function _updateFocus() {
+        if (!_viewer) {
+            throw new Error("Tried to update focus of nonexistent viewer.");
+        }
+        const index = _getFocusIndex();
+        tmappUI.setImageZLevel(_currentImage.zLevels[index]);
+        coordinateHelper.setImage(_viewer.world.getItemAt(index));
+        _updateCollabPosition();
+        _updateURLParams();
+    }
 
-    setFocusName: function() { //Display focus level in UI
-        setImageZLevel(z_levels[tmapp.getFocusIndex()]);
-        this.updateCollabPosition();
-        this.updateURLParams();
-    },
-    setZoomName: function() { //Display zoom level in UI
-        const zoom = this.viewer.viewport.getZoom();
-        const size = this.viewer.viewport.getContainerSize();
+    function _updateZoom() {
+        if (!_viewer) {
+            throw new Error("Tried to update zoom of nonexistent viewer.");
+        }
+        const zoom = _viewer.viewport.getZoom();
+        const size = _viewer.viewport.getContainerSize();
         overlayHandler.setOverlayScale(zoom, size.x, size.y);
-        setImageZoom(Math.round(zoom*10)/10);
-        this.curr_zoom = zoom;
-        this.updateCollabPosition();
-        this.updateURLParams();
-    },
-    setPosition: function() { //Update the current position params
-        const position = this.viewer.viewport.getCenter();
-        this.curr_x = position.x;
-        this.curr_y = position.y;
-        this.updateCollabPosition();
-        this.updateURLParams();
-    },
-    setCursorStatus: function(status) {
-        if (this.cursor_status) {
-            Object.assign(this.cursor_status, status);
+        tmappUI.setImageZoom(Math.round(zoom*10)/10);
+        _currState.zoom = zoom;
+        _updateCollabPosition();
+        _updateURLParams();
+    }
+
+    function _updatePosition() {
+        if (!_viewer) {
+            throw new Error("Tried to update position of nonexistent viewer.");
         }
-        else {
-            this.cursor_status = status;
+        const position = _viewer.viewport.getCenter();
+        _currState.x = position.x;
+        _currState.y = position.y;
+        _updateCollabPosition();
+        _updateURLParams();
+    }
+
+    function _updateURLParams() {
+        const url = new URL(window.location.href);
+        const roundTo = (x, n) => Math.round(x * Math.pow(10, n)) / Math.pow(10, n);
+        const params = url.searchParams;
+        if (_currentImage) {
+            params.set("image", _currentImage.name);
+            params.set("zoom", roundTo(_currState.zoom, 2));
+            params.set("x", roundTo(_currState.x, 5));
+            params.set("y", roundTo(_currState.y, 5));
+            params.set("z", _currState.z);
         }
-        this.updateCollabCursor();
-    },
-    updateCollabPosition: function() {
-        collabClient.updatePosition({
-            x: this.curr_x,
-            y: this.curr_y,
-            z: this.curr_z,
-            zoom: this.curr_zoom
+        _collab ? params.set("collab", _collab) : params.delete("collab");
+        tmappUI.setURL("?" + params.toString());
+    }
+
+    function _setCursorStatus(status) {
+        Object.assign(_cursorStatus, status);
+        _updateCollabCursor();
+    }
+
+    function _updateCollabPosition() {
+        collabClient.updatePosition(_currState);
+    }
+
+    function _updateCollabCursor() {
+        collabClient.updateCursor(_cursorStatus);
+    }
+
+    function _expandImageName() {
+        // Get the full image names based on the data from the server
+        const imageName = _currentImage.name;
+        const imageStack = [];
+        _currentImage.zLevels.forEach(zLevel => {
+            imageStack.push(`${_imageDir}${imageName}_z${zLevel}.dzi`);
         });
-    },
-    updateCollabCursor: function() {
-        collabClient.updateCursor(this.cursor_status);
-    },
-    updateURLParams: function() { //Update the URL params
-        url = new URL(window.location.href);
-        let roundTo = (x, n) => Math.round(x * Math.pow(10, n)) / Math.pow(10, n);
-        params = url.searchParams;
-        params.set("image", tmapp.image_name);
-        params.set("zoom", roundTo(this.curr_zoom, 2));
-        params.set("x", roundTo(this.curr_x, 5));
-        params.set("y", roundTo(this.curr_y, 5));
-        params.set("z", this.curr_z);
-        this.collab ? params.set("collab", this.collab) : params.delete("collab");
-        setURL("?" + params.toString());
-    },
-    setMClass: function(mClass) {
-        if (bethesdaClassUtils.getIDFromName(mClass) >= 0) {
-            tmapp.curr_mclass = mClass;
-        }
-        else {
-            throw new Error("Tried to set the active marker class to something not defined.");
-        }
-    },
-    setCollab: function(id) {
-        if (id) {
-            this.collab = id;
-            tmappUI.setCollabID(id);
-        }
-        else {
-            delete this.collab;
-            tmappUI.clearCollabID();
-        }
-        this.updateURLParams();
-    },
-    moveTo: function({x, y, z, zoom}) {
-        if (zoom) {
-            viewer.viewport.zoomTo(zoom, true);
-        }
-        if (x && y) {
-            viewer.viewport.panTo(new OpenSeadragon.Point(x, y), true);
-        }
-        if (z) {
-            this.setFocusLevel(z);
-        }
-    },
-    panToPoint: function(id) { // Pan to the specified point
-        const point = markerPoints.getPointById(id);
-        if (point === undefined) {
-            throw new Error("Tried to move to an unused point id.");
-        }
-        // TODO: Seems like this happens a lot, should maybe just store all coordinate systems with point
-        const imageCoords = new OpenSeadragon.Point(point.x, point.y);
-        const viewportCoords = overlayUtils.imageToViewport(imageCoords, "ISS");
-        this.moveTo({
-            zoom: 25,
-            x: viewportCoords.x,
-            y: viewportCoords.y,
-            z: point.z
-        });
-    },
-    changeImage: function(imageName, callback, nochange) {
-        if (!markerPoints.empty() && !confirm(`You are about to open ` +
-            `the image "${imageName}". Do you want to ` +
-            `open this image? Any markers placed on the ` +
-            `current image will be lost unless you save ` +
-            `them first.`)) {
-            nochange && nochange();
-            return;
-        }
-        if (!tmapp.images.some((image) => image.name === imageName)) {
-            tmappUI.displayImageError("badimage", 5000);
-            throw new Error("Tried to change to an unknown image.");
-        }
-        markerPoints.clearPoints(false);
-        $("#ISS_viewer").empty();
-        tmapp.fixed_file = imageName;
-        tmapp.image_name = imageName; // TODO: Should make case consistent throughout project
-        tmapp.updateURLParams();
-        tmapp.initOSD(callback);
-    }
-}
-
-
-/**
- * Get all the buttons from the interface and assign all the functions associated to them */
-/* tmapp.registerActions = function () {
-    tmapp["object_prefix"] = tmapp.options_osd.id.split("_")[0];
-    var op = tmapp["object_prefix"];
-    var cpop="CP";
-
-    interfaceUtils.listen(op + '_bringmarkers_btn','click', function () { dataUtils.processISSRawData(); },false);
-    interfaceUtils.listen(op + '_searchmarkers_btn','click', function () { markerUtils.hideRowsThatDontContain(); },false);
-    interfaceUtils.listen(op + '_cancelsearch_btn','click', function () { markerUtils.showAllRows(); },false);
-    interfaceUtils.listen(op + '_drawall_btn','click', function () { markerUtils.drawAllToggle(); },false);
-    interfaceUtils.listen(op + '_drawregions_btn','click', function () { regionUtils.regionsOnOff() },false);
-    interfaceUtils.listen(op + '_export_regions','click', function () { regionUtils.exportRegionsToJSON() },false);
-    interfaceUtils.listen(op + '_import_regions','click', function () { regionUtils.importRegionsFromJSON() },false);
-    interfaceUtils.listen(op + '_export_regions_csv','click', function () { regionUtils.pointsInRegionsToCSV() },false);
-    interfaceUtils.listen(op + '_fillregions_btn','click', function () { regionUtils.fillAllRegions(); },false);
-    interfaceUtils.listen(cpop + '_bringmarkers_btn','click', function () { CPDataUtils.processISSRawData() },false);
-
-    var uls=document.getElementsByTagName("ul");
-    for(var i=0;i<uls.length;i++){
-        var as=uls[i].getElementsByTagName("a");
-        for(var j=0;j<as.length;j++){
-            as[j].addEventListener("click",function(){interfaceUtils.hideTabsExcept($(this))});
-        }
-    }
-//    interfaceUtils.activateMainChildTabs("markers-gui");
-}
- */
-
-/**
- * Expand single image name into z-stack array of names */
-tmapp.expandImageName = function(img) {
-    function* range(start, end, step=1) {
-        for (let i = start; i < end; i+=step) {
-            yield i;
-        }
+        return imageStack;
     }
 
-    setImageName(img);
+    function _loadImages(imageStack, z =  -1) {
+        if (z < 0) {
+            z = Math.floor(imageStack.length / 2);
+        }
+        _currState.z = z;
 
-    //Hard coded z-ranges based on image number
-    //TODO: glob for z-range
-    if (parseInt(img.match(/^\d*/),10)<=80) {
-        z_levels=[...range(-2000, 2001, 400)];
-    }
-    else {
-        z_levels=[...range(-2500, 2501, 500)];
-    }
-    console.log(z_levels);
-
-    this.fixed_file=z_levels.map(function(z) {return tmapp._image_dir+img+"_z"+z+".dzi";});
-}
-
-/**
- * Open stack of .dzi and set current z-level (default=mid level) */
-tmapp.loadImages = function(z=-1) {
-    if (z<0) {
-        z=Math.floor(this.fixed_file.length/2);
-    }
-    curr_z=z;
-
-    console.log("Opening: "+this.fixed_file);
-    for(i=0;i < this.fixed_file.length;){
-        this.viewer.addTiledImage({
-            tileSource: this.fixed_file[i],
-            opacity: i==curr_z,
-            index: i++,
-            //Announce when we're done
-            success:function() { if (tmapp.viewer.world.getItemCount()==tmapp.fixed_file.length) { tmapp.viewer.raiseEvent('open') } },
-            error:function() { tmapp.viewer.raiseEvent('open-failed') }
+        console.info(`Opening: ${imageStack}`);
+        imageStack.forEach((image, i) => {
+            _viewer.addTiledImage({
+                tileSource: image,
+                opacity: i === _currState.z,
+                index: i++,
+                success: () => {
+                    if (_viewer.world.getItemCount() === imageStack.length) {
+                        _viewer.raiseEvent("open");
+                    }
+                },
+                error: () => {
+                    _viewer.raiseEvent("open-failed");
+                },
+            });
         });
     }
-}
 
+    function _addMouseTracking(viewer) {
+        // Handle quick and slow clicks
+        function clickHandler(event) {
+            if(event.quick){
+                if (tmappUI.inFocus() && !event.ctrlKey) {
+                    const marker = {
+                        x: event.position.x,
+                        y: event.position.y,
+                        z: _currState.z,
+                        mclass: _currMclass
+                    };
+                    markerHandler.addMarker(marker);
+                }
+            }
+        };
 
-/**
- * Set up the event handlers for various OSD events.
- * @param {Function} callback Function to call at the end of the "open"
- * event handler, i.e. when the OSD viewer has been fully loaded.
- */
-tmapp.add_handlers = function (callback) {
-    viewer=tmapp.viewer;
-
-    //Change-of-Page (z-level) handle
-    viewer.addHandler("page", function (data) {
-        tmapp.setFocusName();
-    });
-
-    viewer.addHandler("zoom", function (data) {
-        tmapp.setZoomName();
-    });
-
-    viewer.addHandler("pan", function (data) {
-        tmapp.setPosition();
-    });
-
-    //When we're done loading
-    viewer.addHandler("open", function ( event ) {
-        console.log("Done loading!");
-        tmapp.viewer.canvas.focus();
-
-        const params = tmapp.initial_params;
-        if (params !== null) {
-            // Move the viewport to the initial params if defined
-            const zoom = params.zoom;
-            const center = new OpenSeadragon.Point(params.x, params.y);
-            viewer.viewport.zoomTo(zoom, null, true);
-            viewer.viewport.panTo(center, true);
-            tmapp.setFocusLevel(params.z);
+        // Live updates of mouse position in collaboration
+        function moveHandler(event) {
+            const pos = coordinateHelper.webToViewport(event.position);
+            _setCursorStatus({x: pos.x, y: pos.y});
         }
-        else {
-            // Otherwise move to home
+
+        // Live updates of whether or not the mouse is held down
+        function heldHandler(held) {
+            return function(event) {
+                const pos = coordinateHelper.webToViewport(event.position);
+                _setCursorStatus({held: held});
+            };
+        }
+
+        // Live update of whether or not the mouse is in the viewport
+        function insideHandler(inside) {
+            return function(event) {
+                const pos = coordinateHelper.webToViewport(event.position);
+                _setCursorStatus({inside: inside});
+            };
+        }
+
+        //OSD handlers have to be registered using MouseTracker OSD objects
+        new OpenSeadragon.MouseTracker({
+            element: viewer.canvas,
+            clickHandler: clickHandler,
+            moveHandler: moveHandler,
+            enterHandler: insideHandler(true),
+            exitHandler: insideHandler(false),
+            pressHandler: heldHandler(true),
+            releaseHandler: heldHandler(false)
+        }).setTracking(true);
+
+        // Add hook to scroll without zooming, didn't seem possible without
+        function scrollHook(event){
+            if (event.originalEvent.ctrlKey) {
+                event.preventDefaultAction = true;
+                if (event.scroll > 0) {
+                    incrementFocus();
+                }
+                else if (event.scroll < 0) {
+                    decrementFocus();
+                }
+            }
+        };
+
+        viewer.addViewerInputHook({hooks: [
+            {
+                tracker: "viewer",
+                handler: "scrollHandler",
+                hookHandler: scrollHook
+            }
+        ]});
+    }
+
+    function _addHandlers (viewer, callback) {
+        // Change-of-Page (z-level) handler
+        viewer.addHandler("page", _updateFocus);
+        viewer.addHandler("zoom", _updateZoom);
+        viewer.addHandler("pan", _updatePosition);
+
+        // When we're done loading
+        viewer.addHandler("open", function (event) {
+            console.info("Done loading!");
+            _addMouseTracking(viewer);
+            viewer.canvas.focus();
             viewer.viewport.goHome();
-        }
+            _updateZoom();
+            _updateFocus();
+            _updatePosition();
+            callback && callback();
+            tmappUI.clearImageError();
+            tmappUI.enableCollabCreation();
+        });
 
-        tmapp.setZoomName();
-        tmapp.setFocusName();
-        callback && callback();
-        tmappUI.clearImageError();
-        tmappUI.enableCollabCreation();
-    });
+        // Error message if we fail to load
+        viewer.addHandler('open-failed', function (event) {
+            console.warn("Open failed!");
+            tmappUI.displayImageError("servererror");
+        });
 
-    //Error message if we fail to load
-    viewer.addHandler('open-failed', function ( event ) {
-        //alert( "ERROR!\nOpenFailed: "+ event.message + "\n" );
-        console.log("Open failed!");
-        tmappUI.displayImageError("servererror");
-    });
+        // A tile failed to load
+        viewer.addHandler("tile-load-failed", function(event) {
+            tmappUI.displayImageError("tilefail", 1000);
+        });
+    }
 
-    // A tile failed to load
-    viewer.addHandler("tile-load-failed", function(event) {
-        tmappUI.displayImageError("tilefail", 1000);
-    });
+    function _initOSD(callback) {
+        const imageStack = _expandImageName(_currentImage.name);
 
-    //pixelate at MaxZoom level (instead of blur)
-//    viewer.addHandler("tile-drawn", OSDViewerUtils.pixelateAtMaximumZoomHandler);
-}
+        //init OSD viewer
+        _viewer = OpenSeadragon(_optionsOSD);
+        _addHandlers(_viewer, callback);
 
+        //open the DZI xml file pointing to the tiles
+        _loadImages(imageStack);
 
-/**
-  * Method that should be called first when the document has finished
-  * loading. This method contacts the server to retrieve a list of
-  * available images and their Z values. If this information is
-  * successfully retrieved and the specified image in the parameters is
-  * found, a call is made to initOSD() initiate OpenSeadragon.
-  * Otherwise, an error message is shown.
-  * @param {Function} callback Function to call when the OSD viewer has
-  * been fully initialized.
-  */
-tmapp.init = function (callback) {
-    // Initiate a HTTP request and send it to the image info endpoint
-    const imageReq = new XMLHttpRequest();
-    imageReq.open("GET", window.location.origin + "/api/images", true);
-    imageReq.send(null);
+        //Create svgOverlay(); so that anything like D3, or any canvas library can act upon. https://d3js.org/
+        const overlay =  _viewer.svgOverlay();
+        overlayHandler.init(overlay);
+    }
 
-    imageReq.onreadystatechange = function() {
-        if (imageReq.readyState === 4) {
+    /**
+     * Initiate tmapp by fetching a list of images from the server,
+     * filling the image browser, and going to the image specified
+     * in the search parameters of the URL. If a collab and an initial
+     * state are also specified in the URL, these are also set up.
+     * @param {Object} options The initial tmapp options specified in
+     * the URL.
+     * @param {string} options.imageName The name of the initial image
+     * to be opened.
+     * @param {string} options.collab The id of the initial collab.
+     * @param {Object} options.initialState The initial viewport state.
+     * @param {number} options.initialState.x X position of viewport.
+     * @param {number} options.initialState.y Y position of viewport.
+     * @param {number} options.initialState.z Z level in viewport.
+     * @param {number} options.initialState.zoom Zoom in viewport.
+     */
+    function init({imageName, collab, initialState}) {
+        // Initiate a HTTP request and send it to the image info endpoint
+        const imageReq = new XMLHttpRequest();
+        imageReq.open("GET", window.location.origin + "/api/images", true);
+        imageReq.send(null);
+
+        imageReq.onreadystatechange = function() {
+            if (imageReq.readyState !== 4) {
+                return;
+            }
             switch (imageReq.status) {
                 case 200:
-                    // Image info was successfully retrieved
-                    const images = JSON.parse(imageReq.responseText);
-                    tmapp.images = images.images;
-                    images.images.forEach((image) => tmappUI.addImage(image));
+                    // Add the images to the image browser
+                    const images = JSON.parse(imageReq.responseText).images;
+                    images.forEach(image => tmappUI.addImage(image));
+                    _images = images;
 
-                    // TODO: This feels sloppy, should refactor later
-                    // If there is no image specified, run the callback function
-                    if (!tmapp.fixed_file) {
-                        tmappUI.displayImageError("noimage");
-                        callback && callback();
-                        return;
-                    }
-
-                    // Find the specified image
-                    const image = images.images.find((image) => image.name === tmapp.fixed_file);
-                    if (image) {
-                        // Image was found
-                        tmapp.initOSD(callback);
-                    }
-                    else {
-                        if (tmapp.fixed_file) {
-                            tmappUI.displayImageError("badimage");
+                    // Go to the initial image and/or join the collab
+                    if (imageName) {
+                        const image = images.find(image => image.name === imageName);
+                        if (image) {
+                            openImage(imageName, () => {
+                                if (collab) {
+                                    collabClient.connect(collab);
+                                }
+                                if (initialState) {
+                                    moveTo(initialState);
+                                }
+                            });
                         }
                         else {
-                            tmappUI.displayImageError("noimage");
+                            tmappUI.displayImageError("badimage");
                         }
+                    }
+                    else {
+                        tmappUI.displayImageError("noimage");
+                    }
+                    if (collab && !imageName) {
+                        collabClient.connect(collab);
                     }
                     break;
                 case 500:
@@ -378,152 +347,159 @@ tmapp.init = function (callback) {
             }
         }
     }
-}
 
+    /**
+     * Open a specified image in the viewport. If markers have been
+     * placed, the user is first prompted to see if they actually want
+     * to open the image or if they want to cancel.
+     * @param {string} imageName The name of the image being opened.
+     * @param {Function} callback Function to call if and only if the
+     * image is successfully opened.
+     * @param {Function} nochange Function to call if the user is
+     * prompted on whether or not they want to change images and they
+     * decide not to change.
+     */
+    function openImage(imageName, callback, nochange) {
+        if (!markerHandler.empty() && !confirm(`You are about to open ` +
+            `the image "${imageName}". Do you want to ` +
+            `open this image? Any markers placed on the ` +
+            `current image will be lost unless you save ` +
+            `them first.`)) {
+            nochange && nochange();
+            return;
+        }
 
-/**
- * This method is called when the document is loaded.
- * Creates the OpenSeadragon (OSD) viewer and adds the handlers for interaction.
- * The SVG overlays for the viewer are also initialized here
- * @param {Function} callback Function to call when the OSD viewer has
- * been fully initialized.
- */
-tmapp.initOSD = function (callback) {
-    //This prefix will be called by all other utilities in js/utils
-    tmapp["object_prefix"] = tmapp.options_osd.id.split("_")[0];
-    var op = tmapp["object_prefix"];
-    var vname = op + "_viewer";
+        const image = _images.find(image => image.name === imageName);
+        if (!image) {
+            tmappUI.displayImageError("badimage", 5000);
+            throw new Error("Tried to change to an unknown image.");
+        }
+        markerHandler.clearMarkers(false);
+        $("#ISS_viewer").empty();
+        coordinateHelper.clearImage();
+        _currentImage = image;
+        _updateURLParams();
+        _initOSD(callback);
+    }
 
-    this.expandImageName(this.fixed_file);
+    /**
+     * Move to a specified state in the viewport. If the state is only
+     * partially defined, the rest of the viewport state will remain
+     * the same as it was.
+     * @param {Object} state The viewport state to move to.
+     * @param {number} state.x The x position of the viewport.
+     * @param {number} state.y The y position of the viewport.
+     * @param {number} state.z The z level in the viewport.
+     * @param {number} state.zoom The zoom in the viewport.
+     */
+    function moveTo({x, y, z, zoom}) {
+        if (!_viewer) {
+            throw new Error("Tried to move viewport without a viewer.");
+        }
+        if (zoom) {
+            _viewer.viewport.zoomTo(zoom, true);
+        }
+        if (x && y) {
+            _viewer.viewport.panTo(new OpenSeadragon.Point(x, y), true);
+        }
+        if (z) {
+            _setFocusLevel(z);
+        }
+    }
 
-    //init OSD viewer
-    this.viewer = OpenSeadragon(tmapp.options_osd);
-    tmapp[vname] = this.viewer; //For js/utils, this is a TissUUmaps thing. TODO: Get rid of TissUUmaps things we do not use.
+    /**
+     * Move the viewport to look at a specific marker.
+     * @param {number} id The id of the marker being moved to.
+     */
+    function moveToMarker(id) {
+        const marker = markerHandler.getMarkerById(id);
+        if (marker === undefined) {
+            throw new Error("Tried to move to an unused marker id.");
+        }
+        const viewportCoords = coordinateHelper.imageToViewport(marker);
+        moveTo({
+            zoom: 25,
+            x: viewportCoords.x,
+            y: viewportCoords.y,
+            z: marker.z
+        });
+    }
 
-    this.add_handlers(callback);
-
-    //open the DZI xml file pointing to the tiles
-    this.loadImages();
-
-    //Create svgOverlay(); so that anything like D3, or any canvas library can act upon. https://d3js.org/
-    tmapp.svgov=tmapp.viewer.svgOverlay();
-    tmapp.ISS_singleTMCPS=d3.select(tmapp.svgov.node()).append('g').attr('class', "ISS singleTMCPS");
-    overlayHandler.init(tmapp.svgov);
-
-    //This is the OSD click handler, when the event is quick it triggers the creation of a marker
-    //Called when we are far from any existing points; if we are close to elem, then DOM code in overlayUtils is called instead
-    var click_handler= function(event) {
-        if(event.quick){
-            console.log("New click!");
-            // if (!(document.hasFocus())) {
-            if (tmapp.lost_focus) { //We get document focus back before getting the event
-                console.log("Lost document focus, ignoreing click and just setting (element) focus"); //Since it's irritating to get TMCP by asking for focus
-                tmapp.fixed_viewer.canvas.focus();
-                tmapp.checkFocus();
-            }
-            else if (event.ctrlKey) {
-            }
-            else {
-                console.log("Adding point");
-                const point = {
-                    x: event.position.x,
-                    y: event.position.y,
-                    z: tmapp.curr_z,
-                    mclass: tmapp.curr_mclass
-                };
-                markerPoints.addPoint(point);
-            }
+    /**
+     * Set the current marker class being assigned.
+     * @param {string} mclass The currently active marker class.
+     */
+    function setMclass(mclass) {
+        if (bethesdaClassUtils.getIDFromName(mclass) >= 0) {
+            _currMclass = mclass;
         }
         else {
-            //if it is not quick then it is dragged
-            console.log("drag thing");
+            throw new Error("Tried to set the active marker class to something not defined.");
         }
+    }
+
+    /**
+     * Set the current collaboration id, update the URL parameters and
+     * set the appropriate URL parameters.
+     @param {string} id The collaboration id being set.
+     */
+    function setCollab(id) {
+        _collab = id;
+        tmappUI.setCollabID(id);
+        _updateURLParams();
+    }
+
+    /**
+     * Clear the currently set collaboration and update the URL parameters.
+     */
+    function clearCollab() {
+        _collab = null;
+        tmappUI.clearCollabID();
+        _updateURLParams();
+    }
+
+    /**
+     * Increment the Z level by 1, if possible.
+     */
+    function incrementFocus() {
+        _setFocusLevel(_currState.z + 1);
+    }
+
+    /**
+     * Decrement the Z level by 1, if possible.
+     */
+    function decrementFocus() {
+        _setFocusLevel(_currState.z - 1);
+    }
+
+    /**
+     * Get the name of the currently opened image.
+     * @returns {string} The current image name.
+     */
+    function getImageName() {
+        return _currentImage && _currentImage.name;
+    }
+
+    /**
+     * Update the current status of tmapp, viewport position and cursor
+     * position, to the collaborators.
+     */
+    function updateCollabStatus() {
+        _updateCollabCursor();
+        _updateCollabPosition();
+    }
+
+    return {
+        init: init,
+        openImage: openImage,
+        moveTo: moveTo,
+        moveToMarker: moveToMarker,
+        setMclass: setMclass,
+        setCollab: setCollab,
+        clearCollab: clearCollab,
+        incrementFocus: incrementFocus,
+        decrementFocus: decrementFocus,
+        getImageName: getImageName,
+        updateCollabStatus: updateCollabStatus
     };
-
-    var scroll_handler = function(event){
-        if (event.originalEvent.ctrlKey) {
-            event.preventDefaultAction = true;
-            if (event.scroll > 0) {
-                $("#focus_next").click();
-            }
-            else if (event.scroll < 0) {
-                $("#focus_prev").click();
-            }
-        }
-    };
-
-    // Live updates of mouse position in collaboration
-    const moveHandler = function(event) {
-        const pos = overlayUtils.pointFromOSDPixel(event.position, "ISS");
-        tmapp.setCursorStatus({x: pos.x, y: pos.y});
-    }
-
-    // Live updates of whether or not the mouse is held down
-    const heldHandler = function(held) {
-        return function(event) {
-            const pos = overlayUtils.pointFromOSDPixel(event.position, "ISS");
-            tmapp.setCursorStatus({
-                held: held,
-                x: pos.x,
-                y: pos.y
-            });
-        };
-    }
-
-    // Live update of whether or not the mouse is in the viewport
-    const insideHandler = function(inside) {
-        return function(event) {
-            const pos = overlayUtils.pointFromOSDPixel(event.position, "ISS");
-            tmapp.setCursorStatus({
-                inside: inside,
-                x: pos.x,
-                y: pos.y
-            });
-        };
-    }
-
-    //OSD handlers have to be registered using MouseTracker OSD objects
-    var ISS_mouse_tracker = new OpenSeadragon.MouseTracker({
-        element: this.viewer.canvas,
-        clickHandler: click_handler,
-        scrollHandler: scroll_handler,
-        moveHandler: moveHandler,
-        enterHandler: insideHandler(true),
-        exitHandler: insideHandler(false),
-        pressHandler: heldHandler(true),
-        releaseHandler: heldHandler(false)
-    }).setTracking(true);
-
-    tmapp.viewer.canvas.addEventListener('mouseover', function() { tmapp.checkFocus(); });
-
-    console.log("Finish init");
-} //finish init
-
-
-/**
- * Options for the fixed and moving OSD
- * all options are described here https://openseadragon.github.io/docs/OpenSeadragon.html#.Options */
-tmapp.options_osd = {
-    id: "ISS_viewer", //cybr_viewer
-    prefixUrl: "js/openseadragon/images/", //Location of button graphics
-    navigatorSizeRatio: 1,
-    wrapHorizontal: false,
-    showNavigator: true,
-    navigatorPosition: "BOTTOM_LEFT",
-    navigatorSizeRatio: 0.25,
-    animationTime: 0.0,
-    blendTime: 0,
-    minZoomImageRatio: 1,
-    maxZoomPixelRatio: 4,
-    gestureSettingsMouse: {clickToZoom: false},
-    zoomPerClick: 1.4,
-    constrainDuringPan: true,
-    visibilityRatio: 1,
-    showNavigationControl: true, //FIX: After Full screen, interface stops working
-
-    //imageSmoothingEnabled: false,
-    sequenceMode: false, // true,
-    preserveViewport: true,
-    preserveOverlays: true,
-    preload: true
-}
+})();

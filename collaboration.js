@@ -22,7 +22,7 @@ function generateColor() {
 class Collaboration {
     constructor(id, image) {
         this.members = new Map();
-        this.points = [];
+        this.markers = [];
         this.id = id;
         this.nextMemberId = 0;
         this.nextColor = generateColor();
@@ -68,35 +68,35 @@ class Collaboration {
     }
 
     handleMessage(sender, msg) {
-        // Keep track of the current points
+        // Keep track of the current markers
         const member = this.members.get(sender);
         switch (msg.type) {
             case "markerAction":
                 if (!member.ready) {
-                    // Members who aren't ready shouldn't do anything with points
+                    // Members who aren't ready shouldn't do anything with markers
                     break;
                 }
                 switch (msg.actionType) {
                     case "add":
-                        if (!this.isDuplicatePoint(msg.point)) {
-                            this.points.push(msg.point);
+                        if (!this.isDuplicateMarker(msg.marker)) {
+                            this.markers.push(msg.marker);
                             this.broadcastMessage(sender, msg);
                         }
                         else {
-                            this.log(`${member.name} tried to add a duplicate point, ignoring.`, console.info);
+                            this.log(`${member.name} tried to add a duplicate marker, ignoring.`, console.info);
                         }
                         break;
                     case "update":
-                        Object.assign(this.points.find((point) => point.id === msg.id), msg.point);
+                        Object.assign(this.markers.find(marker => marker.id === msg.id), msg.marker);
                         this.broadcastMessage(sender, msg);
                         break;
                     case "remove":
-                        const index = this.points.findIndex((point) => point.id === msg.id);
-                        this.points.splice(index, 1);
+                        const index = this.markers.findIndex(marker => marker.id === msg.id);
+                        this.markers.splice(index, 1);
                         this.broadcastMessage(sender, msg);
                         break;
                     case "clear":
-                        this.points = [];
+                        this.markers = [];
                         this.broadcastMessage(sender, msg);
                         break;
                     default:
@@ -124,7 +124,7 @@ class Collaboration {
                         member.ready = false;
                     }
                 }
-                this.points = [];
+                this.markers = [];
                 this.image = msg.image;
                 break;
             case "requestSummary":
@@ -150,16 +150,16 @@ class Collaboration {
             requesterId: this.members.get(sender).id,
             image: this.image,
             members: Array.from(this.members.values()),
-            points: this.points
+            markers: this.markers
         }
     }
 
-    isDuplicatePoint(point) {
-        return this.points.some((existingPoint) =>
-            existingPoint.x === point.x
-            && existingPoint.y === point.y
-            && existingPoint.z === point.z
-            && existingPoint.mclass === point.mclass
+    isDuplicateMarker(marker) {
+        return this.markers.some(existingMarker =>
+            existingMarker.x === marker.x
+            && existingMarker.y === marker.y
+            && existingMarker.z === marker.z
+            && existingMarker.mclass === marker.mclass
         );
     }
 

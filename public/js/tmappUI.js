@@ -8,6 +8,7 @@
  */
 const tmappUI = (function(){
     "use strict";
+    let _pageInFocus = true;
     let _errorDisplayTimeout = null;
     const _errors = {
         noimage: {
@@ -35,13 +36,13 @@ const tmappUI = (function(){
     const _holdInterval = 50;
     function _addHoldableButton(key, element, f) {
         let interval;
-        element.addEventListener("keydown", (event) => {
+        element.addEventListener("keydown", event => {
             if (event.key === key && !event.repeat) {
                 f();
                 interval = setInterval(f, _holdInterval);
             }
         });
-        element.addEventListener("keyup", (event) => {
+        element.addEventListener("keyup", event => {
             event.key === key && clearInterval(interval);
         });
     }
@@ -51,14 +52,17 @@ const tmappUI = (function(){
      * and add any event handlers that are needed.
      */
     function initUI() {
+        // Set the title
+        $("#project_title").text("Cyto Browser");
+
         // Set the initial class
-        tmapp.setMClass(bethesdaClassUtils.getClassFromID(0).name);
+        tmapp.setMclass(bethesdaClassUtils.getClassFromID(0).name);
 
         // Add buttons for the available marker classes
         bethesdaClassUtils.forEachClass(function(item, index){
             let label = $("<label></label>");
             label.addClass("btn btn-dark");
-            if (index == 0) { label.addClass("active"); }
+            if (index === 0) { label.addClass("active"); }
             label.attr("id", "class_" + item.name);
             label.attr("title", item.description);
             let input = $("<input>" + item.name + "</input>");
@@ -66,17 +70,36 @@ const tmappUI = (function(){
             input.attr("name", "class_options");
             input.attr("autocomplete", "off");
             label.append(input);
-            label.click(function(){ tmapp.setMClass(item.name); });
+            label.click(function(){ tmapp.setMclass(item.name); });
             $("#class_buttons").append(label);
         });
 
+        // Prevent ctrl+scroll zooming in the viewer, since that's for focus
+        $("#ISS_viewer").bind("mousewheel DOMMouseScroll", event => {
+            event.preventDefault();
+        });
+        $(document).focus(() => {
+            // A small delay since this seems to fire before any other handlers
+            // TODO: Find a cleaner way for clicks to check for focus
+            setTimeout(() => _pageInFocus = true, 100);
+        });
+        $(document).blur(() => {
+            _pageInFocus = false;
+        });
+
         // Add event listeners for local storage buttons
-        $("#pointstojson").click(JSONUtils.downloadJSON);
-        $("#jsontodata").click(JSONUtils.readJSONToData);
+        $("#json_to_data").click(() => {
+            const loadedJSON = localStorage.loadJSON("data_files_import");
+            loadedJSON.then(markerStorageConversion.addMarkerStorageData);
+        });
+        $("#points_to_json").click(() => {
+            const markerData = markerStorageConversion.getMarkerStorageData();
+            localStorage.saveJSON(markerData);
+        });
 
         // Add event listeners for focus buttons
-        $("#focus_next").click(() => tmapp.setFocusLevel(tmapp.getFocusLevel() + 1));
-        $("#focus_prev").click(() => tmapp.setFocusLevel(tmapp.getFocusLevel() - 1));
+        $("#focus_next").click(tmapp.incrementFocus);
+        $("#focus_prev").click(tmapp.decrementFocus);
 
         // Add event listeners for keyboard buttons
         //1,2,... for class selection
@@ -94,23 +117,14 @@ const tmappUI = (function(){
                     break;
                 default:
                     // Handle digit keys being pressed for classes
-                    const digits = Array.from({length: 10}, (v,k) => String((k+1) % 10));
-                    const chars = digits.map((digit) => digit.charCodeAt());
-                    chars.slice(0, bethesdaClassUtils.amountClasses).forEach((char, index) => {
-                        if (event.which == char) {
+                    const digits = Array.from({length: 10}, (v, k) => String((k+1) % 10));
+                    const chars = digits.map(digit => digit.charCodeAt());
+                    chars.slice(0, bethesdaClassUtils.count()).forEach((char, index) => {
+                        if (event.which === char) {
                             $("#class_" + bethesdaClassUtils.getClassFromID(index).name).click();
                         }
                     });
             }
-        });
-
-        // Set up callbacks for the collaboration client
-        collabClient.onConnect(function(connection) {
-            tmapp.setCollab(connection.id);
-        });
-        collabClient.onDisconnect(function(connection) {
-            clearCollaborators();
-            tmapp.setCollab();
         });
 
         // Set up the collaboration menu
@@ -187,7 +201,7 @@ const tmappUI = (function(){
      */
     function updateCollaborators(localMember, members) {
         $("#collaborator_list").empty();
-        members.forEach((member) => {
+        members.forEach(member => {
             const color = $("<span></span>");
             color.addClass("badge badge-pill");
             color.css("background-color", member.color);
@@ -200,7 +214,7 @@ const tmappUI = (function(){
             entry.attr("href", "#");
             entry.html(`&nbsp;&nbsp;&nbsp;${member.name}`);
             entry.prepend(color);
-            entry.click((event) => {
+            entry.click(event => {
                 event.preventDefault();
                 $("#collaboration_menu").modal("hide");
                 tmapp.moveTo(member.position);
@@ -297,19 +311,16 @@ const tmappUI = (function(){
         a.addClass("card-link stretched-link");
         a.attr("href", "#");
         a.text("Open image");
-        a.click((e) => {
+        a.click(e => {
             e.preventDefault();
             $("#image_browser").modal("hide");
-            tmapp.changeImage(image.name, () => {
-                collabClient.send({
-                    type: "imageSwap",
-                    image: image.name
-                });
+            tmapp.openImage(image.name, () => {
+                collabClient.swapImage(image.name);
             });
         });
-        a.hover((e) =>
+        a.hover(event =>
             detail.addClass("show").removeClass("hide"),
-            (e) =>
+            e =>
             detail.addClass("hide").removeClass("show")
         );
         footer.append(a);
@@ -322,6 +333,46 @@ const tmappUI = (function(){
         deck.append(col);
     }
 
+    /**
+     * Set the displayed image name in the UI.
+     * @param {string} txt The image name to display.
+     */
+    function setImageName(txt) {
+        $("#img_name").text(txt);
+    }
+
+    /**
+     * Set the displayed z level in the UI.
+     * @param {string} txt The z level to display.
+     */
+    function setImageZLevel(txt) {
+        $("#img_zlevel").text(txt);
+    }
+
+    /**
+     * Set the displayed zoom in the UI.
+     * @param {string} txt The zoom value to display.
+     */
+    function setImageZoom(txt) {
+        $("#img_zoom").text(txt);
+    }
+
+    /**
+     * Push a new state to the URL.
+     * @param {string} txt The new state to push.
+     */
+    function setURL(txt) {
+        window.history.pushState(null, "", txt);
+    }
+
+    /**
+     * Check whether or not the page is in focus.
+     * @returns {boolean} Whether or not the page is in focus.
+     */
+    function inFocus() {
+        return _pageInFocus;
+    }
+
     return {
         initUI: initUI,
         setCollabID: setCollabID,
@@ -331,6 +382,11 @@ const tmappUI = (function(){
         enableCollabCreation: enableCollabCreation,
         displayImageError: displayImageError,
         clearImageError: clearImageError,
-        addImage: addImage
+        addImage: addImage,
+        setImageName: setImageName,
+        setImageZLevel: setImageZLevel,
+        setImageZoom: setImageZoom,
+        setURL: setURL,
+        inFocus: inFocus
     };
 })();

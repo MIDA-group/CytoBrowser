@@ -5,10 +5,7 @@
 const collabClient = (function(){
     "use strict";
     let _ws,
-        _connection,
         _joinBatch,
-        _connectFun,
-        _disconnectFun,
         _members,
         _localMember;
 
@@ -36,16 +33,16 @@ const collabClient = (function(){
     function _handleMarkerAction(msg) {
         switch(msg.actionType) {
             case "add":
-                markerPoints.addPoint(msg.point, "image", false);
+                markerHandler.addMarker(msg.marker, "image", false);
                 break;
             case "update":
-                markerPoints.updatePoint(msg.id, msg.point, "image", false);
+                markerHandler.updateMarker(msg.id, msg.marker, "image", false);
                 break;
             case "remove":
-                markerPoints.removePoint(msg.id, false);
+                markerHandler.removeMarker(msg.id, false);
                 break;
             case "clear":
-                markerPoints.clearPoints(false);
+                markerHandler.clearMarkers(false);
                 break;
             default:
                 console.warn(`Unknown marker action type: ${msg.actionType}`);
@@ -56,7 +53,7 @@ const collabClient = (function(){
         if (!_members) {
             throw new Error("Tried to handle member event without an initialized member array.");
         }
-        const member = _members.find((member) =>
+        const member = _members.find(member =>
             msg.member ? member.id === msg.member.id : member.id === msg.id
         );
         switch(msg.eventType) {
@@ -73,7 +70,7 @@ const collabClient = (function(){
                 _memberUpdate(false);
                 break;
             case "remove":
-                const memberIndex = _members.findIndex((member) => member.id === msg.member.id);
+                const memberIndex = _members.findIndex(member => member.id === msg.member.id);
                 _members.splice(memberIndex, 1);
                 _memberUpdate();
                 break;
@@ -83,28 +80,32 @@ const collabClient = (function(){
     }
 
     function _handleSummary(msg) {
-        if (msg.image !== tmapp.image_name) {
-            tmapp.changeImage(msg.image, () => {
+        if (msg.image !== tmapp.getImageName()) {
+            tmapp.openImage(msg.image, () => {
                 _joinBatch = null;
                 _requestSummary();
-                // TODO: Could handle the edge case of switching image 1 -> image 2 -> image 1
             }, disconnect);
             return;
         }
-        markerPoints.clearPoints(false);
-        msg.points.forEach((point) => {
-            markerPoints.addPoint(point, "image", false)
+        if (_joinBatch) {
+            markerHandler.forEachMarker(marker => {
+                _joinBatch.push(marker);
+            });
+        }
+        markerHandler.clearMarkers(false);
+        msg.markers.forEach(marker => {
+            markerHandler.addMarker(marker, "image", false)
         });
         if (_joinBatch) {
-            _joinBatch.forEach((point) => {
-                markerPoints.addPoint(point, "image");
+            _joinBatch.forEach(marker => {
+                markerHandler.addMarker(marker, "image");
             });
             _joinBatch = null;
         }
         _members = msg.members;
-        _localMember = _members.find((member) => member.id === msg.requesterId);
+        _localMember = _members.find(member => member.id === msg.requesterId);
         _memberUpdate();
-        tmapp.updateCollabPosition();
+        tmapp.updateCollabStatus();
     }
 
     function _requestSummary() {
@@ -112,7 +113,7 @@ const collabClient = (function(){
     }
 
     function _handleImageSwap(msg) {
-        tmapp.changeImage(msg.image, () => {
+        tmapp.openImage(msg.image, () => {
             // Make sure to get any new information from before you swapped
             _requestSummary();
         }, disconnect);
@@ -122,7 +123,7 @@ const collabClient = (function(){
         if (hardUpdate) {
             tmappUI.updateCollaborators(_localMember, _members);
         }
-        overlayHandler.updateMembers(_members.filter((member) => member !== _localMember));
+        overlayHandler.updateMembers(_members.filter(member => member !== _localMember));
     }
 
     /**
@@ -155,28 +156,25 @@ const collabClient = (function(){
      * @param {boolean} include Whether or not already-placed markers
      * should be included in the collaborative workspace.
      */
-    function connect(id, name="Unnamed", include=false) {
+    function connect(id, name=getDefaultName(), include=false) {
         if (_ws) {
             disconnect();
         }
 
-        const address = `ws://${window.location.host}/collaboration/${id}?name=${name}&image=${tmapp.image_name}`;
+        const address = `ws://${window.location.host}/collaboration/`+
+            `${id}?name=${name}&image=${tmapp.getImageName()}`;
         const ws = new WebSocket(address);
         ws.onopen = function(event) {
             console.info(`Successfully connected to collaboration ${id}.`);
             _ws = ws;
-            _connection = {id: id, name: name, ws: ws};
-            _connectFun && _connectFun(_connection);
+            tmapp.setCollab(id);
 
             if (include) {
                 _joinBatch = [];
-                markerPoints.forEachPoint((point) => {
-                    _joinBatch.push(point);
-                });
                 _requestSummary();
             }
-            else if (markerPoints.empty() || confirm("All your placed markers will be lost unless you have saved them. Do you want to continue anyway?")) {
-                markerPoints.clearPoints(false);
+            else if (markerHandler.empty() || confirm("All your placed markers will be lost unless you have saved them. Do you want to continue anyway?")) {
+                markerHandler.clearMarkers(false);
                 _requestSummary();
             }
             else {
@@ -187,13 +185,13 @@ const collabClient = (function(){
             _handleMessage(JSON.parse(event.data));
         }
         ws.onclose = function(event) {
-            _disconnectFun && _disconnectFun(_connection);
             _joinBatch = null;
-            _connection = null;
             _members = null;
             _localMember = null;
             _ws = null;
             overlayHandler.updateMembers([]);
+            tmappUI.clearCollaborators();
+            tmapp.clearCollab();
         }
     }
 
@@ -227,6 +225,65 @@ const collabClient = (function(){
     }
 
     /**
+     * Notify collaborators about an image being swapped.
+     * @param {string} imageName Name of the image being swapped to.
+     */
+    function swapImage(imageName) {
+        send({
+            type: "imageSwap",
+            image: imageName
+        });
+    }
+
+    /**
+     * Notify collaborators about a marker being added.
+     * @param {Object} marker Data for the added marker.
+     */
+    function addMarker(marker) {
+        send({
+            type: "markerAction",
+            actionType: "add",
+            marker: marker
+        });
+    }
+
+    /**
+     * Notify collaborators about a marker being updated.
+     * @param {number} id The original id of the marker being updated.
+     * @param {Object} marker Data for the updated marker.
+     */
+    function updateMarker(id, marker) {
+        send({
+            type: "markerAction",
+            actionType: "update",
+            id: id,
+            marker: marker
+        });
+    }
+
+    /**
+     * Notify collaborators about a marker being removed.
+     * @param {number} id The id of the marker being removed.
+     */
+    function removeMarker(id) {
+        send({
+            type: "markerAction",
+            actionType: "remove",
+            id: id
+        });
+    }
+
+    /**
+     * Notify collaborators of all markers being cleared.
+     */
+    function clearMarkers() {
+        send({
+            type: "markerAction",
+            actionType: "clear"
+        });
+    }
+
+    /**
      * Change the name of the local collaboration member.
      * @param {string} newName The new name to be assigned to the member.
      */
@@ -242,7 +299,7 @@ const collabClient = (function(){
                 hardUpdate: true,
                 member: _localMember
             });
-            tmappUI.updateCollaborators(_localMember, _members);
+            _memberUpdate(_localMember, _members);
         }
     }
 
@@ -279,11 +336,12 @@ const collabClient = (function(){
         }
     }
 
-    /** Update the position and status of the local collaboration member's
-      * mouse cursor.
-      * @param {Object} cursor Current status of the cursor.
-      * @function
-      */
+    /**
+     * Update the position and status of the local collaboration member's
+     * mouse cursor.
+     * @param {Object} cursor Current status of the cursor.
+     * @function
+     */
     const updateCursor = (function(){
         // Limit the rate at which move updates are sent
         const moveInterval = 200;
@@ -335,46 +393,19 @@ const collabClient = (function(){
         return updateCursor
     })();
 
-    /**
-     * Function that can be set to be called at various points in the
-     * collaboration lifeline.
-     * @name CollabCallback
-     * @function
-     * @param {Object} connection Collaboration connection information.
-     * @param {string} id Identifier for the collaboration.
-     * @param {string} name Name used for this client's participant.
-     * @param {WebSocket} ws Websocket object used to communicate with
-     * the collaboration on the server.
-     */
-
-    /**
-     * Set a function to be called whenever the collaboration
-     * successfully connects to the server.
-     * @param {CollabCallback} f Function to be called.
-     */
-    function onConnect(f) {
-        _connectFun = f;
-    }
-
-    /**
-     * Set a function to be called whenever the collaboration
-     * disconnects from the server.
-     * @param {CollabCallback} f Function to be called.
-     */
-    function onDisconnect(f) {
-        _disconnectFun = f;
-    }
-
     return {
         createCollab: createCollab,
         connect: connect,
         disconnect: disconnect,
         send: send,
+        swapImage: swapImage,
+        addMarker: addMarker,
+        updateMarker: updateMarker,
+        removeMarker: removeMarker,
+        clearMarkers: clearMarkers,
         changeName: changeName,
         getDefaultName: getDefaultName,
         updatePosition: updatePosition,
-        updateCursor: updateCursor,
-        onConnect: onConnect,
-        onDisconnect: onDisconnect
+        updateCursor: updateCursor
     };
 })();
