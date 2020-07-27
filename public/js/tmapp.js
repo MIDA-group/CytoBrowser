@@ -470,14 +470,18 @@ const tmapp = (function() {
      * Increment the Z level by 1, if possible.
      */
     function incrementFocus() {
-        _setFocusLevel(_currState.z + 1);
+        if (!_disabledControls) {
+            _setFocusLevel(_currState.z + 1);
+        }
     }
 
     /**
      * Decrement the Z level by 1, if possible.
      */
     function decrementFocus() {
-        _setFocusLevel(_currState.z - 1);
+        if (!_disabledControls) {
+            _setFocusLevel(_currState.z - 1);
+        }
     }
 
     /**
