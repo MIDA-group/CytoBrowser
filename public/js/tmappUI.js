@@ -216,15 +216,16 @@ const tmappUI = (function(){
             nameTag.html(`&nbsp;&nbsp;&nbsp;${member.name}`);
             nameTag.prepend(color);
             entry.append(nameTag);
-            const follow = $("<span><input type='checkbox'></span>");
+            const followSpan = $("<span></span>");
+            const follow = $("<input type='checkbox'>");
             follow.prop("checked", member.followed);
-            entry.append(follow);
+            entry.append(followSpan.append(follow));
             entry.click(event => {
                 event.preventDefault();
                 $("#collaboration_menu").modal("hide");
                 tmapp.moveTo(member.position);
             });
-            follow.change(event => {
+            follow.click(event => {
                 event.stopPropagation();
                 if (event.target.checked) {
                     collabClient.followView(member);
@@ -232,7 +233,7 @@ const tmappUI = (function(){
                 else {
                     collabClient.stopFollowing();
                 }
-            })
+            });
             $("#collaborator_list").append(entry);
         });
     }

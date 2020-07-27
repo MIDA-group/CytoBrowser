@@ -212,11 +212,11 @@ const collabClient = (function(){
             _handleMessage(JSON.parse(event.data));
         }
         ws.onclose = function(event) {
+            stopFollowing();
             _joinBatch = null;
             _members = null;
             _localMember = null;
             _ws = null;
-            stopFollowing();
             overlayHandler.updateMembers([]);
             tmappUI.clearCollaborators();
             tmapp.clearCollab();
