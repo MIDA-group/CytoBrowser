@@ -416,7 +416,7 @@ const collabClient = (function(){
      * @param {Object} member The specific member to follow.
      */
     function followView(member) {
-        if (!member || !member.id || !member.position) {
+        if (!member || member.id === undefined || !member.position) {
             throw new Error("Argument should be a member.");
         }
         _followedMember = member;
