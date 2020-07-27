@@ -35,7 +35,6 @@ const tmapp = (function() {
         _images,
         _collab,
         _viewer,
-        _imageStack = [],
         _currState = {
             x: 0.5,
             y: 0.5,
@@ -134,26 +133,27 @@ const tmapp = (function() {
     function _expandImageName() {
         // Get the full image names based on the data from the server
         const imageName = _currentImage.name;
-        _imageStack = [];
+        const imageStack = [];
         _currentImage.zLevels.forEach(zLevel => {
-            _imageStack.push(`${_imageDir}${imageName}_z${zLevel}.dzi`);
+            imageStack.push(`${_imageDir}${imageName}_z${zLevel}.dzi`);
         });
+        return imageStack;
     }
 
-    function _loadImages(z =  -1) {
+    function _loadImages(imageStack, z =  -1) {
         if (z < 0) {
-            z = Math.floor(_imageStack.length / 2);
+            z = Math.floor(imageStack.length / 2);
         }
-        _currState.x = z;
+        _currState.z = z;
 
-        console.info(`Opening: ${_imageStack}`);
-        _imageStack.forEach((image, i) => {
+        console.info(`Opening: ${imageStack}`);
+        imageStack.forEach((image, i) => {
             _viewer.addTiledImage({
                 tileSource: image,
                 opacity: i === _currState.z,
                 index: i++,
                 success: () => {
-                    if (_viewer.world.getItemCount() === _imageStack.length) {
+                    if (_viewer.world.getItemCount() === imageStack.length) {
                         _viewer.raiseEvent("open");
                     }
                 },
@@ -268,14 +268,14 @@ const tmapp = (function() {
     }
 
     function _initOSD(callback) {
-        _expandImageName(_currentImage.name);
+        const imageStack = _expandImageName(_currentImage.name);
 
         //init OSD viewer
         _viewer = OpenSeadragon(_optionsOSD);
         _addHandlers(_viewer, callback);
 
         //open the DZI xml file pointing to the tiles
-        _loadImages();
+        _loadImages(imageStack);
 
         //Create svgOverlay(); so that anything like D3, or any canvas library can act upon. https://d3js.org/
         const overlay =  _viewer.svgOverlay();
