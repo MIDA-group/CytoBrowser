@@ -111,6 +111,16 @@ const collabClient = (function(){
         }
         _members = msg.members;
         _localMember = _members.find(member => member.id === msg.requesterId);
+
+        // If the summary was requested because of an image swap, refollow
+        if (_followedMember) {
+            stopFollowing();
+            const newFollow = _members.find(member => member.id === _followedMember.id);
+            if (newFollow) {
+                followView(newFollow);
+            }
+        }
+
         _memberUpdate();
         tmapp.updateCollabStatus();
     }

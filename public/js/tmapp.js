@@ -506,7 +506,7 @@ const tmapp = (function() {
      */
     function enableControls() {
         if (!_disabledControls) {
-            throw new Error("The controls were never disabled.");
+            return;
         }
         _viewer.setMouseNavEnabled(true);
         _disabledControls.forEach(control => {
@@ -520,7 +520,7 @@ const tmapp = (function() {
      */
     function disableControls() {
         if (_disabledControls) {
-            throw new Error("Tried to disable already-disabled controls");
+            return;
         }
         _viewer.setMouseNavEnabled(false);
 
