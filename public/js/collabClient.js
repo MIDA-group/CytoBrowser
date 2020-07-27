@@ -114,8 +114,8 @@ const collabClient = (function(){
 
         // If the summary was requested because of an image swap, refollow
         if (_followedMember) {
-            stopFollowing();
             const newFollow = _members.find(member => member.id === _followedMember.id);
+            stopFollowing();
             if (newFollow) {
                 followView(newFollow);
             }

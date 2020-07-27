@@ -247,12 +247,12 @@ const tmapp = (function() {
         viewer.addHandler("open", function (event) {
             console.info("Done loading!");
             _addMouseTracking(viewer);
+            callback && callback();
             viewer.canvas.focus();
             viewer.viewport.goHome();
             _updateZoom();
             _updateFocus();
             _updatePosition();
-            callback && callback();
             tmappUI.clearImageError();
             tmappUI.enableCollabCreation();
         });
@@ -356,7 +356,7 @@ const tmapp = (function() {
      * to open the image or if they want to cancel.
      * @param {string} imageName The name of the image being opened.
      * @param {Function} callback Function to call if and only if the
-     * image is successfully opened.
+     * image is successfully opened, before the viewport is moved.
      * @param {Function} nochange Function to call if the user is
      * prompted on whether or not they want to change images and they
      * decide not to change.
@@ -377,8 +377,10 @@ const tmapp = (function() {
             throw new Error("Tried to change to an unknown image.");
         }
         markerHandler.clearMarkers(false);
+        _viewer && _viewer.destroy();
         $("#ISS_viewer").empty();
         coordinateHelper.clearImage();
+        _disabledControls = null;
         _currentImage = image;
         _updateURLParams();
         _initOSD(callback);
