@@ -416,8 +416,12 @@ const collabClient = (function(){
      * @param {Object} member The specific member to follow.
      */
     function followView(member) {
+        if (!member || !member.id || !member.position) {
+            throw new Error("Argument should be a member.");
+        }
         _followedMember = member;
         tmapp.moveTo(member.position);
+        tmapp.disableControls();
     }
 
     /**
@@ -425,6 +429,7 @@ const collabClient = (function(){
      */
     function stopFollowing() {
         _followedMember = null;
+        tmapp.enableControls();
     }
 
     return {

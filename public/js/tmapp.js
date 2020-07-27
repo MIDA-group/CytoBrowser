@@ -490,6 +490,20 @@ const tmapp = (function() {
         _updateCollabPosition();
     }
 
+    /**
+     * Enable all control over the viewport state.
+     */
+    function enableControls() {
+        _viewer.setMouseNavEnabled(true);
+    }
+
+    /**
+     * Disable all control over the viewport state.
+     */
+    function disableControls() {
+        _viewer.setMouseNavEnabled(false);
+    }
+
     return {
         init: init,
         openImage: openImage,
@@ -501,6 +515,8 @@ const tmapp = (function() {
         incrementFocus: incrementFocus,
         decrementFocus: decrementFocus,
         getImageName: getImageName,
-        updateCollabStatus: updateCollabStatus
+        updateCollabStatus: updateCollabStatus,
+        enableControls: enableControls,
+        disableControls: disableControls
     };
 })();
