@@ -430,17 +430,23 @@ const collabClient = (function(){
             throw new Error("Argument should be a member.");
         }
         _followedMember = member;
-        tmapp.moveTo(member.position);
+        _followedMember.followed = true;
         tmapp.disableControls();
+        _memberUpdate();
     }
 
     /**
      * Stop following the currently followed view.
      */
     function stopFollowing() {
-        _followedMember = null;
+        if (_followedMember) {
+            _followedMember.followed = false;
+            _followedMember = null;
+        }
         tmapp.enableControls();
+        _memberUpdate();
     }
+
 
     return {
         createCollab: createCollab,

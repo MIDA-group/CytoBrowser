@@ -217,16 +217,21 @@ const tmappUI = (function(){
             nameTag.prepend(color);
             entry.append(nameTag);
             const follow = $("<span><input type='checkbox'></span>");
+            follow.prop("checked", member.followed);
             entry.append(follow);
             entry.click(event => {
                 event.preventDefault();
                 $("#collaboration_menu").modal("hide");
                 tmapp.moveTo(member.position);
             });
-            follow.click(event => {
+            follow.change(event => {
                 event.stopPropagation();
-                console.log("Following!");
-                collabClient.followView(member);
+                if (event.target.checked) {
+                    collabClient.followView(member);
+                }
+                else {
+                    collabClient.stopFollowing();
+                }
             })
             $("#collaborator_list").append(entry);
         });
