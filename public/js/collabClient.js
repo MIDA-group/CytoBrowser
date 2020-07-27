@@ -64,6 +64,9 @@ const collabClient = (function(){
                 break;
             case "update":
                 Object.assign(member, msg.member);
+                if (member === _followedMember) {
+                    _followedMember.updated = true;
+                }
                 _memberUpdate(msg.hardUpdate);
                 break;
             case "cursorUpdate":
@@ -73,6 +76,9 @@ const collabClient = (function(){
             case "remove":
                 const memberIndex = _members.findIndex(member => member.id === msg.member.id);
                 _members.splice(memberIndex, 1);
+                if (member === _followedMember) {
+                    _followedMember.removed = true;
+                }
                 _memberUpdate();
                 break;
             default:
@@ -127,11 +133,11 @@ const collabClient = (function(){
         overlayHandler.updateMembers(_members.filter(member => member !== _localMember));
 
         if (_followedMember) {
-            const member = _members.find(member => member.id === _followedMember.id);
-            if (member) {
+            if (_followedMember.updated) {
                 tmapp.moveTo(member.position);
+                _followedMember.updated = false;
             }
-            else {
+            if (_followedMember.removed) {
                 stopFollowing();
             }
         }
