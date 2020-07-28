@@ -101,11 +101,11 @@
                                     <button id="points_to_json" class="btn btn-primary btn-block" type="button"> Download</button>
                                 </div>
                                 <div class="col-3">
-                                    <input type="file" id="fileElem" multiple accept="image/*" style="display:none" onchange="handleFiles(this.files)">
+                                    <input class="d-none" type="file" id="data_files_import" name="files[]">
                                     <button id="json_to_data" class="btn btn-primary btn-block" type="button"> Import </button>
                                 </div>
                                 <div class="col-6 d-flex align-items-center">
-                                    <input class="form-control-file" type="file" id="data_files_import" name="files[]">
+                                    <button type="button" class="btn btn-dark btn-block" data-toggle="modal" data-target="#server_storage">Server storage</btton>
                                 </div>
                             </div>
                         </div>
@@ -145,6 +145,26 @@
         </div>
       </div>
     </div> <!-- End of image browser -->
+
+    <!-- Server storage -->
+    <div class="modal fade" id="server_storage" tabindex="-1" role="dialog">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Server storage</h5>
+            <button type="button" class="close" data-dismiss="modal">
+              <span>&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+              <div class="card bg-secondary" style="height: 25vh; overflow-y: auto;">
+                  <ul id="server_files" class="list-group list-group-flush">
+                  </ul>
+              </div>
+          </div>
+        </div>
+      </div>
+    </div> <!-- End of server storage -->
 
     <!-- Instructions -->
     <div class="modal fade" id="instructions" tabindex="-1" role="dialog">
@@ -296,6 +316,7 @@
 <script src="js/markerStorageConversion.js"></script>
 <script src="js/coordinateHelper.js"></script>
 <script src="js/localStorage.js"></script>
+<script src="js/remoteStorage.js"></script>
 <script>
     tmappUI.initUI();
 

@@ -89,8 +89,13 @@ const tmappUI = (function(){
 
         // Add event listeners for local storage buttons
         $("#json_to_data").click(() => {
-            const loadedJSON = localStorage.loadJSON("data_files_import");
-            loadedJSON.then(markerStorageConversion.addMarkerStorageData);
+            $("#data_files_import").click();
+        });
+        $("#data_files_import").change(event => {
+            if (event.target.files.length) {
+                const loadedJSON = localStorage.loadJSON("data_files_import");
+                loadedJSON.then(markerStorageConversion.addMarkerStorageData);
+            }
         });
         $("#points_to_json").click(() => {
             const markerData = markerStorageConversion.getMarkerStorageData();
@@ -349,6 +354,23 @@ const tmappUI = (function(){
     }
 
     /**
+     * Update the list of server-stored files.
+     */
+    function updateRemoteFiles() {
+        remoteStorage.files().then(files => {
+            const list = d3.select("#server_files");
+            list.selectAll("a")
+                .data(files, d => d)
+                .join(enter => enter.append("a")
+                    .attr("class", "list-group-item list-group-item-action")
+                    .attr("href", "#")
+                    .text(d => d)
+                    .on("click", d => console.log(d))
+                );
+        });
+    }
+
+    /**
      * Set the displayed image name in the UI.
      * @param {string} txt The image name to display.
      */
@@ -398,6 +420,7 @@ const tmappUI = (function(){
         displayImageError: displayImageError,
         clearImageError: clearImageError,
         addImage: addImage,
+        updateRemoteFiles: updateRemoteFiles,
         setImageName: setImageName,
         setImageZLevel: setImageZLevel,
         setImageZoom: setImageZoom,
