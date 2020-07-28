@@ -58,5 +58,16 @@ function loadJSON(filename) {
     });
 }
 
+/**
+ * Get a list of the files stored on the server.
+ * @returns {Promise<Array<string>>} The promise of an array of file names.
+ */
+function files() {
+    return new Promise((resolve, reject) =>
+        fs.readdir(dir, (err, dir) => err ? reject(err) : resolve(dir))
+    );
+}
+
 exports.saveJSON = saveJSON;
 exports.loadJSON = loadJSON;
+exports.files = files;
