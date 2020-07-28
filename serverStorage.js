@@ -7,6 +7,9 @@
 const fs = require("fs");
 const sanitize = require("sanitize-filename");
 
+// Symbolic references
+const duplicateFile = Symbol("Duplicate file");
+
 // Directory where data should be stored
 const dir = "./storage";
 
@@ -19,9 +22,10 @@ if (!fs.existsSync(dir)) {
  * Encode an object as a JSON file and save it in the storage directory.
  * @param {Object} data The object representation of the data to be stored.
  * @param {string} filename The name of the file to be saved.
+ * @param {boolean} overwrite If a file with the same name exists, overwrite.
  * @returns {Promise<>} A promise that resolves when the save is successful.
  */
-function saveJSON(data, filename) {
+function saveJSON(data, filename, overwrite) {
     if (typeof data !== "object"){
         throw new Error("Stored data should be an Object.");
     }
@@ -29,15 +33,20 @@ function saveJSON(data, filename) {
     if (!filename) {
         throw new Error("Empty filename.");
     }
+    if (!overwrite) {
+        if (fs.existsSync(`${dir}/${filename}`)){
+            throw duplicateFile;
+        }
+    }
 
     const dataJSON = JSON.stringify(data);
     return new Promise((resolve, reject) => {
-        fs.writeFile(`${dir}/${filename}.json`, dataJSON, err => {
+        fs.writeFile(`${dir}/${filename}`, dataJSON, err => {
             if (err) {
                 reject(err);
             }
             else {
-                console.info(`Saved file: ${filename}.json`);
+                console.info(`Saved file: ${filename}`);
                 resolve();
             }
         });
@@ -46,7 +55,7 @@ function saveJSON(data, filename) {
 
 /**
  * Load an object from a specified JSON file.
- * @param {string} filename The file name to load, with file extension.
+ * @param {string} filename The file name to load.
  * @returns {Promise<Object>} A promise that resolves with the read data object.
  */
 function loadJSON(filename) {
@@ -77,6 +86,7 @@ function files() {
     );
 }
 
+exports.duplicateFile = duplicateFile;
 exports.saveJSON = saveJSON;
 exports.loadJSON = loadJSON;
 exports.files = files;

@@ -31,13 +31,15 @@ const remoteStorage = (function() {
      * Save an object as a JSON file on the server.
      * @param {Object} data The object to store on the server.
      * @param {string} filename The filename to store the object as.
+     * @param {boolean} [overwrite=false] Force overwrite if file with
+     * the same name already exists.
      */
-    function saveJSON(data, filename){
+    function saveJSON(data, filename, overwrite = false){
         if (!filename.match(/.json$/)) {
             filename += ".json";
         }
         const req = new XMLHttpRequest();
-        req.open("POST", `${window.location.origin}/api/storage/${filename}`);
+        req.open("POST", `${window.location.origin}/api/storage/${filename}?overwrite=${overwrite ? 1 : 0}`);
         req.setRequestHeader("Content-Type", "application/json");
         req.send(JSON.stringify(data));
 
@@ -47,6 +49,12 @@ const remoteStorage = (function() {
             }
             if (req.status === 201) {
                 console.info(`Saved file "${filename}" remotely.`);
+            }
+            // Is 300 the best code to use for this? Unsure
+            else if (req.status === 300) {
+                if (confirm("A file with this name already exists. Do you want to overwrite it?")){
+                    saveJSON(data, filename, true);
+                }
             }
         }
     }

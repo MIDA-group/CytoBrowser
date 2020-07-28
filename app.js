@@ -65,9 +65,11 @@ app.get("/api/storage/:filename", (req, res) => {
 
 // Add a JSON file to the server
 app.post("/api/storage/:filename", (req, res) => {
+    const overwrite = Boolean(Number(req.query.overwrite));
     try {
-        serverStorage.saveJSON(req.body, req.params.filename).then(() => {
-            res.status(200);
+        serverStorage.saveJSON(req.body, req.params.filename, overwrite)
+        .then(() => {
+            res.status(201);
             res.send();
         })
         .catch(err => {
@@ -77,9 +79,15 @@ app.post("/api/storage/:filename", (req, res) => {
         });
     }
     catch (err) {
-        console.warn(err);
-        res.status(400);
-        res.send();
+        if (err === serverStorage.duplicateFile) {
+            res.status(300);
+            res.send();
+        }
+        else {
+            console.warn(err);
+            res.status(400);
+            res.send();
+        }
     }
 });
 
