@@ -431,6 +431,7 @@ const collabClient = (function(){
         }
         _followedMember = member;
         _followedMember.followed = true;
+        _followedMember.updated = true;
         tmapp.disableControls();
         _memberUpdate();
     }
