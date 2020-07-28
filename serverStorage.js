@@ -19,6 +19,7 @@ if (!fs.existsSync(dir)) {
  * Encode an object as a JSON file and save it in the storage directory.
  * @param {Object} data The object representation of the data to be stored.
  * @param {string} filename The name of the file to be saved.
+ * @returns {Promise<>} A promise that resolves when the save is successful.
  */
 function saveJSON(data, filename) {
     if (typeof data !== "object"){
@@ -30,8 +31,16 @@ function saveJSON(data, filename) {
     }
 
     const dataJSON = JSON.stringify(data);
-    fs.writeFile(`${dir}/${filename}.json`, dataJSON, err => {
-        err ? console.warn(err) : console.info(`Saved file: ${filename}.json`);
+    return new Promise((resolve, reject) => {
+        fs.writeFile(`${dir}/${filename}.json`, dataJSON, err => {
+            if (err) {
+                reject(err);
+            }
+            else {
+                console.info(`Saved file: ${filename}.json`);
+                resolve();
+            }
+        });
     });
 }
 

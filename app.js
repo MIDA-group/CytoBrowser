@@ -3,6 +3,7 @@ const fs = require("fs");
 const express = require("express");
 const availableImages = require("./availableImages");
 const collaboration = require("./collaboration");
+const serverStorage = require("./serverStorage");
 
 // Store the address to be used from arguments
 const hostname = process.argv[2] || "localhost";
@@ -15,6 +16,7 @@ const expressWs = require("express-ws")(app);
 // Serve static files
 app.use(express.static("public"));
 app.use("/data", express.static("data"));
+app.use(express.json());
 
 // Serve the index page at the root
 app.get("/", (req, res) => {
@@ -32,6 +34,52 @@ app.get("/api/images", (req, res) => {
     else {
         res.status(200);
         res.json(images);
+    }
+});
+
+// Get a list of files stored on the server
+app.get("/api/storage", (req, res) => {
+    serverStorage.files().then(data => {
+        res.status(200);
+        res.json({files: data});
+    })
+    .catch(err => {
+        console.warn(err);
+        res.status(500);
+        res.send();
+    });
+});
+
+// Load JSON file from server
+app.get("/api/storage/:filename", (req, res) => {
+    serverStorage.loadJSON(req.params.filename).then(data => {
+        res.status(200);
+        res.json(data);
+    })
+    .catch(err => {
+        console.warn(err);
+        res.status(500);
+        res.send();
+    });
+});
+
+// Add a JSON file to the server
+app.post("/api/storage/:filename", (req, res) => {
+    try {
+        serverStorage.saveJSON(req.body, req.params.filename).then(() => {
+            res.status(200);
+            res.send();
+        })
+        .catch(err => {
+            console.warn(err);
+            res.status(500);
+            res.send();
+        });
+    }
+    catch (err) {
+        console.warn(err);
+        res.status(400);
+        res.send();
     }
 });
 
