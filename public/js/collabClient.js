@@ -7,7 +7,8 @@ const collabClient = (function(){
     let _ws,
         _joinBatch,
         _members,
-        _localMember;
+        _localMember,
+        _followedMember;
 
     const _member = {};
 
@@ -63,6 +64,9 @@ const collabClient = (function(){
                 break;
             case "update":
                 Object.assign(member, msg.member);
+                if (member === _followedMember) {
+                    _followedMember.updated = true;
+                }
                 _memberUpdate(msg.hardUpdate);
                 break;
             case "cursorUpdate":
@@ -72,6 +76,9 @@ const collabClient = (function(){
             case "remove":
                 const memberIndex = _members.findIndex(member => member.id === msg.member.id);
                 _members.splice(memberIndex, 1);
+                if (member === _followedMember) {
+                    _followedMember.removed = true;
+                }
                 _memberUpdate();
                 break;
             default:
@@ -104,6 +111,16 @@ const collabClient = (function(){
         }
         _members = msg.members;
         _localMember = _members.find(member => member.id === msg.requesterId);
+
+        // If the summary was requested because of an image swap, refollow
+        if (_followedMember) {
+            const newFollow = _members.find(member => member.id === _followedMember.id);
+            stopFollowing();
+            if (newFollow) {
+                followView(newFollow);
+            }
+        }
+
         _memberUpdate();
         tmapp.updateCollabStatus();
     }
@@ -124,6 +141,16 @@ const collabClient = (function(){
             tmappUI.updateCollaborators(_localMember, _members);
         }
         overlayHandler.updateMembers(_members.filter(member => member !== _localMember));
+
+        if (_followedMember) {
+            if (_followedMember.updated) {
+                tmapp.moveTo(_followedMember.position);
+                _followedMember.updated = false;
+            }
+            if (_followedMember.removed) {
+                stopFollowing();
+            }
+        }
     }
 
     /**
@@ -185,6 +212,7 @@ const collabClient = (function(){
             _handleMessage(JSON.parse(event.data));
         }
         ws.onclose = function(event) {
+            stopFollowing();
             _joinBatch = null;
             _members = null;
             _localMember = null;
@@ -393,6 +421,34 @@ const collabClient = (function(){
         return updateCursor
     })();
 
+    /**
+     * Begin following a specified collaborator's view.
+     * @param {Object} member The specific member to follow.
+     */
+    function followView(member) {
+        if (!member || member.id === undefined || !member.position) {
+            throw new Error("Argument should be a member.");
+        }
+        _followedMember = member;
+        _followedMember.followed = true;
+        _followedMember.updated = true;
+        tmapp.disableControls();
+        _memberUpdate();
+    }
+
+    /**
+     * Stop following the currently followed view.
+     */
+    function stopFollowing() {
+        if (_followedMember) {
+            _followedMember.followed = false;
+            _followedMember = null;
+        }
+        tmapp.enableControls();
+        _memberUpdate();
+    }
+
+
     return {
         createCollab: createCollab,
         connect: connect,
@@ -406,6 +462,8 @@ const collabClient = (function(){
         changeName: changeName,
         getDefaultName: getDefaultName,
         updatePosition: updatePosition,
-        updateCursor: updateCursor
+        updateCursor: updateCursor,
+        followView: followView,
+        stopFollowing: stopFollowing
     };
 })();

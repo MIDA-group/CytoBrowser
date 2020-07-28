@@ -47,7 +47,8 @@ const tmapp = (function() {
             y: 0.5,
             held: false,
             inside: false
-        };
+        },
+        _disabledControls;
 
 
     function _getFocusIndex() {
@@ -87,8 +88,9 @@ const tmapp = (function() {
         overlayHandler.setOverlayScale(zoom, size.x, size.y);
         tmappUI.setImageZoom(Math.round(zoom*10)/10);
         _currState.zoom = zoom;
-        _updateCollabPosition();
-        _updateURLParams();
+
+        // Zooming often changes the position too, based on cursor position
+        _updatePosition();
     }
 
     function _updatePosition() {
@@ -246,11 +248,10 @@ const tmapp = (function() {
             console.info("Done loading!");
             _addMouseTracking(viewer);
             viewer.canvas.focus();
-            viewer.viewport.goHome();
+            callback && callback();
             _updateZoom();
             _updateFocus();
             _updatePosition();
-            callback && callback();
             tmappUI.clearImageError();
             tmappUI.enableCollabCreation();
         });
@@ -354,7 +355,7 @@ const tmapp = (function() {
      * to open the image or if they want to cancel.
      * @param {string} imageName The name of the image being opened.
      * @param {Function} callback Function to call if and only if the
-     * image is successfully opened.
+     * image is successfully opened, before the viewport is moved.
      * @param {Function} nochange Function to call if the user is
      * prompted on whether or not they want to change images and they
      * decide not to change.
@@ -375,8 +376,10 @@ const tmapp = (function() {
             throw new Error("Tried to change to an unknown image.");
         }
         markerHandler.clearMarkers(false);
+        _viewer && _viewer.destroy();
         $("#ISS_viewer").empty();
         coordinateHelper.clearImage();
+        _disabledControls = null;
         _currentImage = image;
         _updateURLParams();
         _initOSD(callback);
@@ -412,6 +415,12 @@ const tmapp = (function() {
      * @param {number} id The id of the marker being moved to.
      */
     function moveToMarker(id) {
+        // Only move if you're not following anyone
+        if (_disabledControls) {
+            console.warn("Can't move to marker when following someone.");
+            return;
+        }
+
         const marker = markerHandler.getMarkerById(id);
         if (marker === undefined) {
             throw new Error("Tried to move to an unused marker id.");
@@ -462,14 +471,18 @@ const tmapp = (function() {
      * Increment the Z level by 1, if possible.
      */
     function incrementFocus() {
-        _setFocusLevel(_currState.z + 1);
+        if (!_disabledControls) {
+            _setFocusLevel(_currState.z + 1);
+        }
     }
 
     /**
      * Decrement the Z level by 1, if possible.
      */
     function decrementFocus() {
-        _setFocusLevel(_currState.z - 1);
+        if (!_disabledControls) {
+            _setFocusLevel(_currState.z - 1);
+        }
     }
 
     /**
@@ -489,6 +502,35 @@ const tmapp = (function() {
         _updateCollabPosition();
     }
 
+    /**
+     * Enable all control over the viewport state.
+     */
+    function enableControls() {
+        if (!_disabledControls) {
+            return;
+        }
+        _viewer.setMouseNavEnabled(true);
+        _disabledControls.forEach(control => {
+            _viewer.addControl(control.element, control);
+        });
+        _disabledControls = null;
+    }
+
+    /**
+     * Disable all control over the viewport state.
+     */
+    function disableControls() {
+        if (_disabledControls) {
+            return;
+        }
+        _viewer.setMouseNavEnabled(false);
+
+        // Store a copy of the current control buttons
+        // API docs suggest setControlsEnabled(), doesn't seem to work
+        _disabledControls = Array.from(_viewer.controls);
+        _viewer.clearControls();
+    }
+
     return {
         init: init,
         openImage: openImage,
@@ -500,6 +542,8 @@ const tmapp = (function() {
         incrementFocus: incrementFocus,
         decrementFocus: decrementFocus,
         getImageName: getImageName,
-        updateCollabStatus: updateCollabStatus
+        updateCollabStatus: updateCollabStatus,
+        enableControls: enableControls,
+        disableControls: disableControls
     };
 })();
