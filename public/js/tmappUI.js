@@ -8,8 +8,11 @@
  */
 const tmappUI = (function(){
     "use strict";
-    let _pageInFocus = true;
-    let _errorDisplayTimeout = null;
+
+    let _selectedFile,
+        _pageInFocus = true,
+        _errorDisplayTimeout = null;
+
     const _errors = {
         noimage: {
             message: "No image has been specified. Select one from the menu on the right.",
@@ -32,6 +35,27 @@ const tmappUI = (function(){
             type: "alert-danger"
         }
     };
+
+    function _setSelectedFile(filename) {
+        _selectedFile = filename;
+        $("#server_files").children().removeClass("active");
+        $(`#server_files [filename="${filename}"]`).addClass("active");
+        $("#server_load").prop("disabled", false)
+    }
+
+    function _clearSelectedFile() {
+        _selectedFile = null;
+        $("#server_files").children().removeClass("active");
+        $("#server_load").prop("disabled", true);
+    }
+
+    function _openSelectedFile() {
+        if (!_selectedFile) {
+            throw new Error("No file selected.");
+        }
+        remoteStorage.loadJSON(_selectedFile)
+        .then(markerStorageConversion.addMarkerStorageData);
+    }
 
     const _holdInterval = 50;
     function _addHoldableButton(key, element, f) {
@@ -100,6 +124,17 @@ const tmappUI = (function(){
         $("#points_to_json").click(() => {
             const markerData = markerStorageConversion.getMarkerStorageData();
             localStorage.saveJSON(markerData);
+        });
+
+        // Refresh the file list
+        updateRemoteFiles();
+        $("#server_storage").on("show.bs.modal", updateRemoteFiles);
+        $("#server_refresh").click(updateRemoteFiles);
+        $("#server_load").click(_openSelectedFile);
+        $("#server_save").click(event => {
+            const filename = $("#server_filename").val();
+            const data = markerStorageConversion.getMarkerStorageData();
+            remoteStorage.saveJSON(data, filename);
         });
 
         // Add event listeners for focus buttons
@@ -364,8 +399,13 @@ const tmappUI = (function(){
                 .join(enter => enter.append("a")
                     .attr("class", "list-group-item list-group-item-action")
                     .attr("href", "#")
+                    .attr("filename", d => d)
                     .text(d => d)
-                    .on("click", d => console.log(d))
+                    .on("click", d => _setSelectedFile(d))
+                    .on("dblclick", d => {
+                        _setSelectedFile(d);
+                        _openSelectedFile();
+                    })
                 );
         });
     }

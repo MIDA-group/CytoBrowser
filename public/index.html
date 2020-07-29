@@ -157,9 +157,23 @@
             </button>
           </div>
           <div class="modal-body">
+              <div class="form-row pb-4">
+                  <div class="col-8">
+                      <input id="server_filename" type="text" class="form-control" placeholder="Filename">
+                  </div>
+                  <div class="col-4">
+                      <button id="server_save" class="btn btn-block btn-primary">Save</button>
+                  </div>
+              </div>
               <div class="card bg-secondary" style="height: 25vh; overflow-y: auto;">
                   <ul id="server_files" class="list-group list-group-flush">
                   </ul>
+              </div>
+              <div class="form-row pt-4">
+                  <div class="col-12 d-flex justify-content-between">
+                      <button id="server_refresh" class="btn btn-link">Refresh</button>
+                      <button id="server_load" class="btn btn-primary" disabled>Open</button>
+                  </div>
               </div>
           </div>
         </div>
