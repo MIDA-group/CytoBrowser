@@ -102,20 +102,6 @@ const tmappUI = (function(){
         updateRemoteFiles();
     }
 
-    const _holdInterval = 50;
-    function _addHoldableButton(key, element, f) {
-        let interval;
-        element.addEventListener("keydown", event => {
-            if (event.key === key && !event.repeat) {
-                f();
-                interval = setInterval(f, _holdInterval);
-            }
-        });
-        element.addEventListener("keyup", event => {
-            event.key === key && clearInterval(interval);
-        });
-    }
-
     /**
      * Initialize UI components that need to be added programatically
      * and add any event handlers that are needed.
@@ -185,10 +171,7 @@ const tmappUI = (function(){
         // Add event listeners for keyboard buttons
         //1,2,... for class selection
         //z,x for focus up down
-        // Uncomment these for smooth focus change
-        // _addHoldableButton("c", document, () => $("#focus_prev").click());
-        // _addHoldableButton("v", document, () => $("#focus_next").click());
-        $(document).keypress(function(){
+        $("#main_content").keypress(function(){
             switch(event.which) {
                 case "z".charCodeAt():
                     $("#focus_prev").click();
