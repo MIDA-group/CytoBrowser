@@ -16,6 +16,7 @@ const expressWs = require("express-ws")(app);
 // Serve static files
 app.use(express.static("public"));
 app.use("/data", express.static("data"));
+app.use("/storage", express.static("storage"));
 app.use(express.json());
 
 // Serve the index page at the root
@@ -51,6 +52,7 @@ app.get("/api/storage", (req, res) => {
 });
 
 // Load JSON file from server
+/*
 app.get("/api/storage/:filename", (req, res) => {
     serverStorage.loadJSON(req.params.filename).then(data => {
         res.status(200);
@@ -62,7 +64,7 @@ app.get("/api/storage/:filename", (req, res) => {
         res.send();
     });
 });
-
+*/
 // Add a JSON file to the server
 app.post("/api/storage/:filename", (req, res) => {
     const overwrite = Boolean(Number(req.query.overwrite));

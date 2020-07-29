@@ -61,11 +61,12 @@ const remoteStorage = (function() {
 
     /**
      * Load a JSON file as an object from the server.
-     * @param {string} filename The name of the file to be loaded.
+     * @param {string} filepath The path and name of the file to be loaded,
+     * relative to the root of the server storage directory.
      * @returns {Promise<Object>} A promise that resolves with the loaded object.
      */
-    function loadJSON(filename){
-        return _httpGet(`${window.location.origin}/api/storage/${filename}`);
+    function loadJSON(filepath){
+        return _httpGet(`${window.location.origin}/storage/${filepath}`);
     }
 
     /**
@@ -75,7 +76,25 @@ const remoteStorage = (function() {
      */
     function files(){
         return _httpGet(`${window.location.origin}/api/storage`)
-        .then(data => data.files);
+        .then(data => {
+            const files = data.files;
+            function addBackTraversal(parentContent, entry) {
+                if (entry.type === "directory") {
+                    entry.content.forEach(subentry => {
+                        addBackTraversal(entry.content, subentry);
+                    });
+                    entry.content.push({
+                        name: "..",
+                        type: "directory",
+                        content: parentContent
+                    });
+                    entry.content.sort((a, b) => a.name > b.name);
+                }
+            }
+            files.forEach(entry => addBackTraversal(files, entry));
+            files.sort((a, b) => a.name > b.name);
+            return files;
+        });
     }
 
     return {

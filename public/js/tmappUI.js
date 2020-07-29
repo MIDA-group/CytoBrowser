@@ -10,6 +10,7 @@ const tmappUI = (function(){
     "use strict";
 
     let _selectedFile,
+        _path = [],
         _pageInFocus = true,
         _errorDisplayTimeout = null;
 
@@ -36,10 +37,37 @@ const tmappUI = (function(){
         }
     };
 
-    function _setSelectedFile(filename) {
-        _selectedFile = filename;
+    function _openDirectory(entries, name = "") {
+        if (!name) {
+            _path = [];
+        }
+        if (name === "..") {
+            _path.pop();
+        }
+        else {
+            _path.push(name);
+        }
+        const list = d3.select("#server_files");
+        list.selectAll("a")
+            .data(entries, d => d.name)
+            .join(enter => enter.append("a")
+                .attr("class", "list-group-item list-group-item-action")
+                .attr("href", "#")
+                .attr("filename", d => d.name)
+                .attr("entrytype", d => d.type)
+                .text(d => `${d.name}${d.type === "directory" ? "/" : ""}`)
+                .on("click", d => _setSelectedFile(d))
+                .on("dblclick", d => {
+                    _setSelectedFile(d);
+                    _openSelectedFile();
+                })
+            );
+    }
+
+    function _setSelectedFile(file) {
+        _selectedFile = file;
         $("#server_files").children().removeClass("active");
-        $(`#server_files [filename="${filename}"]`).addClass("active");
+        $(`#server_files [filename="${file.name}"]`).addClass("active");
         $("#server_load").prop("disabled", false)
     }
 
@@ -53,10 +81,15 @@ const tmappUI = (function(){
         if (!_selectedFile) {
             throw new Error("No file selected.");
         }
-        remoteStorage.loadJSON(_selectedFile)
-        .then(markerStorageConversion.addMarkerStorageData);
+        if (_selectedFile.type === "file") {
+            remoteStorage.loadJSON(`${_path.join("/")}/${_selectedFile.name}`)
+            .then(markerStorageConversion.addMarkerStorageData);
+            $("#server_storage").modal("hide");
+        }
+        else if (_selectedFile.type === "directory") {
+            _openDirectory(_selectedFile.content, _selectedFile.name);
+        }
         _clearSelectedFile();
-        $("#server_storage").modal("hide");
     }
 
     const _holdInterval = 50;
@@ -395,22 +428,7 @@ const tmappUI = (function(){
      * Update the list of server-stored files.
      */
     function updateRemoteFiles() {
-        remoteStorage.files().then(files => {
-            const list = d3.select("#server_files");
-            list.selectAll("a")
-                .data(files, d => d)
-                .join(enter => enter.append("a")
-                    .attr("class", "list-group-item list-group-item-action")
-                    .attr("href", "#")
-                    .attr("filename", d => d.name)
-                    .text(d => d.name)
-                    .on("click", d => _setSelectedFile(d.name))
-                    .on("dblclick", d => {
-                        _setSelectedFile(d.name);
-                        _openSelectedFile();
-                    })
-                );
-        });
+        remoteStorage.files().then(_openDirectory);
     }
 
     /**
