@@ -77,13 +77,45 @@ function loadJSON(filename) {
 }
 
 /**
+ * Representation of either a file or a directory in a directory structure.
+ * @typedef FileEntry
+ * @property {string} name The name of the entry.
+ * @property {string} type The type of the entry, either "file" or "directory".
+ * @property {Array<FileEntry>} [content] The content, if directory.
+ */
+
+/**
  * Get a list of the files stored on the server.
- * @returns {Promise<Array<string>>} The promise of an array of file names.
+ * @returns {Promise<Array<FileEntry>>} The promise of an array of file
+ * structure entries.
  */
 function files() {
-    return new Promise((resolve, reject) =>
-        fs.readdir(dir, (err, dir) => err ? reject(err) : resolve(dir))
-    );
+    function expand(path) {
+        return new Promise((resolve, reject) => {
+            fs.readdir(path, {withFileTypes: true}, (err, dir) => {
+                if (err) {
+                    reject(err);
+                }
+                const promises = [];
+                const tree = dir.filter(file => file.isDirectory() || file.isFile())
+                .map(file => {
+                    const entry = {
+                        name: file.name,
+                        type: file.isDirectory() ? "directory" : "file"
+                    };
+                    if (entry.type === "directory") {
+                        const expansion = expand(`${path}/${entry.name}`);
+                        promises.push(expansion);
+                        expansion.then(subtree => entry.content = subtree);
+                    }
+                    return entry;
+                });
+                Promise.all(promises).then(() => resolve(tree));
+            });
+        });
+    }
+
+    return expand(dir);
 }
 
 exports.duplicateFile = duplicateFile;

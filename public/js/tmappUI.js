@@ -402,11 +402,11 @@ const tmappUI = (function(){
                 .join(enter => enter.append("a")
                     .attr("class", "list-group-item list-group-item-action")
                     .attr("href", "#")
-                    .attr("filename", d => d)
-                    .text(d => d)
-                    .on("click", d => _setSelectedFile(d))
+                    .attr("filename", d => d.name)
+                    .text(d => d.name)
+                    .on("click", d => _setSelectedFile(d.name))
                     .on("dblclick", d => {
-                        _setSelectedFile(d);
+                        _setSelectedFile(d.name);
                         _openSelectedFile();
                     })
                 );

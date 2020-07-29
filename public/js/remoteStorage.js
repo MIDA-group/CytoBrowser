@@ -70,8 +70,8 @@ const remoteStorage = (function() {
 
     /**
      * Get a list of available files from the server.
-     * @returns {Promise<Array<string>>} Promise that resolves with the
-     * filenames in the storage directory.
+     * @returns {Promise<Array<FileEntry>>} Promise that resolves with the
+     * file entry descriptions in the storage directory.
      */
     function files(){
         return _httpGet(`${window.location.origin}/api/storage`)
