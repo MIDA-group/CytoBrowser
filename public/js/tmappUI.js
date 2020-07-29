@@ -55,6 +55,8 @@ const tmappUI = (function(){
         }
         remoteStorage.loadJSON(_selectedFile)
         .then(markerStorageConversion.addMarkerStorageData);
+        _clearSelectedFile();
+        $("#server_storage").modal("hide");
     }
 
     const _holdInterval = 50;
@@ -135,6 +137,7 @@ const tmappUI = (function(){
             const filename = $("#server_filename").val();
             const data = markerStorageConversion.getMarkerStorageData();
             remoteStorage.saveJSON(data, filename);
+            updateRemoteFiles();
         });
 
         // Add event listeners for focus buttons
