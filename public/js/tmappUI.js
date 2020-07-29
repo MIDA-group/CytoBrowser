@@ -41,12 +41,13 @@ const tmappUI = (function(){
         if (!name) {
             _path = [];
         }
-        if (name === "..") {
+        else if (name === "..") {
             _path.pop();
         }
         else {
             _path.push(name);
         }
+        $("#server_file_path").text(`storage/${_path.join("/")}`);
         const list = d3.select("#server_files");
         list.selectAll("a")
             .data(entries, d => d.name)

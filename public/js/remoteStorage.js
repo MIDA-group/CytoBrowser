@@ -59,6 +59,12 @@ const remoteStorage = (function() {
                     saveJSON(data, filename, true);
                 }
             }
+            else if (req.status === 400) {
+                alert("400 error, likely invalid filename.");
+            }
+            else if (req.status === 500) {
+                alert("500 error, something went wrong on the server.");
+            }
         }
     }
 
