@@ -248,6 +248,7 @@ const tmapp = (function() {
             console.info("Done loading!");
             _addMouseTracking(viewer);
             viewer.canvas.focus();
+            viewer.viewport.goHome();
             _updateZoom();
             _updateFocus();
             _updatePosition();
