@@ -51,25 +51,14 @@ app.get("/api/storage", (req, res) => {
     });
 });
 
-// Load JSON file from server
-/*
-app.get("/api/storage/:filename", (req, res) => {
-    serverStorage.loadJSON(req.params.filename).then(data => {
-        res.status(200);
-        res.json(data);
-    })
-    .catch(err => {
-        console.warn(err);
-        res.status(500);
-        res.send();
-    });
-});
-*/
 // Add a JSON file to the server
-app.post("/api/storage/:filename", (req, res) => {
+app.post("/api/storage", (req, res) => {
     const overwrite = Boolean(Number(req.query.overwrite));
+    const filename = req.query.filename || "";
+    const path = req.query.path || "";
+
     try {
-        serverStorage.saveJSON(req.body, req.params.filename, overwrite)
+        serverStorage.saveJSON(req.body, filename, path, overwrite)
         .then(() => {
             res.status(201);
             res.send();

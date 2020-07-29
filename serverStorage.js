@@ -22,31 +22,46 @@ if (!fs.existsSync(dir)) {
  * Encode an object as a JSON file and save it in the storage directory.
  * @param {Object} data The object representation of the data to be stored.
  * @param {string} filename The name of the file to be saved.
+ * @param {string} path The path where the file should be saved, relative
+ * do the root of the storage directory.
  * @param {boolean} overwrite If a file with the same name exists, overwrite.
  * @returns {Promise<>} A promise that resolves when the save is successful.
  */
-function saveJSON(data, filename, overwrite) {
+function saveJSON(data, filename, path, overwrite) {
     if (typeof data !== "object"){
         throw new Error("Stored data should be an Object.");
     }
+    // Clean up the path and filename
     filename = sanitize(filename);
-    if (!filename) {
-        throw new Error("Empty filename.");
+    let dirs = path.split("/");
+    dirs = dirs.map(dir => sanitize(`/${dir}/`)).filter(dir => dir);
+    path = dirs.length ? dirs.join("/") + "/" : "";
+
+    // Check if the filename is valid
+    if (!filename || !/^[^\.]+\.json$/.test(filename)) {
+        console.log(filename);
+        throw new Error("Invalid filename.");
+    }
+    // Check if the path is valid
+    if (path) {
+        if (/\./.test(path) || !fs.existsSync(`${dir}/${path}`)){
+            throw new Error("Invalid path.");
+        }
     }
     if (!overwrite) {
-        if (fs.existsSync(`${dir}/${filename}`)){
+        if (fs.existsSync(`${dir}/${path}${filename}`)){
             throw duplicateFile;
         }
     }
 
     const dataJSON = JSON.stringify(data);
     return new Promise((resolve, reject) => {
-        fs.writeFile(`${dir}/${filename}`, dataJSON, err => {
+        fs.writeFile(`${dir}/${path}${filename}`, dataJSON, err => {
             if (err) {
                 reject(err);
             }
             else {
-                console.info(`Saved file: ${filename}`);
+                console.info(`Saved file: ${path}${filename}`);
                 resolve();
             }
         });

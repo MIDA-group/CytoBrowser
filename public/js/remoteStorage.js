@@ -31,15 +31,18 @@ const remoteStorage = (function() {
      * Save an object as a JSON file on the server.
      * @param {Object} data The object to store on the server.
      * @param {string} filename The filename to store the object as.
+     * @param {string} path The pre-existing path where the file should
+     * be stored on the server, relative to the root storage directory.
      * @param {boolean} [overwrite=false] Force overwrite if file with
      * the same name already exists.
      */
-    function saveJSON(data, filename, overwrite = false){
+    function saveJSON(data, filename, path = "", overwrite = false){
         if (!filename.match(/.json$/)) {
             filename += ".json";
         }
         const req = new XMLHttpRequest();
-        req.open("POST", `${window.location.origin}/api/storage/${filename}?overwrite=${overwrite ? 1 : 0}`);
+        req.open("POST", `${window.location.origin}/api/storage`
+        + `?filename="${filename}"&path="${path}"&overwrite=${overwrite ? 1 : 0}`);
         req.setRequestHeader("Content-Type", "application/json");
         req.send(JSON.stringify(data));
 

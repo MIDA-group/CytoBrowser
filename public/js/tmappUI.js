@@ -92,6 +92,15 @@ const tmappUI = (function(){
         _clearSelectedFile();
     }
 
+    function _saveFile() {
+        const filename = $("#server_filename").val();
+        const data = markerStorageConversion.getMarkerStorageData();
+        const path = _path.join("/");
+        remoteStorage.saveJSON(data, filename, path);
+        $("#server_storage").modal("hide");
+        updateRemoteFiles();
+    }
+
     const _holdInterval = 50;
     function _addHoldableButton(key, element, f) {
         let interval;
@@ -166,12 +175,7 @@ const tmappUI = (function(){
         $("#server_storage").on("show.bs.modal", updateRemoteFiles);
         $("#server_refresh").click(updateRemoteFiles);
         $("#server_load").click(_openSelectedFile);
-        $("#server_save").click(event => {
-            const filename = $("#server_filename").val();
-            const data = markerStorageConversion.getMarkerStorageData();
-            remoteStorage.saveJSON(data, filename);
-            updateRemoteFiles();
-        });
+        $("#server_save").click(_saveFile);
 
         // Add event listeners for focus buttons
         $("#focus_next").click(tmapp.incrementFocus);
