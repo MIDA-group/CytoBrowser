@@ -45,9 +45,9 @@ app.get("/api/storage", (req, res) => {
         res.json({files: data});
     })
     .catch(err => {
-        console.warn(err);
+        console.warn(err.message);
         res.status(500);
-        res.send();
+        res.send(err.message);
     });
 });
 
@@ -64,20 +64,20 @@ app.post("/api/storage", (req, res) => {
             res.send();
         })
         .catch(err => {
-            console.warn(err);
+            console.warn(err.message);
             res.status(500);
-            res.send();
+            res.send(err.message);
         });
     }
     catch (err) {
         if (err === serverStorage.duplicateFile) {
             res.status(300);
-            res.send();
+            res.send("Duplicate filename.");
         }
         else {
-            console.warn(err);
+            console.warn(err.message);
             res.status(400);
-            res.send();
+            res.send(err.message);
         }
     }
 });

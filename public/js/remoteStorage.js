@@ -21,7 +21,8 @@ const remoteStorage = (function() {
                     resolve(data);
                 }
                 else {
-                    reject(new Error(`HTTP Response: ${req.status}.`));
+                    alert(`${req.status}: ${req.responseText}`);
+                    reject(new Error(`${req.status}: ${req.responseText}`));
                 }
             }
         });
@@ -35,6 +36,8 @@ const remoteStorage = (function() {
      * be stored on the server, relative to the root storage directory.
      * @param {boolean} [overwrite=false] Force overwrite if file with
      * the same name already exists.
+     * @returns {Promise} A promise that resolves if the file is saved,
+     * or rejects if it isn't.
      */
     function saveJSON(data, filename, path = "", overwrite = false){
         if (!filename.match(/.json$/)) {
@@ -44,28 +47,32 @@ const remoteStorage = (function() {
         req.open("POST", `${window.location.origin}/api/storage`
         + `?filename="${filename}"&path="${path}"&overwrite=${overwrite ? 1 : 0}`);
         req.setRequestHeader("Content-Type", "application/json");
-        req.send(JSON.stringify(data));
 
-        req.onreadystatechange = function() {
-            if (req.readyState !== 4) {
-                return;
-            }
-            if (req.status === 201) {
-                console.info(`Saved file "${filename}" remotely.`);
-            }
-            // Is 300 the best code to use for this? Unsure
-            else if (req.status === 300) {
-                if (confirm("A file with this name already exists. Do you want to overwrite it?")){
-                    saveJSON(data, filename, true);
+
+        return new Promise((resolve, reject) => {
+            req.send(JSON.stringify(data));
+            req.onreadystatechange = function() {
+                if (req.readyState !== 4) {
+                    return;
+                }
+                if (req.status === 201) {
+                    console.info(`Saved file "${filename}" remotely.`);
+                    resolve();
+                }
+                // Is 300 the best code to use for this? Unsure
+                else if (req.status === 300) {
+                    if (confirm("A file with this name already exists. Do you want to overwrite it?")){
+                        saveJSON(data, filename, path, true)
+                        .then(resolve())
+                        .catch(err => reject(err));
+                    }
+                }
+                else {
+                    alert(`${req.status}: ${req.responseText}`);
+                    reject(new Error(`${req.status}: ${req.responseText}`));
                 }
             }
-            else if (req.status === 400) {
-                alert("400 error, likely invalid filename.");
-            }
-            else if (req.status === 500) {
-                alert("500 error, something went wrong on the server.");
-            }
-        }
+        });
     }
 
     /**

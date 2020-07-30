@@ -107,9 +107,10 @@ const tmappUI = (function(){
         const filename = $("#server_filename").val();
         const data = markerStorageConversion.getMarkerStorageData();
         const path = _path.join("/");
-        remoteStorage.saveJSON(data, filename, path);
-        $("#server_storage").modal("hide");
-        updateRemoteFiles();
+        remoteStorage.saveJSON(data, filename, path).then(() => {
+            $("#server_storage").modal("hide");
+            updateRemoteFiles();
+        });
     }
 
     /**
