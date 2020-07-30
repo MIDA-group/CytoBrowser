@@ -30,8 +30,10 @@ function findVersions(fullPath) {
                 reject(err);
                 return;
             }
+            // Should make the filename good for regex, according to SO
+            const regexFilename = filename.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
             const versions = dir
-            .filter(name => name.match(filename))
+            .filter(name => name.match(new RegExp(`__version_\\d__${regexFilename}$`)))
             .filter(name => versionFilter.test(name));
 
             const versionInfo = [];
