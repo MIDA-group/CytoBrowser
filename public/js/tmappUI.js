@@ -169,7 +169,6 @@ const tmappUI = (function(){
 
         // Refresh the file list
         updateRemoteFiles();
-        $("#server_storage").on("show.bs.modal", updateRemoteFiles);
         $("#server_refresh").click(updateRemoteFiles);
         $("#server_load").click(_openSelectedFile);
         $("#server_save").click(_saveFile);
