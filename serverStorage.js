@@ -18,6 +18,27 @@ if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir);
 }
 
+function findVersions(fullPath) {
+    return new Promise((resolve, reject) => {
+        const location = fullPath.match(/^.+\//)[0];
+        const filename = fullPath.match(/[^\/]+$/)[0];
+        fs.readdir(location, (err, dir) => {
+            if (err) {
+                reject(err);
+                return;
+            }
+            const versionFilter = new RegExp(/__version_\d+__/);
+            const versions = dir
+                .filter(name => name.match(filename))
+                .filter(name => versionFilter.test(name));
+            const versionNumbers = versions.map(version => {
+                return Number(version.match(/(?<=__version_)\d+(?=__)/)[0]);
+            });
+            resolve(versionNumbers);
+        });
+    });
+}
+
 /**
  * Encode an object as a JSON file and save it in the storage directory.
  * Filenames and paths are sanitized for security reasons. Each segment
@@ -30,12 +51,18 @@ if (!fs.existsSync(dir)) {
  * @param {string} path The path where the file should be saved, relative
  * do the root of the storage directory.
  * @param {boolean} overwrite If a file with the same name exists, overwrite.
+ * @param {boolean} reversion If a file with the same name exists, add a
+ * new version of the file.
  * @returns {Promise<>} A promise that resolves when the save is successful.
  */
-function saveJSON(data, filename, path, overwrite) {
+function saveJSON(data, filename, path, overwrite, reversion) {
     if (typeof data !== "object"){
         throw new Error("Stored data should be an Object.");
     }
+    if (overwrite && reversion) {
+        throw new Error("Either overwrite or reversion, not both.");
+    }
+
     // Clean up the path and filename
     filename = sanitize(filename);
     let dirs = path.split("/");
@@ -43,33 +70,59 @@ function saveJSON(data, filename, path, overwrite) {
     path = dirs.length ? dirs.join("/") + "/" : "";
 
     // Check if the filename is valid
-    if (!filename || !/^[^\.]+\.json$/.test(filename)) {
+    if (!filename // Filename can't be empty
+        || !/^[^\.]+\.json$/.test(filename) // Must be JSON file
+        || /__version_\d+__/.test(filename)) { // Can't specify version on its own
         throw new Error("Invalid filename.");
     }
+
     // Check if the path is valid
     if (path) {
         if (/\./.test(path) || !fs.existsSync(`${dir}/${path}`)){
             throw new Error("Invalid path.");
         }
     }
-    if (!overwrite) {
-        if (fs.existsSync(`${dir}/${path}${filename}`)){
-            throw duplicateFile;
-        }
+
+    const fullPath = `${dir}/${path}${filename}`;
+    function writeFile() {
+        const dataJSON = JSON.stringify(data);
+        return new Promise((resolve, reject) => {
+            fs.writeFile(fullPath, dataJSON, err => {
+                if (err) {
+                    reject(err);
+                }
+                else {
+                    console.info(`Saved file: ${fullPath}`);
+                    resolve();
+                }
+            });
+        });
     }
 
-    const dataJSON = JSON.stringify(data);
-    return new Promise((resolve, reject) => {
-        fs.writeFile(`${dir}/${path}${filename}`, dataJSON, err => {
-            if (err) {
-                reject(err);
+    // Check if the file already exists
+    if (!overwrite) {
+        if (fs.existsSync(fullPath)){
+            if (reversion) {
+                return findVersions(fullPath).then(versions => {
+                    const version = versions.length ? Math.max(...versions) + 1 : 0;
+                    const versionPath = `${dir}/${path}__version_${version}__${filename}`;
+                    return new Promise((resolve, reject) => {
+                        fs.rename(fullPath, versionPath, err => {
+                            if (err) {
+                                reject(err);
+                                return;
+                            }
+                            writeFile().then(result => resolve(result));
+                        });
+                    });
+                });
             }
             else {
-                console.info(`Saved file: ${path}${filename}`);
-                resolve();
+                throw duplicateFile;
             }
-        });
-    });
+        }
+    }
+    return writeFile();
 }
 
 /**
@@ -133,7 +186,6 @@ function files() {
                     statPromises.push(new Promise((resolve, reject) => {
                         fs.stat(`${path}/${entry.name}`, (err, stats) => {
                             if (err) {
-                                console.log("Rejected!");
                                 reject(err);
                                 return;
                             }
