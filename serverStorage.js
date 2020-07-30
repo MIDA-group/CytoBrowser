@@ -20,6 +20,11 @@ if (!fs.existsSync(dir)) {
 
 /**
  * Encode an object as a JSON file and save it in the storage directory.
+ * Filenames and paths are sanitized for security reasons. Each segment
+ * of the path is treated as a separate filename and sanitized, and
+ * filenames are prevented from having any period characters unless
+ * directly followed by "json" and an end of string. Sanitation is done
+ * with the node module {@link https://www.npmjs.com/package/sanitize-filename|sanitize-filename}
  * @param {Object} data The object representation of the data to be stored.
  * @param {string} filename The name of the file to be saved.
  * @param {string} path The path where the file should be saved, relative
@@ -39,7 +44,6 @@ function saveJSON(data, filename, path, overwrite) {
 
     // Check if the filename is valid
     if (!filename || !/^[^\.]+\.json$/.test(filename)) {
-        console.log(filename);
         throw new Error("Invalid filename.");
     }
     // Check if the path is valid
@@ -100,17 +104,19 @@ function loadJSON(filename) {
  */
 
 /**
- * Get a list of the files stored on the server.
+ * Get a tree of the files stored in the storage directory.
  * @returns {Promise<Array<FileEntry>>} The promise of an array of file
  * structure entries.
  */
 function files() {
+    // Function for recursing through the directory tree
     function expand(path) {
         return new Promise((resolve, reject) => {
             fs.readdir(path, {withFileTypes: true}, (err, dir) => {
                 if (err) {
                     reject(err);
                 }
+                // Promises that need to resolve in each subdirectory
                 const promises = [];
                 const tree = dir.filter(file => file.isDirectory() || file.isFile())
                 .map(file => {
@@ -125,6 +131,7 @@ function files() {
                     }
                     return entry;
                 });
+                // Wait for all subdirectories to expand
                 Promise.all(promises).then(() => resolve(tree));
             });
         });
