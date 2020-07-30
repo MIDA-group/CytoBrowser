@@ -115,7 +115,30 @@ const tmappUI = (function(){
         const path = _path.join("/");
         remoteStorage.saveJSON(data, filename, path).then(() => {
             $("#server_storage").modal("hide");
-            updateRemoteFiles();
+            _updateRemoteFiles();
+        });
+    }
+
+    function _updateRemoteFiles() {
+        remoteStorage.files().then(files => {
+            const newPath = [];
+            let name = "";
+            let entries = files;
+            for (let i in _path) {
+                let step = _path[i];
+                let subEntries = entries.find(entry => entry.name === step);
+                if (subEntries) {
+                    name = step;
+                    entries = subEntries.content;
+                    newPath.push(step);
+                }
+                else {
+                    break;
+                }
+            }
+            _path = newPath;
+            $("#server_files").empty();
+            _openDirectory(entries, name, false);
         });
     }
 
@@ -175,8 +198,8 @@ const tmappUI = (function(){
         });
 
         // Refresh the file list
-        updateRemoteFiles();
-        $("#server_refresh").click(updateRemoteFiles);
+        _updateRemoteFiles();
+        $("#server_refresh").click(_updateRemoteFiles);
         $("#server_load").click(_openSelectedFile);
         $("#server_save").click(_saveFile);
 
@@ -429,32 +452,6 @@ const tmappUI = (function(){
     }
 
     /**
-     * Update the list of server-stored files.
-     */
-    function updateRemoteFiles() {
-        remoteStorage.files().then(files => {
-            const newPath = [];
-            let name = "";
-            let entries = files;
-            for (let i in _path) {
-                let step = _path[i];
-                let subEntries = entries.find(entry => entry.name === step);
-                if (subEntries) {
-                    name = step;
-                    entries = subEntries.content;
-                    newPath.push(step);
-                }
-                else {
-                    break;
-                }
-            }
-            _path = newPath;
-            $("#server_files").empty();
-            _openDirectory(entries, name, false);
-        });
-    }
-
-    /**
      * Set the displayed image name in the UI.
      * @param {string} txt The image name to display.
      */
@@ -504,7 +501,6 @@ const tmappUI = (function(){
         displayImageError: displayImageError,
         clearImageError: clearImageError,
         addImage: addImage,
-        updateRemoteFiles: updateRemoteFiles,
         setImageName: setImageName,
         setImageZLevel: setImageZLevel,
         setImageZoom: setImageZoom,
