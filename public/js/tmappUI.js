@@ -98,11 +98,33 @@ const tmappUI = (function(){
         $("#server_load").prop("disabled", true);
     }
 
+    function _selectVersion(file){
+        $("#server_storage").modal("hide");
+        $("#version_list").empty();
+        $("#version_select").modal("show");
+        file.versions.sort((a, b) => a.number - b.number).forEach(version => {
+            const versionButton = $(`<button class='btn btn-secondary btn-block'>
+                Version ${version.number} &ndash;
+                Modified ${new Date(version.mtime).toLocaleString()}
+            </button>`);
+            versionButton.click(() => {
+                remoteStorage.loadJSON(`${_path.join("/")}/`+
+                `__version_${version.number}__${file.name}`)
+                .then(markerStorageConversion.addMarkerStorageData);
+                $("#version_select").modal("hide");
+            });
+            $("#version_list").append(versionButton);
+        });
+    }
+
     function _openSelectedFile() {
         if (!_selectedFile) {
             throw new Error("No file selected.");
         }
-        if (_selectedFile.type === "file") {
+        if (_selectedFile.type === "file" && _selectedFile.versions) {
+            _selectVersion(_selectedFile);
+        }
+        else if (_selectedFile.type === "file") {
             remoteStorage.loadJSON(`${_path.join("/")}/${_selectedFile.name}`)
             .then(markerStorageConversion.addMarkerStorageData);
             $("#server_storage").modal("hide");
