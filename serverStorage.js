@@ -115,15 +115,34 @@ function files() {
             fs.readdir(path, {withFileTypes: true}, (err, dir) => {
                 if (err) {
                     reject(err);
+                    return;
                 }
                 // Promises that need to resolve in each subdirectory
                 const promises = [];
+                const statPromises = [];
+
+                // Add entries for each file and directory
                 const tree = dir.filter(file => file.isDirectory() || file.isFile())
                 .map(file => {
                     const entry = {
                         name: file.name,
                         type: file.isDirectory() ? "directory" : "file"
                     };
+
+                    // Promise for file stats
+                    statPromises.push(new Promise((resolve, reject) => {
+                        fs.stat(`${path}/${entry.name}`, (err, stats) => {
+                            if (err) {
+                                console.log("Rejected!");
+                                reject(err);
+                                return;
+                            }
+                            entry.mtime = stats.mtime;
+                            resolve();
+                        });
+                    }));
+
+                    // Expand further if directory
                     if (entry.type === "directory") {
                         const expansion = expand(`${path}/${entry.name}`);
                         promises.push(expansion);
@@ -131,8 +150,9 @@ function files() {
                     }
                     return entry;
                 });
+
                 // Wait for all subdirectories to expand
-                Promise.all(promises).then(() => resolve(tree));
+                Promise.all([promises, statPromises].flat()).then(() => resolve(tree));
             });
         });
     }

@@ -52,11 +52,21 @@ const tmappUI = (function(){
         list.selectAll("a")
             .data(entries, d => d.name)
             .join(enter => enter.append("a")
-                .attr("class", "list-group-item list-group-item-action")
+                .attr("class", "list-group-item list-group-item-action \
+                    d-flex justify-content-between align-items-center")
                 .attr("href", "#")
                 .attr("filename", d => d.name)
                 .attr("entrytype", d => d.type)
-                .text(d => `${d.name}${d.type === "directory" ? "/" : ""}`)
+                .call(selection =>
+                    selection.append("span")
+                    .text(d => `${d.name}${d.type === "directory" ? "/" : ""}`)
+                )
+                .call(selection =>
+                    selection.filter(d => d.mtime)
+                    .append("span")
+                    .attr("class", "small")
+                    .text(d => new Date(d.mtime).toLocaleString())
+                )
                 .on("click", d => _setSelectedFile(d))
                 .on("dblclick", d => {
                     _setSelectedFile(d);
