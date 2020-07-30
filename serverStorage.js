@@ -13,6 +13,9 @@ const duplicateFile = Symbol("Duplicate file");
 // Directory where data should be stored
 const dir = "./storage";
 
+// Regex for finding earlier versions of files
+const versionFilter = new RegExp(/__version_\d+__/);
+
 // Make sure the directory exists
 if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir);
@@ -27,7 +30,6 @@ function findVersions(fullPath) {
                 reject(err);
                 return;
             }
-            const versionFilter = new RegExp(/__version_\d+__/);
             const versions = dir
                 .filter(name => name.match(filename))
                 .filter(name => versionFilter.test(name));
@@ -72,7 +74,7 @@ function saveJSON(data, filename, path, overwrite, reversion) {
     // Check if the filename is valid
     if (!filename // Filename can't be empty
         || !/^[^\.]+\.json$/.test(filename) // Must be JSON file
-        || /__version_\d+__/.test(filename)) { // Can't specify version on its own
+        || versionFilter.test(filename)) { // Can't specify version on its own
         throw new Error("Invalid filename.");
     }
 
@@ -171,11 +173,14 @@ function files() {
                     return;
                 }
                 // Promises that need to resolve in each subdirectory
-                const promises = [];
+                const expansionPromises = [];
                 const statPromises = [];
+                const versionPromises = [];
+                const promises = [expansionPromises, statPromises, versionPromises];
 
                 // Add entries for each file and directory
                 const tree = dir.filter(file => file.isDirectory() || file.isFile())
+                .filter(file => !versionFilter.test(file.name))
                 .map(file => {
                     const entry = {
                         name: file.name,
@@ -194,17 +199,27 @@ function files() {
                         });
                     }));
 
+                    // Promise for versions
+                    versionPromises.push(new Promise((resolve, reject) => {
+                        findVersions(`${path}/${entry.name}`).then(versions => {
+                            if (versions.length) {
+                                entry.versions = versions;
+                            }
+                            resolve();
+                        }).catch(reject);
+                    }));
+
                     // Expand further if directory
                     if (entry.type === "directory") {
                         const expansion = expand(`${path}/${entry.name}`);
-                        promises.push(expansion);
+                        expansionPromises.push(expansion);
                         expansion.then(subtree => entry.content = subtree);
                     }
                     return entry;
                 });
 
                 // Wait for all subdirectories to expand
-                Promise.all([promises, statPromises].flat()).then(() => resolve(tree));
+                Promise.all(promises.flat()).then(() => resolve(tree));
             });
         });
     }
