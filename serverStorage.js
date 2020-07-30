@@ -31,12 +31,27 @@ function findVersions(fullPath) {
                 return;
             }
             const versions = dir
-                .filter(name => name.match(filename))
-                .filter(name => versionFilter.test(name));
-            const versionNumbers = versions.map(version => {
-                return Number(version.match(/(?<=__version_)\d+(?=__)/)[0]);
+            .filter(name => name.match(filename))
+            .filter(name => versionFilter.test(name));
+
+            const versionInfo = [];
+            const statPromises = [];
+            versions.forEach(version => {
+                statPromises.push(new Promise((resolve, reject) => {
+                    fs.stat(`${location}${version}`, (err, stats) => {
+                        if (err) {
+                            reject(err);
+                            return;
+                        }
+                        versionInfo.push({
+                            number: Number(version.match(/(?<=__version_)\d+(?=__)/)[0]),
+                            mtime: stats.mtime
+                        });
+                        resolve();
+                    });
+                }));
             });
-            resolve(versionNumbers);
+            Promise.all(statPromises).then(() => resolve(versionInfo));
         });
     });
 }
@@ -106,7 +121,8 @@ function saveJSON(data, filename, path, overwrite, reversion) {
         if (fs.existsSync(fullPath)){
             if (reversion) {
                 return findVersions(fullPath).then(versions => {
-                    const version = versions.length ? Math.max(...versions) + 1 : 0;
+                    const versionNumbers = versions.map(version => version.number);
+                    const version = versions.length ? Math.max(...versionNumbers) + 1 : 0;
                     const versionPath = `${dir}/${path}__version_${version}__${filename}`;
                     return new Promise((resolve, reject) => {
                         fs.rename(fullPath, versionPath, err => {

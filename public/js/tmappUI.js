@@ -63,6 +63,10 @@ const tmappUI = (function(){
                 .call(selection =>
                     selection.append("span")
                     .text(d => `${d.name}${d.type === "directory" ? "/" : ""}`)
+                    .filter(d => d.versions)
+                    .append("span")
+                    .attr("class", "small")
+                    .html(d => `&nbsp;&nbsp;&nbsp;&nbsp;(${d.versions.length + 1} versions available)`)
                 )
                 .call(selection =>
                     selection.filter(d => d.mtime)
