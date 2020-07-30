@@ -37,16 +37,19 @@ const tmappUI = (function(){
         }
     };
 
-    function _openDirectory(entries, name = "") {
-        if (!name) {
-            _path = [];
+    function _openDirectory(entries, name = "", updatePath = true) {
+        if (updatePath) {
+            if (!name) {
+                _path = [];
+            }
+            else if (name === "..") {
+                _path.pop();
+            }
+            else {
+                _path.push(name);
+            }
         }
-        else if (name === "..") {
-            _path.pop();
-        }
-        else {
-            _path.push(name);
-        }
+        
         $("#server_file_path").text(`storage/${_path.join("/")}`);
         const list = d3.select("#server_files");
         list.selectAll("a")
@@ -79,7 +82,10 @@ const tmappUI = (function(){
         _selectedFile = file;
         $("#server_files").children().removeClass("active");
         $(`#server_files [filename="${file.name}"]`).addClass("active");
-        $("#server_load").prop("disabled", false)
+        $("#server_load").prop("disabled", false);
+        if (file.type === "file") {
+            $("#server_filename").val(file.name);
+        }
     }
 
     function _clearSelectedFile() {
@@ -426,7 +432,25 @@ const tmappUI = (function(){
      * Update the list of server-stored files.
      */
     function updateRemoteFiles() {
-        remoteStorage.files().then(_openDirectory);
+        remoteStorage.files().then(files => {
+            const newPath = [];
+            let name = "";
+            let entries = files;
+            for (let i in _path) {
+                let step = _path[i];
+                let subEntries = entries.find(entry => entry.name === step);
+                if (subEntries) {
+                    name = step;
+                    entries = subEntries.content;
+                    newPath.push(step);
+                }
+                else {
+                    break;
+                }
+            }
+            _path = newPath;
+            _openDirectory(entries, name, false);
+        });
     }
 
     /**

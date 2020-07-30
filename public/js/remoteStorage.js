@@ -91,6 +91,7 @@ const remoteStorage = (function() {
      * file entry descriptions in the storage directory.
      */
     function files(){
+        const fileSorter = (a, b) => a.type > b.type || a.name > b.name;
         return _httpGet(`${window.location.origin}/api/storage`)
         .then(data => {
             const files = data.files;
@@ -104,11 +105,11 @@ const remoteStorage = (function() {
                         type: "directory",
                         content: parentContent
                     });
-                    entry.content.sort((a, b) => a.name > b.name);
+                    entry.content.sort(fileSorter);
                 }
             }
             files.forEach(entry => addBackTraversal(files, entry));
-            files.sort((a, b) => a.name > b.name);
+            files.sort(fileSorter);
             return files;
         });
     }
