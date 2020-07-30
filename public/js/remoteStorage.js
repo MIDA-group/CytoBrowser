@@ -36,18 +36,21 @@ const remoteStorage = (function() {
      * be stored on the server, relative to the root storage directory.
      * @param {boolean} [overwrite=false] Force overwrite if file with
      * the same name already exists.
+     * @param {boolean} [reversion=false] Whether or not a file with
+     * the same name as this one should be marked as an older version.
      * @returns {Promise} A promise that resolves if the file is saved,
      * or rejects if it isn't.
      */
-    function saveJSON(data, filename, path = "", overwrite = false){
+    function saveJSON(data, filename, path = "", overwrite = false, reversion = false){
         if (!filename.match(/.json$/)) {
             filename += ".json";
         }
         const req = new XMLHttpRequest();
         req.open("POST", `${window.location.origin}/api/storage`
-        + `?filename="${filename}"&path="${path}"&overwrite=${overwrite ? 1 : 0}`);
+        + `?filename="${filename}"&path="${path}"`
+        + `&overwrite=${overwrite ? 1 : 0}`
+        + `&reversion=${reversion ? 1 : 0}`);
         req.setRequestHeader("Content-Type", "application/json");
-
 
         return new Promise((resolve, reject) => {
             req.send(JSON.stringify(data));
@@ -61,11 +64,20 @@ const remoteStorage = (function() {
                 }
                 // Is 300 the best code to use for this? Unsure
                 else if (req.status === 300) {
-                    if (confirm("A file with this name already exists. Do you want to overwrite it?")){
-                        saveJSON(data, filename, path, true)
-                        .then(resolve())
-                        .catch(err => reject(err));
-                    }
+                    tmappUI.choice("A file with this name already exists", [
+                        {
+                            label: "Create new version",
+                            click: () => saveJSON(data, filename, path, false, true)
+                            .then(resolve())
+                            .catch(err => reject(err))
+                        },
+                        {
+                            label: "Overwrite most recent version",
+                            click: () => saveJSON(data, filename, path, true, false)
+                            .then(resolve())
+                            .catch(err => reject(err))
+                        }
+                    ]);
                 }
                 else {
                     alert(`${req.status}: ${req.responseText}`);

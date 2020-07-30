@@ -54,11 +54,12 @@ app.get("/api/storage", (req, res) => {
 // Add a JSON file to the server
 app.post("/api/storage", (req, res) => {
     const overwrite = Boolean(Number(req.query.overwrite));
+    const reversion = Boolean(Number(req.query.reversion));
     const filename = req.query.filename || "";
     const path = req.query.path || "";
 
     try {
-        serverStorage.saveJSON(req.body, filename, path, overwrite)
+        serverStorage.saveJSON(req.body, filename, path, overwrite, reversion)
         .then(() => {
             res.status(201);
             res.send();

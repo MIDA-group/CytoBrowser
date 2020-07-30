@@ -140,7 +140,6 @@ const tmappUI = (function(){
         const data = markerStorageConversion.getMarkerStorageData();
         const path = _path.join("/");
         remoteStorage.saveJSON(data, filename, path).then(() => {
-            $("#server_storage").modal("hide");
             _updateRemoteFiles();
         });
     }
@@ -287,6 +286,38 @@ const tmappUI = (function(){
         $("#leave_collaboration").click(function(event) {
             collabClient.disconnect();
         });
+    }
+
+    /**
+     * Open a popup modal for a general multiple-choice event. If a
+     * modal is currently opened, it will be closed and reopened
+     * once the choice has been made or the choice modal has been closed.
+     * @param {string} title The title to display in the modal.
+     * @param {Array<Object>} choices An array of choices that can be
+     * chosen from. Each choice should contain a label property and
+     * a click property to properly display and handle their buttons.
+     */
+    function choice(title, choices) {
+        const activeModal = $(".modal.show");
+        activeModal.modal("hide");
+        $("#multiple_choice .modal-title").text(title);
+        $("#choice_list").empty();
+        choices.forEach(choice => {
+            const choiceButton = $(`<button class="btn btn-primary btn-block">
+                ${choice.label}
+            </button>`);
+            choiceButton.click(choice.click);
+            choiceButton.click(() => $("#multiple_choice").modal("hide"));
+            $("#choice_list").append(choiceButton);
+        });
+        const cancelButton = $(`<button class="btn btn-secondary btn-block">
+            Cancel
+        </button>`);
+        cancelButton.click(() => $("#multiple_choice").modal("hide"));
+        $("#choice_list").append(cancelButton);
+        $("#multiple_choice").modal("show");
+        $("#multiple_choice").one("hide.bs.modal", () => activeModal.modal("show"));
+        $("#multiple_choice").one("hidden.bs.modal", $("#choice_list").empty);
     }
 
     /**
@@ -519,6 +550,7 @@ const tmappUI = (function(){
 
     return {
         initUI: initUI,
+        choice: choice,
         setCollabID: setCollabID,
         clearCollabID: clearCollabID,
         updateCollaborators: updateCollaborators,
