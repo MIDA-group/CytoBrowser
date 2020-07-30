@@ -101,7 +101,16 @@ const tmappUI = (function(){
     function _selectVersion(file){
         $("#server_storage").modal("hide");
         $("#version_list").empty();
-        $("#version_select").modal("show");
+        const currentButton = $(`<button class='btn btn-primary btn-block'>
+            Current version &ndash;
+            Modified ${new Date(file.mtime).toLocaleString()}
+        </button>`);
+        currentButton.click(() => {
+            remoteStorage.loadJSON(`${_path.join("/")}${file.name}`)
+            .then(markerStorageConversion.addMarkerStorageData);
+            $("#version_select").modal("hide");
+        });
+        $("#version_list").append(currentButton);
         file.versions.sort((a, b) => a.number - b.number).forEach(version => {
             const versionButton = $(`<button class='btn btn-secondary btn-block'>
                 Version ${version.number} &ndash;
@@ -115,6 +124,7 @@ const tmappUI = (function(){
             });
             $("#version_list").append(versionButton);
         });
+        $("#version_select").modal("show");
     }
 
     function _openSelectedFile() {
