@@ -49,7 +49,7 @@ const tmappUI = (function(){
                 _path.push(name);
             }
         }
-        
+
         $("#server_file_path").text(`storage/${_path.join("/")}`);
         const list = d3.select("#server_files");
         list.selectAll("a")
@@ -449,6 +449,7 @@ const tmappUI = (function(){
                 }
             }
             _path = newPath;
+            $("#server_files").empty();
             _openDirectory(entries, name, false);
         });
     }
