@@ -296,8 +296,9 @@ const tmappUI = (function(){
      * @param {Array<Object>} choices An array of choices that can be
      * chosen from. Each choice should contain a label property and
      * a click property to properly display and handle their buttons.
+     * @param {Function} onCancel Function to call if the modal is closed.
      */
-    function choice(title, choices) {
+    function choice(title, choices, onCancel) {
         const activeModal = $(".modal.show");
         activeModal.modal("hide");
         $("#multiple_choice .modal-title").text(title);
@@ -318,6 +319,7 @@ const tmappUI = (function(){
         $("#multiple_choice").modal("show");
         $("#multiple_choice").one("hide.bs.modal", () => activeModal.modal("show"));
         $("#multiple_choice").one("hidden.bs.modal", $("#choice_list").empty);
+        onCancel && $("#multiple_choice").one("hidden.bs.modal", onCancel);
     }
 
     /**

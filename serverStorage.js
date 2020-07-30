@@ -124,7 +124,7 @@ function saveJSON(data, filename, path, overwrite, reversion) {
             if (reversion) {
                 return findVersions(fullPath).then(versions => {
                     const versionNumbers = versions.map(version => version.number);
-                    const version = versions.length ? Math.max(...versionNumbers) + 1 : 0;
+                    const version = versions.length ? Math.max(...versionNumbers) + 1 : 1;
                     const versionPath = `${dir}/${path}__version_${version}__${filename}`;
                     return new Promise((resolve, reject) => {
                         fs.rename(fullPath, versionPath, err => {
