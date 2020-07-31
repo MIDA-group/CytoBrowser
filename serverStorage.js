@@ -12,15 +12,10 @@ const sanitize = require("sanitize-filename");
 const duplicateFile = Symbol("Duplicate file");
 
 // Directory where data should be stored
-const dir = "./storage";
+let dir;
 
 // Regex for checking if something is an older version
 const versionFilter = new RegExp(/__version_\d+__/);
-
-// Make sure the directory exists
-if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir);
-}
 
 function findVersions(fullPath) {
     const location = fullPath.match(/^.+\//)[0];
@@ -119,20 +114,6 @@ function saveJSON(data, filename, path, overwrite, reversion) {
 }
 
 /**
- * Load an object from a specified JSON file.
- * @param {string} filename The file name to load.
- * @returns {Promise<Object>} A promise that resolves with the read data object.
- */
-function loadJSON(filename) {
-    filename = sanitize(filename);
-    if (!filename) {
-        throw new Error("Empty filename.");
-    }
-    const fullPath = `${dir}/${filename}`;
-    return fsPromises.readFile(fullPath).then(JSON.parse);
-}
-
-/**
  * Representation of either a file or a directory in a directory structure.
  * @typedef FileEntry
  * @property {string} name The name of the entry.
@@ -199,7 +180,20 @@ function files() {
     return expand(dir);
 }
 
-exports.duplicateFile = duplicateFile;
-exports.saveJSON = saveJSON;
-exports.loadJSON = loadJSON;
-exports.files = files;
+module.exports = function(storageDir) {
+    if (!storageDir || typeof storageDir !== "string") {
+        throw new Error("A storage directory has to be specified.");
+    }
+    dir = storageDir;
+
+    // Make sure the directory exists
+    if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir);
+    }
+
+    return {
+        duplicateFile: duplicateFile,
+        saveJSON: saveJSON,
+        files: files
+    };
+}

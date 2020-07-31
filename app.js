@@ -1,13 +1,16 @@
+// Handle command line arguments
+const argv = require("minimist")(process.argv.slice(2));
+const hostname = argv._[0] || "localhost";
+const port = argv._[1] || 0;
+const storageDir = argv.storage || "./storage";
+const dataDir = argv.data || "./data";
+
 // Declare required modules
 const fs = require("fs");
 const express = require("express");
-const availableImages = require("./availableImages");
+const availableImages = require("./availableImages")(dataDir);
 const collaboration = require("./collaboration");
-const serverStorage = require("./serverStorage");
-
-// Store the address to be used from arguments
-const hostname = process.argv[2] || "localhost";
-const port = process.argv[3] || 0;
+const serverStorage = require("./serverStorage")(storageDir);
 
 // Initialize the server
 const app = express();
@@ -15,8 +18,8 @@ const expressWs = require("express-ws")(app);
 
 // Serve static files
 app.use(express.static("public"));
-app.use("/data", express.static("data"));
-app.use("/storage", express.static("storage"));
+app.use("/data", express.static(dataDir));
+app.use("/storage", express.static(storageDir));
 app.use(express.json());
 
 // Serve the index page at the root
