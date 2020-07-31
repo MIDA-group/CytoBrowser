@@ -84,7 +84,7 @@ const fileBrowserUI = (function() {
             $("#version_select").modal("hide");
         });
         $("#version_list").append(currentButton);
-        file.versions.sort((a, b) => a.number - b.number).forEach(version => {
+        file.versions.sort((a, b) => b.number - a.number).forEach(version => {
             const versionButton = $(`<button class='btn btn-secondary btn-block'>
                 Version ${version.number} &ndash;
                 Modified ${new Date(version.mtime).toLocaleString()}
