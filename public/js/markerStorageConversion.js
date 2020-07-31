@@ -21,7 +21,7 @@ const markerStorageConversion = (function() {
      */
 
     /**
-     * Add markers from a marker storage object. The user is promoted
+     * Add markers from a marker storage object. The user is prompted
      * for whether or not the existing points should be replaced or
      * added to with the loaded markers.
      * @param {Object} data The storage object containing marker
