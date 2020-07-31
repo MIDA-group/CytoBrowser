@@ -1,12 +1,22 @@
+// Handle command line arguments
+const argv = require("minimist")(process.argv.slice(2));
+const hostname = argv._[0] || "localhost";
+const port = argv._[1] || 0;
+const storageDir = argv.storage || argv.s || "./storage";
+const dataDir = argv.data || argv.d || "./data";
+if (argv.h || argv.help) {
+    console.info(`Usage: node app.js hostname port ` +
+    `[-s storage path = "./storage"] ` +
+    `[-d image data path = "./data"]`);
+    return;
+}
+
 // Declare required modules
 const fs = require("fs");
 const express = require("express");
-const availableImages = require("./availableImages");
+const availableImages = require("./availableImages")(dataDir);
 const collaboration = require("./collaboration");
-
-// Store the address to be used from arguments
-const hostname = process.argv[2] || "localhost";
-const port = process.argv[3] || 0;
+const serverStorage = require("./serverStorage")(storageDir);
 
 // Initialize the server
 const app = express();
@@ -14,7 +24,9 @@ const expressWs = require("express-ws")(app);
 
 // Serve static files
 app.use(express.static("public"));
-app.use("/data", express.static("data"));
+app.use("/data", express.static(dataDir));
+app.use("/storage", express.static(storageDir));
+app.use(express.json());
 
 // Serve the index page at the root
 app.get("/", (req, res) => {
@@ -32,6 +44,51 @@ app.get("/api/images", (req, res) => {
     else {
         res.status(200);
         res.json(images);
+    }
+});
+
+// Get a list of files stored on the server
+app.get("/api/storage", (req, res) => {
+    serverStorage.files().then(data => {
+        res.status(200);
+        res.json({files: data});
+    })
+    .catch(err => {
+        console.warn(err.message);
+        res.status(500);
+        res.send(err.message);
+    });
+});
+
+// Add a JSON file to the server
+app.post("/api/storage", (req, res) => {
+    const overwrite = Boolean(Number(req.query.overwrite));
+    const reversion = Boolean(Number(req.query.reversion));
+    const filename = req.query.filename || "";
+    const path = req.query.path || "";
+
+    try {
+        serverStorage.saveJSON(req.body, filename, path, overwrite, reversion)
+        .then(() => {
+            res.status(201);
+            res.send();
+        })
+        .catch(err => {
+            console.warn(err.message);
+            res.status(500);
+            res.send(err.message);
+        });
+    }
+    catch (err) {
+        if (err === serverStorage.duplicateFile) {
+            res.status(300);
+            res.send("Duplicate filename.");
+        }
+        else {
+            console.warn(err.message);
+            res.status(400);
+            res.send(err.message);
+        }
     }
 });
 

@@ -248,10 +248,11 @@ const tmapp = (function() {
             console.info("Done loading!");
             _addMouseTracking(viewer);
             viewer.canvas.focus();
-            callback && callback();
+            viewer.viewport.goHome();
             _updateZoom();
             _updateFocus();
             _updatePosition();
+            callback && callback();
             tmappUI.clearImageError();
             tmappUI.enableCollabCreation();
         });

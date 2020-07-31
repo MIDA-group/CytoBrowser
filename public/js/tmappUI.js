@@ -8,8 +8,10 @@
  */
 const tmappUI = (function(){
     "use strict";
-    let _pageInFocus = true;
-    let _errorDisplayTimeout = null;
+
+    let _pageInFocus = true,
+        _errorDisplayTimeout = null;
+
     const _errors = {
         noimage: {
             message: "No image has been specified. Select one from the menu on the right.",
@@ -32,20 +34,6 @@ const tmappUI = (function(){
             type: "alert-danger"
         }
     };
-
-    const _holdInterval = 50;
-    function _addHoldableButton(key, element, f) {
-        let interval;
-        element.addEventListener("keydown", event => {
-            if (event.key === key && !event.repeat) {
-                f();
-                interval = setInterval(f, _holdInterval);
-            }
-        });
-        element.addEventListener("keyup", event => {
-            event.key === key && clearInterval(interval);
-        });
-    }
 
     /**
      * Initialize UI components that need to be added programatically
@@ -89,13 +77,21 @@ const tmappUI = (function(){
 
         // Add event listeners for local storage buttons
         $("#json_to_data").click(() => {
-            const loadedJSON = localStorage.loadJSON("data_files_import");
-            loadedJSON.then(markerStorageConversion.addMarkerStorageData);
+            $("#data_files_import").click();
+        });
+        $("#data_files_import").change(event => {
+            if (event.target.files.length) {
+                const loadedJSON = localStorage.loadJSON("data_files_import");
+                loadedJSON.then(markerStorageConversion.addMarkerStorageData);
+            }
         });
         $("#points_to_json").click(() => {
             const markerData = markerStorageConversion.getMarkerStorageData();
             localStorage.saveJSON(markerData);
         });
+
+        // Initialize the file browser
+        fileBrowserUI.init();
 
         // Add event listeners for focus buttons
         $("#focus_next").click(tmapp.incrementFocus);
@@ -104,10 +100,7 @@ const tmappUI = (function(){
         // Add event listeners for keyboard buttons
         //1,2,... for class selection
         //z,x for focus up down
-        // Uncomment these for smooth focus change
-        // _addHoldableButton("c", document, () => $("#focus_prev").click());
-        // _addHoldableButton("v", document, () => $("#focus_next").click());
-        $(document).keypress(function(){
+        $("#main_content").keypress(function(){
             switch(event.which) {
                 case "z".charCodeAt():
                     $("#focus_prev").click();
@@ -158,6 +151,40 @@ const tmappUI = (function(){
         $("#leave_collaboration").click(function(event) {
             collabClient.disconnect();
         });
+    }
+
+    /**
+     * Open a popup modal for a general multiple-choice event. If a
+     * modal is currently opened, it will be closed and reopened
+     * once the choice has been made or the choice modal has been closed.
+     * @param {string} title The title to display in the modal.
+     * @param {Array<Object>} choices An array of choices that can be
+     * chosen from. Each choice should contain a label property and
+     * a click property to properly display and handle their buttons.
+     * @param {Function} onCancel Function to call if the modal is closed.
+     */
+    function choice(title, choices, onCancel) {
+        const activeModal = $(".modal.show");
+        activeModal.modal("hide");
+        $("#multiple_choice .modal-title").text(title);
+        $("#choice_list").empty();
+        choices.forEach(choice => {
+            const choiceButton = $(`<button class="btn btn-primary btn-block">
+                ${choice.label}
+            </button>`);
+            choiceButton.click(choice.click);
+            choiceButton.click(() => $("#multiple_choice").modal("hide"));
+            $("#choice_list").append(choiceButton);
+        });
+        const cancelButton = $(`<button class="btn btn-secondary btn-block">
+            Cancel
+        </button>`);
+        cancelButton.click(() => $("#multiple_choice").modal("hide"));
+        $("#choice_list").append(cancelButton);
+        $("#multiple_choice").modal("show");
+        $("#multiple_choice").one("hide.bs.modal", () => activeModal.modal("show"));
+        $("#multiple_choice").one("hidden.bs.modal", $("#choice_list").empty);
+        onCancel && $("#multiple_choice").one("hidden.bs.modal", onCancel);
     }
 
     /**
@@ -390,6 +417,7 @@ const tmappUI = (function(){
 
     return {
         initUI: initUI,
+        choice: choice,
         setCollabID: setCollabID,
         clearCollabID: clearCollabID,
         updateCollaborators: updateCollaborators,

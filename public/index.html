@@ -48,7 +48,7 @@
     </nav>
 
     <!-- Main content -->
-    <div class="container-fluid d-flex flex-column flex-fill">
+    <div id="main_content" class="container-fluid d-flex flex-column flex-fill">
         <div class="row flex-fill">
             <div class="col mb-3">
                 <div id="ISS_viewer" class="ISS_viewer blurrable"></div>
@@ -101,11 +101,11 @@
                                     <button id="points_to_json" class="btn btn-primary btn-block" type="button"> Download</button>
                                 </div>
                                 <div class="col-3">
-                                    <input type="file" id="fileElem" multiple accept="image/*" style="display:none" onchange="handleFiles(this.files)">
+                                    <input class="d-none" type="file" id="data_files_import" name="files[]">
                                     <button id="json_to_data" class="btn btn-primary btn-block" type="button"> Import </button>
                                 </div>
                                 <div class="col-6 d-flex align-items-center">
-                                    <input class="form-control-file" type="file" id="data_files_import" name="files[]">
+                                    <button type="button" class="btn btn-dark btn-block" data-toggle="modal" data-target="#server_storage">Server storage</btton>
                                 </div>
                             </div>
                         </div>
@@ -145,6 +145,67 @@
         </div>
       </div>
     </div> <!-- End of image browser -->
+
+    <!-- Server storage -->
+    <div class="modal fade" id="server_storage" tabindex="-1" role="dialog">
+      <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Server storage</h5>
+            <button type="button" class="close" data-dismiss="modal">
+              <span>&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+              <div class="form-row pb-4">
+                  <div class="col-8">
+                      <input id="server_filename" type="text" class="form-control" placeholder="Filename">
+                  </div>
+                  <div class="col-4">
+                      <button id="server_save" class="btn btn-block btn-primary">Save</button>
+                  </div>
+              </div>
+              <p class="text-muted">Current path:&nbsp;&nbsp;&nbsp;<span id="server_file_path"></span></p>
+              <div class="card bg-secondary" style="height: 60vh; overflow-y: auto;">
+                  <ul id="server_files" class="list-group list-group-flush">
+                  </ul>
+              </div>
+              <div class="form-row pt-4">
+                  <div class="col-12 d-flex justify-content-between">
+                      <button id="server_refresh" class="btn btn-link">Refresh</button>
+                      <button id="server_load" class="btn btn-primary" disabled>Open</button>
+                  </div>
+              </div>
+          </div>
+        </div>
+      </div>
+    </div> <!-- End of server storage -->
+
+    <!-- Version select -->
+    <div class="modal fade" id="version_select" tabindex="-1" role="dialog">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Select file version</h5>
+          </div>
+          <div id="version_list" class="modal-body">
+          </div>
+        </div>
+      </div>
+    </div> <!-- End of version select -->
+
+    <!-- Multiple choice -->
+    <div class="modal fade" id="multiple_choice" tabindex="-1" role="dialog">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Select file version</h5>
+          </div>
+          <div id="choice_list" class="modal-body">
+          </div>
+        </div>
+      </div>
+  </div> <!-- End of multiple choice -->
 
     <!-- Instructions -->
     <div class="modal fade" id="instructions" tabindex="-1" role="dialog">
@@ -290,12 +351,14 @@
 <script src="js/collabClient.js"></script>
 <script src="js/markerHandler.js"></script>
 <script src="js/overlayHandler.js"></script>
+<script src="js/fileBrowserUI.js"></script>
 <script src="js/tmappUI.js"></script>
 <script src="js/tmapp.js"></script>
 <script src="js/markerVisuals.js"></script>
 <script src="js/markerStorageConversion.js"></script>
 <script src="js/coordinateHelper.js"></script>
 <script src="js/localStorage.js"></script>
+<script src="js/remoteStorage.js"></script>
 <script>
     tmappUI.initUI();
 

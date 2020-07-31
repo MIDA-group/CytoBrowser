@@ -8,7 +8,7 @@
  */
 const markerStorageConversion = (function() {
     "use strict";
-    
+
     /**
      * A JSON representation of currently placed markers.
      * @typedef {Object} MarkerStorage
@@ -21,29 +21,44 @@ const markerStorageConversion = (function() {
      */
 
     /**
-     * Add markers from a marker storage object.
+     * Add markers from a marker storage object. The user is prompted
+     * for whether or not the existing points should be replaced or
+     * added to with the loaded markers.
      * @param {Object} data The storage object containing marker
      * information.
-     * @param {boolean} [clear = false] Whether or not the already
-     * placed markers should be removed before adding the new markers.
      */
-    function addMarkerStorageData(data, clear = false) {
+    function addMarkerStorageData(data) {
         switch (data.version) {
             case "1.0":
+                const addMarkers = () => data.markers.forEach(marker => {
+                    markerHandler.addMarker(marker, "image");
+                });
+
                 // Change image if data is for another image
                 if (data.image !== tmapp.getImageName()) {
                     tmapp.openImage(data.image, () => {
                         collabClient.swapImage(data.image);
-                        data.markers.forEach(marker => {
-                            markerHandler.addMarker(marker, "image");
-                        });
+                        addMarkers();
                     });
-                    break;
                 }
-                clear && markerHandler.clearMarkers();
-                data.markers.forEach(marker => {
-                    markerHandler.addMarker(marker, "image");
-                })
+                else if (!markerHandler.empty()) {
+                    tmappUI.choice("What should be done with the current annotations?", [
+                        {
+                            label: "Add loaded annotations to existing ones",
+                            click: addMarkers
+                        },
+                        {
+                            label: "Replace existing annotations with loaded ones",
+                            click: () => {
+                                markerHandler.clearMarkers();
+                                addMarkers();
+                            }
+                        }
+                    ]);
+                }
+                else {
+                    addMarkers();
+                }
                 break;
             default:
                 throw new Error(`Data format version ${data.version} not implemented.`);
