@@ -5,6 +5,7 @@
 
 // Declare required modules
 const fs = require("fs");
+const fsPromises = fs.promises;
 const sanitize = require("sanitize-filename");
 
 // Symbolic references
@@ -13,7 +14,7 @@ const duplicateFile = Symbol("Duplicate file");
 // Directory where data should be stored
 const dir = "./storage";
 
-// Regex for finding earlier versions of files
+// Regex for checking if something is an older version
 const versionFilter = new RegExp(/__version_\d+__/);
 
 // Make sure the directory exists
@@ -22,39 +23,27 @@ if (!fs.existsSync(dir)) {
 }
 
 function findVersions(fullPath) {
-    return new Promise((resolve, reject) => {
-        const location = fullPath.match(/^.+\//)[0];
-        const filename = fullPath.match(/[^\/]+$/)[0];
-        fs.readdir(location, (err, dir) => {
-            if (err) {
-                reject(err);
-                return;
-            }
-            // Should make the filename good for regex, according to SO
-            const regexFilename = filename.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-            const versions = dir
-            .filter(name => name.match(new RegExp(`__version_\\d__${regexFilename}$`)))
-            .filter(name => versionFilter.test(name));
+    const location = fullPath.match(/^.+\//)[0];
+    const filename = fullPath.match(/[^\/]+$/)[0];
+    // Should make the filename good for regex, according to SO
+    const regexFilename = filename.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
 
-            const versionInfo = [];
-            const statPromises = [];
-            versions.forEach(version => {
-                statPromises.push(new Promise((resolve, reject) => {
-                    fs.stat(`${location}${version}`, (err, stats) => {
-                        if (err) {
-                            reject(err);
-                            return;
-                        }
-                        versionInfo.push({
-                            number: Number(version.match(/(?<=__version_)\d+(?=__)/)[0]),
-                            mtime: stats.mtime
-                        });
-                        resolve();
-                    });
-                }));
-            });
-            Promise.all(statPromises).then(() => resolve(versionInfo));
-        });
+    return fsPromises.readdir(location).then(dir => {
+        const versionInfo = [];
+        const versions = dir.filter(name =>
+            name.match(new RegExp(`^__version_\\d__${regexFilename}$`))
+        );
+
+        const statPromises = versions.map(version =>
+            fsPromises.stat(`${location}${version}`).then(stats => {
+                versionInfo.push({
+                    number: Number(version.match(/(?<=__version_)\d+(?=__)/)[0]),
+                    mtime: stats.mtime
+                });
+            })
+        );
+
+        return Promise.all(statPromises).then(() => versionInfo);
     });
 }
 
@@ -105,17 +94,8 @@ function saveJSON(data, filename, path, overwrite, reversion) {
     const fullPath = `${dir}/${path}${filename}`;
     function writeFile() {
         const dataJSON = JSON.stringify(data);
-        return new Promise((resolve, reject) => {
-            fs.writeFile(fullPath, dataJSON, err => {
-                if (err) {
-                    reject(err);
-                }
-                else {
-                    console.info(`Saved file: ${fullPath}`);
-                    resolve();
-                }
-            });
-        });
+        return fsPromises.writeFile(fullPath, dataJSON)
+        .then(() => console.info(`Saved file: ${fullPath}`));
     }
 
     // Check if the file already exists
@@ -126,15 +106,8 @@ function saveJSON(data, filename, path, overwrite, reversion) {
                     const versionNumbers = versions.map(version => version.number);
                     const version = versions.length ? Math.max(...versionNumbers) + 1 : 1;
                     const versionPath = `${dir}/${path}__version_${version}__${filename}`;
-                    return new Promise((resolve, reject) => {
-                        fs.rename(fullPath, versionPath, err => {
-                            if (err) {
-                                reject(err);
-                                return;
-                            }
-                            writeFile().then(result => resolve(result));
-                        });
-                    });
+                    return fsPromises.rename(fullPath, versionPath)
+                    .then(writeFile);
                 });
             }
             else {
@@ -155,17 +128,8 @@ function loadJSON(filename) {
     if (!filename) {
         throw new Error("Empty filename.");
     }
-    return new Promise((resolve, reject) => {
-        fs.readFile(`${dir}/${filename}`, (err, data) => {
-            if (err) {
-                reject(err);
-            }
-            else {
-                const dataObj = JSON.parse(data);
-                resolve(dataObj);
-            }
-        });
-    });
+    const fullPath = `${dir}/${filename}`;
+    return fsPromises.readFile(fullPath).then(JSON.parse);
 }
 
 /**
@@ -184,61 +148,51 @@ function loadJSON(filename) {
 function files() {
     // Function for recursing through the directory tree
     function expand(path) {
-        return new Promise((resolve, reject) => {
-            fs.readdir(path, {withFileTypes: true}, (err, dir) => {
-                if (err) {
-                    reject(err);
-                    return;
+        return fsPromises.readdir(path, {withFileTypes: true}).then(dir => {
+            // Promises that need to resolve in each subdirectory
+            const expansionPromises = [];
+            const statPromises = [];
+            const versionPromises = [];
+            const promises = [expansionPromises, statPromises, versionPromises];
+
+            // Add entries for each file and directory
+            const tree = dir.filter(file => file.isDirectory() || file.isFile())
+            .filter(file => !versionFilter.test(file.name))
+            .map(file => {
+                const entry = {
+                    name: file.name,
+                    type: file.isDirectory() ? "directory" : "file"
+                };
+
+                const fullPath = `${path}/${entry.name}`;
+
+                // Promise for file stats
+                statPromises.push(
+                    fsPromises.stat(fullPath)
+                    .then(stats => entry.mtime = stats.mtime)
+                );
+
+                // Promise for versions
+                versionPromises.push(
+                    findVersions(fullPath)
+                    .then(versions => {
+                        if (versions.length) {
+                            entry.versions = versions;
+                        }
+                    })
+                );
+
+                // Expand further if directory
+                if (entry.type === "directory") {
+                    const expansion = expand(`${path}/${entry.name}`);
+                    expansionPromises.push(expansion);
+                    expansion.then(subtree => entry.content = subtree);
                 }
-                // Promises that need to resolve in each subdirectory
-                const expansionPromises = [];
-                const statPromises = [];
-                const versionPromises = [];
-                const promises = [expansionPromises, statPromises, versionPromises];
-
-                // Add entries for each file and directory
-                const tree = dir.filter(file => file.isDirectory() || file.isFile())
-                .filter(file => !versionFilter.test(file.name))
-                .map(file => {
-                    const entry = {
-                        name: file.name,
-                        type: file.isDirectory() ? "directory" : "file"
-                    };
-
-                    // Promise for file stats
-                    statPromises.push(new Promise((resolve, reject) => {
-                        fs.stat(`${path}/${entry.name}`, (err, stats) => {
-                            if (err) {
-                                reject(err);
-                                return;
-                            }
-                            entry.mtime = stats.mtime;
-                            resolve();
-                        });
-                    }));
-
-                    // Promise for versions
-                    versionPromises.push(new Promise((resolve, reject) => {
-                        findVersions(`${path}/${entry.name}`).then(versions => {
-                            if (versions.length) {
-                                entry.versions = versions;
-                            }
-                            resolve();
-                        }).catch(reject);
-                    }));
-
-                    // Expand further if directory
-                    if (entry.type === "directory") {
-                        const expansion = expand(`${path}/${entry.name}`);
-                        expansionPromises.push(expansion);
-                        expansion.then(subtree => entry.content = subtree);
-                    }
-                    return entry;
-                });
-
-                // Wait for all subdirectories to expand
-                Promise.all(promises.flat()).then(() => resolve(tree));
+                return entry;
             });
+
+            // Wait for all subdirectories to expand
+            return Promise.all(promises.flat()).then(() => tree);
         });
     }
 
