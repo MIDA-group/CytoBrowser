@@ -2,8 +2,14 @@
 const argv = require("minimist")(process.argv.slice(2));
 const hostname = argv._[0] || "localhost";
 const port = argv._[1] || 0;
-const storageDir = argv.storage || "./storage";
-const dataDir = argv.data || "./data";
+const storageDir = argv.storage || argv.s || "./storage";
+const dataDir = argv.data || argv.d || "./data";
+if (argv.h || argv.help) {
+    console.info(`Usage: node app.js hostname port ` +
+    `[-s storage path = "./storage"] ` +
+    `[-d image data path = "./data"]`);
+    return;
+}
 
 // Declare required modules
 const fs = require("fs");
