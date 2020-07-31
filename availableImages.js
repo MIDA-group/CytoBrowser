@@ -14,7 +14,7 @@
 const fs = require("fs");
 
 // Directory where the data can be found
-let dir;
+let dataDir;
 
 // Variables to avoid having to figure out which images exist every call
 const checkInterval = 60000;
@@ -44,7 +44,7 @@ function getThumbnails(dir, image) {
 
     // Look through the middle file directory
     const fileDir = names[Math.floor(names.length / 2)];
-    fs.readdir(`${dir}/${fileDir}`, (err, dir) => {
+    fs.readdir(`${dataDir}/${fileDir}`, (err, dir) => {
         // Sort the directories numerically
         dir = dir.sort((a, b) => +a - +b);
 
@@ -56,7 +56,7 @@ function getThumbnails(dir, image) {
             if (idx === dir.length) {
                 return;
             }
-            const path = `${dir}/${fileDir}/${dir[idx]}`;
+            const path = `${dataDir}/${fileDir}/${dir[idx]}`;
             fs.readdir(path, (err, dir) => {
                 if (err) {
                     // TODO: Handle errors
@@ -92,7 +92,7 @@ function getThumbnails(dir, image) {
 }
 
 function updateImages() {
-    fs.readdir(dir, (err, dir) => {
+    fs.readdir(dataDir, (err, dir) => {
         if (err) {
             availableImages = null;
             return;
@@ -128,11 +128,11 @@ function getAvailableImages() {
     return availableImages;
 }
 
-module.exports = function(dataDir) {
-    if (!dataDir || typeof dataDir !== "string") {
+module.exports = function(dir) {
+    if (!dir || typeof dir !== "string") {
         throw new Error("A data directory has to be specified.");
     }
-    dir = dataDir;
+    dataDir = dir;
     updateImages();
     return getAvailableImages;
 }
