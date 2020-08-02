@@ -71,11 +71,11 @@ const overlayHandler = (function (){
 
     function _cursorSize(cursor) {
         const normalSize = cursor.inside || cursor.held;
-        return (normalSize ? 15 : 12) / _scale;
+        return (normalSize ? 15000 : 12000) / _scale;
     }
 
     function _markerSize() {
-        return 100 / Math.max(_scale, 20000);
+        return 100000 / Math.max(_scale, 20000);
     }
 
     function _resizeMembers() {
@@ -149,7 +149,10 @@ const overlayHandler = (function (){
             .data(visibleMembers, d => d.id)
             .join(enter => {
                 const group = enter.append("g")
-                    .attr("transform", d => `translate(${d.cursor.x}, ${d.cursor.y}), rotate(-30), scale(${_cursorSize(d.cursor)})`)
+                    .attr("transform", d => {
+                        const coords = coordinateHelper.viewportToOverlay(d);
+                        return `translate(${coords.x}, ${coords.y}), rotate(-30), scale(${_cursorSize(d.cursor)})`
+                    })
                     .attr("opacity", 0.0)
                     .style("fill", d => d.color);
                 group.append("path")
@@ -165,7 +168,8 @@ const overlayHandler = (function (){
                 },
                 update => {
                     update.attr("transform", _transformFunction(function(d) {
-                            return {translate: [d.cursor.x, d.cursor.y]};
+                            const coords = coordinateHelper.viewportToOverlay(d);
+                            return {translate: [coords.x, coords.y]};
                         }))
                         .filter(function(d) { return _previousCursors.get(this).inside !== d.cursor.inside })
                         .transition().duration(200)
@@ -206,7 +210,8 @@ const overlayHandler = (function (){
                 enter => {
                     const group = enter.append("g")
                         .attr("transform", d => {
-                            const coords = coordinateHelper.imageToViewport(d);
+                            const viewport = coordinateHelper.imageToViewport(d);
+                            const coords = coordinateHelper.viewportToOverlay(viewport);
                             return `translate(${coords.x}, ${coords.y}) scale(${_markerSize()})`;
                         })
                         .attr("opacity", 1);
@@ -247,7 +252,8 @@ const overlayHandler = (function (){
                 },
                 update => {
                     update.attr("transform", _transformFunction(function(d) {
-                            const coords = coordinateHelper.imageToViewport(d);
+                            const viewport = coordinateHelper.imageToViewport(d);
+                            const coords = coordinateHelper.viewportToOverlay(viewport);
                             return {translate: [coords.x, coords.y]};
                         }));
                 },

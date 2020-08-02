@@ -4,6 +4,8 @@
  * with the {@link setImage} function. The different coordinate systems
  * that the functions convert between are described in more detail
  * {@link https://openseadragon.github.io/examples/viewport-coordinates/|here.}
+ * A function for coversion with so-called overlay coordinates is also
+ * included as a workaround for a bug with mouse events in the overlay.
  * @namespace coordinateHelper
  */
 const coordinateHelper = (function() {
@@ -91,6 +93,19 @@ const coordinateHelper = (function() {
     }
 
     /**
+     * Due to the workaround for getting overlay mouse events to work
+     * in Firefox, this should be used on a point in viewport coordinates
+     * to get the equivalent point in overlay coordinates.
+     * @param {Object} point A point in viewport coordinates.
+     * @param {number} point.x The x coordinate of the point.
+     * @param {number} point.y The y coordinate of the point.
+     * @returns {Object} The same point in overlay coordinates.
+     */
+    function viewportToOverlay({x, y}){
+        return {x: x * 1000, y: y * 1000};
+    }
+
+    /**
      * Set the coordinate helper to work with a given image. Due to
      * inaccuracies in coordinates when working with multiple images
      * in OpenSeadragon, this should be called with a specific image
@@ -115,6 +130,7 @@ const coordinateHelper = (function() {
         webToImage: webToImage,
         webToViewport: webToViewport,
         viewportToWeb: viewportToWeb,
+        viewportToOverlay: viewportToOverlay,
         setImage: setImage,
         clearImage: clearImage
     };
