@@ -71,11 +71,11 @@ const overlayHandler = (function (){
 
     function _cursorSize(cursor) {
         const normalSize = cursor.inside || cursor.held;
-        return (normalSize ? 1500 : 1200) / _scale;
+        return (normalSize ? 15000 : 12000) / _scale;
     }
 
     function _markerSize() {
-        return 10000 / Math.max(_scale, 20000);
+        return 100000 / Math.max(_scale, 20000);
     }
 
     function _resizeMembers() {

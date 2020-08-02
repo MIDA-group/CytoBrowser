@@ -102,7 +102,7 @@ const coordinateHelper = (function() {
      * @returns {Object} The same point in overlay coordinates.
      */
     function viewportToOverlay({x, y}){
-        return {x: x * 100, y: y * 100};
+        return {x: x * 1000, y: y * 1000};
     }
 
     /**
@@ -130,6 +130,7 @@ const coordinateHelper = (function() {
         webToImage: webToImage,
         webToViewport: webToViewport,
         viewportToWeb: viewportToWeb,
+        viewportToOverlay: viewportToOverlay,
         setImage: setImage,
         clearImage: clearImage
     };

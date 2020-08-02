@@ -86,7 +86,7 @@
             // TODO: Expose an accessor for _containerInnerSize in the OSD API so we don't have to use the private variable.
             var scale = this._viewer.viewport._containerInnerSize.x * zoom;
             this._node.setAttribute('transform',
-                'scale(' + scale + ') translate(' + -p.x + ',' + -p.y + ') rotate(' + rotation + ')');
+                'scale(' + scale / 1000 + ') translate(' + -p.x * 1000 + ',' + -p.y * 1000 + ') rotate(' + rotation + ')');
         },
 
         // ----------
