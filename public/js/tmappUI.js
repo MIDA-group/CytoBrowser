@@ -188,6 +188,17 @@ const tmappUI = (function(){
     }
 
     /**
+     * Open a menu at the mouse cursor for editing comments for
+     * a given marker.
+     * @param {number} id The id of the edited marker.
+     */
+    function openMarkerEditMenu(id) {
+        // TODO: Should make this nicer
+        const comment = console.input("Enter a marker comment:");
+        markerHandler.updateMarker(id, {comment: comment});
+    }
+
+    /**
      * Set the ID of the current collaboration so it can be displayed,
      * disable the elements for creating and joining collaborations, and
      * enable the button for leaving the collaboration.
@@ -418,6 +429,7 @@ const tmappUI = (function(){
     return {
         initUI: initUI,
         choice: choice,
+        openMarkerEditMenu: openMarkerEditMenu,
         setCollabID: setCollabID,
         clearCollabID: clearCollabID,
         updateCollaborators: updateCollaborators,
