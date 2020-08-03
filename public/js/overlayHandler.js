@@ -92,12 +92,20 @@ const overlayHandler = (function (){
     function _addMarkerMouseEvents(d, node) {
         new OpenSeadragon.MouseTracker({
             element: node,
+            pressHandler: function(event) {
+                tmapp.setCursorStatus({held: true});
+            },
             dragHandler: function(event) {
                 const reference = coordinateHelper.webToImage({x: 0, y: 0});
                 const delta = coordinateHelper.webToImage(event.delta);
                 d.x += delta.x - reference.x;
                 d.y += delta.y - reference.y;
                 markerHandler.updateMarker(d.id, d, "image");
+                const viewportCoords = coordinateHelper.webToViewport(event.delta);
+                tmapp.setCursorStatus(viewportCoords);
+            },
+            dragEndHandler: function(event) {
+                tmapp.setCursorStatus({held: false});
             },
             clickHandler: function(event) {
                 if (event.originalEvent.ctrlKey) {
