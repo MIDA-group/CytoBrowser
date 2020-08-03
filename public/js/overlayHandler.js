@@ -287,14 +287,14 @@ const overlayHandler = (function (){
      * svgOverlay() method.
      */
     function init(svgOverlay) {
-        const cursors = d3.select(svgOverlay.node())
-            .append("g")
-            .attr("id", "cursors");
         const markers = d3.select(svgOverlay.node())
             .append("g")
             .attr("id", "markers");
-        _cursorOverlay = d3.select(cursors.node());
+        const cursors = d3.select(svgOverlay.node())
+            .append("g")
+            .attr("id", "cursors");
         _markerOverlay = d3.select(markers.node());
+        _cursorOverlay = d3.select(cursors.node());
         _previousCursors = d3.local();
     }
 
