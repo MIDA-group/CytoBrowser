@@ -151,9 +151,6 @@ const overlayHandler = (function (){
                     .style("opacity", 0);
             }
         }).setTracking(true);
-
-        // Disable the context menu on markers
-        node.oncontextmenu = () => false;
     }
 
     /**

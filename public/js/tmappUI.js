@@ -45,8 +45,8 @@ const tmappUI = (function(){
         const maxRight = menu.width() + location.x;
         const winh = $(window).height();
         const winw = $(window).width();
-        const top = maxBottom > winh ? location.y : location.y - menu.height();
-        const left = maxRight > winw ? location.x : location.x - menu.width();
+        const top = maxBottom < winh ? location.y : location.y - menu.height();
+        const left = maxRight < winw ? location.x : location.x - menu.width();
         menu.css({top: top, left: left});
 
         menu.addClass("show");
@@ -85,6 +85,8 @@ const tmappUI = (function(){
         $("#ISS_viewer").bind("mousewheel DOMMouseScroll", event => {
             event.preventDefault();
         });
+        $("#ISS_viewer").contextmenu(() => false);
+        $("#context_menu").contextmenu(() => false);
         $(document).focus(() => {
             // A small delay since this seems to fire before any other handlers
             // TODO: Find a cleaner way for clicks to check for focus
