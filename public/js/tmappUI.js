@@ -40,7 +40,15 @@ const tmappUI = (function(){
         const body = menu.find(".card-body");
         body.empty();
         buildFun(body);
-        menu.css({top: location.y, left: location.x});
+
+        const maxBottom = menu.height() + location.y;
+        const maxRight = menu.width() + location.x;
+        const winh = $(window).height();
+        const winw = $(window).width();
+        const top = maxBottom > winh ? location.y : location.y - menu.height();
+        const left = maxRight > winw ? location.x : location.x - menu.width();
+        menu.css({top: top, left: left});
+
         menu.addClass("show");
         menu.focus();
         menu.one("blur", () => menu.removeClass("show"));
