@@ -137,6 +137,9 @@ const collabClient = (function(){
     }
 
     function _memberUpdate(hardUpdate = true) {
+        if (!_members) {
+            return;
+        }
         if (hardUpdate) {
             tmappUI.updateCollaborators(_localMember, _members);
         }
