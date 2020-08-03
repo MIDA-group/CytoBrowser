@@ -119,11 +119,6 @@ const tmapp = (function() {
         tmappUI.setURL("?" + params.toString());
     }
 
-    function _setCursorStatus(status) {
-        Object.assign(_cursorStatus, status);
-        _updateCollabCursor();
-    }
-
     function _updateCollabPosition() {
         collabClient.updatePosition(_currState);
     }
@@ -185,14 +180,14 @@ const tmapp = (function() {
         // Live updates of mouse position in collaboration
         function moveHandler(event) {
             const pos = coordinateHelper.webToViewport(event.position);
-            _setCursorStatus({x: pos.x, y: pos.y});
+            setCursorStatus({x: pos.x, y: pos.y});
         }
 
         // Live updates of whether or not the mouse is held down
         function heldHandler(held) {
             return function(event) {
                 const pos = coordinateHelper.webToViewport(event.position);
-                _setCursorStatus({held: held});
+                setCursorStatus({held: held});
             };
         }
 
@@ -200,7 +195,7 @@ const tmapp = (function() {
         function insideHandler(inside) {
             return function(event) {
                 const pos = coordinateHelper.webToViewport(event.position);
-                _setCursorStatus({inside: inside});
+                setCursorStatus({inside: inside});
             };
         }
 
@@ -504,6 +499,26 @@ const tmapp = (function() {
     }
 
     /**
+     * Set the current status of the mouse cursor in the OpenSeadragon
+     * viewport and update it for collaborators. Only the parameters
+     * present in the parameters will be updated, the others will remain
+     * as they were.
+     * @param {Object} status The updated status parameters.
+     * @param {number} [status.x] The x position of the cursor, in
+     * OSD viewport coordinates.
+     * @param {number} [status.y] The y position of the cursor, in
+     * OSD viewport coordinates.
+     * @param {boolean} [status.held] Whether or not the left mouse
+     * button is held down.
+     * @param {boolean} [status.inside] Whether or not the cursor is
+     * inside the OpenSeadragon viewport.
+     */
+    function setCursorStatus(status) {
+        Object.assign(_cursorStatus, status);
+        _updateCollabCursor();
+    }
+
+    /**
      * Enable all control over the viewport state.
      */
     function enableControls() {
@@ -544,6 +559,7 @@ const tmapp = (function() {
         decrementFocus: decrementFocus,
         getImageName: getImageName,
         updateCollabStatus: updateCollabStatus,
+        setCursorStatus: setCursorStatus,
         enableControls: enableControls,
         disableControls: disableControls
     };
