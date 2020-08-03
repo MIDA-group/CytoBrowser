@@ -106,6 +106,23 @@ const coordinateHelper = (function() {
     }
 
     /**
+     * Convert from page coordinates, as acquired from pageX and pageY
+     * on mouse events, to viewport coordinates.
+     * @param {Object} point A point in page coordinates.
+     * @param {number} point.x The x coordinate of the point.
+     * @param {number} point.y The y coordinate of the point.
+     * @returns {Object} The same point in viewport coordinates.
+     */
+    function pageToViewport({x, y}){
+        const webCoords = {
+            x: x - $("#ISS_viewer").offset().left,
+            y: y - $("#ISS_viewer").offset().top
+        };
+        const viewportCoords = webToViewport(webCoords);
+        return viewportCoords;
+    }
+
+    /**
      * Set the coordinate helper to work with a given image. Due to
      * inaccuracies in coordinates when working with multiple images
      * in OpenSeadragon, this should be called with a specific image
@@ -131,6 +148,7 @@ const coordinateHelper = (function() {
         webToViewport: webToViewport,
         viewportToWeb: viewportToWeb,
         viewportToOverlay: viewportToOverlay,
+        pageToViewport: pageToViewport,
         setImage: setImage,
         clearImage: clearImage
     };

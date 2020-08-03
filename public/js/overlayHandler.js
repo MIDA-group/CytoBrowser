@@ -101,7 +101,10 @@ const overlayHandler = (function (){
                 d.x += delta.x - reference.x;
                 d.y += delta.y - reference.y;
                 markerHandler.updateMarker(d.id, d, "image");
-                const viewportCoords = coordinateHelper.webToViewport(event.delta);
+                const viewportCoords = coordinateHelper.pageToViewport({
+                    x: event.originalEvent.pageX,
+                    y: event.originalEvent.pageY
+                });
                 tmapp.setCursorStatus(viewportCoords);
             },
             dragEndHandler: function(event) {
