@@ -115,6 +115,9 @@ const overlayHandler = (function (){
                     markerHandler.removeMarker(d.id);
                 }
             },
+            nonPrimaryReleaseHandler: function(event) {
+                console.log("TODO: Open comment menu");
+            },
             enterHandler: function(){
                 d3.select(node)
                     .selectAll("path")
