@@ -116,7 +116,9 @@ const overlayHandler = (function (){
                 }
             },
             nonPrimaryReleaseHandler: function(event) {
-                console.log("TODO: Open comment menu");
+                if (event.button === 2) { // If right click
+                    tmappUI.openMarkerEditMenu(d.id);
+                }
             },
             enterHandler: function(){
                 d3.select(node)
@@ -145,6 +147,9 @@ const overlayHandler = (function (){
                     .style("opacity", 0);
             }
         }).setTracking(true);
+
+        // Disable the context menu on markers
+        node.oncontextmenu = () => false;
     }
 
     /**
