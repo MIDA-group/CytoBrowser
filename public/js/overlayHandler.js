@@ -20,7 +20,6 @@ const overlayHandler = (function (){
         // Turn the transform string into an object
         // Start by finding all the transforms
         const transforms = transformString.match(/[^\s,]+\([^)]*\)/g);
-
         // Structure the transform as an object
         const transObj = {};
         const names = transforms.map(transform => transform.match(/.+(?=\()/g)[0]);
@@ -168,7 +167,7 @@ const overlayHandler = (function (){
                 },
                 update => {
                     update.attr("transform", _transformFunction(function(d) {
-                            const coords = coordinateHelper.viewportToOverlay(d);
+                            const coords = coordinateHelper.viewportToOverlay(d.cursor);
                             return {translate: [coords.x, coords.y]};
                         }))
                         .filter(function(d) { return _previousCursors.get(this).inside !== d.cursor.inside })
