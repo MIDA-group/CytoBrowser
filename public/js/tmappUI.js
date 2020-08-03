@@ -37,11 +37,13 @@ const tmappUI = (function(){
 
     function _openContextMenu(location, buildFun) {
         const menu = $("#context_menu");
-        menu.empty();
-        buildFun(menu.find(".card-body"));
+        const body = menu.find(".card-body");
+        body.empty();
+        buildFun(body);
+        meny.css({top: location.y, left: location.x});
         menu.addClass("show");
         menu.focus();
-        menu.one("blur", menu.removeClass("show"));
+        menu.one("blur", () => menu.removeClass("show"));
     }
 
     /**

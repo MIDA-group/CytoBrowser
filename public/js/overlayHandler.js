@@ -117,7 +117,11 @@ const overlayHandler = (function (){
             },
             nonPrimaryReleaseHandler: function(event) {
                 if (event.button === 2) { // If right click
-                    tmappUI.openMarkerEditMenu(d.id);
+                    const location = {
+                        x: event.originalEvent.pageX,
+                        y: event.originalEvent.pageY
+                    };
+                    tmappUI.openMarkerEditMenu(d.id, location);
                 }
             },
             enterHandler: function(){
