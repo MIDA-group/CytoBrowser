@@ -35,6 +35,15 @@ const tmappUI = (function(){
         }
     };
 
+    function _openContextMenu(location, buildFun) {
+        const menu = $("#context_menu");
+        menu.empty();
+        buildFun(menu.find(".card-body"));
+        menu.addClass("show");
+        menu.focus();
+        menu.one("blur", menu.removeClass("show"));
+    }
+
     /**
      * Initialize UI components that need to be added programatically
      * and add any event handlers that are needed.
@@ -191,11 +200,15 @@ const tmappUI = (function(){
      * Open a menu at the mouse cursor for editing comments for
      * a given marker.
      * @param {number} id The id of the edited marker.
+     * @param {Object} location The location of the upper left corner of
+     * the menu being opened.
+     * @param {number} location.x The x coordinate in page coordinates.
+     * @param {number} location.y The y coordinate in page coordinates.
      */
-    function openMarkerEditMenu(id) {
-        // TODO: Should make this nicer
-        const comment = console.input("Enter a marker comment:");
-        markerHandler.updateMarker(id, {comment: comment});
+    function openMarkerEditMenu(id, location) {
+        _openContextMenu(location, menuBody => {
+            menuBody.append("<p>Hello</p>");
+        });
     }
 
     /**
