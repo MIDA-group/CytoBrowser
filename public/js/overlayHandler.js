@@ -275,6 +275,14 @@ const overlayHandler = (function (){
                             const coords = coordinateHelper.viewportToOverlay(viewport);
                             return {translate: [coords.x, coords.y]};
                         }));
+                    const paths = update.selectAll("path");
+                    const square = paths.filter((d, i) => i === 0);
+                    square.attr("stroke", d => bethesdaClassUtils.classColor(d.mclass));
+                    if (_markerText) {
+                        update.select("text")
+                            .style("fill", d => bethesdaClassUtils.classColor(d.mclass))
+                            .text(d => `#${d.id}: ${d.mclass}`);
+                    }
                 },
                 exit => {
                     exit.transition().duration(200)
