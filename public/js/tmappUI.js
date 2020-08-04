@@ -274,6 +274,7 @@ const tmappUI = (function(){
                 const comment = commentField.find("textarea").val();
                 marker.comment = comment;
                 markerHandler.updateMarker(id, marker, "image");
+                _closeContextMenu();
             });
 
             menuBody
