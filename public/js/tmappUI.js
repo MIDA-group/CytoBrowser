@@ -47,7 +47,7 @@ const tmappUI = (function(){
         const winw = $(window).width();
         const top = maxBottom < winh ? location.y : location.y - menu.height();
         const left = maxRight < winw ? location.x : location.x - menu.width();
-        menu.css({top: top, left: left});
+        menu.css({top: top, left: left, pointerEvents: "auto"});
 
         menu.addClass("show");
         menu.focus();
@@ -85,6 +85,7 @@ const tmappUI = (function(){
             const isOutside = !$.contains(menu.get(0), event.relatedTarget);
             if (isOutside && !isSame) {
                 menu.removeClass("show");
+                menu.css({pointerEvents: "none"});
             }
         });
         menu.contextmenu(() => false);
