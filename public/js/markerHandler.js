@@ -45,13 +45,15 @@ const markerHandler = (function (){
     }
 
     function _cloneMarker(marker) {
-        /**
-         * Note: This implementation copies references, so if the
-         * representation of a marker is ever changed to include a
-         * reference to an Object, this function should be changed to
-         * take this into account.
-         */
-        return Object.assign({}, marker);
+        // Note: This implementation copies values and makes
+        // shallow clones of arrays, will not clone other
+        // referenced objects
+        const clone = Object.assign({}, marker);
+        Object.entries(clone).forEach(([key, value]) => {
+            if (value.constructor === Array)
+                clone[key] = [...value];
+        });
+        return clone;
     }
 
     function _findDuplicateMarker(marker) {
