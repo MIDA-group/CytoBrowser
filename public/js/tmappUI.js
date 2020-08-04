@@ -94,11 +94,11 @@ const tmappUI = (function(){
         $(document).blur(() => {
             _pageInFocus = false;
         });
-        $("#context_menu").focusin(event => {
-            const isOutside = !$.contains($("#context_menu", event.relatedTarget);
-            if (isOutside) {
+        $("#context_menu").focusout(event => {
+            const isOutside = !$.contains($("#context_menu").get(0), event.relatedTarget);
+if (isOutside) {
                 console.log("Unfocusing from context menu.");
-                $("#context_menu").removeClass("hide");
+                $("#context_menu").removeClass("show");
             }
         })
 
