@@ -234,7 +234,15 @@ const tmappUI = (function(){
             const idField = createRow("Id", id);
             const mclassField = createRow("Class", marker.mclass);
             const creatorField = createRow("Created by", "TODO");
-            menuBody.append(idField).append(mclassField).append(creatorField);
+            const commentField = $(`<div class="form-group">` +
+                `<label>Annotation comment</label>` +
+                `<textarea class="form-control-plaintext" rows="3"></textarea>`+
+                `</div>`);
+            menuBody
+            .append(idField)
+            .append(mclassField)
+            .append(creatorField)
+            .append(commentField);
         });
     }
 
