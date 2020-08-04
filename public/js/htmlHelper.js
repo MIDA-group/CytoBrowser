@@ -64,7 +64,7 @@ const htmlHelper = (function() {
         if (!marker.comments)
             marker.comments = [];
         const comments = marker.comments;
-        
+
         const container = $(`
             <div class="card bg-secondary mb-2" style="height: 25vh; overflow-y: auto;">
                 <ul class="list-group list-group-flush">
@@ -125,4 +125,7 @@ const htmlHelper = (function() {
         container.append(id, author, classes, list, input, saveBtn);
     }
 
+    return {
+        buildMarkerSettingsMenu: buildMarkerSettingsMenu
+    };
 })();
