@@ -181,7 +181,7 @@ const markerHandler = (function (){
         }
 
         // Store the marker in data
-        markers[updatedIndex] = updatedMarker;
+        Object.assign(markers[updatedIndex], updatedMarker);
 
         // Send the update to collaborators
         transmit && collabClient.updateMarker(id, updatedMarker);
