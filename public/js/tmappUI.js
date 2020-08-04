@@ -274,7 +274,7 @@ const tmappUI = (function(){
                 `<label class="col-4 col-form-label">Class</label>`+
                 `<div class="col-8">`+
                 `<select class="form-control">`+
-                mclassOptions.map(name => `<option>${name}</option>`).join() +
+                mclassOptions.map(name => `<option ${marker.mclass === name ? "selected='selected'" : ""}>${name}</option>`).join() +
                 `</select>`+
                 `</div>`+
                 `</div>`);
@@ -284,7 +284,9 @@ const tmappUI = (function(){
             const saveBtn = $(`<button class="btn btn-primary btn-block">Save changes</button>`);
             saveBtn.click(() =>{
                 const comment = commentField.find("textarea").val();
+                const mclass = mclassField.find("select").val();
                 marker.comment = comment;
+                marker.mclass = mclass;
                 markerHandler.updateMarker(id, marker, "image");
                 _closeContextMenu();
             });
