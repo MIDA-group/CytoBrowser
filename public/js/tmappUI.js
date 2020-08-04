@@ -218,8 +218,22 @@ const tmappUI = (function(){
      * @param {number} location.y The y coordinate in page coordinates.
      */
     function openMarkerEditMenu(id, location) {
+        const marker = markerHandler.getMarkerById(id);
+        if (!marker) {
+            throw new Error("Invalid marker id.");
+        }
+        function createRow(label, value) {
+            const idField = $(`<div class="form-group row">` +
+            `<label class="col-4 col-form-label">${label}</label>` +
+            `<div class="col-8">` +
+            `<input type="text" readonly class="form-control-plaintext" value="${value}">`+
+            `</div>`+
+            `</div>`);
+        }
         _openContextMenu(location, menuBody => {
-            menuBody.append("<p>Hello</p>");
+            const idField = createRow("Id", id);
+            const mclassField = createRow("Class", marker.mclass);
+            const creatorField = createRow("Created by", "TODO");
         });
     }
 
