@@ -59,6 +59,7 @@ const tmappUI = (function(){
         setTimeout(() => _pageInFocus = true, 100);
         menu.removeClass("show");
         menu.css({pointerEvents: "none"});
+        $("#main_content").focus();
     }
 
     function _initClassSelectionButtons() {
