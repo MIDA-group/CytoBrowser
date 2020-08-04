@@ -157,7 +157,7 @@ const tmappUI = (function(){
     function _initCollaborationMenu() {
         let nameTimeout;
         const keyUpTime = 3000;
-        const defaultName = collabClient.getDefaultName();
+        const defaultName = userInfo.getName();
         $("#collaboration_start [name='username']").val(defaultName || "");
         $("#collaboration_start [name='username']").keyup(function(event) {
             clearTimeout(nameTimeout);
@@ -267,7 +267,7 @@ const tmappUI = (function(){
 
         _openContextMenu(location, menuBody => {
             const idField = createRow("Id", id);
-            const creatorField = createRow("Created by", "TODO");
+            const creatorField = createRow("Created by", marker.author);
             const mclassOptions = [];
             bethesdaClassUtils.forEachClass(mclass => mclassOptions.push(mclass.name));
             const mclassField = $(`<div class="form-group row">`+

@@ -18,6 +18,9 @@ const markerHandler = (function (){
      * @property {number} y Y position of the marker.
      * @property {number} z Z value when the marker was placed.
      * @property {string} mclass Class name of the marker.
+     * @property {Array} [comments] Comments associated with the marker.
+     * @property {string} [author] The name of the person who originally
+     * placed the marker.
      * @property {number} [id] Hard-coded ID of the marker.
      */
     /**
@@ -130,6 +133,11 @@ const markerHandler = (function (){
         if (coordSystem !== "image") {
             addedMarker.x = coords.image.x;
             addedMarker.y = coords.image.y;
+        }
+
+        // Set the author of the marker
+        if (!addedMarker.author) {
+            addedMarker.author = userInfo.getName();
         }
 
         // Store a data representation of the marker
