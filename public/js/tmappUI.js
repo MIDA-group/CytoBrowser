@@ -49,8 +49,15 @@ const tmappUI = (function(){
         const left = maxRight < winw ? location.x : location.x - menu.width();
         menu.css({top: top, left: left, pointerEvents: "auto"});
 
+        _pageInFocus = false;
         menu.addClass("show");
         menu.focus();
+    }
+
+    function _closeContextMenu() {
+        setTimeout(() => _pageInFocus = true, 100);
+        menu.removeClass("show");
+        menu.css({pointerEvents: "none"});
     }
 
     function _initClassSelectionButtons() {
@@ -83,10 +90,8 @@ const tmappUI = (function(){
         menu.focusout(event => {
             const isSame = menu.get(0) === event.relatedTarget;
             const isOutside = !$.contains(menu.get(0), event.relatedTarget);
-            if (isOutside && !isSame) {
-                menu.removeClass("show");
-                menu.css({pointerEvents: "none"});
-            }
+            if (isOutside && !isSame)
+                _closeContextMenu();
         });
         menu.contextmenu(() => false);
     }
