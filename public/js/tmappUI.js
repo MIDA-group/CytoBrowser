@@ -255,48 +255,11 @@ const tmappUI = (function(){
             throw new Error("Invalid marker id.");
         }
 
-        // Helper function for creating a row with a label and value
-        function createRow(label, value) {
-            return $(`<div class="form-group row">` +
-                `<label class="col-4 col-form-label">${label}</label>` +
-                `<div class="col-8">` +
-                `<input type="text" readonly class="form-control" value="${value}">`+
-                `</div>`+
-                `</div>`);
-        }
-
         _openContextMenu(location, menuBody => {
-            const idField = createRow("Id", id);
-            const creatorField = createRow("Created by", marker.author);
-            const mclassOptions = [];
-            bethesdaClassUtils.forEachClass(mclass => mclassOptions.push(mclass.name));
-            const mclassField = $(`<div class="form-group row">`+
-                `<label class="col-4 col-form-label">Class</label>`+
-                `<div class="col-8">`+
-                `<select class="form-control">`+
-                mclassOptions.map(name => `<option ${marker.mclass === name ? "selected='selected'" : ""}>${name}</option>`).join() +
-                `</select>`+
-                `</div>`+
-                `</div>`);
-            const commentField = $(`<div class="form-group">` +
-                `<textarea class="form-control" rows="3">${marker.comment ? marker.comment : ""}</textarea>`+
-                `</div>`);
-            const saveBtn = $(`<button class="btn btn-primary btn-block">Save changes</button>`);
-            saveBtn.click(() =>{
-                const comment = commentField.find("textarea").val();
-                const mclass = mclassField.find("select").val();
-                marker.comment = comment;
-                marker.mclass = mclass;
+            htmlHelper.buildMarkerSettingsMenu(menuBody, marker, () => {
                 markerHandler.updateMarker(id, marker, "image");
                 _closeContextMenu();
             });
-
-            menuBody
-            .append(idField)
-            .append(creatorField)
-            .append(mclassField)
-            .append(commentField)
-            .append(saveBtn);
         });
     }
 
