@@ -79,14 +79,15 @@ const tmappUI = (function(){
     }
 
     function _initContextMenu() {
-        $("#context_menu").focusout(event => {
-            const isOutside = !$.contains($("#context_menu").get(0), event.relatedTarget);
-            if (isOutside) {
-                console.log("Unfocusing from context menu.");
-                $("#context_menu").removeClass("show");
+        const menu = $("#context_menu");
+        menu.focusout(event => {
+            const isSame = menu.get(0) === event.relatedTarget;
+            const isOutside = !$.contains(menu.get(0), event.relatedTarget);
+            if (isOutside && !isSame) {
+                menu.removeClass("show");
             }
         });
-        $("#context_menu").contextmenu(() => false);
+        menu.contextmenu(() => false);
     }
 
     function _initDocumentFocusFunctionality() {
