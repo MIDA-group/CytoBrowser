@@ -254,6 +254,8 @@ const tmappUI = (function(){
         if (!marker) {
             throw new Error("Invalid marker id.");
         }
+
+        // Helper function for creating a row with a label and value
         function createRow(label, value) {
             return $(`<div class="form-group row">` +
                 `<label class="col-4 col-form-label">${label}</label>` +
@@ -262,10 +264,18 @@ const tmappUI = (function(){
                 `</div>`+
                 `</div>`);
         }
+
         _openContextMenu(location, menuBody => {
             const idField = createRow("Id", id);
-            const mclassField = createRow("Class", marker.mclass);
             const creatorField = createRow("Created by", "TODO");
+            const mclassOptions = [];
+            bethesdaClassUtils.forEachClass(mclass => mclassOptions.push(mclass.name));
+            const mclassField = $(`<div class="form-group">`+
+                `<label>Class</label>`+
+                `<select multiple class="form-control">`+
+                mclassOptions.map(name => `<option>${name}</option>`).join +
+                `</select>`+
+                `</div>`);
             const commentField = $(`<div class="form-group">` +
                 `<label>Annotation comment</label>` +
                 `<textarea class="form-control" rows="3">${marker.comment ? marker.comment : ""}</textarea>`+
