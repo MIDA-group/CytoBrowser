@@ -319,9 +319,7 @@ const collabClient = (function(){
      * @param {string} newName The new name to be assigned to the member.
      */
     function changeName(newName) {
-        let expiryDate = new Date();
-        expiryDate.setTime(expiryDate.getTime() + 1e10);
-        document.cookie = `last_used_collab_name=${newName};samesite=strict;expires=${expiryDate.toGMTString()}`;
+        userInfo.setName(newName);
         if (_localMember) {
             _localMember.name = newName;
             send({
@@ -340,10 +338,7 @@ const collabClient = (function(){
      * @return {string|undefined} The name that should be used by default.
      */
     function getDefaultName() {
-        const nameCookie = document.cookie.match(/(?<=last_used_collab_name=)[^;|$]*/g);
-        if (nameCookie) {
-            return nameCookie[0];
-        }
+        return userInfo.getName();
     }
 
     /**
