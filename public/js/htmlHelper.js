@@ -49,13 +49,13 @@ const htmlHelper = (function() {
                     <span class="text-muted">
                         Added by ${comment.author}
                     </span>
-                    <button class="btn btn-link">
+                    <a href="#">
                         Remove
-                    </button>
+                    </a>
                 </div>
             </li>
         `);
-        const removeBtn = entry.find("button");
+        const removeBtn = entry.find("a");
         removeBtn.click(removeFun);
         return entry;
     }
@@ -72,7 +72,7 @@ const htmlHelper = (function() {
             </div>
         `);
         container.appendMarkerComment = comment => {
-            const entry = markerComment(comment, () => {
+            const entry = _markerComment(comment, () => {
                 const index = comments.indexOf(comment);
                 comments.splice(index);
                 entry.remove();
@@ -87,8 +87,7 @@ const htmlHelper = (function() {
     function _markerCommentInput(inputFun) {
         const container = $(`
             <div class="input-group mb-4">
-                <textarea class="form-control" rows="2" style="resize: none;">
-                </textarea>
+                <textarea class="form-control" rows="2" style="resize: none;"></textarea>
                 <div class="input-group-append">
                     <button type="button" class="btn btn-primary">Add comment</button>
                 </div>
@@ -108,6 +107,7 @@ const htmlHelper = (function() {
             </button>
         `);
         button.click(saveFun);
+        return button;
     }
 
     function buildMarkerSettingsMenu(container, marker, saveFun) {
@@ -116,10 +116,12 @@ const htmlHelper = (function() {
         const classes = _markerMclassOptions(marker);
         const list = _markerCommentList(marker);
         const input = _markerCommentInput(body => {
-            list.appendMarkerComment({
+            const comment = {
                 author: userInfo.getName(),
                 body: body
-            });
+            };
+            list.appendMarkerComment(comment);
+            marker.comments.push(comment);
         });
         const saveBtn = _markerSaveButton(marker, saveFun);
         container.append(id, author, classes, list, input, saveBtn);
