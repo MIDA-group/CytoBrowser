@@ -51,7 +51,6 @@ const tmappUI = (function(){
 
         menu.addClass("show");
         menu.focus();
-        menu.one("blur", () => menu.removeClass("show"));
     }
 
     /**
@@ -95,6 +94,13 @@ const tmappUI = (function(){
         $(document).blur(() => {
             _pageInFocus = false;
         });
+        $("#context_menu").focusin(event => {
+            const isOutside = !$.contains($("#context_menu", event.relatedTarget);
+            if (isOutside) {
+                console.log("Unfocusing from context menu.");
+                $("#context_menu").removeClass("hide");
+            }
+        })
 
         // Add event listeners for local storage buttons
         $("#json_to_data").click(() => {
