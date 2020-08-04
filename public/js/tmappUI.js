@@ -260,7 +260,7 @@ const tmappUI = (function(){
             return $(`<div class="form-group row">` +
                 `<label class="col-4 col-form-label">${label}</label>` +
                 `<div class="col-8">` +
-                `<input type="text" readonly class="form-control-plaintext text-right" value="${value}">`+
+                `<input type="text" readonly class="form-control" value="${value}">`+
                 `</div>`+
                 `</div>`);
         }
@@ -270,14 +270,15 @@ const tmappUI = (function(){
             const creatorField = createRow("Created by", "TODO");
             const mclassOptions = [];
             bethesdaClassUtils.forEachClass(mclass => mclassOptions.push(mclass.name));
-            const mclassField = $(`<div class="form-group">`+
-                `<label>Class</label>`+
-                `<select multiple class="form-control">`+
-                mclassOptions.map(name => `<option>${name}</option>`).join +
+            const mclassField = $(`<div class="form-group row">`+
+                `<label class="col-4 col-form-label">Class</label>`+
+                `<div class="col-8">`+
+                `<select class="form-control">`+
+                mclassOptions.map(name => `<option>${name}</option>`).join() +
                 `</select>`+
+                `</div>`+
                 `</div>`);
             const commentField = $(`<div class="form-group">` +
-                `<label>Annotation comment</label>` +
                 `<textarea class="form-control" rows="3">${marker.comment ? marker.comment : ""}</textarea>`+
                 `</div>`);
             const saveBtn = $(`<button class="btn btn-primary btn-block">Save changes</button>`);
@@ -290,8 +291,8 @@ const tmappUI = (function(){
 
             menuBody
             .append(idField)
-            .append(mclassField)
             .append(creatorField)
+            .append(mclassField)
             .append(commentField)
             .append(saveBtn);
         });
