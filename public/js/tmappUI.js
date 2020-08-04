@@ -236,10 +236,14 @@ const tmappUI = (function(){
             const creatorField = createRow("Created by", "TODO");
             const commentField = $(`<div class="form-group">` +
                 `<label>Annotation comment</label>` +
-                `<textarea class="form-control" rows="3"></textarea>`+
+                `<textarea class="form-control" rows="3" value="${marker.comment ? marker.comment : ""}"></textarea>`+
                 `</div>`);
             const saveBtn = $(`<button class="btn btn-primary btn-block">Save changes</button>`);
-            saveBtn.click(() => console.log("TODO: Update marker"));
+            saveBtn.click(() =>{
+                const comment = commentField.find("textarea").val();
+                marker.comment = comment;
+                markerHandler.updateMarker(id, marker);
+            });
 
             menuBody
             .append(idField)
