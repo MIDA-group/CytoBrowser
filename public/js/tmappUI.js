@@ -53,18 +53,8 @@ const tmappUI = (function(){
         menu.focus();
     }
 
-    /**
-     * Initialize UI components that need to be added programatically
-     * and add any event handlers that are needed.
-     */
-    function initUI() {
-        // Set the title
-        $("#project_title").text("Cyto Browser");
-
-        // Set the initial class
+    function _initClassSelectionButtons() {
         tmapp.setMclass(bethesdaClassUtils.getClassFromID(0).name);
-
-        // Add buttons for the available marker classes
         bethesdaClassUtils.forEachClass(function(item, index){
             let label = $("<label></label>");
             label.addClass("btn btn-dark");
@@ -79,13 +69,27 @@ const tmappUI = (function(){
             label.click(function(){ tmapp.setMclass(item.name); });
             $("#class_buttons").append(label);
         });
+    }
 
-        // Prevent ctrl+scroll zooming in the viewer, since that's for focus
+    function _initViewerEvents() {
         $("#ISS_viewer").bind("mousewheel DOMMouseScroll", event => {
             event.preventDefault();
         });
         $("#ISS_viewer").contextmenu(() => false);
+    }
+
+    function _initContextMenu() {
+        $("#context_menu").focusout(event => {
+            const isOutside = !$.contains($("#context_menu").get(0), event.relatedTarget);
+            if (isOutside) {
+                console.log("Unfocusing from context menu.");
+                $("#context_menu").removeClass("show");
+            }
+        });
         $("#context_menu").contextmenu(() => false);
+    }
+
+    function _initDocumentFocusFunctionality() {
         $(document).focus(() => {
             // A small delay since this seems to fire before any other handlers
             // TODO: Find a cleaner way for clicks to check for focus
@@ -94,15 +98,9 @@ const tmappUI = (function(){
         $(document).blur(() => {
             _pageInFocus = false;
         });
-        $("#context_menu").focusout(event => {
-            const isOutside = !$.contains($("#context_menu").get(0), event.relatedTarget);
-if (isOutside) {
-                console.log("Unfocusing from context menu.");
-                $("#context_menu").removeClass("show");
-            }
-        })
+    }
 
-        // Add event listeners for local storage buttons
+    function _initStorageButtonEvents() {
         $("#json_to_data").click(() => {
             $("#data_files_import").click();
         });
@@ -116,15 +114,14 @@ if (isOutside) {
             const markerData = markerStorageConversion.getMarkerStorageData();
             localStorage.saveJSON(markerData);
         });
+    }
 
-        // Initialize the file browser
-        fileBrowserUI.init();
-
-        // Add event listeners for focus buttons
+    function _initFocusButtonEvents() {
         $("#focus_next").click(tmapp.incrementFocus);
         $("#focus_prev").click(tmapp.decrementFocus);
+    }
 
-        // Add event listeners for keyboard buttons
+    function _initKeyboardShortcuts() {
         //1,2,... for class selection
         //z,x for focus up down
         $("#main_content").keypress(function(){
@@ -146,8 +143,9 @@ if (isOutside) {
                     });
             }
         });
+    }
 
-        // Set up the collaboration menu
+    function _initCollaborationMenu() {
         let nameTimeout;
         const keyUpTime = 3000;
         const defaultName = collabClient.getDefaultName();
@@ -178,6 +176,25 @@ if (isOutside) {
         $("#leave_collaboration").click(function(event) {
             collabClient.disconnect();
         });
+    }
+
+    /**
+     * Initialize UI components that need to be added programatically
+     * and add any event handlers that are needed.
+     */
+    function initUI() {
+        // Set the title
+        $("#project_title").text("Cyto Browser");
+
+        _initClassSelectionButtons();
+        _initViewerEvents();
+        _initContextMenu();
+        _initDocumentFocusFunctionality();
+        _initStorageButtonEvents();
+        _initFocusButtonEvents();
+        _initKeyboardShortcuts();
+        _initCollaborationMenu();
+        fileBrowserUI.init();
     }
 
     /**
