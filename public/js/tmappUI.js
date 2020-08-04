@@ -55,6 +55,7 @@ const tmappUI = (function(){
     }
 
     function _closeContextMenu() {
+        const menu = $("#context_menu");
         setTimeout(() => _pageInFocus = true, 100);
         menu.removeClass("show");
         menu.css({pointerEvents: "none"});
