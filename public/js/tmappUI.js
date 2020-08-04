@@ -223,7 +223,7 @@ const tmappUI = (function(){
             throw new Error("Invalid marker id.");
         }
         function createRow(label, value) {
-            const idField = $(`<div class="form-group row">` +
+            return $(`<div class="form-group row">` +
             `<label class="col-4 col-form-label">${label}</label>` +
             `<div class="col-8">` +
             `<input type="text" readonly class="form-control-plaintext" value="${value}">`+
@@ -234,6 +234,7 @@ const tmappUI = (function(){
             const idField = createRow("Id", id);
             const mclassField = createRow("Class", marker.mclass);
             const creatorField = createRow("Created by", "TODO");
+            menuBody.append(idField).append(mclassField).append(creatorField);
         });
     }
 
