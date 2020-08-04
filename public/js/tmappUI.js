@@ -224,11 +224,11 @@ const tmappUI = (function(){
         }
         function createRow(label, value) {
             return $(`<div class="form-group row">` +
-            `<label class="col-4 col-form-label">${label}</label>` +
-            `<div class="col-8">` +
-            `<input type="text" readonly class="form-control-plaintext" value="${value}">`+
-            `</div>`+
-            `</div>`);
+                `<label class="col-4 col-form-label">${label}</label>` +
+                `<div class="col-8">` +
+                `<input type="text" readonly class="form-control-plaintext text-right" value="${value}">`+
+                `</div>`+
+                `</div>`);
         }
         _openContextMenu(location, menuBody => {
             const idField = createRow("Id", id);
@@ -236,13 +236,17 @@ const tmappUI = (function(){
             const creatorField = createRow("Created by", "TODO");
             const commentField = $(`<div class="form-group">` +
                 `<label>Annotation comment</label>` +
-                `<textarea class="form-control-plaintext" rows="3"></textarea>`+
+                `<textarea class="form-control" rows="3"></textarea>`+
                 `</div>`);
+            const saveBtn = $(`<button class="btn btn-primary btn-block">Save changes</button>`);
+            saveBtn.click(() => console.log("TODO: Update marker"));
+
             menuBody
             .append(idField)
             .append(mclassField)
             .append(creatorField)
-            .append(commentField);
+            .append(commentField)
+            .append(saveBtn);
         });
     }
 
