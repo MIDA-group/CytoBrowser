@@ -13,7 +13,7 @@ const annotationTool = (function() {
                     x: position.x,
                     y: position.y,
                     z: position.z,
-                    mclass: _mclass
+                    mclass: _activeMclass
                 };
                 markerHandler.addMarker(marker, "viewport");
             }
@@ -21,12 +21,35 @@ const annotationTool = (function() {
     })();
 
     const _rectTool = (function() {
+        let _startPoint,
+            _endPoint,
+            _zLevel,
+            _mclass;
+
         return {
             click: function(position) {
-                console.log("Clicked with the rectangle tool!");
+                _zLevel = position.z;
+                _mclass = _activeMclass;
+                if (_startingPoint)
+                    console.log("Placing marker")
+                else
+                    _startPoint = {
+                        x: position.x,
+                        y: position.y
+                    };
+            },
+            update: function(position) {
+                if (_startPoint)
+                    _endPoint = {
+                        x: position.x,
+                        y: position.y
+                    };
+                console.log("Updating endpoint:", _endPoint);
             },
             reset: function() {
                 console.log("Reset the rect tool!");
+                _startingPoint = null;
+                _endPoint = null;
             }
         };
     })();
@@ -49,7 +72,7 @@ const annotationTool = (function() {
     };
 
     let _activeTool,
-        _mclass;
+        _activeMclass;
 
     function _callToolFunction(funName, position) {
         if (!_activeTool)
@@ -83,7 +106,7 @@ const annotationTool = (function() {
      */
     function setMclass(mclass) {
         if (bethesdaClassUtils.getIDFromName(mclass) >= 0)
-            _mclass = mclass;
+            _activeMclass = mclass;
         else
             throw new Error("Undefined marker class.");
     }
