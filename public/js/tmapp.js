@@ -164,12 +164,13 @@ const tmapp = (function() {
         // Handle quick and slow clicks
         function clickHandler(event) {
             if(event.quick && !event.ctrlKey && tmappUI.inFocus()){
+                const coords = coordinateHelper.webToViewport(event.position);
                 const position = {
-                    x: event.position.x,
-                    y: event.position.y,
+                    x: coords.x,
+                    y: coords.y,
                     z: _currState.z
                 };
-                annotationTool.clickTool(position);
+                annotationTool.click(position);
             }
         };
 
@@ -498,6 +499,12 @@ const tmapp = (function() {
      */
     function setCursorStatus(status) {
         Object.assign(_cursorStatus, status);
+        const position = {
+            x: status.x,
+            y: status.y,
+            z: _currState.z
+        };
+        annotationTool.updateMousePosition(position);
         _updateCollabCursor();
     }
 

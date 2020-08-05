@@ -61,7 +61,7 @@ const annotationTool = (function() {
 
     function _replaceTool(newTool) {
         if (_activeTool && _activeTool !== newTool)
-            _callToolFunction("reset");
+            reset();
         _activeTool = newTool;
     }
 
@@ -91,20 +91,27 @@ const annotationTool = (function() {
     /**
      * Perform a click in the viewport with the currently active tool.
      * @param {Object} position The position of the click.
-     * @param {number} position.x The x coordinate in web coordinates.
-     * @param {number} position.y The y coordinate in web coordinates.
+     * @param {number} position.x The x coordinate in viewport coordinates.
+     * @param {number} position.y The y coordinate in viewport coordinates.
      * @param {number} position.z The focus level.
      */
-    function clickTool(position) {
+    function click(position) {
         _callToolFunction("click", position);
+    }
+
+    /**
+     * Reset the currently used tool to an initial state.
+     */
+    function reset() {
+        _callToolFunction("reset");
     }
 
     /**
      * Let the active tool know that the mouse position has been updated
      * and carry out any appropriate actions.
      * @param {Object} position The position of the mouse.
-     * @param {number} position.x The x coordinate in web coordinates.
-     * @param {number} position.y The y coordinate in web coordinates.
+     * @param {number} position.x The x coordinate in viewport coordinates.
+     * @param {number} position.y The y coordinate in viewport coordinates.
      * @param {number} position.z The focus level.
      */
     function updateMousePosition(position) {
@@ -114,7 +121,8 @@ const annotationTool = (function() {
     return {
         setTool: setTool,
         setMclass: setMclass,
-        clickTool: clickTool,
+        click: click,
+        reset: reset,
         updateMousePosition: updateMousePosition
     };
 })();
