@@ -6,11 +6,6 @@
 const annotationTool = (function() {
     "use strict";
 
-    const _toolSymbols = {
-        marker: Symbol("Marker tool"),
-        rect: Symbol("Rectangular region tool"),
-        poly: Symbol("Polygonal region tool")
-    };
     const _markerTool = (function() {
         return {
             click: function(position) {
@@ -48,9 +43,9 @@ const annotationTool = (function() {
     })();
 
     const _tools = {
-        [_toolSymbols.marker]: _markerTool,
-        [_toolSymbols.rect]: _rectTool,
-        [_toolSymbols.poly]: _polyTool
+        marker: _markerTool,
+        rect: _rectTool,
+        poly: _polyTool
     };
 
     let _activeTool,
@@ -75,9 +70,9 @@ const annotationTool = (function() {
      * @param {string} toolName The name of the tool being used.
      */
     function setTool(toolName) {
-        const toolSymbol = _toolSymbols[toolName];
-        if (toolSymbol)
-            _replaceTool(_tools[toolSymbol]);
+        const tool = _tools[toolName];
+        if (tool)
+            _replaceTool(tool);
         else
             throw new Error("Invalid tool name.");
     }
