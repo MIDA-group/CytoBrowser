@@ -161,6 +161,7 @@ const htmlHelper = (function() {
             else
                 collabClient.stopFollowing();
         });
+        return entry;
     }
 
     /**
@@ -222,6 +223,7 @@ const htmlHelper = (function() {
 
     return {
         buildMarkerSettingsMenu: buildMarkerSettingsMenu,
-        buildClassSelectionButtons: buildClassSelectionButtons
+        buildClassSelectionButtons: buildClassSelectionButtons,
+        buildCollaboratorList: buildCollaboratorList
     };
 })();
