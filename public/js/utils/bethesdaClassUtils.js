@@ -19,37 +19,42 @@ const bethesdaClassUtils = (function(){
         {
             name: "NILM",
             description: "Negative for intraepithelial lesion or malignancy",
-            color: "#3F3"
+            color: "#f03c3c"
         },
         {
             name: "ASC-US",
             description: "Atypical squamous cells of undetermined significance",
-            color: "#CA3"
+            color: "#e86f26"
         },
         {
             name: "ASC-H",
             description: "Atypical squamous cell - cannot exclude HSIL",
-            color: "#F33"
+            color: "#f0b500"
         },
         {
             name: "LSIL",
             description: "Low squamous intraepithelial lesion",
-            color: "#3CC"
+            color: "#44b74d"
         },
         {
             name: "HSIL",
             description: "High squamous intraepithelial lesion",
-            color: "#F4F"
+            color: "#346d2e"
         },
         {
             name: "SCC",
             description: "Squamous cell carcinoma",
-            color: "#CF6"
+            color: "#07b5da"
         },
         {
             name: "AdC",
             description: "Adenocarcinoma",
-            color: "#FC6"
+            color: "#4754ed"
+        },
+        {
+            name: "Other",
+            description: "Does not fit other classes",
+            color: "#919191"
         }
     ];
 

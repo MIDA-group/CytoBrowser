@@ -18,6 +18,9 @@ const markerHandler = (function (){
      * @property {number} y Y position of the marker.
      * @property {number} z Z value when the marker was placed.
      * @property {string} mclass Class name of the marker.
+     * @property {Array} [comments] Comments associated with the marker.
+     * @property {string} [author] The name of the person who originally
+     * placed the marker.
      * @property {number} [id] Hard-coded ID of the marker.
      */
     /**
@@ -42,13 +45,15 @@ const markerHandler = (function (){
     }
 
     function _cloneMarker(marker) {
-        /**
-         * Note: This implementation copies references, so if the
-         * representation of a marker is ever changed to include a
-         * reference to an Object, this function should be changed to
-         * take this into account.
-         */
-        return Object.assign({}, marker);
+        // Note: This implementation copies values and makes
+        // shallow clones of arrays, will not clone other
+        // referenced objects
+        const clone = Object.assign({}, marker);
+        Object.entries(clone).forEach(([key, value]) => {
+            if (value.constructor === Array)
+                clone[key] = [...value];
+        });
+        return clone;
     }
 
     function _findDuplicateMarker(marker) {
@@ -132,6 +137,11 @@ const markerHandler = (function (){
             addedMarker.y = coords.image.y;
         }
 
+        // Set the author of the marker
+        if (!addedMarker.author) {
+            addedMarker.author = userInfo.getName();
+        }
+
         // Store a data representation of the marker
         _markers.push(addedMarker);
 
@@ -181,7 +191,7 @@ const markerHandler = (function (){
         }
 
         // Store the marker in data
-        markers[updatedIndex] = updatedMarker;
+        Object.assign(markers[updatedIndex], updatedMarker);
 
         // Send the update to collaborators
         transmit && collabClient.updateMarker(id, updatedMarker);

@@ -13,7 +13,7 @@ const markerVisuals = (function() {
      */
     function update(markers){
         // Update the markers in the overlay
-	overlayHandler.updateMarkers(markers)
+	overlayHandler.updateMarkers(markers);
 
         // Update the marker list
         const table = d3.select(`#${_tableId}`);

@@ -115,6 +115,15 @@ const overlayHandler = (function (){
                     markerHandler.removeMarker(d.id);
                 }
             },
+            nonPrimaryReleaseHandler: function(event) {
+                if (event.button === 2) { // If right click
+                    const location = {
+                        x: event.originalEvent.pageX,
+                        y: event.originalEvent.pageY
+                    };
+                    tmappUI.openMarkerEditMenu(d.id, location);
+                }
+            },
             enterHandler: function(){
                 d3.select(node)
                     .selectAll("path")
@@ -266,6 +275,14 @@ const overlayHandler = (function (){
                             const coords = coordinateHelper.viewportToOverlay(viewport);
                             return {translate: [coords.x, coords.y]};
                         }));
+                    const paths = update.selectAll("path");
+                    const square = paths.filter((d, i) => i === 0);
+                    square.attr("stroke", d => bethesdaClassUtils.classColor(d.mclass));
+                    if (_markerText) {
+                        update.select("text")
+                            .style("fill", d => bethesdaClassUtils.classColor(d.mclass))
+                            .text(d => `#${d.id}: ${d.mclass}`);
+                    }
                 },
                 exit => {
                     exit.transition().duration(200)

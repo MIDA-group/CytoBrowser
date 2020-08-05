@@ -35,37 +35,58 @@ const tmappUI = (function(){
         }
     };
 
-    /**
-     * Initialize UI components that need to be added programatically
-     * and add any event handlers that are needed.
-     */
-    function initUI() {
-        // Set the title
-        $("#project_title").text("Cyto Browser");
+    function _openContextMenu(location, buildFun) {
+        const menu = $("#context_menu");
+        const body = menu.find(".card-body");
+        body.empty();
+        buildFun(body);
 
-        // Set the initial class
+        const maxBottom = menu.height() + location.y;
+        const maxRight = menu.width() + location.x;
+        const winh = $(window).height();
+        const winw = $(window).width();
+        const top = maxBottom < winh ? location.y : location.y - menu.height();
+        const left = maxRight < winw ? location.x : location.x - menu.width();
+        menu.css({top: top, left: left, pointerEvents: "auto"});
+
+        _pageInFocus = false;
+        menu.addClass("show");
+        menu.focus();
+    }
+
+    function _closeContextMenu() {
+        const menu = $("#context_menu");
+        setTimeout(() => _pageInFocus = true, 100);
+        menu.removeClass("show");
+        menu.css({pointerEvents: "none"});
+        $("#main_content").focus();
+    }
+
+    function _initClassSelectionButtons() {
         tmapp.setMclass(bethesdaClassUtils.getClassFromID(0).name);
+        const container = $("#class_buttons");
+        htmlHelper.buildClassSelectionButtons(container, 0);
+    }
 
-        // Add buttons for the available marker classes
-        bethesdaClassUtils.forEachClass(function(item, index){
-            let label = $("<label></label>");
-            label.addClass("btn btn-dark");
-            if (index === 0) { label.addClass("active"); }
-            label.attr("id", "class_" + item.name);
-            label.attr("title", item.description);
-            let input = $("<input>" + item.name + "</input>");
-            input.attr("type", "radio");
-            input.attr("name", "class_options");
-            input.attr("autocomplete", "off");
-            label.append(input);
-            label.click(function(){ tmapp.setMclass(item.name); });
-            $("#class_buttons").append(label);
-        });
-
-        // Prevent ctrl+scroll zooming in the viewer, since that's for focus
+    function _initViewerEvents() {
         $("#ISS_viewer").bind("mousewheel DOMMouseScroll", event => {
             event.preventDefault();
         });
+        $("#ISS_viewer").contextmenu(() => false);
+    }
+
+    function _initContextMenu() {
+        const menu = $("#context_menu");
+        menu.focusout(event => {
+            const isSame = menu.get(0) === event.relatedTarget;
+            const isInside = $.contains(menu.get(0), event.relatedTarget);
+            if (!isSame && !isInside)
+                _closeContextMenu();
+        });
+        menu.contextmenu(() => false);
+    }
+
+    function _initDocumentFocusFunctionality() {
         $(document).focus(() => {
             // A small delay since this seems to fire before any other handlers
             // TODO: Find a cleaner way for clicks to check for focus
@@ -74,8 +95,9 @@ const tmappUI = (function(){
         $(document).blur(() => {
             _pageInFocus = false;
         });
+    }
 
-        // Add event listeners for local storage buttons
+    function _initStorageButtonEvents() {
         $("#json_to_data").click(() => {
             $("#data_files_import").click();
         });
@@ -89,15 +111,14 @@ const tmappUI = (function(){
             const markerData = markerStorageConversion.getMarkerStorageData();
             localStorage.saveJSON(markerData);
         });
+    }
 
-        // Initialize the file browser
-        fileBrowserUI.init();
-
-        // Add event listeners for focus buttons
+    function _initFocusButtonEvents() {
         $("#focus_next").click(tmapp.incrementFocus);
         $("#focus_prev").click(tmapp.decrementFocus);
+    }
 
-        // Add event listeners for keyboard buttons
+    function _initKeyboardShortcuts() {
         //1,2,... for class selection
         //z,x for focus up down
         $("#main_content").keypress(function(){
@@ -119,11 +140,12 @@ const tmappUI = (function(){
                     });
             }
         });
+    }
 
-        // Set up the collaboration menu
+    function _initCollaborationMenu() {
         let nameTimeout;
         const keyUpTime = 3000;
-        const defaultName = collabClient.getDefaultName();
+        const defaultName = userInfo.getName();
         $("#collaboration_start [name='username']").val(defaultName || "");
         $("#collaboration_start [name='username']").keyup(function(event) {
             clearTimeout(nameTimeout);
@@ -151,6 +173,25 @@ const tmappUI = (function(){
         $("#leave_collaboration").click(function(event) {
             collabClient.disconnect();
         });
+    }
+
+    /**
+     * Initialize UI components that need to be added programatically
+     * and add any event handlers that are needed.
+     */
+    function initUI() {
+        // Set the title
+        $("#project_title").text("Cyto Browser");
+
+        _initClassSelectionButtons();
+        _initViewerEvents();
+        _initContextMenu();
+        _initDocumentFocusFunctionality();
+        _initStorageButtonEvents();
+        _initFocusButtonEvents();
+        _initKeyboardShortcuts();
+        _initCollaborationMenu();
+        fileBrowserUI.init();
     }
 
     /**
@@ -185,6 +226,29 @@ const tmappUI = (function(){
         $("#multiple_choice").one("hide.bs.modal", () => activeModal.modal("show"));
         $("#multiple_choice").one("hidden.bs.modal", $("#choice_list").empty);
         onCancel && $("#multiple_choice").one("hidden.bs.modal", onCancel);
+    }
+
+    /**
+     * Open a menu at the mouse cursor for editing comments for
+     * a given marker.
+     * @param {number} id The id of the edited marker.
+     * @param {Object} location The location of the upper left corner of
+     * the menu being opened.
+     * @param {number} location.x The x coordinate in page coordinates.
+     * @param {number} location.y The y coordinate in page coordinates.
+     */
+    function openMarkerEditMenu(id, location) {
+        const marker = markerHandler.getMarkerById(id);
+        if (!marker) {
+            throw new Error("Invalid marker id.");
+        }
+
+        _openContextMenu(location, menuBody => {
+            htmlHelper.buildMarkerSettingsMenu(menuBody, marker, () => {
+                markerHandler.updateMarker(id, marker, "image");
+                _closeContextMenu();
+            });
+        });
     }
 
     /**
@@ -227,42 +291,9 @@ const tmappUI = (function(){
      * @param {Array} members Array of currently collaborating members.
      */
     function updateCollaborators(localMember, members) {
-        $("#collaborator_list").empty();
-        members.forEach(member => {
-            const color = $("<span></span>");
-            color.addClass("badge badge-pill");
-            color.css("background-color", member.color);
-            color.html("&nbsp;");
-            const entry = $("<a></a>");
-            const nameTag = $("<span></span>");
-            entry.addClass("list-group-item list-group-item-action d-flex justify-content-between align-items-center");
-            if (member === localMember || !member.ready) {
-                entry.addClass("disabled");
-            }
-            entry.attr("href", "#");
-            nameTag.html(`&nbsp;&nbsp;&nbsp;${member.name}`);
-            nameTag.prepend(color);
-            entry.append(nameTag);
-            const followSpan = $("<span></span>");
-            const follow = $("<input type='checkbox'>");
-            follow.prop("checked", member.followed);
-            entry.append(followSpan.append(follow));
-            entry.click(event => {
-                event.preventDefault();
-                $("#collaboration_menu").modal("hide");
-                tmapp.moveTo(member.position);
-            });
-            follow.click(event => {
-                event.stopPropagation();
-                if (event.target.checked) {
-                    collabClient.followView(member);
-                }
-                else {
-                    collabClient.stopFollowing();
-                }
-            });
-            $("#collaborator_list").append(entry);
-        });
+        const list = $("#collaborator_list");
+        list.empty();
+        htmlHelper.buildCollaboratorList(list, localMember, members);
     }
 
     /**
@@ -315,64 +346,23 @@ const tmappUI = (function(){
     }
 
     /**
-     * Add an image selection element to the image browser.
-     * @param {Object} image Information about the image being added.
-     * @param {string} image.name Name of the image.
-     * @param {Object} image.thumbnails Thumbnails for image preview.
-     * @param {string} image.thumbnails.overview Address to a tile
+     * Representation of a selectable image.
+     * @typedef {Object} ImageDetails
+     * @property {string} name Name of the image.
+     * @property {Object} thumbnails Thumbnails for image preview.
+     * @property {string} thumbnails.overview Address to a tile
      * with a zoomed-out view of the image.
-     * @param {string} image.thumbnails.detail Address to a tile with
+     * @property {string} thumbnails.detail Address to a tile with
      * a zoomed-out detail view of the image.
      */
-    function addImage(image) {
-        // Messy function, might want to do it some better way
-        let deck = $("#available_images .row").last();
-        if (deck.length === 0 || deck.children().length === 3) {
-            deck = $("<div></div>");
-            deck.addClass("row mb-4");
-            $("#available_images").append(deck);
-        }
-        const col = $("<div></div>");
-        col.addClass("col-4 d-flex");
-        const card = $("<div></div>");
-        card.addClass("card w-100");
-        const overview = $("<img>", {src: image.thumbnails.overview});
-        overview.addClass("card-img-top position-absolute");
-        overview.css({height: "230px", objectFit: "cover"});
-        const detail = $("<img>", {src: image.thumbnails.detail});
-        detail.addClass("card-img-top hide fade");
-        detail.css({zIndex: 9000, pointerEvents: "none", height: "230px", objectFit: "cover"});
-        const body = $("<div></div>");
-        body.addClass("card-body");
-        const title = $("<h5></h5>");
-        title.text(image.name);
-        title.addClass("card-title");
-        const footer = $("<div></div>");
-        footer.addClass("card-footer");
-        const a = $("<a></a>");
-        a.addClass("card-link stretched-link");
-        a.attr("href", "#");
-        a.text("Open image");
-        a.click(e => {
-            e.preventDefault();
-            $("#image_browser").modal("hide");
-            tmapp.openImage(image.name, () => {
-                collabClient.swapImage(image.name);
-            });
-        });
-        a.hover(event =>
-            detail.addClass("show").removeClass("hide"),
-            e =>
-            detail.addClass("hide").removeClass("show")
-        );
-        footer.append(a);
-        body.append(title);
-        card.append(overview);
-        card.append(detail);
-        card.append(body);
-        card.append(footer);
-        col.append(card);
-        deck.append(col);
+    /**
+     * Add image selection elements to the image browser.
+     * @param {Array<ImageDetails>} images Information about the images
+     * being added.
+     */
+    function updateImageBrowser(images) {
+        const container = $("#available_images");
+        htmlHelper.buildImageBrowser(container, images);
     }
 
     /**
@@ -418,6 +408,7 @@ const tmappUI = (function(){
     return {
         initUI: initUI,
         choice: choice,
+        openMarkerEditMenu: openMarkerEditMenu,
         setCollabID: setCollabID,
         clearCollabID: clearCollabID,
         updateCollaborators: updateCollaborators,
@@ -425,7 +416,7 @@ const tmappUI = (function(){
         enableCollabCreation: enableCollabCreation,
         displayImageError: displayImageError,
         clearImageError: clearImageError,
-        addImage: addImage,
+        updateImageBrowser: updateImageBrowser,
         setImageName: setImageName,
         setImageZLevel: setImageZLevel,
         setImageZoom: setImageZoom,
