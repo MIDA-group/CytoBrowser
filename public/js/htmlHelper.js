@@ -117,7 +117,7 @@ const htmlHelper = (function() {
     function _classSelectionButton(mclass, active) {
         const button = $(`
             <label id="class_${mclass.name}" class="btn btn-dark" title="${mclass.description}">
-                <input type="radio" name="class_options" autocomplete="off">${mclass.name}<input>
+                <input type="radio" name="class_options" autocomplete="off">${mclass.name}</input>
             </label>
         `);
         if (active)
