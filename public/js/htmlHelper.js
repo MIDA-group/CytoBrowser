@@ -129,6 +129,40 @@ const htmlHelper = (function() {
         return button;
     }
 
+    function _collaboratorListEntry(member, active) {
+        const entry = $(`
+            <a class="list-group-item list-group-item-action d-flex
+            justify-content-between align-items-center" href="#">
+                <span>
+                    <span class="badge badge-pill" style="background-color: ${member.color};">
+                        &nbsp;
+                    </span>
+                    &nbsp;&nbsp;&nbsp;
+                    ${member.name}
+                </span>
+                <span>
+                    <input type="checkbox">
+                </span>
+            </a>
+        `);
+        if (!active)
+            entry.addClass("disabled");
+        entry.click(event => {
+            event.preventDefault();
+            entry.closest(".modal").modal("hide");
+            tmapp.moveTo(member.position);
+        });
+        const checkbox = entry.find("input");
+        checkbox.prop("checked", member.followed);
+        checkbox.click(event => {
+            event.stopPropagation();
+            if (event.target.checked)
+                collabClient.followView(member);
+            else
+                collabClient.stopFollowing();
+        });
+    }
+
     /**
      * Fill a jquery selection with the nodes for editing a marker.
      * @param {Object} container The selection that should contain the
@@ -167,6 +201,22 @@ const htmlHelper = (function() {
             const active = activeIndex === index;
             const button = _classSelectionButton(mclass, active);
             container.append(button);
+        });
+    }
+
+    /**
+     * Fill a jquery selection with a list of collaborators.
+     * @param {Object} container The selection that should contain the
+     * collaborators.
+     * @param {Object} localMember The collaborator local to the client.
+     * @param {Array<Object>} members All members present in the collaboration.
+     */
+    function buildCollaboratorList(container, localMember, members) {
+        members.forEach(member => {
+            const isLocal = localMember === member;
+            const isActive = !isLocal && member.ready;
+            const entry = _collaboratorListEntry(member, isActive);
+            container.append(entry);
         });
     }
 

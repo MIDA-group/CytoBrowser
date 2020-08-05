@@ -291,42 +291,9 @@ const tmappUI = (function(){
      * @param {Array} members Array of currently collaborating members.
      */
     function updateCollaborators(localMember, members) {
-        $("#collaborator_list").empty();
-        members.forEach(member => {
-            const color = $("<span></span>");
-            color.addClass("badge badge-pill");
-            color.css("background-color", member.color);
-            color.html("&nbsp;");
-            const entry = $("<a></a>");
-            const nameTag = $("<span></span>");
-            entry.addClass("list-group-item list-group-item-action d-flex justify-content-between align-items-center");
-            if (member === localMember || !member.ready) {
-                entry.addClass("disabled");
-            }
-            entry.attr("href", "#");
-            nameTag.html(`&nbsp;&nbsp;&nbsp;${member.name}`);
-            nameTag.prepend(color);
-            entry.append(nameTag);
-            const followSpan = $("<span></span>");
-            const follow = $("<input type='checkbox'>");
-            follow.prop("checked", member.followed);
-            entry.append(followSpan.append(follow));
-            entry.click(event => {
-                event.preventDefault();
-                $("#collaboration_menu").modal("hide");
-                tmapp.moveTo(member.position);
-            });
-            follow.click(event => {
-                event.stopPropagation();
-                if (event.target.checked) {
-                    collabClient.followView(member);
-                }
-                else {
-                    collabClient.stopFollowing();
-                }
-            });
-            $("#collaborator_list").append(entry);
-        });
+        const list = $("#collaborator_list");
+        list.empty();
+        htmlHelper.buildCollaboratorList(list, localMember, members);
     }
 
     /**
