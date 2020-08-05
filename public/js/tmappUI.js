@@ -130,7 +130,7 @@ const tmappUI = (function(){
     function _initKeyboardShortcuts() {
         //1,2,... for class selection
         //z,x for focus up down
-        $("#main_content").keypress(function(){
+        $("#main_content").keyup(function(){
             switch(event.keyCode) {
                 case 27: // esc
                     annotationTool.reset();
