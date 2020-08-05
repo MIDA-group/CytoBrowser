@@ -362,7 +362,7 @@ const tmappUI = (function(){
      */
     function updateImageBrowser(images) {
         const container = $("#available_images");
-        htmlHelper = buildImageBrowser(container, images);
+        htmlHelper.buildImageBrowser(container, images);
     }
 
     /**
