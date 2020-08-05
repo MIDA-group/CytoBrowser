@@ -114,6 +114,29 @@ const htmlHelper = (function() {
         return button;
     }
 
+    function _classSelectionButton(mclass, active) {
+        const button = $(`
+            <label id="class_${mclass.name}" class="btn btn-dark" title="${mclass.description}">
+                <input type="radio" name="class_options" autocomplete="off">${mclass.name}<input>
+            </label>
+        `);
+        if (active)
+            button.addClass("active");
+        button.click(() => {
+            tmapp.setMclass(mclass.name);
+        });
+        return button;
+    }
+
+    /**
+     * Fill a jquery selection with the nodes for editing a marker.
+     * @param {Object} container The selection that should contain the
+     * marker editing menu.
+     * @param {markerHandler.MarkerPoint} marker The marker that should
+     * be editable through the created menu.
+     * @param {Function} saveFun The function that should be run when
+     * pressing the save button in the menu.
+     */
     function buildMarkerSettingsMenu(container, marker, saveFun) {
         const id = _markerValueRow("Id", marker.id);
         const author = _markerValueRow("Created by", marker.author);
@@ -131,7 +154,23 @@ const htmlHelper = (function() {
         container.append(id, author, classes, list, input, saveBtn);
     }
 
+    /**
+     * Fill a jquery selection with the nodes for selecting a class.
+     * @param {Object} container The selection that should contain the
+     * class selection buttons.
+     * @param {number} activeIndex The index of the initially selected
+     * class.
+     */
+    function buildClassSelectionButtons(container, activeIndex) {
+        bethesdaClassUtils.forEachClass((mclass, index) => {
+            const active = activeIndex === index;
+            const button = _classSelectionButton(mclass, active);
+            container.append(button);
+        });
+    }
+
     return {
-        buildMarkerSettingsMenu: buildMarkerSettingsMenu
+        buildMarkerSettingsMenu: buildMarkerSettingsMenu,
+        buildClassSelectionButtons: buildClassSelectionButtons
     };
 })();
