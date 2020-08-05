@@ -74,7 +74,23 @@
 
                         <!-- Functionality buttons -->
                         <div class="card-body">
-                            <!--<h4 class="card-title">Options</h4>-->
+                            <div class="card-block pb-4">
+                                <h6 class="card-subtitle mb-2 text-muted">Current tool</h6>
+                                <div class="btn-group btn-group-toggle d-flex" data-toggle="buttons" role="group">
+                                    <label id="tool_marker" type="button" class="btn btn-primary">
+                                        <input name="tool_selection" type="radio" autocomplete="off">
+                                        Marker
+                                    </label>
+                                    <label id="tool_rect" type="button" class="btn btn-primary">
+                                        <input name="tool_selection" type="radio" autocomplete="off">
+                                        Rectangle
+                                    </label>
+                                    <label id="tool_poly" type="button" class="btn btn-primary">
+                                        <input name="tool_selection" type="radio" autocomplete="off">
+                                        Polygon
+                                    </label>
+                                </div>
+                            </div>
                             <div class="card-block">
                                 <div class="row">
                                     <div class="col-auto">
@@ -95,7 +111,6 @@
 
                         <!-- List of markers -->
                         <div class="card-body">
-                            <!--<h4 class="card-title">Markers</h4>-->
                             <div class="row pb-3">
                                 <div class="col-3">
                                     <button id="points_to_json" class="btn btn-primary btn-block" type="button"> Download</button>

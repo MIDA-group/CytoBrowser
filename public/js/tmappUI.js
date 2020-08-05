@@ -68,6 +68,11 @@ const tmappUI = (function(){
         htmlHelper.buildClassSelectionButtons(container, 0);
     }
 
+    function _initToolSelectionButtons() {
+        $("#tool_marker").addClass("active");
+        console.log("TODO: Select tool");
+    }
+
     function _initViewerEvents() {
         $("#ISS_viewer").bind("mousewheel DOMMouseScroll", event => {
             event.preventDefault();
@@ -184,6 +189,7 @@ const tmappUI = (function(){
         $("#project_title").text("Cyto Browser");
 
         _initClassSelectionButtons();
+        _initToolSelectionButtons();
         _initViewerEvents();
         _initContextMenu();
         _initDocumentFocusFunctionality();
