@@ -63,14 +63,18 @@ const tmappUI = (function(){
     }
 
     function _initClassSelectionButtons() {
-        tmapp.setMclass(bethesdaClassUtils.getClassFromID(0).name);
+        const initialMclass = bethesdaClassUtils.getClassFromID(0);
+        annotationTool.setMclass(initialMclass.name);
         const container = $("#class_buttons");
         htmlHelper.buildClassSelectionButtons(container, 0);
     }
 
     function _initToolSelectionButtons() {
         $("#tool_marker").addClass("active");
-        console.log("TODO: Select tool");
+        annotationTool.setTool("marker");
+        $("#tool_marker").click(() => annotationTool.setTool("marker"));
+        $("#tool_rect").click(() => annotationTool.setTool("rect"));
+        $("#tool_poly").click(() => annotationTool.setTool("poly"));
     }
 
     function _initViewerEvents() {

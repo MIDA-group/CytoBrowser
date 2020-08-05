@@ -41,7 +41,6 @@ const tmapp = (function() {
             z: 0,
             zoom: 1
         },
-        _currMclass = "",
         _cursorStatus = {
             x: 0.5,
             y: 0.5,
@@ -164,16 +163,13 @@ const tmapp = (function() {
     function _addMouseTracking(viewer) {
         // Handle quick and slow clicks
         function clickHandler(event) {
-            if(event.quick){
-                if (tmappUI.inFocus() && !event.ctrlKey) {
-                    const marker = {
-                        x: event.position.x,
-                        y: event.position.y,
-                        z: _currState.z,
-                        mclass: _currMclass
-                    };
-                    markerHandler.addMarker(marker);
-                }
+            if(event.quick && !event.ctrlKey && tmappUI.inFocus()){
+                const position = {
+                    x: event.position.x,
+                    y: event.position.y,
+                    z: _currState.z
+                };
+                annotationTool.clickTool(position);
             }
         };
 
@@ -431,19 +427,6 @@ const tmapp = (function() {
     }
 
     /**
-     * Set the current marker class being assigned.
-     * @param {string} mclass The currently active marker class.
-     */
-    function setMclass(mclass) {
-        if (bethesdaClassUtils.getIDFromName(mclass) >= 0) {
-            _currMclass = mclass;
-        }
-        else {
-            throw new Error("Tried to set the active marker class to something not defined.");
-        }
-    }
-
-    /**
      * Set the current collaboration id, update the URL parameters and
      * set the appropriate URL parameters.
      @param {string} id The collaboration id being set.
@@ -552,7 +535,6 @@ const tmapp = (function() {
         openImage: openImage,
         moveTo: moveTo,
         moveToMarker: moveToMarker,
-        setMclass: setMclass,
         setCollab: setCollab,
         clearCollab: clearCollab,
         incrementFocus: incrementFocus,

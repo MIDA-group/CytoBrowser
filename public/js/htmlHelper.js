@@ -124,7 +124,7 @@ const htmlHelper = (function() {
         if (active)
             button.addClass("active");
         button.click(() => {
-            tmapp.setMclass(mclass.name);
+            annotationTool.setMclass(mclass.name);
         });
         return button;
     }
