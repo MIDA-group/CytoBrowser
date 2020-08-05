@@ -68,7 +68,7 @@ const htmlHelper = (function() {
         const comments = marker.comments;
 
         const container = $(`
-            <div class="card bg-secondary mb-2" style="height: 25vh; overflow-y: auto;">
+            <div class="card bg-secondary mb-2" style="height: 15vh; overflow-y: auto;">
                 <ul class="list-group list-group-flush">
                 </ul>
             </div>
@@ -89,14 +89,16 @@ const htmlHelper = (function() {
     function _markerCommentInput(inputFun) {
         const container = $(`
             <div class="input-group mb-4">
-                <textarea class="form-control" rows="2" style="resize: none;"></textarea>
+                <textarea class="form-control" rows="1" style="resize: none;"></textarea>
                 <div class="input-group-append">
                     <button type="button" class="btn btn-primary">Add comment</button>
                 </div>
             </div>
         `);
         container.find("button").click(() => {
-            const body = container.find("textarea").val();
+            const textarea = container.find("textarea");
+            const body = textarea.val();
+            textarea.val("");
             inputFun(body);
         });
         return container;
