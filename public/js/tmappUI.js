@@ -64,20 +64,8 @@ const tmappUI = (function(){
 
     function _initClassSelectionButtons() {
         tmapp.setMclass(bethesdaClassUtils.getClassFromID(0).name);
-        bethesdaClassUtils.forEachClass(function(item, index){
-            let label = $("<label></label>");
-            label.addClass("btn btn-dark");
-            if (index === 0) { label.addClass("active"); }
-            label.attr("id", "class_" + item.name);
-            label.attr("title", item.description);
-            let input = $("<input>" + item.name + "</input>");
-            input.attr("type", "radio");
-            input.attr("name", "class_options");
-            input.attr("autocomplete", "off");
-            label.append(input);
-            label.click(function(){ tmapp.setMclass(item.name); });
-            $("#class_buttons").append(label);
-        });
+        const container = $("#class_buttons");
+        htmlHelper.buildClassSelectionButtons(container, 0);
     }
 
     function _initViewerEvents() {
