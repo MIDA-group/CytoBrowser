@@ -77,6 +77,7 @@ const htmlHelper = (function() {
             const entry = _markerComment(comment, () => {
                 const index = comments.indexOf(comment);
                 comments.splice(index);
+                entry.closest("[tabindex]").focus();
                 entry.remove();
             });
             list.append(entry);

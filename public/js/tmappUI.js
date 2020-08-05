@@ -79,8 +79,8 @@ const tmappUI = (function(){
         const menu = $("#context_menu");
         menu.focusout(event => {
             const isSame = menu.get(0) === event.relatedTarget;
-            const isOutside = !$.contains(menu.get(0), event.relatedTarget);
-            if (isOutside && !isSame)
+            const isInside = $.contains(menu.get(0), event.relatedTarget);
+            if (!isSame && !isInside)
                 _closeContextMenu();
         });
         menu.contextmenu(() => false);
