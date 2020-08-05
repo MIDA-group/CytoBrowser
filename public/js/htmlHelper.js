@@ -29,15 +29,17 @@ const htmlHelper = (function() {
                 </div>
             </div>
         `);
+        const select = container.find("select");
         bethesdaClassUtils.forEachClass(mclass => {
             const selected = marker.mclass === mclass.name;
             const option = $(`
-                <option ${selected ? "selected='selected'" : ""}>
+                <option value="${mclass.name}" ${selected ? "selected='selected'" : ""}>
                     ${mclass.name}
                 </option>
             `);
-            container.find("select").append(option);
+            select.append(option);
         });
+        select.change(() => marker.mclass = select.val());
         return container;
     }
 
