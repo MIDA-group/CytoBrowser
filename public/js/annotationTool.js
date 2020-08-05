@@ -15,7 +15,7 @@ const annotationTool = (function() {
                     z: position.z,
                     mclass: _mclass
                 };
-                markerHandler.addMarker(marker);
+                markerHandler.addMarker(marker, "viewport");
             }
         };
     })();

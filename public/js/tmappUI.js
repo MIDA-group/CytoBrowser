@@ -131,7 +131,10 @@ const tmappUI = (function(){
         //1,2,... for class selection
         //z,x for focus up down
         $("#main_content").keypress(function(){
-            switch(event.which) {
+            switch(event.keyCode) {
+                case 27: // esc
+                    annotationTool.reset();
+                    break;
                 case "z".charCodeAt():
                     $("#focus_prev").click();
                     break;
