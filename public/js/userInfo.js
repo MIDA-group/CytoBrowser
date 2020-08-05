@@ -1,5 +1,6 @@
 /**
  * Functions for storing and retrieving persistent user information.
+ * @namespace userInfo
  */
 const userInfo = (function() {
     "use strict";
