@@ -346,64 +346,23 @@ const tmappUI = (function(){
     }
 
     /**
-     * Add an image selection element to the image browser.
-     * @param {Object} image Information about the image being added.
-     * @param {string} image.name Name of the image.
-     * @param {Object} image.thumbnails Thumbnails for image preview.
-     * @param {string} image.thumbnails.overview Address to a tile
+     * Representation of a selectable image.
+     * @typedef {Object} ImageDetails
+     * @property {string} name Name of the image.
+     * @property {Object} thumbnails Thumbnails for image preview.
+     * @property {string} thumbnails.overview Address to a tile
      * with a zoomed-out view of the image.
-     * @param {string} image.thumbnails.detail Address to a tile with
+     * @property {string} thumbnails.detail Address to a tile with
      * a zoomed-out detail view of the image.
      */
-    function addImage(image) {
-        // Messy function, might want to do it some better way
-        let deck = $("#available_images .row").last();
-        if (deck.length === 0 || deck.children().length === 3) {
-            deck = $("<div></div>");
-            deck.addClass("row mb-4");
-            $("#available_images").append(deck);
-        }
-        const col = $("<div></div>");
-        col.addClass("col-4 d-flex");
-        const card = $("<div></div>");
-        card.addClass("card w-100");
-        const overview = $("<img>", {src: image.thumbnails.overview});
-        overview.addClass("card-img-top position-absolute");
-        overview.css({height: "230px", objectFit: "cover"});
-        const detail = $("<img>", {src: image.thumbnails.detail});
-        detail.addClass("card-img-top hide fade");
-        detail.css({zIndex: 9000, pointerEvents: "none", height: "230px", objectFit: "cover"});
-        const body = $("<div></div>");
-        body.addClass("card-body");
-        const title = $("<h5></h5>");
-        title.text(image.name);
-        title.addClass("card-title");
-        const footer = $("<div></div>");
-        footer.addClass("card-footer");
-        const a = $("<a></a>");
-        a.addClass("card-link stretched-link");
-        a.attr("href", "#");
-        a.text("Open image");
-        a.click(e => {
-            e.preventDefault();
-            $("#image_browser").modal("hide");
-            tmapp.openImage(image.name, () => {
-                collabClient.swapImage(image.name);
-            });
-        });
-        a.hover(event =>
-            detail.addClass("show").removeClass("hide"),
-            e =>
-            detail.addClass("hide").removeClass("show")
-        );
-        footer.append(a);
-        body.append(title);
-        card.append(overview);
-        card.append(detail);
-        card.append(body);
-        card.append(footer);
-        col.append(card);
-        deck.append(col);
+    /**
+     * Add image selection elements to the image browser.
+     * @param {Array<ImageDetails>} images Information about the images
+     * being added.
+     */
+    function updateImageBrowser(images) {
+        const container = $("#available_images");
+        htmlHelper = buildImageBrowser(container, images);
     }
 
     /**
@@ -457,7 +416,7 @@ const tmappUI = (function(){
         enableCollabCreation: enableCollabCreation,
         displayImageError: displayImageError,
         clearImageError: clearImageError,
-        addImage: addImage,
+        updateImageBrowser: updateImageBrowser,
         setImageName: setImageName,
         setImageZLevel: setImageZLevel,
         setImageZoom: setImageZoom,

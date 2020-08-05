@@ -309,7 +309,7 @@ const tmapp = (function() {
                 case 200:
                     // Add the images to the image browser
                     const images = JSON.parse(imageReq.responseText).images;
-                    images.forEach(image => tmappUI.addImage(image));
+                    tmappUI.updateImageBrowser(images);
                     _images = images;
 
                     // Go to the initial image and/or join the collab
