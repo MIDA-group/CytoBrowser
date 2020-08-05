@@ -6,41 +6,62 @@
 const annotationTool = (function() {
     "use strict";
 
-    const _tools = {
+    const _toolSymbols = {
         marker: Symbol("Marker tool"),
         rect: Symbol("Rectangular region tool"),
         poly: Symbol("Polygonal region tool")
     };
-    const _toolFunctions = {
-        [_tools.marker]: {
-            click: _markerClick
-        },
-        [_tools.rect]: {
-            click: _rectClick
-        },
-        [_tools.poly]: {
-            click: _polyClick
-        }
+    const _tools = {
+        [_toolSymbols.marker]: _markerTool,
+        [_toolSymbols.rect]: _rectTool,
+        [_toolSymbols.poly]: _polyTool
     };
-    let _activeTool;
-    let _mclass;
 
-    function _markerClick(position) {
-        const marker = {
-            x: position.x,
-            y: position.y,
-            z: position.z,
-            mclass: _mclass
+    const _markerTool = (function() {
+        function click(position) {
+            const marker = {
+                x: position.x,
+                y: position.y,
+                z: position.z,
+                mclass: _mclass
+            };
+            markerHandler.addMarker(marker);
+        }
+
+        return {
+            click: click
         };
-        markerHandler.addMarker(marker);
-    }
+    })();
 
-    function _rectClick(position) {
-        console.log("Clicked with the rectangle tool!");
-    }
+    const _rectTool = (function() {
+        function click(position) {
+            console.log("Clicked with the rectangle tool!");
+        }
 
-    function _polyClick(position) {
-        console.log("Clicked with the polygon tool!");
+        return {
+            click: click
+        };
+    })();
+
+    const _polyTool = (function() {
+        function click(position) {
+            console.log("Clicked with the polygon tool!");
+        }
+
+        return {
+            click: click
+        };
+    })();
+
+    let _activeTool,
+        _mclass;
+
+    function _callToolFunction(funName, position) {
+        if (!_activeTool)
+            throw new Error("No tool has been selected.");
+        const fun = _activeTool[funName];
+        if (fun)
+            fun(position);
     }
 
     /**
@@ -48,9 +69,9 @@ const annotationTool = (function() {
      * @param {string} toolName The name of the tool being used.
      */
     function setTool(toolName) {
-        const tool = _tools[toolName];
-        if (tool)
-            _activeTool = tool;
+        const toolSymbol = _toolSymbols[toolName];
+        if (toolSymbol)
+            _activeTool = _tools[toolSymbol];
         else
             throw new Error("Invalid tool name.");
     }
@@ -74,15 +95,25 @@ const annotationTool = (function() {
      * @param {number} position.z The focus level.
      */
     function clickTool(position) {
-        if (_activeTool)
-            _toolFunctions[_activeTool].click(position);
-        else
-            throw new Error("No tool has been selected.");
+        _callToolFunction("click", position);
+    }
+
+    /**
+     * Let the active tool know that the mouse position has been updated
+     * and carry out any appropriate actions.
+     * @param {Object} position The position of the mouse.
+     * @param {number} position.x The x coordinate in web coordinates.
+     * @param {number} position.y The y coordinate in web coordinates.
+     * @param {number} position.z The focus level.
+     */
+    function updateMousePosition(position) {
+        _callToolFunction("update", position);
     }
 
     return {
         setTool: setTool,
         setMclass: setMclass,
-        clickTool: clickTool
-    }
+        clickTool: clickTool,
+        updateMousePosition: updateMousePosition
+    };
 })();
