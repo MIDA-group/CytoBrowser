@@ -12,38 +12,38 @@ const annotationTool = (function() {
         poly: Symbol("Polygonal region tool")
     };
     const _markerTool = (function() {
-        function click(position) {
-            const marker = {
-                x: position.x,
-                y: position.y,
-                z: position.z,
-                mclass: _mclass
-            };
-            markerHandler.addMarker(marker);
-        }
-
         return {
-            click: click
+            click: function(position) {
+                const marker = {
+                    x: position.x,
+                    y: position.y,
+                    z: position.z,
+                    mclass: _mclass
+                };
+                markerHandler.addMarker(marker);
+            }
         };
     })();
 
     const _rectTool = (function() {
-        function click(position) {
-            console.log("Clicked with the rectangle tool!");
-        }
-
         return {
-            click: click
+            click: function(position) {
+                console.log("Clicked with the rectangle tool!");
+            },
+            reset: function() {
+                console.log("Reset the rect tool!");
+            }
         };
     })();
 
     const _polyTool = (function() {
-        function click(position) {
-            console.log("Clicked with the polygon tool!");
-        }
-
         return {
-            click: click
+            click: function(position) {
+                console.log("Clicked with the polygon tool!");
+            },
+            reset: function() {
+                console.log("Reset the polygon tool!");
+            }
         };
     })();
 
@@ -64,6 +64,12 @@ const annotationTool = (function() {
             fun(position);
     }
 
+    function _replaceTool(newTool) {
+        if (_activeTool && _activeTool !== newTool)
+            _callToolFunction("reset");
+        _activeTool = newTool;
+    }
+
     /**
      * Set the currently active tool.
      * @param {string} toolName The name of the tool being used.
@@ -71,7 +77,7 @@ const annotationTool = (function() {
     function setTool(toolName) {
         const toolSymbol = _toolSymbols[toolName];
         if (toolSymbol)
-            _activeTool = _tools[toolSymbol];
+            _replaceTool(_tools[toolSymbol]);
         else
             throw new Error("Invalid tool name.");
     }
