@@ -11,12 +11,6 @@ const annotationTool = (function() {
         rect: Symbol("Rectangular region tool"),
         poly: Symbol("Polygonal region tool")
     };
-    const _tools = {
-        [_toolSymbols.marker]: _markerTool,
-        [_toolSymbols.rect]: _rectTool,
-        [_toolSymbols.poly]: _polyTool
-    };
-
     const _markerTool = (function() {
         function click(position) {
             const marker = {
@@ -52,6 +46,12 @@ const annotationTool = (function() {
             click: click
         };
     })();
+
+    const _tools = {
+        [_toolSymbols.marker]: _markerTool,
+        [_toolSymbols.rect]: _rectTool,
+        [_toolSymbols.poly]: _polyTool
+    };
 
     let _activeTool,
         _mclass;
