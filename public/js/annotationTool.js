@@ -32,7 +32,7 @@ const annotationTool = (function() {
             z: position.z,
             mclass: _mclass
         };
-        markerHandler.addMarker();
+        markerHandler.addMarker(marker);
     }
 
     function _rectClick(position) {
@@ -73,7 +73,7 @@ const annotationTool = (function() {
      * @param {number} position.y The y coordinate in web coordinates.
      * @param {number} position.z The focus level.
      */
-    clickTool(position) {
+    function clickTool(position) {
         if (_activeTool)
             _toolFunctions[_activeTool].click(position);
         else
