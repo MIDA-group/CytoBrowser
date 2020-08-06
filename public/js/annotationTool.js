@@ -112,12 +112,13 @@ const annotationTool = (function() {
 
         return {
             click: function(position) {
-                _zLevel = position.z;
-                _mclass = _activeMclass;
-                _points.push(coordinateHelper.viewportToImage({
+                _nextPoint = coordinateHelper.viewportToImage({
                     x: position.x,
                     y: position.y
-                }));
+                });
+                _zLevel = position.z;
+                _mclass = _activeMclass;
+                _points.push(_nextPoint);
                 _updatePending();
             },
             dblClick: function(position) {

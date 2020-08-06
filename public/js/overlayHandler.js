@@ -113,6 +113,9 @@ const overlayHandler = (function (){
         _regionOverlay.selectAll("g")
             .select("path")
             .attr("stroke-width", _regionStrokeWidth());
+        _pendingRegionOverlay.selectAll("path")
+            .attr("stroke-width", _regionStrokeWidth())
+            .attr("stroke-dasharray", _regionStrokeWidth());
     }
 
     function _addAnnotationMouseEvents(d, node) {
@@ -406,7 +409,7 @@ const overlayHandler = (function (){
      */
     function updatePendingRegion(annotation) {
         let data = [];
-        if (annotation && annotation.points.length > 2)
+        if (annotation)
             data = [annotation];
         _pendingRegionOverlay.selectAll("path")
             .data(data)
@@ -415,7 +418,7 @@ const overlayHandler = (function (){
                     .attr("d", _getRegionPath)
                     .attr("stroke", _getAnnotationColor)
                     .attr("stroke-width", _regionStrokeWidth())
-                    .attr("stroke-dasharray", "1 1")
+                    .attr("stroke-dasharray", _regionStrokeWidth())
                     .attr("fill", _getAnnotationColor)
                     .attr("fill-opacity", 0.05),
                 update => update.attr("d", _getRegionPath)
