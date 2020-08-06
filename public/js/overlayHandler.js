@@ -13,6 +13,7 @@ const overlayHandler = (function (){
 
     let _cursorOverlay,
         _markerOverlay,
+        _regionOverlay,
         _previousCursors,
         _scale;
 
@@ -228,7 +229,6 @@ const overlayHandler = (function (){
                 group.append("path")
                     .attr({
                         "d": d => {
-                            let path = "M ";
                             const stops = d.points.map(point => {
                                 const viewport = coordinateHelper.imageToViewport(point);
                                 const coords = coordinateHelper.viewportToOverlay(viewport);
