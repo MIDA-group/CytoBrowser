@@ -285,6 +285,7 @@ const overlayHandler = (function (){
 
     function _updateRegion(update) {
         update.select("path")
+            .transition().duration(500)
             .attr("stroke", d => bethesdaClassUtils.classColor(d.mclass))
             .attr("fill", d => bethesdaClassUtils.classColor(d.mclass));
     }
