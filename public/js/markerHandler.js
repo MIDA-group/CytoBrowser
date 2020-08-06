@@ -69,15 +69,15 @@ const markerHandler = (function (){
             let cx = 0;
             let cy = 0;
             loop.reduce((a, b) => {
-                const areaTerm = a.x * b.y - b.x * a.y;
+                const areaTerm = (a.x * b.y) - (b.x * a.y);
                 area += areaTerm;
                 cx += (a.x + b.x) * areaTerm;
                 cy += (a.y + b.y) * areaTerm;
-                return a;
-            );
+                return b;
+            });
             area /= 2;
-            cx /= 6 * area;
-            cy /= 6 * area;
+            cx /= (6 * area);
+            cy /= (6 * area);
             return {x: cx, y: cy};
         }
     }
