@@ -100,18 +100,18 @@ const overlayHandler = (function (){
             .attr("stroke-width", _regionStrokeWidth());
     }
 
-    function _addMarkerMouseEvents(d, node) {
+    function _addAnnotationMouseEvents(d, node) {
         new OpenSeadragon.MouseTracker({
             element: node,
+            clickHandler: function(event) {
+                if (event.originalEvent.ctrlKey) {
+                    markerHandler.removeMarker(d.id);
+                }
+            },
             pressHandler: function(event) {
                 tmapp.setCursorStatus({held: true});
             },
             dragHandler: function(event) {
-                const reference = coordinateHelper.webToImage({x: 0, y: 0});
-                const delta = coordinateHelper.webToImage(event.delta);
-                d.points[0].x += delta.x - reference.x;
-                d.points[0].y += delta.y - reference.y;
-                markerHandler.updateMarker(d.id, d, "image");
                 const viewportCoords = coordinateHelper.pageToViewport({
                     x: event.originalEvent.pageX,
                     y: event.originalEvent.pageY
@@ -121,11 +121,6 @@ const overlayHandler = (function (){
             dragEndHandler: function(event) {
                 tmapp.setCursorStatus({held: false});
             },
-            clickHandler: function(event) {
-                if (event.originalEvent.ctrlKey) {
-                    markerHandler.removeMarker(d.id);
-                }
-            },
             nonPrimaryReleaseHandler: function(event) {
                 if (event.button === 2) { // If right click
                     const location = {
@@ -134,6 +129,20 @@ const overlayHandler = (function (){
                     };
                     tmappUI.openMarkerEditMenu(d.id, location);
                 }
+            }
+        }).setTracking(true);
+    }
+
+    function _addMarkerMouseEvents(d, node) {
+        _addAnnotationMouseEvents(d, node);
+        new OpenSeadragon.MouseTracker({
+            element: node,
+            dragHandler: function(event) {
+                const reference = coordinateHelper.webToImage({x: 0, y: 0});
+                const delta = coordinateHelper.webToImage(event.delta);
+                d.points[0].x += delta.x - reference.x;
+                d.points[0].y += delta.y - reference.y;
+                markerHandler.updateMarker(d.id, d, "image");
             },
             enterHandler: function(){
                 d3.select(node)
@@ -160,6 +169,25 @@ const overlayHandler = (function (){
                     .selectAll("text")
                     .transition().duration(200)
                     .style("opacity", 0);
+            }
+        }).setTracking(true);
+    }
+
+    function _addRegionMouseEvents(d, node) => {
+        _addAnnotationMouseEvents(d, node);
+        new OpenSeadragon.MouseTracker({
+            element: node,
+            enterHandler: function(){
+                d3.select(node)
+                    .selectAll("path")
+                    .transition().duration(200)
+                    .attr("fill-opacity", 0.4);
+            },
+            exitHandler: function(){
+                d3.select(node)
+                    .selectAll("path")
+                    .transition().duration(200)
+                    .attr("fill-opacity", 0.2);
             }
         }).setTracking(true);
     }
@@ -249,7 +277,8 @@ const overlayHandler = (function (){
                     .attr("stroke-width", _regionStrokeWidth())
                     .attr("fill", d => bethesdaClassUtils.classColor(d.mclass))
                     .attr("fill-opacity", 0.2)
-            );
+            )
+            .each(function(d) {_addRegionMouseEvents(d, this);});
     }
 
     function _updateRegion(update) {
@@ -369,6 +398,25 @@ const overlayHandler = (function (){
     }
 
     /**
+     * Set which annotation overlay should be able to receive mouse
+     * events at the current time.
+     * @param {string} name The name of the overlay, either "region" or
+     * "marker".
+     */
+    function setActiveAnnotationOverlay(name) {
+        switch (name) {
+            case "region":
+                _regionOverlay.style("pointer-events", "all");
+                _markerOverlay.style("pointer-events", "none");
+            case "marker":
+                _regionOverlay.style("pointer-events", "none");
+                _markerOverlay.style("pointer-events", "all");
+            default:
+                throw new Error("Invalid overlay name.");
+        }
+    }
+
+    /**
      * Initialize the overlay handler. Should be called whenever OSD is
      * initialized.
      * @param {Object} svgOverlay The return value of the OSD instance's
@@ -395,6 +443,7 @@ const overlayHandler = (function (){
         updateMarkers: updateMarkers,
         clearMarkers: clearMarkers,
         setOverlayScale: setOverlayScale,
+        setActiveAnnotationOverlay: setActiveAnnotationOverlay,
         init: init
     };
 })();

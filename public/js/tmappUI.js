@@ -71,10 +71,20 @@ const tmappUI = (function(){
 
     function _initToolSelectionButtons() {
         $("#tool_marker").addClass("active");
+        overlayHandler.setActiveAnnotationOverlay("marker");
         annotationTool.setTool("marker");
-        $("#tool_marker").click(() => annotationTool.setTool("marker"));
-        $("#tool_rect").click(() => annotationTool.setTool("rect"));
-        $("#tool_poly").click(() => annotationTool.setTool("poly"));
+        $("#tool_marker").click(() => {
+            overlayHandler.setActiveAnnotationOverlay("marker");
+            annotationTool.setTool("marker");
+        });
+        $("#tool_rect").click(() => {
+            overlayHandler.setActiveAnnotationOverlay("region");
+            annotationTool.setTool("rect");
+        });
+        $("#tool_poly").click(() => {
+            overlayHandler.setActiveAnnotationOverlay("region");
+            annotationTool.setTool("poly");
+        });
     }
 
     function _initViewerEvents() {
