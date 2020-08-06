@@ -145,10 +145,13 @@ const tmappUI = (function(){
                 case 27: // esc
                     annotationTool.reset();
                     break;
-                case "z".charCodeAt():
+                case 8: // backspace
+                    annotationTool.revert();
+                    break;
+                case 90: // z
                     $("#focus_prev").click();
                     break;
-                case "x".charCodeAt():
+                case 88: // x
                     $("#focus_next").click();
                     break;
                 default:

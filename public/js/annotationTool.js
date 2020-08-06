@@ -67,6 +67,7 @@ const annotationTool = (function() {
                         y: position.y
                     };
             },
+            revert: reset,
             reset: reset
         };
     })();
@@ -110,6 +111,11 @@ const annotationTool = (function() {
                         x: position.x,
                         y: position.y
                     };
+            },
+            revert: function() {
+                _points.pop();
+                if (!_points.length)
+                    reset();
             },
             reset: reset
         };
@@ -191,6 +197,13 @@ const annotationTool = (function() {
     }
 
     /**
+     * Revert the last non-completing move made with the tool.
+     */
+    function revert() {
+        _callToolFunction("revert");
+    }
+
+    /**
      * Let the active tool know that the mouse position has been updated
      * and carry out any appropriate actions.
      * @param {Object} position The position of the mouse.
@@ -208,6 +221,7 @@ const annotationTool = (function() {
         click: click,
         dblClick: dblClick,
         reset: reset,
+        revert: revert,
         updateMousePosition: updateMousePosition
     };
 })();
