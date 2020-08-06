@@ -154,12 +154,21 @@ class Collaboration {
         }
     }
 
-    isDuplicateMarker(marker) {
+    pointsAreDuplicate(pointsA, pointsB) {
+        if (pointsA.length !== pointsB.length)
+            return false;
+
+        return pointsA.every((pointA, index) => {
+            const pointB = pointsB[index];
+            return pointA.x === pointB.x || pointA.y === pointB.y;
+        });
+    }
+
+    findDuplicateMarker(marker) {
         return this.markers.some(existingMarker =>
-            existingMarker.x === marker.x
-            && existingMarker.y === marker.y
-            && existingMarker.z === marker.z
+            existingMarker.z === marker.z
             && existingMarker.mclass === marker.mclass
+            && pointsAreDuplicate(marker.points, existingMarker.points)
         );
     }
 
