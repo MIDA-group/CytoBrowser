@@ -83,6 +83,19 @@ const overlayHandler = (function (){
         return 2000 / _scale;
     }
 
+    function _getRegionPath(d) {
+        const stops = d.points.map(point => {
+            const viewport = coordinateHelper.imageToViewport(point);
+            const coords = coordinateHelper.viewportToOverlay(viewport);
+            return `${coords.x} ${coords.y}`;
+        });
+        return `M ${stops.join(" L ")} Z`;
+    }
+
+    function _getAnnotationColor(d) {
+        return bethesdaClassUtils.classColor(d.mclass);
+    }
+
     function _resizeMembers() {
         _cursorOverlay.selectAll("g")
             .attr("transform", _transformFunction(function() {
@@ -113,6 +126,13 @@ const overlayHandler = (function (){
                 tmapp.setCursorStatus({held: true});
             },
             dragHandler: function(event) {
+                const reference = coordinateHelper.webToImage({x: 0, y: 0});
+                const delta = coordinateHelper.webToImage(event.delta);
+                d.points.forEach(point => {
+                    point.x += delta.x - reference.x;
+                    point.y += delta.y - reference.y;
+                });
+                markerHandler.updateMarker(d.id, d, "image");
                 const viewportCoords = coordinateHelper.pageToViewport({
                     x: event.originalEvent.pageX,
                     y: event.originalEvent.pageY
@@ -138,13 +158,6 @@ const overlayHandler = (function (){
         _addAnnotationMouseEvents(d, node);
         new OpenSeadragon.MouseTracker({
             element: node,
-            dragHandler: function(event) {
-                const reference = coordinateHelper.webToImage({x: 0, y: 0});
-                const delta = coordinateHelper.webToImage(event.delta);
-                d.points[0].x += delta.x - reference.x;
-                d.points[0].y += delta.y - reference.y;
-                markerHandler.updateMarker(d.id, d, "image");
-            },
             enterHandler: function(){
                 d3.select(node)
                     .selectAll("path")
@@ -205,7 +218,7 @@ const overlayHandler = (function (){
             .attr("d", d3.symbol().size(_markerSquareSize).type(d3.symbolSquare))
             .attr("transform", "rotate(0) scale(0)")
             .attr("stroke-width", _markerSquareStrokeWidth)
-            .attr("stroke", d => bethesdaClassUtils.classColor(d.mclass))
+            .attr("stroke", _getAnnotationColor)
             .style("fill","rgba(0,0,0,0.2)");
         group.each(function(d) {_addMarkerMouseEvents(d, this);});
         square.transition().duration(500)
@@ -226,7 +239,7 @@ const overlayHandler = (function (){
             }));
         if (_markerText) {
             group.append("text")
-                .style("fill", d => bethesdaClassUtils.classColor(d.mclass))
+                .style("fill", _getAnnotationColor)
                 .style("font-size", "1%")
                 .style("font-weight", "700")
                 .style("pointer-events", "none")
@@ -245,10 +258,10 @@ const overlayHandler = (function (){
             }));
         const paths = update.selectAll("path");
         const square = paths.filter((d, i) => i === 0);
-        square.attr("stroke", d => bethesdaClassUtils.classColor(d.mclass));
+        square.attr("stroke", _getAnnotationColor);
         if (_markerText) {
             update.select("text")
-                .style("fill", d => bethesdaClassUtils.classColor(d.mclass))
+                .style("fill", _getAnnotationColor)
                 .text(d => `#${d.id}: ${d.mclass}`);
         }
     }
@@ -266,17 +279,10 @@ const overlayHandler = (function (){
         enter.append("g")
             .call(group =>
                 group.append("path")
-                    .attr("d", d => {
-                        const stops = d.points.map(point => {
-                            const viewport = coordinateHelper.imageToViewport(point);
-                            const coords = coordinateHelper.viewportToOverlay(viewport);
-                            return `${coords.x} ${coords.y}`;
-                        });
-                        return `M ${stops.join(" L ")} Z`;
-                    })
-                    .attr("stroke", d => bethesdaClassUtils.classColor(d.mclass))
+                    .attr("d", _getRegionPath)
+                    .attr("stroke", _getAnnotationColor)
                     .attr("stroke-width", _regionStrokeWidth())
-                    .attr("fill", d => bethesdaClassUtils.classColor(d.mclass))
+                    .attr("fill", _getAnnotationColor)
                     .attr("fill-opacity", 0.2)
             )
             .attr("opacity", 1)
@@ -286,8 +292,9 @@ const overlayHandler = (function (){
     function _updateRegion(update) {
         update.select("path")
             .transition().duration(500)
-            .attr("stroke", d => bethesdaClassUtils.classColor(d.mclass))
-            .attr("fill", d => bethesdaClassUtils.classColor(d.mclass));
+            .attr("d", _getRegionPath)
+            .attr("stroke", _getAnnotationColor)
+            .attr("fill", _getAnnotationColor);
     }
 
     function _exitRegion(exit) {
