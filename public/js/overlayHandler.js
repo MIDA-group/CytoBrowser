@@ -78,6 +78,10 @@ const overlayHandler = (function (){
         return 100000 / Math.max(_scale, 20000);
     }
 
+    function _regionStrokeWidth() {
+        return 1 / _scale;
+    }
+
     function _resizeMembers() {
         _cursorOverlay.selectAll("g")
             .attr("transform", _transformFunction(function() {
@@ -88,6 +92,12 @@ const overlayHandler = (function (){
     function _resizeMarkers() {
         _markerOverlay.selectAll("g")
             .attr("transform", _transformFunction({scale: _markerSize()}));
+    }
+
+    function _resizeRegions() {
+        _regionOverlay.selectAll("g")
+            .select("path")
+            .attr("stroke-width", _regionStrokeWidth());
     }
 
     function _addMarkerMouseEvents(d, node) {
@@ -236,7 +246,7 @@ const overlayHandler = (function (){
                         return `M ${stops.join(" L ")} Z`;
                     })
                     .attr("stroke", d => bethesdaClassUtils.classColor(d.mclass))
-                    .attr("stroke-width", 0.01)
+                    .attr("stroke-width", _regionStrokeWidth())
                     .attr("fill", d => bethesdaClassUtils.classColor(d.mclass))
                     .attr("fill-opacity", 0.2)
             );
@@ -355,6 +365,7 @@ const overlayHandler = (function (){
         _scale = zoomLevel * wContainer;
         _resizeMembers();
         _resizeMarkers();
+        _resizeRegions();
     }
 
     /**
