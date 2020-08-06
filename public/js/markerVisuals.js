@@ -28,7 +28,7 @@ const markerVisuals = (function() {
                     row.append("td")
                         .attr("class", "align-middle")
                         .text(d =>
-                            `(x: ${Math.round(d.points[0].x)}, y: ${Math.round(d.points[0].y)}, z: ${Math.round(d.z)})`)
+                            `(x: ${Math.round(d.centroid.x)}, y: ${Math.round(d.centroid.y)}, z: ${Math.round(d.z)})`)
                         .append("span")
                             .attr("class", "badge text-white ml-4")
                             .style("background-color", d =>
@@ -48,7 +48,7 @@ const markerVisuals = (function() {
                     const annotationCell = cells.filter((d, i) => i === 1);
                     idCell.text(d => d.id);
                     annotationCell.text(d =>
-                        `(x: ${Math.round(d.points[0].x)}, y: ${Math.round(d.points[0].y)}, z: ${Math.round(d.z)})`)
+                        `(x: ${Math.round(d.centroid.x)}, y: ${Math.round(d.centroid.y)}, z: ${Math.round(d.z)})`)
                         .append("span")
                             .attr("class", "badge text-white ml-4")
                             .style("background-color", d =>

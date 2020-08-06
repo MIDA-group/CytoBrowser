@@ -14,10 +14,12 @@ const markerHandler = (function (){
      * been added will have an id property, it can optionally be included
      * when adding information about the marker to force an id.
      * @typedef {Object} Marker
-     * @property {number} points The x and y positions of each point in
-     * the annotation; a single point if marker, multiple if region.
+     * @property {Array<Object>} points The x and y positions of each
+     * point in the annotation; a single point if marker, multiple if region.
      * @property {number} z Z value when the marker was placed.
      * @property {string} mclass Class name of the marker.
+     * @property {Object} centroid The centroid of the annotated point
+     * or region.
      * @property {Array} [comments] Comments associated with the marker.
      * @property {string} [author] The name of the person who originally
      * placed the marker.
@@ -54,6 +56,27 @@ const markerHandler = (function (){
                 clone[key] = [...value];
         });
         return clone;
+    }
+
+    function _getCentroid(points) {
+        if (points.length === 1)
+            return points[0];
+        else {
+            // Wikipedia says this won't work with self-intersections
+            // https://en.wikipedia.org/wiki/Centroid#Of_a_polygon
+            const loop = [...points, points[0]];
+            const area = loop.reduce((a, b) =>
+                a.x * b.y - b.x * a.y
+            ) / 2;
+            const cx = loop.reduce((a, b) =>
+                (a.x + b.x) * (a.x * b.y - b.x * a.y)
+            ) / (6 * area);
+            const cy = loop.reduce((a, b) =>
+                (a.y + b.y) * (a.x * b.y - b.x * a.y)
+            ) / (6 * area);
+
+            return {x: cx, y: cy};
+        }
     }
 
     function _pointsAreDuplicate(pointsA, pointsB) {
@@ -146,6 +169,10 @@ const markerHandler = (function (){
         if (coordSystem !== "image")
             addedMarker.points = coords.map(coord => coord.image);
 
+        // Set the centroid of the annotation
+        if (!addedMarker.centroid)
+            addedMarker.centroid = _getCentroid(addedMarker.points);
+
         // Set the author of the marker
         if (!addedMarker.author)
             addedMarker.author = userInfo.getName();
@@ -197,6 +224,9 @@ const markerHandler = (function (){
         )
         if (coordSystem !== "image")
             updatedMarker.points = coords.map(coord => coord.image);
+
+        // Set the centroid of the annotation
+        updatedMarker.centroid = _getCentroid(updatedMarker.points);
 
         // Store the marker in data
         Object.assign(markers[updatedIndex], updatedMarker);
