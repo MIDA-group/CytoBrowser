@@ -77,7 +77,12 @@ const annotationTool = (function() {
                 _zLevel = position.z;
                 _mclass = _activeMclass;
                 if (_points.length > 2) {
-                    console.log("Adding polygon", _points, _zLevel, _mclass);
+                    const annotation = {
+                        position: _points,
+                        z: _zLevel,
+                        mclass: _mclass
+                    };
+                    markerHandler.addMarker(annotation, "viewport");
                     this.reset();
                 }
             },
@@ -87,12 +92,10 @@ const annotationTool = (function() {
                         x: position.x,
                         y: position.y
                     };
-                console.log("Next point:", _nextPoint);
             },
             reset: function() {
                 _points = [];
                 _nextPoint = null;
-                console.log("Reset the polygon tool!");
             }
         };
     })();
