@@ -307,7 +307,7 @@ const overlayHandler = (function (){
         _markerOverlay.selectAll("g")
             .data(markers, d => d.id)
             .call(selection =>
-                selection.filter(d => d.points.length === 1)
+                selection
                 .join(
                     _enterMarker,
                     _updateMarker,
@@ -315,7 +315,7 @@ const overlayHandler = (function (){
                 )
             )
             .call(selection =>
-                selection.filter(d => d.points.length > 1)
+                selection
                 .join(
                     _enterRegion,
                     _updateRegion,
