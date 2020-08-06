@@ -28,15 +28,20 @@ const annotationTool = (function() {
 
         return {
             click: function(position) {
+                let coords = {
+                    x: position.x,
+                    y: position.y
+                };
                 _zLevel = position.z;
                 _mclass = _activeMclass;
-                if (_startingPoint)
-                    console.log("Placing marker")
+                if (_startPoint) {
+                    _endPoint = coords;
+                    console.log("Placing rect", _startPoint, _endPoint);
+                    _startPoint = null;
+                    _endPoint = null;
+                }
                 else
-                    _startPoint = {
-                        x: position.x,
-                        y: position.y
-                    };
+                    _startPoint = coords;
             },
             update: function(position) {
                 if (_startPoint)
@@ -48,7 +53,7 @@ const annotationTool = (function() {
             },
             reset: function() {
                 console.log("Reset the rect tool!");
-                _startingPoint = null;
+                _startPoint = null;
                 _endPoint = null;
             }
         };
