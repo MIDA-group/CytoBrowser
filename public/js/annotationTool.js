@@ -72,11 +72,13 @@ const annotationTool = (function() {
                     _startPoint = coords;
             },
             update: function(position) {
-                if (_startPoint)
+                if (_startPoint) {
                     _endPoint = coordinateHelper.viewportToImage({
                         x: position.x,
                         y: position.y
                     });
+                    _updatePending();
+                }
             },
             revert: reset,
             reset: reset
