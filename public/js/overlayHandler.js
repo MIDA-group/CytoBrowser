@@ -279,13 +279,12 @@ const overlayHandler = (function (){
                     .attr("fill", d => bethesdaClassUtils.classColor(d.mclass))
                     .attr("fill-opacity", 0.2)
             )
-            .attr("opacity", 1);
+            .attr("opacity", 1)
             .each(function(d) {_addRegionMouseEvents(d, this);});
     }
 
     function _updateRegion(update) {
-        update.selectAll("g")
-            .select("path")
+        update.select("path")
             .attr("stroke", d => bethesdaClassUtils.classColor(d.mclass))
             .attr("fill", d => bethesdaClassUtils.classColor(d.mclass));
     }
