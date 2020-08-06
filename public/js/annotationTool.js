@@ -156,11 +156,17 @@ const annotationTool = (function() {
     };
 
     let _activeTool,
-        _activeMclass;
+        _activeMclass,
+        _lastPosition;
 
     function _callToolFunction(funName, position) {
         if (!_activeTool)
             throw new Error("No tool has been selected.");
+        if (position)
+            _lastPosition = position;
+        else
+            position = _lastPosition;
+
         const fun = _activeTool[funName];
         if (fun)
             fun(position);
