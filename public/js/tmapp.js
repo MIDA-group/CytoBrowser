@@ -525,8 +525,8 @@ const tmapp = (function() {
     function setCursorStatus(status) {
         Object.assign(_cursorStatus, status);
         const position = {
-            x: status.x,
-            y: status.y,
+            x: _cursorStatus.x,
+            y: _cursorStatus.y,
             z: _currState.z
         };
         annotationTool.updateMousePosition(position);

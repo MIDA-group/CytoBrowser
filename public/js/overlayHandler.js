@@ -406,14 +406,14 @@ const overlayHandler = (function (){
      */
     function updatePendingRegion(annotation) {
         let data = [];
-        if (points.length > 0)
+        if (annotation && annotation.points.length > 2)
             data = [annotation];
         _pendingRegionOverlay.selectAll("path")
             .data(data)
             .join(
                 enter => enter.append("path")
                     .attr("d", _getRegionPath),
-                update => update.attr("d, _getRegionPath")
+                update => update.attr("d", _getRegionPath)
             );
     }
 

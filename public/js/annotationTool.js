@@ -80,15 +80,21 @@ const annotationTool = (function() {
 
         function _getAnnotation(points) {
             return {
-                points: _points,
+                points: points,
                 z: _zLevel,
                 mclass: _mclass
             };
         }
 
+        function _updatePending(points) {
+            const annotation = _getAnnotation([..._points, _nextPoint]);
+            overlayHandler.updatePendingRegion(annotation);
+        }
+
         function reset() {
             _points = [];
             _nextPoint = null;
+            overlayHandler.updatePendingRegion(null);
         }
 
         return {
@@ -99,6 +105,7 @@ const annotationTool = (function() {
                     x: position.x,
                     y: position.y
                 }));
+                _updatePending();
             },
             dblClick: function(position) {
                 _zLevel = position.z;
@@ -115,12 +122,12 @@ const annotationTool = (function() {
                         x: position.x,
                         y: position.y
                     });
-                    const annotation = _getAnnotation([..._points, _nextPoint]);
-                    overlayHandler.updatePendingRegion(annotation);
+                    _updatePending();
                 }
             },
             revert: function() {
                 _points.pop();
+                _updatePending();
                 if (!_points.length)
                     reset();
             },
