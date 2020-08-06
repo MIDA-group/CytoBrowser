@@ -28,6 +28,11 @@ const annotationTool = (function() {
             _zLevel,
             _mclass;
 
+        function reset() {
+            _startPoint = null;
+            _endPoint = null;
+        }
+
         return {
             click: function(position) {
                 let coords = {
@@ -38,8 +43,19 @@ const annotationTool = (function() {
                 _mclass = _activeMclass;
                 if (_startPoint) {
                     _endPoint = coords;
-                    console.log("Placing rect", _startPoint, _endPoint);
-                    this.reset();
+                    const points = [
+                        _startPoint,
+                        {x: _startPoint.x, y: _endPoint.y},
+                        _endPoint,
+                        {x: _endPoint.x, y: _startPoint.y}
+                    ];
+                    const annotation = {
+                        points: points,
+                        z: _zLevel,
+                        mclass: _mclass
+                    };
+                    markerHandler.addMarker(annotation, "viewport");
+                    reset();
                 }
                 else
                     _startPoint = coords;
@@ -50,13 +66,8 @@ const annotationTool = (function() {
                         x: position.x,
                         y: position.y
                     };
-                console.log("Updating endpoint:", _endPoint);
             },
-            reset: function() {
-                console.log("Reset the rect tool!");
-                _startPoint = null;
-                _endPoint = null;
-            }
+            reset: reset
         };
     })();
 
@@ -90,7 +101,6 @@ const annotationTool = (function() {
                         mclass: _mclass
                     };
                     markerHandler.addMarker(annotation, "viewport");
-                    console.log("Added", annotation);
                     reset();
                 }
             },
