@@ -197,8 +197,41 @@ const overlayHandler = (function (){
             }
     }
 
+    function _updateMarker(update) {
+        update.attr("transform", _transformFunction(function(d) {
+                const viewport = coordinateHelper.imageToViewport(d.points[0]);
+                const coords = coordinateHelper.viewportToOverlay(viewport);
+                return {translate: [coords.x, coords.y]};
+            }));
+        const paths = update.selectAll("path");
+        const square = paths.filter((d, i) => i === 0);
+        square.attr("stroke", d => bethesdaClassUtils.classColor(d.mclass));
+        if (_markerText) {
+            update.select("text")
+                .style("fill", d => bethesdaClassUtils.classColor(d.mclass))
+                .text(d => `#${d.id}: ${d.mclass}`);
+        }
+    }
+
+    function _exitMarker(exit) {
+        exit.transition().duration(200)
+            .attr("opacity", 0)
+            .attr("transform", _transformFunction({
+                scale: s => 2 * s
+            }))
+            .remove();
+    }
+
     function _enterRegion(enter) {
         console.log("Enter region!");
+    }
+
+    function _updateRegion(update) {
+        console.log("Update region!");
+    }
+
+    function _exitRegion(exit) {
+        console.log("Exit region!");
     }
 
     /**
@@ -273,38 +306,21 @@ const overlayHandler = (function (){
     function updateMarkers(markers){
         _markerOverlay.selectAll("g")
             .data(markers, d => d.id)
-            .join(
-                enter =>
-                    enter.call(selection =>
-                            selection.filter(d => d.points.length === 1)
-                            .call(_enterMarker))
-                        .call(selection =>
-                            selection.filter(d => d.points.length > 1)
-                            .call(_enterRegion)
-                        )
-                update => {
-                    update.attr("transform", _transformFunction(function(d) {
-                            const viewport = coordinateHelper.imageToViewport(d.points[0]);
-                            const coords = coordinateHelper.viewportToOverlay(viewport);
-                            return {translate: [coords.x, coords.y]};
-                        }));
-                    const paths = update.selectAll("path");
-                    const square = paths.filter((d, i) => i === 0);
-                    square.attr("stroke", d => bethesdaClassUtils.classColor(d.mclass));
-                    if (_markerText) {
-                        update.select("text")
-                            .style("fill", d => bethesdaClassUtils.classColor(d.mclass))
-                            .text(d => `#${d.id}: ${d.mclass}`);
-                    }
-                },
-                exit => {
-                    exit.transition().duration(200)
-                        .attr("opacity", 0)
-                        .attr("transform", _transformFunction({
-                            scale: s => 2 * s
-                        }))
-                        .remove();
-                }
+            .call(selection =>
+                selection.filter(d => d.points.length === 1)
+                .join(
+                    _enterMarker,
+                    _updateMarker,
+                    _exitMarker
+                )
+            )
+            .call(selection =>
+                selection.filter(d => d.points.length > 1)
+                .join(
+                    _enterRegion,
+                    _updateRegion,
+                    _exitRegion
+                )
             );
     }
 
