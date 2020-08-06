@@ -79,7 +79,7 @@ const overlayHandler = (function (){
     }
 
     function _regionStrokeWidth() {
-        return 1 / _scale;
+        return 2000 / _scale;
     }
 
     function _resizeMembers() {
