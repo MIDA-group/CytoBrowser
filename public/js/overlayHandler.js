@@ -223,7 +223,25 @@ const overlayHandler = (function (){
     }
 
     function _enterRegion(enter) {
-        console.log("Enter region!");
+        enter.append("g")
+            .call(group =>
+                group.append("path")
+                    .attr({
+                        "d": d => {
+                            let path = "M ";
+                            const stops = d.points.map(point => {
+                                const viewport = coordinateHelper.imageToViewport(point);
+                                const coords = coordinateHelper.viewportToOverlay(viewport);
+                                return `${coords.x} ${coords.y}`;
+                            });
+                            return `M ${stops.join(" L ")} Z`;
+                        },
+                        "stroke": d => bethesdaClassUtils.classColor(d.mclass)),
+                        "stroke-width": 0.01,
+                        "fill": d => bethesdaClassUtils.classColor(d.mclass)),
+                        "fill-opacity": 0.2
+                    })
+            );
     }
 
     function _updateRegion(update) {
@@ -304,23 +322,27 @@ const overlayHandler = (function (){
      * @param {Array} markers The currently placed markers.
      */
     function updateMarkers(markers){
+        // TODO: fix name conflict marker/annotation
+        const markers_ = markers.filter(annotation =>
+            annotation.points.length === 1
+        );
+        const regions = markers.filter(annotation =>
+            annotation.points.length > 1
+        );
+
         _markerOverlay.selectAll("g")
-            .data(markers, d => d.id)
-            .call(selection =>
-                selection
-                .join(
-                    _enterMarker,
-                    _updateMarker,
-                    _exitMarker
-                )
-            )
-            .call(selection =>
-                selection
-                .join(
-                    _enterRegion,
-                    _updateRegion,
-                    _exitRegion
-                )
+            .data(markers_, d => d.id)
+            .join(
+                _enterMarker,
+                _updateMarker,
+                _exitMarker
+            );
+        _regionOverlay.selectAll("g")
+            .data(regions, d => d.id)
+            .join(
+                _enterRegion,
+                _updateRegion,
+                _exitRegion
             );
     }
 
@@ -344,12 +366,16 @@ const overlayHandler = (function (){
      * svgOverlay() method.
      */
     function init(svgOverlay) {
+        const regions = d3.select(svgOverlay.node())
+            .append("g")
+            .attr("id", "regions");
         const markers = d3.select(svgOverlay.node())
             .append("g")
             .attr("id", "markers");
         const cursors = d3.select(svgOverlay.node())
             .append("g")
             .attr("id", "cursors");
+        _regionOverlay = d3.select(regions.node());
         _markerOverlay = d3.select(markers.node());
         _cursorOverlay = d3.select(cursors.node());
         _previousCursors = d3.local();
