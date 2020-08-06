@@ -65,16 +65,19 @@ const markerHandler = (function (){
             // Wikipedia says this won't work with self-intersections
             // https://en.wikipedia.org/wiki/Centroid#Of_a_polygon
             const loop = [...points, points[0]];
-            const area = loop.reduce((a, b) =>
-                a.x * b.y - b.x * a.y
-            ) / 2;
-            const cx = loop.reduce((a, b) =>
-                (a.x + b.x) * (a.x * b.y - b.x * a.y)
-            ) / (6 * area);
-            const cy = loop.reduce((a, b) =>
-                (a.y + b.y) * (a.x * b.y - b.x * a.y)
-            ) / (6 * area);
-
+            let area = 0;
+            let cx = 0;
+            let cy = 0;
+            loop.reduce((a, b) => {
+                const areaTerm = a.x * b.y - b.x * a.y;
+                area += areaTerm;
+                cx += (a.x + b.x) * areaTerm;
+                cy += (a.y + b.y) * areaTerm;
+                return a;
+            );
+            area /= 2;
+            cx /= 6 * area;
+            cy /= 6 * area;
             return {x: cx, y: cy};
         }
     }
