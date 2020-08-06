@@ -14,6 +14,7 @@ const overlayHandler = (function (){
     let _cursorOverlay,
         _markerOverlay,
         _regionOverlay,
+        _pendingRegionOverlay,
         _activeAnnotationOverlayName,
         _previousCursors,
         _scale;
@@ -364,6 +365,7 @@ const overlayHandler = (function (){
             return;
         }
         _markerOverlay.selectAll("g").remove();
+        _regionOverlay.selectAll("g").remove();
     }
 
 
@@ -390,6 +392,24 @@ const overlayHandler = (function (){
             );
         _regionOverlay.selectAll("g")
             .data(regions, d => d.id)
+            .join(
+                _enterRegion,
+                _updateRegion,
+                _exitRegion
+            );
+    }
+
+    /**
+     * Update the visuals for the pending region.
+     * @param {Array<Object>} points An array of points from the pending
+     * region.
+     */
+    function updatePendingRegion(points) {
+        const data = [];
+        if (points.length > 0)
+            data = [points];
+        _pendingRegionOverlay.selectAll("g")
+            .data(data)
             .join(
                 _enterRegion,
                 _updateRegion,
@@ -454,6 +474,10 @@ const overlayHandler = (function (){
         const regions = d3.select(svgOverlay.node())
             .append("g")
             .attr("id", "regions");
+        const pendingRegion = d3.select(svgOverlay.node())
+            .append("g")
+            .attr("id", "regions")
+            .style("pointer-events", "none");
         const markers = d3.select(svgOverlay.node())
             .append("g")
             .attr("id", "markers");
@@ -461,6 +485,7 @@ const overlayHandler = (function (){
             .append("g")
             .attr("id", "cursors");
         _regionOverlay = d3.select(regions.node());
+        _pendingRegionOverlay = d3.select(pendingRegion.node());
         _markerOverlay = d3.select(markers.node());
         _cursorOverlay = d3.select(cursors.node());
         _previousCursors = d3.local();

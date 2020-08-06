@@ -106,11 +106,13 @@ const annotationTool = (function() {
                 }
             },
             update: function(position) {
-                if (_points.length)
+                if (_points.length) {
                     _nextPoint = {
                         x: position.x,
                         y: position.y
                     };
+                    overlayHandler.updatePendingPolygon([..._points, _nextPoint]);
+                }
             },
             revert: function() {
                 _points.pop();
