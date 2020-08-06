@@ -60,12 +60,10 @@ const markerHandler = (function (){
         if (pointsA.length !== pointsB.length)
             return false;
 
-        pointsA.forEach((pointA, index) => {
+        return pointsA.every((pointA, index) => {
             const pointB = pointsB[index];
-            if (pointA.x !== pointB.x || pointA.y !== pointB.y)
-                return false;
+            return pointA.x === pointB.x || pointA.y === pointB.y;
         });
-        return true;
     }
 
     function _findDuplicateMarker(marker) {
@@ -198,7 +196,7 @@ const markerHandler = (function (){
             _getCoordSystems(point, coordSystem)
         )
         if (coordSystem !== "image")
-            updatedMarker.points = coords.map(coord => coords.image);
+            updatedMarker.points = coords.map(coord => coord.image);
 
         // Store the marker in data
         Object.assign(markers[updatedIndex], updatedMarker);
