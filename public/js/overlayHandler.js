@@ -227,20 +227,18 @@ const overlayHandler = (function (){
         enter.append("g")
             .call(group =>
                 group.append("path")
-                    .attr({
-                        "d": d => {
-                            const stops = d.points.map(point => {
-                                const viewport = coordinateHelper.imageToViewport(point);
-                                const coords = coordinateHelper.viewportToOverlay(viewport);
-                                return `${coords.x} ${coords.y}`;
-                            });
-                            return `M ${stops.join(" L ")} Z`;
-                        },
-                        "stroke": d => bethesdaClassUtils.classColor(d.mclass)),
-                        "stroke-width": 0.01,
-                        "fill": d => bethesdaClassUtils.classColor(d.mclass)),
-                        "fill-opacity": 0.2
+                    .attr("d", d => {
+                        const stops = d.points.map(point => {
+                            const viewport = coordinateHelper.imageToViewport(point);
+                            const coords = coordinateHelper.viewportToOverlay(viewport);
+                            return `${coords.x} ${coords.y}`;
+                        });
+                        return `M ${stops.join(" L ")} Z`;
                     })
+                    .attr("stroke", d => bethesdaClassUtils.classColor(d.mclass))
+                    .attr("stroke-width", 0.01)
+                    .attr("fill", d => bethesdaClassUtils.classColor(d.mclass))
+                    .attr("fill-opacity", 0.2)
             );
     }
 
