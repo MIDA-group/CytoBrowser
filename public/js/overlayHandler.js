@@ -284,7 +284,6 @@ const overlayHandler = (function (){
                     .attr("stroke-width", _regionStrokeWidth())
                     .attr("fill", _getAnnotationColor)
                     .attr("fill-opacity", 0.2)
-                    .attr("pointer-events", "fill !inherit")
             )
             .attr("opacity", 1)
             .each(function(d) {_addRegionMouseEvents(d, this);});
@@ -425,7 +424,7 @@ const overlayHandler = (function (){
 
         switch (name) {
             case "region":
-                _regionOverlay.style("pointer-events", "all")
+                _regionOverlay.style("pointer-events", "fill")
                     .transition().duration(500)
                     .style("opacity", 1);
                 _markerOverlay.style("pointer-events", "none")
@@ -436,7 +435,7 @@ const overlayHandler = (function (){
                 _regionOverlay.style("pointer-events", "none")
                     .transition().duration(500)
                     .style("opacity", 0.4);
-                _markerOverlay.style("pointer-events", "all")
+                _markerOverlay.style("pointer-events", "fill")
                     .transition().duration(500)
                     .style("opacity", 1);
                 break;
