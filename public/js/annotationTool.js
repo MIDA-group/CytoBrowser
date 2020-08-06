@@ -28,33 +28,44 @@ const annotationTool = (function() {
             _zLevel,
             _mclass;
 
+        function _getAnnotation() {
+            const points = [
+                _startPoint,
+                {x: _startPoint.x, y: _endPoint.y},
+                _endPoint,
+                {x: _endPoint.x, y: _startPoint.y}
+            ];
+            const annotation = {
+                points: points,
+                z: _zLevel,
+                mclass: _mclass
+            };
+            return annotation;
+        }
+
+        function _updatePending() {
+            const annotation = _getAnnotation();
+            overlayHandler.updatePendingRegion(annotation);
+        }
+
         function reset() {
             _startPoint = null;
             _endPoint = null;
+            overlayHandler.updatePendingRegion(null);
         }
 
         return {
             click: function(position) {
-                let coords = {
+                let coords = coordinateHelper.viewportToImage({
                     x: position.x,
                     y: position.y
-                };
+                });
                 _zLevel = position.z;
                 _mclass = _activeMclass;
                 if (_startPoint) {
                     _endPoint = coords;
-                    const points = [
-                        _startPoint,
-                        {x: _startPoint.x, y: _endPoint.y},
-                        _endPoint,
-                        {x: _endPoint.x, y: _startPoint.y}
-                    ];
-                    const annotation = {
-                        points: points,
-                        z: _zLevel,
-                        mclass: _mclass
-                    };
-                    markerHandler.addMarker(annotation, "viewport");
+                    const annotation = _getAnnotation();
+                    markerHandler.addMarker(annotation, "image");
                     reset();
                 }
                 else
@@ -62,10 +73,10 @@ const annotationTool = (function() {
             },
             update: function(position) {
                 if (_startPoint)
-                    _endPoint = {
+                    _endPoint = coordinateHelper.viewportToImage({
                         x: position.x,
                         y: position.y
-                    };
+                    });
             },
             revert: reset,
             reset: reset
