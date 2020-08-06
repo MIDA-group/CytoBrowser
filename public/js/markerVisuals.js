@@ -13,7 +13,7 @@ const markerVisuals = (function() {
      */
     function update(markers){
         // Update the markers in the overlay
-	overlayHandler.updateMarkers(markers);
+    	overlayHandler.updateMarkers(markers);
 
         // Update the marker list
         const table = d3.select(`#${_tableId}`);
@@ -67,8 +67,8 @@ const markerVisuals = (function() {
      * still exist when calling update() before calling this function.
      */
     function clear(){
-	// TODO: This function shouldn't have to exist, update() should be enough
-	overlayHandler.clearMarkers();
+    	// TODO: This function shouldn't have to exist, update() should be enough
+    	overlayHandler.clearMarkers();
     }
 
 
