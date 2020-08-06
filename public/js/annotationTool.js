@@ -37,8 +37,7 @@ const annotationTool = (function() {
                 if (_startPoint) {
                     _endPoint = coords;
                     console.log("Placing rect", _startPoint, _endPoint);
-                    _startPoint = null;
-                    _endPoint = null;
+                    this.reset();
                 }
                 else
                     _startPoint = coords;
@@ -60,11 +59,39 @@ const annotationTool = (function() {
     })();
 
     const _polyTool = (function() {
+        let _points = [],
+            _nextPoint,
+            _zLevel,
+            _mclass;
+
         return {
             click: function(position) {
-                console.log("Clicked with the polygon tool!");
+                _zLevel = position.z;
+                _mclass = _activeMclass;
+                points.push({
+                    x: position.x,
+                    y: position.y
+                });
+            },
+            dblClick: function(position) {
+                _zLevel = position.z;
+                _mclass = _activeMclass;
+                if (_points.length > 2) {
+                    console.log("Adding polygon", _points, _zLevel, _mclass);
+                    this.reset();
+                }
+            },
+            update: function(position) {
+                if (_points.length)
+                    _nextPoint = {
+                        x: position.x,
+                        y: position.y
+                    };
+                console.log("Next point:", _nextPoint);
             },
             reset: function() {
+                _points = [];
+                _nextPoint = null;
                 console.log("Reset the polygon tool!");
             }
         };
@@ -128,6 +155,17 @@ const annotationTool = (function() {
     }
 
     /**
+     * Perform a double click in the viewport with the currently active tool.
+     * @param {Object} position The position of the click.
+     * @param {number} position.x The x coordinate in viewport coordinates.
+     * @param {number} position.y The y coordinate in viewport coordinates.
+     * @param {number} position.z The focus level.
+     */
+    function dblClick(position) {
+        _callToolFunction("dblClick", position);
+    }
+
+    /**
      * Reset the currently used tool to an initial state.
      */
     function reset() {
@@ -150,6 +188,7 @@ const annotationTool = (function() {
         setTool: setTool,
         setMclass: setMclass,
         click: click,
+        dblClick: dblClick,
         reset: reset,
         updateMousePosition: updateMousePosition
     };

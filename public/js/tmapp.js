@@ -174,6 +174,18 @@ const tmapp = (function() {
             }
         };
 
+        function dblClickHandler(event) {
+            if(!event.ctrlKey && tmappUI.inFocus()){
+                const coords = coordinateHelper.webToViewport(event.position);
+                const position = {
+                    x: coords.x,
+                    y: coords.y,
+                    z: _currState.z
+                };
+                annotationTool.dblClick(position);
+            }
+        };
+
         // Live updates of mouse position in collaboration
         function moveHandler(event) {
             const pos = coordinateHelper.webToViewport(event.position);
