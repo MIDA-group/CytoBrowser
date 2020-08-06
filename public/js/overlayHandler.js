@@ -99,7 +99,7 @@ const overlayHandler = (function (){
                 const reference = coordinateHelper.webToImage({x: 0, y: 0});
                 const delta = coordinateHelper.webToImage(event.delta);
                 d.points[0].x += delta.x - reference.x;
-                d.y += delta.y - reference.y;
+                d.points[0].y += delta.y - reference.y;
                 markerHandler.updateMarker(d.id, d, "image");
                 const viewportCoords = coordinateHelper.pageToViewport({
                     x: event.originalEvent.pageX,

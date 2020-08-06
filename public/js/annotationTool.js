@@ -66,11 +66,16 @@ const annotationTool = (function() {
             _zLevel,
             _mclass;
 
+        function reset() {
+            _points = [];
+            _nextPoint = null;
+        }
+
         return {
             click: function(position) {
                 _zLevel = position.z;
                 _mclass = _activeMclass;
-                points.push({
+                _points.push({
                     x: position.x,
                     y: position.y
                 });
@@ -85,7 +90,8 @@ const annotationTool = (function() {
                         mclass: _mclass
                     };
                     markerHandler.addMarker(annotation, "viewport");
-                    this.reset();
+                    console.log("Added", annotation);
+                    reset();
                 }
             },
             update: function(position) {
@@ -95,10 +101,7 @@ const annotationTool = (function() {
                         y: position.y
                     };
             },
-            reset: function() {
-                _points = [];
-                _nextPoint = null;
-            }
+            reset: reset
         };
     })();
 

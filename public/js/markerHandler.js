@@ -57,6 +57,9 @@ const markerHandler = (function (){
     }
 
     function _pointsAreDuplicate(pointsA, pointsB) {
+        if (pointsA.length !== pointsB.length)
+            return false;
+
         pointsA.forEach((pointA, index) => {
             const pointB = pointsB[index];
             if (pointA.x !== pointB.x || pointA.y !== pointB.y)
@@ -69,7 +72,7 @@ const markerHandler = (function (){
         return _markers.find(existingMarker =>
             existingMarker.z === marker.z
             && existingMarker.mclass === marker.mclass
-            && _pointsAreDuplicate(marker, existingMarker)
+            && _pointsAreDuplicate(marker.points, existingMarker.points)
         );
     }
 
@@ -143,7 +146,7 @@ const markerHandler = (function (){
             _getCoordSystems(point, coordSystem)
         )
         if (coordSystem !== "image")
-            addedMarker.points = coords.map(coord => coords.image);
+            addedMarker.points = coords.map(coord => coord.image);
 
         // Set the author of the marker
         if (!addedMarker.author)

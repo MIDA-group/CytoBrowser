@@ -212,6 +212,7 @@ const tmapp = (function() {
         new OpenSeadragon.MouseTracker({
             element: viewer.canvas,
             clickHandler: clickHandler,
+            dblClickHandler: dblClickHandler,
             moveHandler: moveHandler,
             enterHandler: insideHandler(true),
             exitHandler: insideHandler(false),
