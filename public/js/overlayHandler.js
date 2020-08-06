@@ -412,7 +412,12 @@ const overlayHandler = (function (){
             .data(data)
             .join(
                 enter => enter.append("path")
-                    .attr("d", _getRegionPath),
+                    .attr("d", _getRegionPath)
+                    .attr("stroke", _getAnnotationColor)
+                    .attr("stroke-width", _regionStrokeWidth())
+                    .attr("stroke-dasharray", "1 1")
+                    .attr("fill", _getAnnotationColor)
+                    .attr("fill-opacity", 0.05),
                 update => update.attr("d", _getRegionPath)
             );
     }
