@@ -14,8 +14,8 @@ const markerHandler = (function (){
      * been added will have an id property, it can optionally be included
      * when adding information about the marker to force an id.
      * @typedef {Object} Marker
-     * @property {number} x X position of the marker.
-     * @property {number} y Y position of the marker.
+     * @property {number} points The x and y positions of each point in
+     * the annotation; a single point if marker, multiple if region.
      * @property {number} z Z value when the marker was placed.
      * @property {string} mclass Class name of the marker.
      * @property {Array} [comments] Comments associated with the marker.
@@ -56,12 +56,20 @@ const markerHandler = (function (){
         return clone;
     }
 
+    function _pointsAreDuplicate(pointsA, pointsB) {
+        pointsA.forEach((pointA, index) => {
+            const pointB = pointsB[index];
+            if (pointA.x !== pointB.x || pointA.y !== pointB.y)
+                return false;
+        });
+        return true;
+    }
+
     function _findDuplicateMarker(marker) {
         return _markers.find(existingMarker =>
-            existingMarker.x === marker.x
-            && existingMarker.y === marker.y
-            && existingMarker.z === marker.z
+            existingMarker.z === marker.z
             && existingMarker.mclass === marker.mclass
+            && _pointsAreDuplicate(marker, existingMarker)
         );
     }
 
@@ -131,16 +139,15 @@ const markerHandler = (function (){
         }
 
         // Store the coordinates in all systems and set the image coordinates
-        const coords = _getCoordSystems(addedMarker, coordSystem);
-        if (coordSystem !== "image") {
-            addedMarker.x = coords.image.x;
-            addedMarker.y = coords.image.y;
-        }
+        const coords = addedMarker.points.map(point =>
+            _getCoordSystems(point, coordSystem)
+        )
+        if (coordSystem !== "image")
+            addedMarker.points = coords.map(coord => coords.image);
 
         // Set the author of the marker
-        if (!addedMarker.author) {
+        if (!addedMarker.author)
             addedMarker.author = userInfo.getName();
-        }
 
         // Store a data representation of the marker
         _markers.push(addedMarker);
@@ -184,11 +191,11 @@ const markerHandler = (function (){
         Object.assign(updatedMarker, marker);
 
         // Make sure the data is stored in the image coordinate system
-        const coords = _getCoordSystems(updatedMarker, coordSystem);
-        if (coordSystem !== "image") {
-            updatedMarker.x = coords.image.x;
-            updatedMarker.y = coords.image.y;
-        }
+        const coords = updatedMarker.points.map(point =>
+            _getCoordSystems(point, coordSystem)
+        )
+        if (coordSystem !== "image")
+            updatedMarker.points = coords.map(coord => coords.image);
 
         // Store the marker in data
         Object.assign(markers[updatedIndex], updatedMarker);

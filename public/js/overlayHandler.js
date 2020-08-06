@@ -98,7 +98,7 @@ const overlayHandler = (function (){
             dragHandler: function(event) {
                 const reference = coordinateHelper.webToImage({x: 0, y: 0});
                 const delta = coordinateHelper.webToImage(event.delta);
-                d.x += delta.x - reference.x;
+                d.points[0].x += delta.x - reference.x;
                 d.y += delta.y - reference.y;
                 markerHandler.updateMarker(d.id, d, "image");
                 const viewportCoords = coordinateHelper.pageToViewport({
@@ -229,7 +229,7 @@ const overlayHandler = (function (){
                 enter => {
                     const group = enter.append("g")
                         .attr("transform", d => {
-                            const viewport = coordinateHelper.imageToViewport(d);
+                            const viewport = coordinateHelper.imageToViewport(d.points[0]);
                             const coords = coordinateHelper.viewportToOverlay(viewport);
                             return `translate(${coords.x}, ${coords.y}) scale(${_markerSize()})`;
                         })
@@ -271,7 +271,7 @@ const overlayHandler = (function (){
                 },
                 update => {
                     update.attr("transform", _transformFunction(function(d) {
-                            const viewport = coordinateHelper.imageToViewport(d);
+                            const viewport = coordinateHelper.imageToViewport(d.points[0]);
                             const coords = coordinateHelper.viewportToOverlay(viewport);
                             return {translate: [coords.x, coords.y]};
                         }));

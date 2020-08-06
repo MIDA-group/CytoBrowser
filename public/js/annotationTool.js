@@ -10,8 +10,10 @@ const annotationTool = (function() {
         return {
             click: function(position) {
                 const marker = {
-                    x: position.x,
-                    y: position.y,
+                    points: [{
+                        x: position.x,
+                        y: position.y
+                    }],
                     z: position.z,
                     mclass: _activeMclass
                 };
@@ -78,7 +80,7 @@ const annotationTool = (function() {
                 _mclass = _activeMclass;
                 if (_points.length > 2) {
                     const annotation = {
-                        position: _points,
+                        points: _points,
                         z: _zLevel,
                         mclass: _mclass
                     };

@@ -28,7 +28,7 @@ const markerVisuals = (function() {
                     row.append("td")
                         .attr("class", "align-middle")
                         .text(d =>
-                            `(x: ${Math.round(d.x)}, y: ${Math.round(d.y)}, z: ${Math.round(d.z)})`)
+                            `(x: ${Math.round(d.points[0].x)}, y: ${Math.round(d.points[0].y)}, z: ${Math.round(d.z)})`)
                         .append("span")
                             .attr("class", "badge text-white ml-4")
                             .style("background-color", d =>
@@ -48,7 +48,7 @@ const markerVisuals = (function() {
                     const annotationCell = cells.filter((d, i) => i === 1);
                     idCell.text(d => d.id);
                     annotationCell.text(d =>
-                        `(x: ${Math.round(d.x)}, y: ${Math.round(d.y)}, z: ${Math.round(d.z)})`)
+                        `(x: ${Math.round(d.points[0].x)}, y: ${Math.round(d.points[0].y)}, z: ${Math.round(d.z)})`)
                         .append("span")
                             .attr("class", "badge text-white ml-4")
                             .style("background-color", d =>
@@ -60,7 +60,7 @@ const markerVisuals = (function() {
 
     /**
      * Clear all markers from the overlay. This function should
-     * be called whenever markers are to be quickly cleared and 
+     * be called whenever markers are to be quickly cleared and
      * readded, e.g. when loading markers from a collab summary.
      * Since the marker elements will remain until their animation
      * has finished when removing them, d3 will think that they

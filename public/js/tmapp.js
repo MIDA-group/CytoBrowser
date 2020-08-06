@@ -430,11 +430,23 @@ const tmapp = (function() {
         if (marker === undefined) {
             throw new Error("Tried to move to an unused marker id.");
         }
-        const viewportCoords = coordinateHelper.imageToViewport(marker);
+        const points = marker.points;
+        // TODO: Currently takes average of corners, not area
+        const sum = points.reduce(a, b => {
+            return {
+                x: a.x + b.x,
+                y: a.y + b.y
+            };
+        });
+        const mean = {
+            x: sum.x / points.length,
+            y: sum.y / points.length
+        };
+        const target = coordinateHelper.imageToViewport(mean);
         moveTo({
             zoom: 25,
-            x: viewportCoords.x,
-            y: viewportCoords.y,
+            x: target.x,
+            y: target.y,
             z: marker.z
         });
     }
