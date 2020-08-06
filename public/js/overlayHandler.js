@@ -14,6 +14,7 @@ const overlayHandler = (function (){
     let _cursorOverlay,
         _markerOverlay,
         _regionOverlay,
+        _activeAnnotationOverlayName,
         _previousCursors,
         _scale;
 
@@ -173,7 +174,7 @@ const overlayHandler = (function (){
         }).setTracking(true);
     }
 
-    function _addRegionMouseEvents(d, node) => {
+    function _addRegionMouseEvents(d, node) {
         _addAnnotationMouseEvents(d, node);
         new OpenSeadragon.MouseTracker({
             element: node,
@@ -404,13 +405,19 @@ const overlayHandler = (function (){
      * "marker".
      */
     function setActiveAnnotationOverlay(name) {
+        _activeAnnotationOverlayName = name;
+        if (!_regionOverlay || !_markerOverlay)
+            return;
+
         switch (name) {
             case "region":
                 _regionOverlay.style("pointer-events", "all");
                 _markerOverlay.style("pointer-events", "none");
+                break;
             case "marker":
                 _regionOverlay.style("pointer-events", "none");
                 _markerOverlay.style("pointer-events", "all");
+                break;
             default:
                 throw new Error("Invalid overlay name.");
         }
@@ -436,6 +443,8 @@ const overlayHandler = (function (){
         _markerOverlay = d3.select(markers.node());
         _cursorOverlay = d3.select(cursors.node());
         _previousCursors = d3.local();
+        if (_activeAnnotationOverlayName)
+            setActiveAnnotationOverlay(_activeAnnotationOverlayName);
     }
 
     return {
