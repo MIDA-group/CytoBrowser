@@ -182,7 +182,7 @@ const tmapp = (function() {
                     y: coords.y,
                     z: _currState.z
                 };
-                annotationTool.dblClick(position);
+                annotationTool.complete(position);
             }
         };
 

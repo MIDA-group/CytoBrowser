@@ -121,7 +121,7 @@ const annotationTool = (function() {
                 _points.push(_nextPoint);
                 _updatePending();
             },
-            dblClick: function(position) {
+            complete: function(position) {
                 _zLevel = position.z;
                 _mclass = _activeMclass;
                 if (_points.length > 2) {
@@ -213,8 +213,8 @@ const annotationTool = (function() {
      * @param {number} position.y The y coordinate in viewport coordinates.
      * @param {number} position.z The focus level.
      */
-    function dblClick(position) {
-        _callToolFunction("dblClick", position);
+    function complete(position) {
+        _callToolFunction("complete", position);
     }
 
     /**
@@ -247,7 +247,7 @@ const annotationTool = (function() {
         setTool: setTool,
         setMclass: setMclass,
         click: click,
-        dblClick: dblClick,
+        complete: complete,
         reset: reset,
         revert: revert,
         updateMousePosition: updateMousePosition

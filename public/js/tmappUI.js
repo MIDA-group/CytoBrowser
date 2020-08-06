@@ -148,6 +148,18 @@ const tmappUI = (function(){
                 case 8: // backspace
                     annotationTool.revert();
                     break;
+                case 13: // enter
+                    annotationTool.complete();
+                    break;
+                case 67:
+                    $("#tool_marker").click();
+                    break;
+                case 86:
+                    $("#tool_rect").click();
+                    break;
+                case 66:
+                    $("#tool_poly").click();
+                    break;
                 case 90: // z
                     $("#focus_prev").click();
                     break;
