@@ -279,15 +279,21 @@ const overlayHandler = (function (){
                     .attr("fill", d => bethesdaClassUtils.classColor(d.mclass))
                     .attr("fill-opacity", 0.2)
             )
+            .attr("opacity", 1);
             .each(function(d) {_addRegionMouseEvents(d, this);});
     }
 
     function _updateRegion(update) {
-        console.log("Update region!");
+        update.selectAll("g")
+            .select("path")
+            .attr("stroke", d => bethesdaClassUtils.classColor(d.mclass))
+            .attr("fill", d => bethesdaClassUtils.classColor(d.mclass));
     }
 
     function _exitRegion(exit) {
-        console.log("Exit region!");
+        exit.transition().duration(200)
+            .attr("opacity", 0)
+            .remove();
     }
 
     /**
