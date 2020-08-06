@@ -323,7 +323,7 @@ const overlayHandler = (function (){
             .join(enter => {
                 const group = enter.append("g")
                     .attr("transform", d => {
-                        const coords = coordinateHelper.viewportToOverlay(d);
+                        const coords = coordinateHelper.viewportToOverlay(d.cursor);
                         return `translate(${coords.x}, ${coords.y}), rotate(-30), scale(${_cursorSize(d.cursor)})`
                     })
                     .attr("opacity", 0.0)

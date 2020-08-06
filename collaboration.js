@@ -164,11 +164,11 @@ class Collaboration {
         });
     }
 
-    findDuplicateMarker(marker) {
+    isDuplicateMarker(marker) {
         return this.markers.some(existingMarker =>
             existingMarker.z === marker.z
             && existingMarker.mclass === marker.mclass
-            && pointsAreDuplicate(marker.points, existingMarker.points)
+            && this.pointsAreDuplicate(marker.points, existingMarker.points)
         );
     }
 
