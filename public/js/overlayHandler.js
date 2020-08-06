@@ -401,19 +401,19 @@ const overlayHandler = (function (){
 
     /**
      * Update the visuals for the pending region.
-     * @param {Array<Object>} points An array of points from the pending
-     * region.
+     * @param {Object} annotation The current state of the pending region,
+     * expressed in image coordinates.
      */
-    function updatePendingRegion(points) {
-        const data = [];
+    function updatePendingRegion(annotation) {
+        let data = [];
         if (points.length > 0)
-            data = [points];
-        _pendingRegionOverlay.selectAll("g")
+            data = [annotation];
+        _pendingRegionOverlay.selectAll("path")
             .data(data)
             .join(
-                _enterRegion,
-                _updateRegion,
-                _exitRegion
+                enter => enter.append("path")
+                    .attr("d", _getRegionPath),
+                update => update.attr("d, _getRegionPath")
             );
     }
 
@@ -496,6 +496,7 @@ const overlayHandler = (function (){
     return {
         updateMembers: updateMembers,
         updateMarkers: updateMarkers,
+        updatePendingRegion: updatePendingRegion,
         clearMarkers: clearMarkers,
         setOverlayScale: setOverlayScale,
         setActiveAnnotationOverlay: setActiveAnnotationOverlay,

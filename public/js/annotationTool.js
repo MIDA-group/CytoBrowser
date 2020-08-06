@@ -78,6 +78,14 @@ const annotationTool = (function() {
             _zLevel,
             _mclass;
 
+        function _getAnnotation(points) {
+            return {
+                points: _points,
+                z: _zLevel,
+                mclass: _mclass
+            };
+        }
+
         function reset() {
             _points = [];
             _nextPoint = null;
@@ -87,31 +95,28 @@ const annotationTool = (function() {
             click: function(position) {
                 _zLevel = position.z;
                 _mclass = _activeMclass;
-                _points.push({
+                _points.push(coordinateHelper.viewportToImage({
                     x: position.x,
                     y: position.y
-                });
+                }));
             },
             dblClick: function(position) {
                 _zLevel = position.z;
                 _mclass = _activeMclass;
                 if (_points.length > 2) {
-                    const annotation = {
-                        points: _points,
-                        z: _zLevel,
-                        mclass: _mclass
-                    };
-                    markerHandler.addMarker(annotation, "viewport");
+                    const annotation = _getAnnotation(_points);
+                    markerHandler.addMarker(annotation, "image");
                     reset();
                 }
             },
             update: function(position) {
                 if (_points.length) {
-                    _nextPoint = {
+                    _nextPoint = coordinateHelper.viewportToImage({
                         x: position.x,
                         y: position.y
-                    };
-                    overlayHandler.updatePendingPolygon([..._points, _nextPoint]);
+                    });
+                    const annotation = _getAnnotation([..._points, _nextPoint]);
+                    overlayHandler.updatePendingRegion(annotation);
                 }
             },
             revert: function() {
