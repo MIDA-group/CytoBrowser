@@ -284,6 +284,7 @@ const overlayHandler = (function (){
                     .attr("stroke-width", _regionStrokeWidth())
                     .attr("fill", _getAnnotationColor)
                     .attr("fill-opacity", 0.2)
+                    .attr("pointer-events", "fill !inherit")
             )
             .attr("opacity", 1)
             .each(function(d) {_addRegionMouseEvents(d, this);});
