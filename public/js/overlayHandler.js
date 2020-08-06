@@ -291,8 +291,8 @@ const overlayHandler = (function (){
 
     function _updateRegion(update) {
         update.select("path")
-            .transition().duration(500)
             .attr("d", _getRegionPath)
+            .transition().duration(500)
             .attr("stroke", _getAnnotationColor)
             .attr("fill", _getAnnotationColor);
     }
@@ -424,12 +424,20 @@ const overlayHandler = (function (){
 
         switch (name) {
             case "region":
-                _regionOverlay.style("pointer-events", "all");
-                _markerOverlay.style("pointer-events", "none");
+                _regionOverlay.style("pointer-events", "all")
+                    .transition().duration(500)
+                    .style("opacity", 1);
+                _markerOverlay.style("pointer-events", "none")
+                    .transition().duration(500)
+                    .style("opacity", 0.4);
                 break;
             case "marker":
-                _regionOverlay.style("pointer-events", "none");
-                _markerOverlay.style("pointer-events", "all");
+                _regionOverlay.style("pointer-events", "none")
+                    .transition().duration(500)
+                    .style("opacity", 0.4);
+                _markerOverlay.style("pointer-events", "all")
+                    .transition().duration(500)
+                    .style("opacity", 1);
                 break;
             default:
                 throw new Error("Invalid overlay name.");
