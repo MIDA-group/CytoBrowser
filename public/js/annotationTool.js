@@ -119,13 +119,15 @@ const annotationTool = (function() {
                 });
                 _zLevel = position.z;
                 _mclass = _activeMclass;
+                const last = _points.pop();
+                if (last && last.x !== _nextPoint.x && last.y !== _nextPoint.y)
+                    _points.push(last);
                 _points.push(_nextPoint);
                 _updatePending();
             },
             complete: function(position) {
                 _zLevel = position.z;
                 _mclass = _activeMclass;
-                _points.pop();
                 if (_points.length > 2) {
                     const annotation = _getAnnotation(_points);
                     annotationHandler.add(annotation, "image");
