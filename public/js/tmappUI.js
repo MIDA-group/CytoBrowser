@@ -219,6 +219,9 @@ const tmappUI = (function(){
     function initUI() {
         // Set the title
         $("#project_title").text("Cyto Browser");
+        $("#project_title").click(event => {
+            event.preventDefault();
+        });
 
         _initClassSelectionButtons();
         _initToolSelectionButtons();

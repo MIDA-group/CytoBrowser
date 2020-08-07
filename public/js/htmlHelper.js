@@ -74,7 +74,8 @@ const htmlHelper = (function() {
             </div>
         `);
         container.appendAnnotationComment = comment => {
-            const entry = _annotationComment(comment, () => {
+            const entry = _annotationComment(comment, event => {
+                event.preventDefault();
                 const index = comments.indexOf(comment);
                 comments.splice(index);
                 entry.closest("[tabindex]").focus();

@@ -47,7 +47,10 @@ const fileBrowserUI = (function() {
                     .attr("class", "small")
                     .text(d => new Date(d.mtime).toLocaleString())
                 )
-                .on("click", d => _setSelectedFile(d))
+                .on("click", d => {
+                    d3.event.preventDefault();
+                    _setSelectedFile(d)
+                })
                 .on("dblclick", d => {
                     _setSelectedFile(d);
                     _openSelectedFile();
