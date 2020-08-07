@@ -137,15 +137,15 @@ const tmapp = (function() {
     }
 
     function _loadImages(imageStack, zIndex) {
-        if (!z) {
-            z = 0;
+        if (!zIndex) {
+            zIndex = Math.floor(imageStack.length / 2);
         }
 
         console.info(`Opening: ${imageStack}`);
         imageStack.forEach((image, i) => {
             _viewer.addTiledImage({
                 tileSource: image,
-                opacity: i === z,
+                opacity: i === zIndex,
                 index: i++,
                 success: () => {
                     if (_viewer.world.getItemCount() === imageStack.length) {
@@ -158,7 +158,8 @@ const tmapp = (function() {
             });
         });
 
-        _setFocusLevel(z);
+        const z = zIndex - Math.floor(_currentImage.zLevels.length / 2);
+        _currState.z = z;
     }
 
     function _addMouseTracking(viewer) {
