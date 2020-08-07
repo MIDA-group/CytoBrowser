@@ -52,7 +52,7 @@ const markerHandler = (function (){
         // referenced objects
         const clone = Object.assign({}, marker);
         Object.entries(clone).forEach(([key, value]) => {
-            if (value.constructor === Array)
+            if (value && value.constructor === Array)
                 clone[key] = [...value];
         });
         return clone;
