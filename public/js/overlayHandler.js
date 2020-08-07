@@ -370,15 +370,10 @@ const overlayHandler = (function (){
                 const coords = coordinateHelper.viewportToOverlay(d.cursor);
                 return {translate: [coords.x, coords.y]};
             }))
-            .filter(function(d) {
-                return _previousCursors.get(this).inside !== d.cursor.inside ;
-            })
             .call(group =>
-                group.transition("changeColor").duration(200)
+                group.filter(function(d) {return _previousCursors.get(this).inside !== d.cursor.inside;})
+                    .transition("changeColor").duration(500)
                     .style("opacity", d => d.cursor.inside || d.cursor.held ? 1.0 : 0.2)
-                    .attr("transform", _transformFunction(function(d) {
-                        return {scale: _cursorSize(d.cursor)};
-                    }))
             )
             .select(".caret")
             .filter(function(d) {
