@@ -17,7 +17,7 @@ const annotationTool = (function() {
                     z: position.z,
                     mclass: _activeMclass
                 };
-                annotationHandler.addAnnotation(annotation, "viewport");
+                annotationHandler.add(annotation, "viewport");
             }
         };
     })();
@@ -65,7 +65,7 @@ const annotationTool = (function() {
                 if (_startPoint) {
                     _endPoint = coords;
                     const annotation = _getAnnotation();
-                    annotationHandler.addAnnotation(annotation, "image");
+                    annotationHandler.add(annotation, "image");
                     reset();
                 }
                 else
@@ -127,7 +127,7 @@ const annotationTool = (function() {
                 _points.pop();
                 if (_points.length > 2) {
                     const annotation = _getAnnotation(_points);
-                    annotationHandler.addAnnotation(annotation, "image");
+                    annotationHandler.add(annotation, "image");
                     reset();
                 }
             },

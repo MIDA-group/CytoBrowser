@@ -140,14 +140,14 @@ const annotationHandler = (function (){
      * @param {boolean} [transmit=true] Any collaborators should also be
      * told to add the annotation.
      */
-    function addAnnotation(annotation, coordSystem="web", transmit = true) {
+    function add(annotation, coordSystem="web", transmit = true) {
         const addedAnnotation = _cloneAnnotation(annotation);
 
         // Check if an identical annotation already exists, remove old one if it does
         let replacedAnnotation = _findDuplicateAnnotation(addedAnnotation);
         if (replacedAnnotation) {
             console.warn("Adding an annotation with identical properties to an existing annotation, replacing.");
-            updateAnnotation(replacedAnnotation.id, addedAnnotation, coordSystem, false);
+            update(replacedAnnotation.id, addedAnnotation, coordSystem, false);
             return;
         }
 
@@ -198,7 +198,7 @@ const annotationHandler = (function (){
      * @param {boolean} [transmit=true] Any collaborators should also be
      * told to update their annotation.
      */
-    function updateAnnotation(id, annotation, coordSystem="web", transmit = true) {
+    function update(id, annotation, coordSystem="web", transmit = true) {
         const annotations = _annotations;
         const updatedIndex = annotations.findIndex(annotation => annotation.id === id);
         const updatedAnnotation = getAnnotationById(id);
@@ -247,7 +247,7 @@ const annotationHandler = (function (){
      * @param {boolean} [transmit=true] Any collaborators should also be
      * told to remove the annotation.
      */
-    function removeAnnotation(id, transmit = true) {
+    function remove(id, transmit = true) {
         const annotations = _annotations;
         const deletedIndex = annotations.findIndex(annotation => annotation.id === id);
 
@@ -271,10 +271,10 @@ const annotationHandler = (function (){
      * @param {boolean} [transmit=true] Any collaborators should also
      * be told to clear their annotations.
      */
-    function clearAnnotations(transmit = true) {
+    function clear(transmit = true) {
         const annotations = _annotations;
         const ids = annotations.map(annotation => annotation.id);
-        ids.forEach(id => removeAnnotation(id, false));
+        ids.forEach(id => remove(id, false));
 
         // Send the update to collaborators
         transmit && collabClient.clearAnnotations();
@@ -287,7 +287,7 @@ const annotationHandler = (function (){
      * Iterate a function for each annotation. The function will not change
      * the values of the annotation, and will instead work on clones of them,
      * effectively making them read-only. If the annotation values should be
-     * updated, updateAnnotation() can be run in the passed function.
+     * updated, update() can be run in the passed function.
      * @param {function} f Function to be called with each annotation.
      */
     function forEachAnnotation(f) {
@@ -313,18 +313,18 @@ const annotationHandler = (function (){
      * Check whether or not the list of annotations is empty.
      * @returns {boolean} Whether or not the list is empty.
      */
-    function empty() {
+    function isEmpty() {
         return _annotations.length === 0;
     }
 
     // Return public members of the closure
     return {
-        addAnnotation: addAnnotation,
-        updateAnnotation: updateAnnotation,
-        removeAnnotation: removeAnnotation,
-        clearAnnotations: clearAnnotations,
+        add: add,
+        update: update,
+        remove: remove,
+        clear: clear,
         forEachAnnotation: forEachAnnotation,
         getAnnotationById: getAnnotationById,
-        empty: empty
+        isEmpty: isEmpty
     };
 })();

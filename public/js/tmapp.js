@@ -367,7 +367,7 @@ const tmapp = (function() {
      * decide not to change.
      */
     function openImage(imageName, callback, nochange) {
-        if (!annotationHandler.empty() && !confirm(`You are about to open ` +
+        if (!annotationHandler.isEmpty() && !confirm(`You are about to open ` +
             `the image "${imageName}". Do you want to ` +
             `open this image? Any annotations placed on the ` +
             `current image will be lost unless you save ` +
@@ -381,7 +381,7 @@ const tmapp = (function() {
             tmappUI.displayImageError("badimage", 5000);
             throw new Error("Tried to change to an unknown image.");
         }
-        annotationHandler.clearAnnotations(false);
+        annotationHandler.clear(false);
         _viewer && _viewer.destroy();
         $("#ISS_viewer").empty();
         coordinateHelper.clearImage();

@@ -34,16 +34,16 @@ const collabClient = (function(){
     function _handleAnnotationAction(msg) {
         switch(msg.actionType) {
             case "add":
-                annotationHandler.addAnnotation(msg.annotation, "image", false);
+                annotationHandler.add(msg.annotation, "image", false);
                 break;
             case "update":
-                annotationHandler.updateAnnotation(msg.id, msg.annotation, "image", false);
+                annotationHandler.update(msg.id, msg.annotation, "image", false);
                 break;
             case "remove":
-                annotationHandler.removeAnnotation(msg.id, false);
+                annotationHandler.remove(msg.id, false);
                 break;
             case "clear":
-                annotationHandler.clearAnnotations(false);
+                annotationHandler.clear(false);
                 break;
             default:
                 console.warn(`Unknown annotation action type: ${msg.actionType}`);
@@ -99,13 +99,13 @@ const collabClient = (function(){
                 _joinBatch.push(annotation);
             });
         }
-        annotationHandler.clearAnnotations(false);
+        annotationHandler.clear(false);
         msg.annotations.forEach(annotation => {
-            annotationHandler.addAnnotation(annotation, "image", false)
+            annotationHandler.add(annotation, "image", false)
         });
         if (_joinBatch) {
             _joinBatch.forEach(annotation => {
-                annotationHandler.addAnnotation(annotation, "image");
+                annotationHandler.add(annotation, "image");
             });
             _joinBatch = null;
         }
@@ -203,8 +203,8 @@ const collabClient = (function(){
                 _joinBatch = [];
                 _requestSummary();
             }
-            else if (annotationHandler.empty() || confirm("All your placed annotations will be lost unless you have saved them. Do you want to continue anyway?")) {
-                annotationHandler.clearAnnotations(false);
+            else if (annotationHandler.isEmpty() || confirm("All your placed annotations will be lost unless you have saved them. Do you want to continue anyway?")) {
+                annotationHandler.clear(false);
                 _requestSummary();
             }
             else {

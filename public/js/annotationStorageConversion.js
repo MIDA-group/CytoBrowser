@@ -31,7 +31,7 @@ const annotationStorageConversion = (function() {
         switch (data.version) {
             case "1.0":
                 const addAnnotations = () => data.annotations.forEach(annotation => {
-                    annotationHandler.addAnnotation(annotation, "image");
+                    annotationHandler.add(annotation, "image");
                 });
 
                 // Change image if data is for another image
@@ -41,7 +41,7 @@ const annotationStorageConversion = (function() {
                         addAnnotations();
                     });
                 }
-                else if (!annotationHandler.empty()) {
+                else if (!annotationHandler.isEmpty()) {
                     tmappUI.choice("What should be done with the current annotations?", [
                         {
                             label: "Add loaded annotations to existing ones",
@@ -50,7 +50,7 @@ const annotationStorageConversion = (function() {
                         {
                             label: "Replace existing annotations with loaded ones",
                             click: () => {
-                                annotationHandler.clearAnnotations();
+                                annotationHandler.clear();
                                 addAnnotations();
                             }
                         }

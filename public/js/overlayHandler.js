@@ -127,7 +127,7 @@ const overlayHandler = (function (){
             element: node,
             clickHandler: function(event) {
                 if (event.originalEvent.ctrlKey) {
-                    annotationHandler.removeAnnotation(d.id);
+                    annotationHandler.remove(d.id);
                 }
             },
             pressHandler: function(event) {
@@ -140,7 +140,7 @@ const overlayHandler = (function (){
                     point.x += delta.x - reference.x;
                     point.y += delta.y - reference.y;
                 });
-                annotationHandler.updateAnnotation(d.id, d, "image");
+                annotationHandler.update(d.id, d, "image");
                 const viewportCoords = coordinateHelper.pageToViewport({
                     x: event.originalEvent.pageX,
                     y: event.originalEvent.pageY

@@ -286,7 +286,7 @@ const tmappUI = (function(){
 
         _openContextMenu(location, menuBody => {
             htmlHelper.buildAnnotationSettingsMenu(menuBody, annotation, () => {
-                annotationHandler.updateAnnotation(id, annotation, "image");
+                annotationHandler.update(id, annotation, "image");
                 _closeContextMenu();
             });
         });
