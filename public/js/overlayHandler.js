@@ -249,7 +249,7 @@ const overlayHandler = (function (){
                     .attr("stroke-width", _markerSquareStrokeWidth)
                     .attr("stroke", _getAnnotationColor)
                     .style("fill","rgba(0,0,0,0.2)")
-                    .transition().duration(500)
+                    .transition("appear").duration(500)
                     .attr("transform", _transformFunction({
                         rotate: 45,
                         scale: 1
@@ -263,7 +263,7 @@ const overlayHandler = (function (){
                     .attr("stroke", "gray")
                     .style("fill", "transparent")
                     .style("pointer-events", "none")
-                    .transition().delay(300).duration(200)
+                    .transition("appear").delay(300).duration(200)
                     .attr("transform", _transformFunction({
                         scale: 1
                     }))
@@ -295,7 +295,7 @@ const overlayHandler = (function (){
             }))
             .selectAll("path")
             .filter((d, i) => i === 0)
-            .transition().duration(500)
+            .transition("changeColor").duration(500)
             .attr("stroke", _getAnnotationColor);
         if (_markerText) {
             update.select("text")
