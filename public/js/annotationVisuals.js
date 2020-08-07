@@ -46,7 +46,7 @@ const annotationVisuals = (function() {
             .data(annotations, d => d.id)
             .join(
                 enter => {
-                    const row = enter.prepend("tr");
+                    const row = enter.insert("tr", ":first-child");
                     row.append("td")
                         .attr("class", "align-middle")
                         .text(d => d.id);
