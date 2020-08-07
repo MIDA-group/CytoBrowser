@@ -209,7 +209,7 @@ const htmlHelper = (function() {
     }
 
     /**
-     * Fill a jquery selection with the nodes for editing a annotation.
+     * Fill a jquery selection with the nodes for editing an annotation.
      * @param {Object} container The selection that should contain the
      * annotation editing menu.
      * @param {annotationHandler.AnnotationPoint} annotation The annotation

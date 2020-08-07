@@ -267,7 +267,7 @@ const collabClient = (function(){
     }
 
     /**
-     * Notify collaborators about a annotation being added.
+     * Notify collaborators about an annotation being added.
      * @param {Object} annotation Data for the added annotation.
      */
     function addAnnotation(annotation) {
@@ -279,7 +279,7 @@ const collabClient = (function(){
     }
 
     /**
-     * Notify collaborators about a annotation being updated.
+     * Notify collaborators about an annotation being updated.
      * @param {number} id The original id of the annotation being updated.
      * @param {Object} annotation Data for the updated annotation.
      */
@@ -293,7 +293,7 @@ const collabClient = (function(){
     }
 
     /**
-     * Notify collaborators about a annotation being removed.
+     * Notify collaborators about an annotation being removed.
      * @param {number} id The id of the annotation being removed.
      */
     function removeAnnotation(id) {

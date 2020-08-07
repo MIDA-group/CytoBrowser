@@ -9,7 +9,7 @@ const annotationHandler = (function (){
     "use strict";
 
     /**
-     * Data representation of a annotation that should be used when adding or
+     * Data representation of an annotation that should be used when adding or
      * updating information about it. While all annotations that have already
      * been added will have an id property, it can optionally be included
      * when adding information about the annotation to force an id. The
@@ -148,7 +148,7 @@ const annotationHandler = (function (){
         // Check if an identical annotation already exists, remove old one if it does
         let replacedAnnotation = _findDuplicateAnnotation(addedAnnotation);
         if (replacedAnnotation) {
-            console.warn("Adding a annotation with identical properties to an existing annotation, replacing.");
+            console.warn("Adding an annotation with identical properties to an existing annotation, replacing.");
             updateAnnotation(replacedAnnotation.id, addedAnnotation, coordSystem, false);
             return;
         }
@@ -255,7 +255,7 @@ const annotationHandler = (function (){
 
         // Check if the annotation exists first
         if (deletedIndex === -1) {
-            throw new Error("Tried to remove a annotation that doesn't exist");
+            throw new Error("Tried to remove an annotation that doesn't exist");
         }
 
         // Remove the annotation from the data

@@ -21,7 +21,7 @@ const annotationStorageConversion = (function() {
      */
 
     /**
-     * Add annotations from a annotation storage object. The user is prompted
+     * Add annotations from an annotation storage object. The user is prompted
      * for whether or not the existing points should be replaced or
      * added to with the loaded annotations.
      * @param {Object} data The storage object containing annotation
@@ -66,7 +66,7 @@ const annotationStorageConversion = (function() {
     }
 
     /**
-     * Convert the currently placed annotations to a annotation storage object.
+     * Convert the currently placed annotations to an annotation storage object.
      * @returns {Object} The annotation storage representation of the annotations.
      */
     function getAnnotationStorageData() {
