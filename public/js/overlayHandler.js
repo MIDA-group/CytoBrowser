@@ -169,11 +169,13 @@ const overlayHandler = (function (){
             enterHandler: function(){
                 d3.select(node)
                     .selectAll("path")
+                    .filter((d, i) => i === 0)
                     .transition().duration(200)
                     .attr("transform", _transformFunction({
                         scale: 1.25,
                         rotate: 45
-                    }));
+                    }))
+                    .attr("stroke", _getAnnotationColor);
                 d3.select(node)
                     .selectAll("text")
                     .transition().duration(200)
@@ -182,11 +184,13 @@ const overlayHandler = (function (){
             exitHandler: function(){
                 d3.select(node)
                     .selectAll("path")
+                    .filter((d, i) => i === 0)
                     .transition().duration(200)
                     .attr("transform", _transformFunction({
                         scale: 1.0,
                         rotate: 45
-                    }));
+                    }))
+                    .attr("stroke", _getAnnotationColor);
                 d3.select(node)
                     .selectAll("text")
                     .transition().duration(200)
@@ -203,12 +207,16 @@ const overlayHandler = (function (){
                 d3.select(node)
                     .selectAll("path")
                     .transition().duration(200)
+                    .attr("stroke", _getAnnotationColor)
+                    .attr("fill", _getAnnotationColor)
                     .attr("fill-opacity", 0.4);
             },
             exitHandler: function(){
                 d3.select(node)
                     .selectAll("path")
                     .transition().duration(200)
+                    .attr("stroke", _getAnnotationColor)
+                    .attr("fill", _getAnnotationColor)
                     .attr("fill-opacity", 0.2);
             }
         }).setTracking(true);
