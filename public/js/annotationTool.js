@@ -164,7 +164,7 @@ const annotationTool = (function() {
 
     function _callToolFunction(funName, position) {
         if (!_activeTool)
-            throw new Error("No tool has been selected.");
+            return;
         if (position)
             _lastPosition = position;
         else
