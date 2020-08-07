@@ -97,6 +97,10 @@ const overlayHandler = (function (){
         return bethesdaClassUtils.classColor(d.mclass);
     }
 
+    function _getAnnotationText(d) {
+        return `#${d.id}: ${d.mclass}`;
+    }
+
     function _resizeMembers() {
         _cursorOverlay.selectAll("g")
             .attr("transform", _transformFunction(function() {
@@ -254,7 +258,7 @@ const overlayHandler = (function (){
                         .style("opacity", 0)
                         .attr("text-anchor", "left")
                         .attr("transform", "translate(0.2, -0.2)")
-                        .text(d => `#${d.id}: ${d.mclass}`);
+                        .text(_getAnnotationText);
                     }
                 }
             )
@@ -268,14 +272,14 @@ const overlayHandler = (function (){
                 const viewport = coordinateHelper.imageToViewport(d.points[0]);
                 const coords = coordinateHelper.viewportToOverlay(viewport);
                 return {translate: [coords.x, coords.y]};
-            }));
-        const paths = update.selectAll("path");
-        const square = paths.filter((d, i) => i === 0);
-        square.attr("stroke", _getAnnotationColor);
+            }))
+            .selectAll("path")
+            .filter((d, i) => i === 0)
+            .attr("stroke", _getAnnotationColor);
         if (_markerText) {
             update.select("text")
                 .style("fill", _getAnnotationColor)
-                .text(d => `#${d.id}: ${d.mclass}`);
+                .text(_getAnnotationText);
         }
     }
 
@@ -316,6 +320,53 @@ const overlayHandler = (function (){
             .remove();
     }
 
+    function _enterMember(enter) {
+        const group = enter.append("g")
+            .attr("transform", d => {
+                const coords = coordinateHelper.viewportToOverlay(d.cursor);
+                return `translate(${coords.x}, ${coords.y}), rotate(-30), scale(${_cursorSize(d.cursor)})`
+            })
+            .attr("opacity", 0.0)
+            .style("fill", d => d.color)
+            .call(group =>
+                group.append("path")
+                    .attr("d", "M 0 0 L -0.4 1.0 L 0 0.7 L 0.4 1.0 Z")
+                    .attr("class", "pointer")
+            )
+            .call(group =>
+                group.append("path")
+                    .attr("d", "M -0.4 1.0 L -0.36 1.2 L 0.36 1.2 L 0.4 1.0 L 0 0.7 Z")
+                    .attr("class", "caret")
+                    .transition().duration(500)
+                    .attr("transform", "translate(0, 0.15)")
+            )
+            .transition().duration(100)
+            .attr("opacity", 1.0);
+    }
+
+    function _updateMember(update) {
+        update.attr("transform", _transformFunction(function(d) {
+                const coords = coordinateHelper.viewportToOverlay(d.cursor);
+                return {translate: [coords.x, coords.y]};
+            }))
+            .filter(function(d) {
+                return _previousCursors.get(this).inside !== d.cursor.inside ;
+            })
+            .call(group =>
+                group.transition().duration(200)
+                    .style("opacity", d => d.cursor.inside || d.cursor.held ? 1.0 : 0.2)
+                    .attr("transform", _transformFunction(function(d) {
+                        return {scale: _cursorSize(d.cursor)};
+                    }))
+            )
+            .select(".caret")
+            .filter(function(d) {
+                return _previousCursors.get(this).held !== d.cursor.held;
+            })
+            .transition().duration(150)
+            .attr("transform", d => `translate(0, ${d.cursor.held ? 0.05 : 0.15})`);
+    }
+
     /**
      * Use d3 to update the collaboration cursors, adding new ones and
      * removing old ones.
@@ -329,44 +380,13 @@ const overlayHandler = (function (){
 
         _cursorOverlay.selectAll("g")
             .data(visibleMembers, d => d.id)
-            .join(enter => {
-                const group = enter.append("g")
-                    .attr("transform", d => {
-                        const coords = coordinateHelper.viewportToOverlay(d.cursor);
-                        return `translate(${coords.x}, ${coords.y}), rotate(-30), scale(${_cursorSize(d.cursor)})`
-                    })
-                    .attr("opacity", 0.0)
-                    .style("fill", d => d.color);
-                group.append("path")
-                    .attr("d", "M 0 0 L -0.4 1.0 L 0 0.7 L 0.4 1.0 Z")
-                    .attr("class", "pointer")
-                group.append("path")
-                    .attr("d", "M -0.4 1.0 L -0.36 1.2 L 0.36 1.2 L 0.4 1.0 L 0 0.7 Z")
-                    .attr("class", "caret")
-                    .transition().duration(500)
-                    .attr("transform", "translate(0, 0.15)");
-                group.transition().duration(100)
-                    .attr("opacity", 1.0);
-                },
-                update => {
-                    update.attr("transform", _transformFunction(function(d) {
-                            const coords = coordinateHelper.viewportToOverlay(d.cursor);
-                            return {translate: [coords.x, coords.y]};
-                        }))
-                        .filter(function(d) { return _previousCursors.get(this).inside !== d.cursor.inside })
-                        .transition().duration(200)
-                        .style("opacity", d => d.cursor.inside || d.cursor.held ? 1.0 : 0.2)
-                        .attr("transform", _transformFunction(function(d) {
-                            return {scale: _cursorSize(d.cursor)};
-                        }));
-                    update.select(".caret")
-                        .filter(function(d) { return _previousCursors.get(this).held !== d.cursor.held })
-                        .transition().duration(150)
-                        .attr("transform", d => `translate(0, ${d.cursor.held ? 0.05 : 0.15})`);
-                }
+            .join(
+                _enterMember,
+                _updateMember
             );
 
-        _cursorOverlay.selectAll("g").property(_previousCursors, d => d.cursor);
+        _cursorOverlay.selectAll("g")
+            .property(_previousCursors, d => d.cursor);
     }
 
     /**
