@@ -35,16 +35,14 @@ const annotationHandler = (function (){
      * @typedef {string} CoordSystem
      */
     const _annotations = [];
-    let _nextId = 0;
     function _generateId() {
-        let id = _nextId;
-        if (getAnnotationById(id) !== undefined) {
-            // If for some reason the next id has already been taken
-            const annotations = _annotations;
-            const maxId = Math.max(...annotations.map(annotation => annotation.id));
-            id = maxId + 1;
-        }
-        _nextId = id + 1;
+        const order = Math.ceil(Math.log10(_annotations.length * 100));
+        const multiplier = Math.pow(10, order);
+        let id;
+        do {
+            let seed = Math.random();
+            id = Math.round(multiplier * seed);
+        } while(getAnnotationById(id) !== undefined);
         return id;
     }
 
