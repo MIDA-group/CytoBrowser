@@ -136,17 +136,16 @@ const tmapp = (function() {
         return imageStack;
     }
 
-    function _loadImages(imageStack, z =  -1) {
-        if (z < 0) {
-            z = Math.floor(imageStack.length / 2);
+    function _loadImages(imageStack, zIndex) {
+        if (!z) {
+            z = 0;
         }
-        _currState.z = z;
 
         console.info(`Opening: ${imageStack}`);
         imageStack.forEach((image, i) => {
             _viewer.addTiledImage({
                 tileSource: image,
-                opacity: i === _currState.z,
+                opacity: i === z,
                 index: i++,
                 success: () => {
                     if (_viewer.world.getItemCount() === imageStack.length) {
@@ -158,6 +157,8 @@ const tmapp = (function() {
                 },
             });
         });
+
+        _setFocusLevel(z);
     }
 
     function _addMouseTracking(viewer) {
