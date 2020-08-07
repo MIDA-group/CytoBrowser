@@ -258,7 +258,6 @@ const overlayHandler = (function (){
                     }
                 }
             )
-            .delay(500)
             .each(function(d) {
                 _addMarkerMouseEvents(d, this);
             });
