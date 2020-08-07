@@ -123,12 +123,12 @@ const tmappUI = (function(){
         $("#data_files_import").change(event => {
             if (event.target.files.length) {
                 const loadedJSON = localStorage.loadJSON("data_files_import");
-                loadedJSON.then(markerStorageConversion.addMarkerStorageData);
+                loadedJSON.then(annotationStorageConversion.addAnnotationStorageData);
             }
         });
         $("#points_to_json").click(() => {
-            const markerData = markerStorageConversion.getMarkerStorageData();
-            localStorage.saveJSON(markerData);
+            const annotationData = annotationStorageConversion.getAnnotationStorageData();
+            localStorage.saveJSON(annotationData);
         });
     }
 
@@ -268,22 +268,22 @@ const tmappUI = (function(){
 
     /**
      * Open a menu at the mouse cursor for editing comments for
-     * a given marker.
-     * @param {number} id The id of the edited marker.
+     * a given annotation.
+     * @param {number} id The id of the edited annotation.
      * @param {Object} location The location of the upper left corner of
      * the menu being opened.
      * @param {number} location.x The x coordinate in page coordinates.
      * @param {number} location.y The y coordinate in page coordinates.
      */
-    function openMarkerEditMenu(id, location) {
-        const marker = markerHandler.getMarkerById(id);
-        if (!marker) {
-            throw new Error("Invalid marker id.");
+    function openAnnotationEditMenu(id, location) {
+        const annotation = annotationHandler.getAnnotationById(id);
+        if (!annotation) {
+            throw new Error("Invalid annotation id.");
         }
 
         _openContextMenu(location, menuBody => {
-            htmlHelper.buildMarkerSettingsMenu(menuBody, marker, () => {
-                markerHandler.updateMarker(id, marker, "image");
+            htmlHelper.buildAnnotationSettingsMenu(menuBody, annotation, () => {
+                annotationHandler.updateAnnotation(id, annotation, "image");
                 _closeContextMenu();
             });
         });
@@ -446,7 +446,7 @@ const tmappUI = (function(){
     return {
         initUI: initUI,
         choice: choice,
-        openMarkerEditMenu: openMarkerEditMenu,
+        openAnnotationEditMenu: openAnnotationEditMenu,
         setCollabID: setCollabID,
         clearCollabID: clearCollabID,
         updateCollaborators: updateCollaborators,

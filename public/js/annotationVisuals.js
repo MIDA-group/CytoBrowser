@@ -1,24 +1,24 @@
 /**
- * Namespace for handling any local visual representation of markers.
- * @namespace markerVisuals
+ * Namespace for handling any local visual representation of annotations.
+ * @namespace annotationVisuals
  */
-const markerVisuals = (function() {
+const annotationVisuals = (function() {
     "use strict";
 
     const _tableId = "tmcptablebody";
 
     /**
-     * Update the current visuals for the markers.
-     * @param {Array} markers All currently placed markers.
+     * Update the current visuals for the annotations.
+     * @param {Array} annotations All currently placed annotations.
      */
-    function update(markers){
-        // Update the markers in the overlay
-    	overlayHandler.updateMarkers(markers);
+    function update(annotations){
+        // Update the annotations in the overlay
+    	overlayHandler.updateAnnotations(annotations);
 
-        // Update the marker list
+        // Update the annotation list
         const table = d3.select(`#${_tableId}`);
         table.selectAll("tr")
-            .data(markers, d => d.id)
+            .data(annotations, d => d.id)
             .join(
                 enter => {
                     const row = enter.append("tr");
@@ -39,8 +39,8 @@ const markerVisuals = (function() {
                         .append("button")
                             .attr("class", "btn btn-sm btn-link")
                             .attr("type", "button")
-                            .text("Move to marker")
-                            .on("click", d => tmapp.moveToMarker(d.id));
+                            .text("Move to center")
+                            .on("click", d => tmapp.moveToAnnotation(d.id));
                 },
                 update => {
                     const cells = update.selectAll("td");
@@ -59,16 +59,16 @@ const markerVisuals = (function() {
     }
 
     /**
-     * Clear all markers from the overlay. This function should
-     * be called whenever markers are to be quickly cleared and
-     * readded, e.g. when loading markers from a collab summary.
-     * Since the marker elements will remain until their animation
+     * Clear all annotations from the overlay. This function should
+     * be called whenever annotations are to be quickly cleared and
+     * readded, e.g. when loading annotations from a collab summary.
+     * Since the annotation elements will remain until their animation
      * has finished when removing them, d3 will think that they
      * still exist when calling update() before calling this function.
      */
     function clear(){
     	// TODO: This function shouldn't have to exist, update() should be enough
-    	overlayHandler.clearMarkers();
+    	overlayHandler.clearAnnotations();
     }
 
 

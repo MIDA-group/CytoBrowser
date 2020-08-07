@@ -80,7 +80,7 @@ const fileBrowserUI = (function() {
         </button>`);
         currentButton.click(() => {
             remoteStorage.loadJSON(`${_path.join("/")}${file.name}`)
-            .then(markerStorageConversion.addMarkerStorageData);
+            .then(annotationStorageConversion.addAnnotationStorageData);
             $("#version_select").modal("hide");
         });
         $("#version_list").append(currentButton);
@@ -92,7 +92,7 @@ const fileBrowserUI = (function() {
             versionButton.click(() => {
                 remoteStorage.loadJSON(`${_path.join("/")}/`+
                 `__version_${version.number}__${file.name}`)
-                .then(markerStorageConversion.addMarkerStorageData);
+                .then(annotationStorageConversion.addAnnotationStorageData);
                 $("#version_select").modal("hide");
             });
             $("#version_list").append(versionButton);
@@ -109,7 +109,7 @@ const fileBrowserUI = (function() {
         }
         else if (_selectedFile.type === "file") {
             remoteStorage.loadJSON(`${_path.join("/")}/${_selectedFile.name}`)
-            .then(markerStorageConversion.addMarkerStorageData);
+            .then(annotationStorageConversion.addAnnotationStorageData);
             $("#server_storage").modal("hide");
         }
         else if (_selectedFile.type === "directory") {
@@ -120,7 +120,7 @@ const fileBrowserUI = (function() {
 
     function _saveFile() {
         const filename = $("#server_filename").val();
-        const data = markerStorageConversion.getMarkerStorageData();
+        const data = annotationStorageConversion.getAnnotationStorageData();
         const path = _path.join("/");
         remoteStorage.saveJSON(data, filename, path).then(() => {
             _updateRemoteFiles();

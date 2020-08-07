@@ -9,7 +9,7 @@ const annotationTool = (function() {
     const _markerTool = (function() {
         return {
             click: function(position) {
-                const marker = {
+                const annotation = {
                     points: [{
                         x: position.x,
                         y: position.y
@@ -17,7 +17,7 @@ const annotationTool = (function() {
                     z: position.z,
                     mclass: _activeMclass
                 };
-                markerHandler.addMarker(marker, "viewport");
+                annotationHandler.addAnnotation(annotation, "viewport");
             }
         };
     })();
@@ -65,7 +65,7 @@ const annotationTool = (function() {
                 if (_startPoint) {
                     _endPoint = coords;
                     const annotation = _getAnnotation();
-                    markerHandler.addMarker(annotation, "image");
+                    annotationHandler.addAnnotation(annotation, "image");
                     reset();
                 }
                 else
@@ -126,7 +126,7 @@ const annotationTool = (function() {
                 _mclass = _activeMclass;
                 if (_points.length > 2) {
                     const annotation = _getAnnotation(_points);
-                    markerHandler.addMarker(annotation, "image");
+                    annotationHandler.addAnnotation(annotation, "image");
                     reset();
                 }
             },

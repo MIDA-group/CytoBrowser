@@ -356,7 +356,7 @@ const tmapp = (function() {
     }
 
     /**
-     * Open a specified image in the viewport. If markers have been
+     * Open a specified image in the viewport. If annotations have been
      * placed, the user is first prompted to see if they actually want
      * to open the image or if they want to cancel.
      * @param {string} imageName The name of the image being opened.
@@ -367,9 +367,9 @@ const tmapp = (function() {
      * decide not to change.
      */
     function openImage(imageName, callback, nochange) {
-        if (!markerHandler.empty() && !confirm(`You are about to open ` +
+        if (!annotationHandler.empty() && !confirm(`You are about to open ` +
             `the image "${imageName}". Do you want to ` +
-            `open this image? Any markers placed on the ` +
+            `open this image? Any annotations placed on the ` +
             `current image will be lost unless you save ` +
             `them first.`)) {
             nochange && nochange();
@@ -381,7 +381,7 @@ const tmapp = (function() {
             tmappUI.displayImageError("badimage", 5000);
             throw new Error("Tried to change to an unknown image.");
         }
-        markerHandler.clearMarkers(false);
+        annotationHandler.clearAnnotations(false);
         _viewer && _viewer.destroy();
         $("#ISS_viewer").empty();
         coordinateHelper.clearImage();
@@ -417,26 +417,26 @@ const tmapp = (function() {
     }
 
     /**
-     * Move the viewport to look at a specific marker.
-     * @param {number} id The id of the marker being moved to.
+     * Move the viewport to look at a specific annotation.
+     * @param {number} id The id of the annotation being moved to.
      */
-    function moveToMarker(id) {
+    function moveToAnnotation(id) {
         // Only move if you're not following anyone
         if (_disabledControls) {
-            console.warn("Can't move to marker when following someone.");
+            console.warn("Can't move to annotation when following someone.");
             return;
         }
 
-        const marker = markerHandler.getMarkerById(id);
-        if (marker === undefined) {
-            throw new Error("Tried to move to an unused marker id.");
+        const annotation = annotationHandler.getAnnotationById(id);
+        if (annotation === undefined) {
+            throw new Error("Tried to move to an unused annotation id.");
         }
-        const target = coordinateHelper.imageToViewport(marker.centroid);
+        const target = coordinateHelper.imageToViewport(annotation.centroid);
         moveTo({
             zoom: 25,
             x: target.x,
             y: target.y,
-            z: marker.z
+            z: annotation.z
         });
     }
 
@@ -554,7 +554,7 @@ const tmapp = (function() {
         init: init,
         openImage: openImage,
         moveTo: moveTo,
-        moveToMarker: moveToMarker,
+        moveToAnnotation: moveToAnnotation,
         setCollab: setCollab,
         clearCollab: clearCollab,
         incrementFocus: incrementFocus,

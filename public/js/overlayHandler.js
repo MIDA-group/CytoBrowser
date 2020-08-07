@@ -127,7 +127,7 @@ const overlayHandler = (function (){
             element: node,
             clickHandler: function(event) {
                 if (event.originalEvent.ctrlKey) {
-                    markerHandler.removeMarker(d.id);
+                    annotationHandler.removeAnnotation(d.id);
                 }
             },
             pressHandler: function(event) {
@@ -140,7 +140,7 @@ const overlayHandler = (function (){
                     point.x += delta.x - reference.x;
                     point.y += delta.y - reference.y;
                 });
-                markerHandler.updateMarker(d.id, d, "image");
+                annotationHandler.updateAnnotation(d.id, d, "image");
                 const viewportCoords = coordinateHelper.pageToViewport({
                     x: event.originalEvent.pageX,
                     y: event.originalEvent.pageY
@@ -156,7 +156,7 @@ const overlayHandler = (function (){
                         x: event.originalEvent.pageX,
                         y: event.originalEvent.pageY
                     };
-                    tmappUI.openMarkerEditMenu(d.id, location);
+                    tmappUI.openAnnotationEditMenu(d.id, location);
                 }
             }
         }).setTracking(true);
@@ -411,33 +411,31 @@ const overlayHandler = (function (){
     }
 
     /**
-     * Clear all markers currently in the overlay, in case you need to quickly replace them.
+     * Clear all annotations currently in the overlay, in case you need to quickly replace them.
      */
-    function clearMarkers(){
-        if (!_markerOverlay) {
+    function clearAnnotations(){
+        if (!_markerOverlay || !_regionOverlay)
             return;
-        }
         _markerOverlay.selectAll("g").remove();
         _regionOverlay.selectAll("g").remove();
     }
 
 
     /**
-     * Use d3 to update markers, adding new ones and removing old ones.
-     * The markers are identified by their id.
-     * @param {Array} markers The currently placed markers.
+     * Use d3 to update annotations, adding new ones and removing old ones.
+     * The annotations are identified by their id.
+     * @param {Array} annotations The currently placed annotations.
      */
-    function updateMarkers(markers){
-        // TODO: fix name conflict marker/annotation
-        const markers_ = markers.filter(annotation =>
+    function updateAnnotations(annotations){
+        const markers = annotations.filter(annotation =>
             annotation.points.length === 1
         );
-        const regions = markers.filter(annotation =>
+        const regions = annotations.filter(annotation =>
             annotation.points.length > 1
         );
 
         _markerOverlay.selectAll("g")
-            .data(markers_, d => d.id)
+            .data(markers, d => d.id)
             .join(
                 _enterMarker,
                 _updateMarker,
@@ -553,9 +551,9 @@ const overlayHandler = (function (){
 
     return {
         updateMembers: updateMembers,
-        updateMarkers: updateMarkers,
+        updateAnnotations: updateAnnotations,
         updatePendingRegion: updatePendingRegion,
-        clearMarkers: clearMarkers,
+        clearAnnotations: clearAnnotations,
         setOverlayScale: setOverlayScale,
         setActiveAnnotationOverlay: setActiveAnnotationOverlay,
         init: init

@@ -22,7 +22,7 @@ function generateColor() {
 class Collaboration {
     constructor(id, image) {
         this.members = new Map();
-        this.markers = [];
+        this.annotations = [];
         this.id = id;
         this.nextMemberId = 0;
         this.nextColor = generateColor();
@@ -68,39 +68,39 @@ class Collaboration {
     }
 
     handleMessage(sender, msg) {
-        // Keep track of the current markers
+        // Keep track of the current annotations
         const member = this.members.get(sender);
         switch (msg.type) {
-            case "markerAction":
+            case "annotationAction":
                 if (!member.ready) {
-                    // Members who aren't ready shouldn't do anything with markers
+                    // Members who aren't ready shouldn't do anything with annotations
                     break;
                 }
                 switch (msg.actionType) {
                     case "add":
-                        if (!this.isDuplicateMarker(msg.marker)) {
-                            this.markers.push(msg.marker);
+                        if (!this.isDuplicateAnnotation(msg.annotation)) {
+                            this.annotations.push(msg.annotation);
                             this.broadcastMessage(sender, msg);
                         }
                         else {
-                            this.log(`${member.name} tried to add a duplicate marker, ignoring.`, console.info);
+                            this.log(`${member.name} tried to add a duplicate annotation, ignoring.`, console.info);
                         }
                         break;
                     case "update":
-                        Object.assign(this.markers.find(marker => marker.id === msg.id), msg.marker);
+                        Object.assign(this.annotations.find(annotation => annotation.id === msg.id), msg.annotation);
                         this.broadcastMessage(sender, msg);
                         break;
                     case "remove":
-                        const index = this.markers.findIndex(marker => marker.id === msg.id);
-                        this.markers.splice(index, 1);
+                        const index = this.annotations.findIndex(annotation => annotation.id === msg.id);
+                        this.annotations.splice(index, 1);
                         this.broadcastMessage(sender, msg);
                         break;
                     case "clear":
-                        this.markers = [];
+                        this.annotations = [];
                         this.broadcastMessage(sender, msg);
                         break;
                     default:
-                        this.log(`Tried to handle unknown marker action: ${msg.actionType}`, console.warn);
+                        this.log(`Tried to handle unknown annotation action: ${msg.actionType}`, console.warn);
                         this.broadcastMessage(sender, msg);
                 }
                 break;
@@ -124,7 +124,7 @@ class Collaboration {
                         member.ready = false;
                     }
                 }
-                this.markers = [];
+                this.annotations = [];
                 this.image = msg.image;
                 break;
             case "requestSummary":
@@ -150,7 +150,7 @@ class Collaboration {
             requesterId: this.members.get(sender).id,
             image: this.image,
             members: Array.from(this.members.values()),
-            markers: this.markers
+            annotations: this.annotations
         }
     }
 
@@ -164,11 +164,11 @@ class Collaboration {
         });
     }
 
-    isDuplicateMarker(marker) {
-        return this.markers.some(existingMarker =>
-            existingMarker.z === marker.z
-            && existingMarker.mclass === marker.mclass
-            && this.pointsAreDuplicate(marker.points, existingMarker.points)
+    isDuplicateAnnotation(annotation) {
+        return this.annotations.some(existingAnnotation =>
+            existingAnnotation.z === annotation.z
+            && existingAnnotation.mclass === annotation.mclass
+            && this.pointsAreDuplicate(annotation.points, existingAnnotation.points)
         );
     }
 
