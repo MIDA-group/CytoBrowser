@@ -465,6 +465,8 @@ const overlayHandler = (function (){
                     .attr("fill", _getAnnotationColor)
                     .attr("fill-opacity", 0.05),
                 update => update.attr("d", _getRegionPath)
+                    .attr("stroke", _getAnnotationColor)
+                    .attr("fill", _getAnnotationColor)
             );
     }
 
