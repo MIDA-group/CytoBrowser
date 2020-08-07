@@ -143,6 +143,13 @@ const annotationHandler = (function (){
     function add(annotation, coordSystem="web", transmit = true) {
         const addedAnnotation = _cloneAnnotation(annotation);
 
+        // Store the coordinates in all systems and set the image coordinates
+        const coords = addedAnnotation.points.map(point =>
+            _getCoordSystems(point, coordSystem)
+        )
+        if (coordSystem !== "image")
+            addedAnnotation.points = coords.map(coord => coord.image);
+
         // Check if an identical annotation already exists, remove old one if it does
         let replacedAnnotation = _findDuplicateAnnotation(addedAnnotation);
         if (replacedAnnotation) {
@@ -164,13 +171,6 @@ const annotationHandler = (function (){
                 addedAnnotation.id = _generateId();
             }
         }
-
-        // Store the coordinates in all systems and set the image coordinates
-        const coords = addedAnnotation.points.map(point =>
-            _getCoordSystems(point, coordSystem)
-        )
-        if (coordSystem !== "image")
-            addedAnnotation.points = coords.map(coord => coord.image);
 
         // Set the centroid of the annotation
         if (!addedAnnotation.centroid)
@@ -203,6 +203,13 @@ const annotationHandler = (function (){
         const updatedIndex = annotations.findIndex(annotation => annotation.id === id);
         const updatedAnnotation = getAnnotationById(id);
 
+        // Make sure the data is stored in the image coordinate system
+        const coords = updatedAnnotation.points.map(point =>
+            _getCoordSystems(point, coordSystem)
+        )
+        if (coordSystem !== "image")
+            updatedAnnotation.points = coords.map(coord => coord.image);
+
         // Check if the annotation being updated exists first
         if (updatedAnnotation === undefined) {
             throw new Error("Tried to update an annotation that doesn't exist.");
@@ -220,13 +227,6 @@ const annotationHandler = (function (){
 
         // Copy over the updated properties
         Object.assign(updatedAnnotation, annotation);
-
-        // Make sure the data is stored in the image coordinate system
-        const coords = updatedAnnotation.points.map(point =>
-            _getCoordSystems(point, coordSystem)
-        )
-        if (coordSystem !== "image")
-            updatedAnnotation.points = coords.map(coord => coord.image);
 
         // Set the centroid of the annotation
         updatedAnnotation.centroid = _getCentroid(updatedAnnotation.points);
