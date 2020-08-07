@@ -36,7 +36,7 @@ const annotationHandler = (function (){
      */
     const _annotations = [];
     function _generateId() {
-        const order = Math.ceil(Math.log10(_annotations.length * 100));
+        const order = Math.ceil(Math.log10((1 + _annotations.length) * 100));
         const multiplier = Math.pow(10, order);
         let id;
         do {
