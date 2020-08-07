@@ -275,6 +275,7 @@ const overlayHandler = (function (){
             }))
             .selectAll("path")
             .filter((d, i) => i === 0)
+            .transition().duration(500)
             .attr("stroke", _getAnnotationColor);
         if (_markerText) {
             update.select("text")
