@@ -252,6 +252,11 @@ const overlayHandler = (function (){
                         rotate: 45,
                         scale: 1
                     }))
+                    .on("end", () =>
+                        group.each(function(d) {
+                            _addMarkerMouseEvents(d, this);
+                        })
+                    )
             )
             .call(group =>
                 group.append("path")
@@ -279,10 +284,7 @@ const overlayHandler = (function (){
                         .text(_getAnnotationText);
                     }
                 }
-            )
-            .each(function(d) {
-                _addMarkerMouseEvents(d, this);
-            });
+            );
     }
 
     function _updateMarker(update) {
