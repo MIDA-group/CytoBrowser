@@ -348,6 +348,7 @@ const collabClient = (function(){
      * @param {Object} position.x X position of the viewport in viewport coordinates.
      * @param {Object} position.y Y position of the viewport in viewport coordinates.
      * @param {Object} position.z Z level of the viewport.
+     * @param {Object} position.rotation Rotation of the viewport.
      * @param {Object} position.zoom Zoom level of the viewport.
      */
     function updatePosition(position) {
