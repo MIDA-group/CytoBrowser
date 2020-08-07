@@ -169,7 +169,7 @@ const overlayHandler = (function (){
             d3.select(node)
                 .selectAll("path")
                 .filter((d, i) => i === 0)
-                .transition().duration(200)
+                .transition("highlight").duration(200)
                 .attr("transform", _transformFunction({
                     scale: 1.25,
                     rotate: 45
@@ -177,7 +177,7 @@ const overlayHandler = (function (){
                 .attr("stroke", _getAnnotationColor);
             d3.select(node)
                 .selectAll("text")
-                .transition().duration(200)
+                .transition("highlight").duration(200)
                 .style("opacity", 1);
         }
 
@@ -185,7 +185,7 @@ const overlayHandler = (function (){
             d3.select(node)
                 .selectAll("path")
                 .filter((d, i) => i === 0)
-                .transition().duration(200)
+                .transition("highlight").duration(200)
                 .attr("transform", _transformFunction({
                     scale: 1.0,
                     rotate: 45
@@ -193,13 +193,12 @@ const overlayHandler = (function (){
                 .attr("stroke", _getAnnotationColor);
             d3.select(node)
                 .selectAll("text")
-                .transition().duration(200)
+                .transition("highlight").duration(200)
                 .style("opacity", 0);
         }
 
         new OpenSeadragon.MouseTracker({
             element: node,
-            dragEndHandler: unHighlight,
             enterHandler: highlight,
             exitHandler: unHighlight
         }).setTracking(true);
@@ -211,7 +210,7 @@ const overlayHandler = (function (){
         function highlight() {
             d3.select(node)
                 .selectAll("path")
-                .transition().duration(200)
+                .transition("highlight").duration(200)
                 .attr("stroke", _getAnnotationColor)
                 .attr("fill", _getAnnotationColor)
                 .attr("fill-opacity", 0.4);
@@ -220,7 +219,7 @@ const overlayHandler = (function (){
         function unHighlight() {
             d3.select(node)
                 .selectAll("path")
-                .transition().duration(200)
+                .transition("highlight").duration(200)
                 .attr("stroke", _getAnnotationColor)
                 .attr("fill", _getAnnotationColor)
                 .attr("fill-opacity", 0.2);
@@ -228,7 +227,6 @@ const overlayHandler = (function (){
 
         new OpenSeadragon.MouseTracker({
             element: node,
-            dragEndHandler: unHighlight,
             enterHandler: highlight,
             exitHandler: unHighlight
         }).setTracking(true);
@@ -305,7 +303,7 @@ const overlayHandler = (function (){
     }
 
     function _exitMarker(exit) {
-        exit.transition().duration(200)
+        exit.transition("appear").duration(200)
             .attr("opacity", 0)
             .attr("transform", _transformFunction({
                 scale: s => 2 * s
@@ -330,13 +328,13 @@ const overlayHandler = (function (){
     function _updateRegion(update) {
         update.select("path")
             .attr("d", _getRegionPath)
-            .transition().duration(500)
+            .transition("changeColor").duration(500)
             .attr("stroke", _getAnnotationColor)
             .attr("fill", _getAnnotationColor);
     }
 
     function _exitRegion(exit) {
-        exit.transition().duration(200)
+        exit.transition("appear").duration(200)
             .attr("opacity", 0)
             .remove();
     }
@@ -358,10 +356,10 @@ const overlayHandler = (function (){
                 group.append("path")
                     .attr("d", "M -0.4 1.0 L -0.36 1.2 L 0.36 1.2 L 0.4 1.0 L 0 0.7 Z")
                     .attr("class", "caret")
-                    .transition().duration(500)
+                    .transition("appear").duration(500)
                     .attr("transform", "translate(0, 0.15)")
             )
-            .transition().duration(100)
+            .transition("appear").duration(100)
             .attr("opacity", 1.0);
     }
 
@@ -374,7 +372,7 @@ const overlayHandler = (function (){
                 return _previousCursors.get(this).inside !== d.cursor.inside ;
             })
             .call(group =>
-                group.transition().duration(200)
+                group.transition("changeColor").duration(200)
                     .style("opacity", d => d.cursor.inside || d.cursor.held ? 1.0 : 0.2)
                     .attr("transform", _transformFunction(function(d) {
                         return {scale: _cursorSize(d.cursor)};
@@ -384,7 +382,7 @@ const overlayHandler = (function (){
             .filter(function(d) {
                 return _previousCursors.get(this).held !== d.cursor.held;
             })
-            .transition().duration(150)
+            .transition("highlight").duration(150)
             .attr("transform", d => `translate(0, ${d.cursor.held ? 0.05 : 0.15})`);
     }
 
@@ -501,18 +499,18 @@ const overlayHandler = (function (){
         switch (name) {
             case "region":
                 _regionOverlay.style("pointer-events", "fill")
-                    .transition().duration(500)
+                    .transition("highlight").duration(500)
                     .style("opacity", 1);
                 _markerOverlay.style("pointer-events", "none")
-                    .transition().duration(500)
+                    .transition("highlight").duration(500)
                     .style("opacity", 0.4);
                 break;
             case "marker":
                 _regionOverlay.style("pointer-events", "none")
-                    .transition().duration(500)
+                    .transition("highlight").duration(500)
                     .style("opacity", 0.4);
                 _markerOverlay.style("pointer-events", "fill")
-                    .transition().duration(500)
+                    .transition("highlight").duration(500)
                     .style("opacity", 1);
                 break;
             default:
