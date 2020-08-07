@@ -373,7 +373,7 @@ const overlayHandler = (function (){
             .call(group =>
                 group.filter(function(d) {return _previousCursors.get(this).inside !== d.cursor.inside;})
                     .transition("changeColor").duration(500)
-                    .style("opacity", d => d.cursor.inside || d.cursor.held ? 1.0 : 0.2)
+                    .style("opacity", d => d.cursor.inside ? 1.0 : 0.2)
             )
             .select(".caret")
             .filter(function(d) {
