@@ -73,6 +73,7 @@ const annotationTool = (function() {
             },
             update: function(position) {
                 if (_startPoint) {
+                    _mclass = _activeMclass;
                     _endPoint = coordinateHelper.viewportToImage({
                         x: position.x,
                         y: position.y
@@ -133,6 +134,7 @@ const annotationTool = (function() {
             },
             update: function(position) {
                 if (_points.length) {
+                    _mclass = _activeMclass;
                     _nextPoint = coordinateHelper.viewportToImage({
                         x: position.x,
                         y: position.y
@@ -196,8 +198,10 @@ const annotationTool = (function() {
      * @param {string} mclass The currently active marker class.
      */
     function setMclass(mclass) {
-        if (bethesdaClassUtils.getIDFromName(mclass) >= 0)
+        if (bethesdaClassUtils.getIDFromName(mclass) >= 0) {
             _activeMclass = mclass;
+            _callToolFunction("update");
+        }
         else
             throw new Error("Undefined marker class.");
     }
