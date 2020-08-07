@@ -4,7 +4,7 @@
  * @namespace htmlHelper
  */
 const htmlHelper = (function() {
-    function _markerValueRow(label, value) {
+    function _annotationValueRow(label, value) {
         return $(`
             <div class="form-group row">
                 <label class="col-4 col-form-label">
@@ -17,7 +17,7 @@ const htmlHelper = (function() {
         `);
     }
 
-    function _markerMclassOptions(marker) {
+    function _annotationMclassOptions(annotation) {
         const container = $(`
             <div class="form-group row">
                 <label class="col-4 col-form-label">
@@ -31,7 +31,7 @@ const htmlHelper = (function() {
         `);
         const select = container.find("select");
         bethesdaClassUtils.forEachClass(mclass => {
-            const selected = marker.mclass === mclass.name;
+            const selected = annotation.mclass === mclass.name;
             const option = $(`
                 <option value="${mclass.name}" ${selected ? "selected='selected'" : ""}>
                     ${mclass.name}
@@ -39,11 +39,11 @@ const htmlHelper = (function() {
             `);
             select.append(option);
         });
-        select.change(() => marker.mclass = select.val());
+        select.change(() => annotation.mclass = select.val());
         return container;
     }
 
-    function _markerComment(comment, removeFun) {
+    function _annotationComment(comment, removeFun) {
         const entry = $(`
             <li class="list-group-item">
                 <p>${comment.body}</p>
@@ -62,10 +62,10 @@ const htmlHelper = (function() {
         return entry;
     }
 
-    function _markerCommentList(marker) {
-        if (!marker.comments)
-            marker.comments = [];
-        const comments = marker.comments;
+    function _annotationCommentList(annotation) {
+        if (!annotation.comments)
+            annotation.comments = [];
+        const comments = annotation.comments;
 
         const container = $(`
             <div class="card bg-secondary mb-2" style="height: 15vh; overflow-y: auto;">
@@ -73,21 +73,22 @@ const htmlHelper = (function() {
                 </ul>
             </div>
         `);
-        container.appendMarkerComment = comment => {
-            const entry = _markerComment(comment, () => {
+        container.appendAnnotationComment = comment => {
+            const entry = _annotationComment(comment, event => {
+                event.preventDefault();
                 const index = comments.indexOf(comment);
-                comments.splice(index);
+                comments.splice(index, 1);
                 entry.closest("[tabindex]").focus();
                 entry.remove();
             });
             list.append(entry);
         };
         const list = container.find("ul");
-        comments.forEach(container.appendMarkerComment);
+        comments.forEach(container.appendAnnotationComment);
         return container;
     }
 
-    function _markerCommentInput(inputFun) {
+    function _annotationCommentInput(inputFun) {
         const container = $(`
             <div class="input-group mb-4">
                 <textarea class="form-control" rows="1" style="resize: none;"></textarea>
@@ -105,7 +106,7 @@ const htmlHelper = (function() {
         return container;
     }
 
-    function _markerSaveButton(marker, saveFun) {
+    function _annotationSaveButton(annotation, saveFun) {
         const button = $(`
             <button class="btn btn-primary btn-block">
                 Save changes
@@ -124,7 +125,7 @@ const htmlHelper = (function() {
         if (active)
             button.addClass("active");
         button.click(() => {
-            tmapp.setMclass(mclass.name);
+            annotationTool.setMclass(mclass.name);
         });
         return button;
     }
@@ -209,28 +210,28 @@ const htmlHelper = (function() {
     }
 
     /**
-     * Fill a jquery selection with the nodes for editing a marker.
+     * Fill a jquery selection with the nodes for editing an annotation.
      * @param {Object} container The selection that should contain the
-     * marker editing menu.
-     * @param {markerHandler.MarkerPoint} marker The marker that should
-     * be editable through the created menu.
+     * annotation editing menu.
+     * @param {annotationHandler.AnnotationPoint} annotation The annotation
+     * that should be editable through the created menu.
      * @param {Function} saveFun The function that should be run when
      * pressing the save button in the menu.
      */
-    function buildMarkerSettingsMenu(container, marker, saveFun) {
-        const id = _markerValueRow("Id", marker.id);
-        const author = _markerValueRow("Created by", marker.author);
-        const classes = _markerMclassOptions(marker);
-        const list = _markerCommentList(marker);
-        const input = _markerCommentInput(body => {
+    function buildAnnotationSettingsMenu(container, annotation, saveFun) {
+        const id = _annotationValueRow("Id", annotation.id);
+        const author = _annotationValueRow("Created by", annotation.author);
+        const classes = _annotationMclassOptions(annotation);
+        const list = _annotationCommentList(annotation);
+        const input = _annotationCommentInput(body => {
             const comment = {
                 author: userInfo.getName(),
                 body: body
             };
-            list.appendMarkerComment(comment);
-            marker.comments.push(comment);
+            list.appendAnnotationComment(comment);
+            annotation.comments.push(comment);
         });
-        const saveBtn = _markerSaveButton(marker, saveFun);
+        const saveBtn = _annotationSaveButton(annotation, saveFun);
         container.append(id, author, classes, list, input, saveBtn);
     }
 
@@ -284,7 +285,7 @@ const htmlHelper = (function() {
     }
 
     return {
-        buildMarkerSettingsMenu: buildMarkerSettingsMenu,
+        buildAnnotationSettingsMenu: buildAnnotationSettingsMenu,
         buildClassSelectionButtons: buildClassSelectionButtons,
         buildCollaboratorList: buildCollaboratorList,
         buildImageBrowser: buildImageBrowser

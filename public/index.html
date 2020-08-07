@@ -74,11 +74,27 @@
 
                         <!-- Functionality buttons -->
                         <div class="card-body">
-                            <!--<h4 class="card-title">Options</h4>-->
+                            <div class="card-block pb-4">
+                                <h6 class="card-subtitle mb-2 text-muted">Annotation tool</h6>
+                                <div class="btn-group btn-group-toggle d-flex" data-toggle="buttons" role="group">
+                                    <label id="tool_marker" type="button" class="btn btn-primary">
+                                        <input name="tool_selection" type="radio" autocomplete="off">
+                                        Marker
+                                    </label>
+                                    <label id="tool_rect" type="button" class="btn btn-primary">
+                                        <input name="tool_selection" type="radio" autocomplete="off">
+                                        Rectangle
+                                    </label>
+                                    <label id="tool_poly" type="button" class="btn btn-primary">
+                                        <input name="tool_selection" type="radio" autocomplete="off">
+                                        Polygon
+                                    </label>
+                                </div>
+                            </div>
                             <div class="card-block">
                                 <div class="row">
                                     <div class="col-auto">
-                                        <h6 class="card-subtitle mb-2 text-muted">Marker class</h6>
+                                        <h6 class="card-subtitle mb-2 text-muted">Annotation class</h6>
                                         <div id="class_buttons" class="btn-group btn-group-toggle d-flex" data-toggle="buttons" role="group">
                                         </div>
                                     </div>
@@ -93,9 +109,8 @@
                             </div>
                         </div>
 
-                        <!-- List of markers -->
+                        <!-- List of annotations -->
                         <div class="card-body">
-                            <!--<h4 class="card-title">Markers</h4>-->
                             <div class="row pb-3">
                                 <div class="col-3">
                                     <button id="points_to_json" class="btn btn-primary btn-block" type="button"> Download</button>
@@ -309,7 +324,7 @@
                           <div class="form-check">
                               <input class="form-check-input" type="checkbox" id="include_points">
                               <label class="form-check-label" for="include_points">
-                                  Add existing markers to collaboration
+                                  Add existing annotations to collaboration
                               </label>
                           </div>
                       </div>
@@ -356,18 +371,19 @@
 <script src="js/openseadragon/openseadragon-svg-overlay.js"></script>
 <script src="js/utils/bethesdaClassUtils.js"></script>
 <script src="js/collabClient.js"></script>
-<script src="js/markerHandler.js"></script>
+<script src="js/annotationHandler.js"></script>
 <script src="js/overlayHandler.js"></script>
 <script src="js/fileBrowserUI.js"></script>
 <script src="js/tmappUI.js"></script>
 <script src="js/tmapp.js"></script>
-<script src="js/markerVisuals.js"></script>
-<script src="js/markerStorageConversion.js"></script>
+<script src="js/annotationVisuals.js"></script>
+<script src="js/annotationStorageConversion.js"></script>
 <script src="js/coordinateHelper.js"></script>
 <script src="js/localStorage.js"></script>
 <script src="js/remoteStorage.js"></script>
 <script src="js/userInfo.js"></script>
 <script src="js/htmlHelper.js"></script>
+<script src="js/annotationTool.js"></script>
 <script>
     tmappUI.initUI();
 

@@ -14,8 +14,8 @@ const collabClient = (function(){
 
     function _handleMessage(msg) {
         switch(msg.type) {
-            case "markerAction":
-                _handleMarkerAction(msg);
+            case "annotationAction":
+                _handleAnnotationAction(msg);
                 break;
             case "memberEvent":
                 _handleMemberEvent(msg);
@@ -31,22 +31,22 @@ const collabClient = (function(){
         }
     }
 
-    function _handleMarkerAction(msg) {
+    function _handleAnnotationAction(msg) {
         switch(msg.actionType) {
             case "add":
-                markerHandler.addMarker(msg.marker, "image", false);
+                annotationHandler.add(msg.annotation, "image", false);
                 break;
             case "update":
-                markerHandler.updateMarker(msg.id, msg.marker, "image", false);
+                annotationHandler.update(msg.id, msg.annotation, "image", false);
                 break;
             case "remove":
-                markerHandler.removeMarker(msg.id, false);
+                annotationHandler.remove(msg.id, false);
                 break;
             case "clear":
-                markerHandler.clearMarkers(false);
+                annotationHandler.clear(false);
                 break;
             default:
-                console.warn(`Unknown marker action type: ${msg.actionType}`);
+                console.warn(`Unknown annotation action type: ${msg.actionType}`);
         }
     }
 
@@ -95,17 +95,17 @@ const collabClient = (function(){
             return;
         }
         if (_joinBatch) {
-            markerHandler.forEachMarker(marker => {
-                _joinBatch.push(marker);
+            annotationHandler.forEachAnnotation(annotation => {
+                _joinBatch.push(annotation);
             });
         }
-        markerHandler.clearMarkers(false);
-        msg.markers.forEach(marker => {
-            markerHandler.addMarker(marker, "image", false)
+        annotationHandler.clear(false);
+        msg.annotations.forEach(annotation => {
+            annotationHandler.add(annotation, "image", false)
         });
         if (_joinBatch) {
-            _joinBatch.forEach(marker => {
-                markerHandler.addMarker(marker, "image");
+            _joinBatch.forEach(annotation => {
+                annotationHandler.add(annotation, "image");
             });
             _joinBatch = null;
         }
@@ -160,7 +160,7 @@ const collabClient = (function(){
      * Create a new collaboration with a unique ID and automatically
      * join it.
      * @param {string} name The name used to identify the participant.
-     * @param {boolean} include Whether or not already-placed markers
+     * @param {boolean} include Whether or not already-placed annotations
      * should be included in the collaborative workspace.
      */
     function createCollab(name, include) {
@@ -183,7 +183,7 @@ const collabClient = (function(){
      * If a collaboration with this identifier does not exist yet, it
      * is created and joined.
      * @param {string} name The name used to identify the participant.
-     * @param {boolean} include Whether or not already-placed markers
+     * @param {boolean} include Whether or not already-placed annotations
      * should be included in the collaborative workspace.
      */
     function connect(id, name=getDefaultName(), include=false) {
@@ -203,8 +203,8 @@ const collabClient = (function(){
                 _joinBatch = [];
                 _requestSummary();
             }
-            else if (markerHandler.empty() || confirm("All your placed markers will be lost unless you have saved them. Do you want to continue anyway?")) {
-                markerHandler.clearMarkers(false);
+            else if (annotationHandler.isEmpty() || confirm("All your placed annotations will be lost unless you have saved them. Do you want to continue anyway?")) {
+                annotationHandler.clear(false);
                 _requestSummary();
             }
             else {
@@ -267,49 +267,49 @@ const collabClient = (function(){
     }
 
     /**
-     * Notify collaborators about a marker being added.
-     * @param {Object} marker Data for the added marker.
+     * Notify collaborators about an annotation being added.
+     * @param {Object} annotation Data for the added annotation.
      */
-    function addMarker(marker) {
+    function addAnnotation(annotation) {
         send({
-            type: "markerAction",
+            type: "annotationAction",
             actionType: "add",
-            marker: marker
+            annotation: annotation
         });
     }
 
     /**
-     * Notify collaborators about a marker being updated.
-     * @param {number} id The original id of the marker being updated.
-     * @param {Object} marker Data for the updated marker.
+     * Notify collaborators about an annotation being updated.
+     * @param {number} id The original id of the annotation being updated.
+     * @param {Object} annotation Data for the updated annotation.
      */
-    function updateMarker(id, marker) {
+    function updateAnnotation(id, annotation) {
         send({
-            type: "markerAction",
+            type: "annotationAction",
             actionType: "update",
             id: id,
-            marker: marker
+            annotation: annotation
         });
     }
 
     /**
-     * Notify collaborators about a marker being removed.
-     * @param {number} id The id of the marker being removed.
+     * Notify collaborators about an annotation being removed.
+     * @param {number} id The id of the annotation being removed.
      */
-    function removeMarker(id) {
+    function removeAnnotation(id) {
         send({
-            type: "markerAction",
+            type: "annotationAction",
             actionType: "remove",
             id: id
         });
     }
 
     /**
-     * Notify collaborators of all markers being cleared.
+     * Notify collaborators of all annotations being cleared.
      */
-    function clearMarkers() {
+    function clearAnnotations() {
         send({
-            type: "markerAction",
+            type: "annotationAction",
             actionType: "clear"
         });
     }
@@ -453,10 +453,10 @@ const collabClient = (function(){
         disconnect: disconnect,
         send: send,
         swapImage: swapImage,
-        addMarker: addMarker,
-        updateMarker: updateMarker,
-        removeMarker: removeMarker,
-        clearMarkers: clearMarkers,
+        addAnnotation: addAnnotation,
+        updateAnnotation: updateAnnotation,
+        removeAnnotation: removeAnnotation,
+        clearAnnotations: clearAnnotations,
         changeName: changeName,
         getDefaultName: getDefaultName,
         updatePosition: updatePosition,

@@ -63,9 +63,28 @@ const tmappUI = (function(){
     }
 
     function _initClassSelectionButtons() {
-        tmapp.setMclass(bethesdaClassUtils.getClassFromID(0).name);
+        const initialMclass = bethesdaClassUtils.getClassFromID(0);
+        annotationTool.setMclass(initialMclass.name);
         const container = $("#class_buttons");
         htmlHelper.buildClassSelectionButtons(container, 0);
+    }
+
+    function _initToolSelectionButtons() {
+        $("#tool_marker").addClass("active");
+        overlayHandler.setActiveAnnotationOverlay("marker");
+        annotationTool.setTool("marker");
+        $("#tool_marker").click(() => {
+            overlayHandler.setActiveAnnotationOverlay("marker");
+            annotationTool.setTool("marker");
+        });
+        $("#tool_rect").click(() => {
+            overlayHandler.setActiveAnnotationOverlay("region");
+            annotationTool.setTool("rect");
+        });
+        $("#tool_poly").click(() => {
+            overlayHandler.setActiveAnnotationOverlay("region");
+            annotationTool.setTool("poly");
+        });
     }
 
     function _initViewerEvents() {
@@ -104,12 +123,12 @@ const tmappUI = (function(){
         $("#data_files_import").change(event => {
             if (event.target.files.length) {
                 const loadedJSON = localStorage.loadJSON("data_files_import");
-                loadedJSON.then(markerStorageConversion.addMarkerStorageData);
+                loadedJSON.then(annotationStorageConversion.addAnnotationStorageData);
             }
         });
         $("#points_to_json").click(() => {
-            const markerData = markerStorageConversion.getMarkerStorageData();
-            localStorage.saveJSON(markerData);
+            const annotationData = annotationStorageConversion.getAnnotationStorageData();
+            localStorage.saveJSON(annotationData);
         });
     }
 
@@ -121,12 +140,30 @@ const tmappUI = (function(){
     function _initKeyboardShortcuts() {
         //1,2,... for class selection
         //z,x for focus up down
-        $("#main_content").keypress(function(){
-            switch(event.which) {
-                case "z".charCodeAt():
+        $("#main_content").keydown(function(){
+            switch(event.keyCode) {
+                case 27: // esc
+                    annotationTool.reset();
+                    break;
+                case 8: // backspace
+                    annotationTool.revert();
+                    break;
+                case 13: // enter
+                    annotationTool.complete();
+                    break;
+                case 67:
+                    $("#tool_marker").click();
+                    break;
+                case 86:
+                    $("#tool_rect").click();
+                    break;
+                case 66:
+                    $("#tool_poly").click();
+                    break;
+                case 90: // z
                     $("#focus_prev").click();
                     break;
-                case "x".charCodeAt():
+                case 88: // x
                     $("#focus_next").click();
                     break;
                 default:
@@ -143,16 +180,19 @@ const tmappUI = (function(){
     }
 
     function _initCollaborationMenu() {
+        function setName() {
+            const name = $("#collaboration_start [name='username']").val();
+            collabClient.changeName(name);
+        }
+
         let nameTimeout;
         const keyUpTime = 3000;
         const defaultName = userInfo.getName();
+        $("#collaboration_menu").on("hide.bs.modal", setName);
         $("#collaboration_start [name='username']").val(defaultName || "");
         $("#collaboration_start [name='username']").keyup(function(event) {
             clearTimeout(nameTimeout);
-            nameTimeout = setTimeout(() => {
-                const name = $("#collaboration_start [name='username']").val();
-                collabClient.changeName(name);
-            }, keyUpTime);
+            nameTimeout = setTimeout(setName, keyUpTime);
         });
         $("#create_collaboration").click(function(event) {
             const name = $("#collaboration_start [name='username']").val();
@@ -182,8 +222,12 @@ const tmappUI = (function(){
     function initUI() {
         // Set the title
         $("#project_title").text("Cyto Browser");
+        $("#project_title").click(event => {
+            event.preventDefault();
+        });
 
         _initClassSelectionButtons();
+        _initToolSelectionButtons();
         _initViewerEvents();
         _initContextMenu();
         _initDocumentFocusFunctionality();
@@ -230,22 +274,22 @@ const tmappUI = (function(){
 
     /**
      * Open a menu at the mouse cursor for editing comments for
-     * a given marker.
-     * @param {number} id The id of the edited marker.
+     * a given annotation.
+     * @param {number} id The id of the edited annotation.
      * @param {Object} location The location of the upper left corner of
      * the menu being opened.
      * @param {number} location.x The x coordinate in page coordinates.
      * @param {number} location.y The y coordinate in page coordinates.
      */
-    function openMarkerEditMenu(id, location) {
-        const marker = markerHandler.getMarkerById(id);
-        if (!marker) {
-            throw new Error("Invalid marker id.");
+    function openAnnotationEditMenu(id, location) {
+        const annotation = annotationHandler.getAnnotationById(id);
+        if (!annotation) {
+            throw new Error("Invalid annotation id.");
         }
 
         _openContextMenu(location, menuBody => {
-            htmlHelper.buildMarkerSettingsMenu(menuBody, marker, () => {
-                markerHandler.updateMarker(id, marker, "image");
+            htmlHelper.buildAnnotationSettingsMenu(menuBody, annotation, () => {
+                annotationHandler.update(id, annotation, "image");
                 _closeContextMenu();
             });
         });
@@ -408,7 +452,7 @@ const tmappUI = (function(){
     return {
         initUI: initUI,
         choice: choice,
-        openMarkerEditMenu: openMarkerEditMenu,
+        openAnnotationEditMenu: openAnnotationEditMenu,
         setCollabID: setCollabID,
         clearCollabID: clearCollabID,
         updateCollaborators: updateCollaborators,

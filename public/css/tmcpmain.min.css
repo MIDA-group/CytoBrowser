@@ -21,3 +21,7 @@
     transition: 1s ease-in-out all;
     filter: blur(4px);
 }
+
+.blurrable > * {
+    transition: 1s ease-in-out all;
+}

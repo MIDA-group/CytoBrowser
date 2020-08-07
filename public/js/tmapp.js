@@ -41,7 +41,6 @@ const tmapp = (function() {
             z: 0,
             zoom: 1
         },
-        _currMclass = "",
         _cursorStatus = {
             x: 0.5,
             y: 0.5,
@@ -137,17 +136,16 @@ const tmapp = (function() {
         return imageStack;
     }
 
-    function _loadImages(imageStack, z =  -1) {
-        if (z < 0) {
-            z = Math.floor(imageStack.length / 2);
+    function _loadImages(imageStack, zIndex) {
+        if (!zIndex) {
+            zIndex = Math.floor(imageStack.length / 2);
         }
-        _currState.z = z;
 
         console.info(`Opening: ${imageStack}`);
         imageStack.forEach((image, i) => {
             _viewer.addTiledImage({
                 tileSource: image,
-                opacity: i === _currState.z,
+                opacity: i === zIndex,
                 index: i++,
                 success: () => {
                     if (_viewer.world.getItemCount() === imageStack.length) {
@@ -159,34 +157,48 @@ const tmapp = (function() {
                 },
             });
         });
+
+        const z = zIndex - Math.floor(_currentImage.zLevels.length / 2);
+        _currState.z = z;
     }
 
     function _addMouseTracking(viewer) {
         // Handle quick and slow clicks
         function clickHandler(event) {
-            if(event.quick){
-                if (tmappUI.inFocus() && !event.ctrlKey) {
-                    const marker = {
-                        x: event.position.x,
-                        y: event.position.y,
-                        z: _currState.z,
-                        mclass: _currMclass
-                    };
-                    markerHandler.addMarker(marker);
-                }
+            if(event.quick && !event.ctrlKey && tmappUI.inFocus()){
+                const coords = coordinateHelper.webToViewport(event.position);
+                const position = {
+                    x: coords.x,
+                    y: coords.y,
+                    z: _currState.z
+                };
+                annotationTool.click(position);
+            }
+        };
+
+        function dblClickHandler(event) {
+            if(!event.ctrlKey && tmappUI.inFocus()){
+                const coords = coordinateHelper.webToViewport(event.position);
+                const position = {
+                    x: coords.x,
+                    y: coords.y,
+                    z: _currState.z
+                };
+                annotationTool.complete(position);
             }
         };
 
         // Live updates of mouse position in collaboration
         function moveHandler(event) {
-            const pos = coordinateHelper.webToViewport(event.position);
-            setCursorStatus({x: pos.x, y: pos.y});
+            if (!_cursorStatus.held) {
+                const pos = coordinateHelper.webToViewport(event.position);
+                setCursorStatus({x: pos.x, y: pos.y});
+            }
         }
 
         // Live updates of whether or not the mouse is held down
         function heldHandler(held) {
             return function(event) {
-                const pos = coordinateHelper.webToViewport(event.position);
                 setCursorStatus({held: held});
             };
         }
@@ -194,7 +206,6 @@ const tmapp = (function() {
         // Live update of whether or not the mouse is in the viewport
         function insideHandler(inside) {
             return function(event) {
-                const pos = coordinateHelper.webToViewport(event.position);
                 setCursorStatus({inside: inside});
             };
         }
@@ -203,6 +214,7 @@ const tmapp = (function() {
         new OpenSeadragon.MouseTracker({
             element: viewer.canvas,
             clickHandler: clickHandler,
+            dblClickHandler: dblClickHandler,
             moveHandler: moveHandler,
             enterHandler: insideHandler(true),
             exitHandler: insideHandler(false),
@@ -346,7 +358,7 @@ const tmapp = (function() {
     }
 
     /**
-     * Open a specified image in the viewport. If markers have been
+     * Open a specified image in the viewport. If annotations have been
      * placed, the user is first prompted to see if they actually want
      * to open the image or if they want to cancel.
      * @param {string} imageName The name of the image being opened.
@@ -357,9 +369,9 @@ const tmapp = (function() {
      * decide not to change.
      */
     function openImage(imageName, callback, nochange) {
-        if (!markerHandler.empty() && !confirm(`You are about to open ` +
+        if (!annotationHandler.isEmpty() && !confirm(`You are about to open ` +
             `the image "${imageName}". Do you want to ` +
-            `open this image? Any markers placed on the ` +
+            `open this image? Any annotations placed on the ` +
             `current image will be lost unless you save ` +
             `them first.`)) {
             nochange && nochange();
@@ -371,7 +383,7 @@ const tmapp = (function() {
             tmappUI.displayImageError("badimage", 5000);
             throw new Error("Tried to change to an unknown image.");
         }
-        markerHandler.clearMarkers(false);
+        annotationHandler.clear(false);
         _viewer && _viewer.destroy();
         $("#ISS_viewer").empty();
         coordinateHelper.clearImage();
@@ -407,40 +419,27 @@ const tmapp = (function() {
     }
 
     /**
-     * Move the viewport to look at a specific marker.
-     * @param {number} id The id of the marker being moved to.
+     * Move the viewport to look at a specific annotation.
+     * @param {number} id The id of the annotation being moved to.
      */
-    function moveToMarker(id) {
+    function moveToAnnotation(id) {
         // Only move if you're not following anyone
         if (_disabledControls) {
-            console.warn("Can't move to marker when following someone.");
+            console.warn("Can't move to annotation when following someone.");
             return;
         }
 
-        const marker = markerHandler.getMarkerById(id);
-        if (marker === undefined) {
-            throw new Error("Tried to move to an unused marker id.");
+        const annotation = annotationHandler.getAnnotationById(id);
+        if (annotation === undefined) {
+            throw new Error("Tried to move to an unused annotation id.");
         }
-        const viewportCoords = coordinateHelper.imageToViewport(marker);
+        const target = coordinateHelper.imageToViewport(annotation.centroid);
         moveTo({
             zoom: 25,
-            x: viewportCoords.x,
-            y: viewportCoords.y,
-            z: marker.z
+            x: target.x,
+            y: target.y,
+            z: annotation.z
         });
-    }
-
-    /**
-     * Set the current marker class being assigned.
-     * @param {string} mclass The currently active marker class.
-     */
-    function setMclass(mclass) {
-        if (bethesdaClassUtils.getIDFromName(mclass) >= 0) {
-            _currMclass = mclass;
-        }
-        else {
-            throw new Error("Tried to set the active marker class to something not defined.");
-        }
     }
 
     /**
@@ -515,6 +514,12 @@ const tmapp = (function() {
      */
     function setCursorStatus(status) {
         Object.assign(_cursorStatus, status);
+        const position = {
+            x: _cursorStatus.x,
+            y: _cursorStatus.y,
+            z: _currState.z
+        };
+        annotationTool.updateMousePosition(position);
         _updateCollabCursor();
     }
 
@@ -551,8 +556,7 @@ const tmapp = (function() {
         init: init,
         openImage: openImage,
         moveTo: moveTo,
-        moveToMarker: moveToMarker,
-        setMclass: setMclass,
+        moveToAnnotation: moveToAnnotation,
         setCollab: setCollab,
         clearCollab: clearCollab,
         incrementFocus: incrementFocus,
