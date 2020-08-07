@@ -211,47 +211,55 @@ const overlayHandler = (function (){
     }
 
     function _enterMarker(enter) {
-        const group = enter.append("g")
+        enter.append("g")
             .attr("transform", d => {
                 const viewport = coordinateHelper.imageToViewport(d.points[0]);
                 const coords = coordinateHelper.viewportToOverlay(viewport);
                 return `translate(${coords.x}, ${coords.y}) scale(${_markerSize()})`;
             })
-            .attr("opacity", 1);
-        const square = group.append("path")
-            .attr("d", d3.symbol().size(_markerSquareSize).type(d3.symbolSquare))
-            .attr("transform", "rotate(0) scale(0)")
-            .attr("stroke-width", _markerSquareStrokeWidth)
-            .attr("stroke", _getAnnotationColor)
-            .style("fill","rgba(0,0,0,0.2)");
-        group.each(function(d) {_addMarkerMouseEvents(d, this);});
-        square.transition().duration(500)
-            .attr("transform", _transformFunction({
-                rotate: 45,
-                scale: 1
-            }));
-        group.append("path")
-            .attr("d", d3.symbol().size(_markerCircleSize).type(d3.symbolCircle))
-            .attr("transform", "scale(0)")
-            .attr("stroke-width", _markerCircleStrokeWidth)
-            .attr("stroke", "gray")
-            .style("fill", "transparent")
-            .style("pointer-events", "none")
-            .transition().delay(300).duration(200)
-            .attr("transform", _transformFunction({
-                scale: 1
-            }));
-        if (_markerText) {
-            group.append("text")
-                .style("fill", _getAnnotationColor)
-                .style("font-size", "1%")
-                .style("font-weight", "700")
-                .style("pointer-events", "none")
-                .style("opacity", 0)
-                .attr("text-anchor", "left")
-                .attr("transform", "translate(0.2, -0.2)")
-                .text(d => `#${d.id}: ${d.mclass}`);
-            }
+            .attr("opacity", 1)
+            .call(group =>
+                group.append("path")
+                    .attr("d", d3.symbol().size(_markerSquareSize).type(d3.symbolSquare))
+                    .attr("transform", "rotate(0) scale(0)")
+                    .attr("stroke-width", _markerSquareStrokeWidth)
+                    .attr("stroke", _getAnnotationColor)
+                    .style("fill","rgba(0,0,0,0.2)")
+                    .transition().duration(500)
+                    .attr("transform", _transformFunction({
+                        rotate: 45,
+                        scale: 1
+                    }))
+                    .on("end", () =>
+                        group.each(function(d) {_addMarkerMouseEvents(d, this);})
+                    )
+            )
+            .call(group =>
+                group.append("path")
+                    .attr("d", d3.symbol().size(_markerCircleSize).type(d3.symbolCircle))
+                    .attr("transform", "scale(0)")
+                    .attr("stroke-width", _markerCircleStrokeWidth)
+                    .attr("stroke", "gray")
+                    .style("fill", "transparent")
+                    .style("pointer-events", "none")
+                    .transition().delay(300).duration(200)
+                    .attr("transform", _transformFunction({
+                        scale: 1
+                    }))
+            )
+            .call(group =>
+                if (_markerText) {
+                    group.append("text")
+                        .style("fill", _getAnnotationColor)
+                        .style("font-size", "1%")
+                        .style("font-weight", "700")
+                        .style("pointer-events", "none")
+                        .style("opacity", 0)
+                        .attr("text-anchor", "left")
+                        .attr("transform", "translate(0.2, -0.2)")
+                        .text(d => `#${d.id}: ${d.mclass}`);
+                    }
+            );
     }
 
     function _updateMarker(update) {
