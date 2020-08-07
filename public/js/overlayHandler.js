@@ -164,61 +164,73 @@ const overlayHandler = (function (){
 
     function _addMarkerMouseEvents(d, node) {
         _addAnnotationMouseEvents(d, node);
+
+        function highlight() {
+            d3.select(node)
+                .selectAll("path")
+                .filter((d, i) => i === 0)
+                .transition().duration(200)
+                .attr("transform", _transformFunction({
+                    scale: 1.25,
+                    rotate: 45
+                }))
+                .attr("stroke", _getAnnotationColor);
+            d3.select(node)
+                .selectAll("text")
+                .transition().duration(200)
+                .style("opacity", 1);
+        }
+
+        function unHighlight() {
+            d3.select(node)
+                .selectAll("path")
+                .filter((d, i) => i === 0)
+                .transition().duration(200)
+                .attr("transform", _transformFunction({
+                    scale: 1.0,
+                    rotate: 45
+                }))
+                .attr("stroke", _getAnnotationColor);
+            d3.select(node)
+                .selectAll("text")
+                .transition().duration(200)
+                .style("opacity", 0);
+        }
+
         new OpenSeadragon.MouseTracker({
             element: node,
-            enterHandler: function(){
-                d3.select(node)
-                    .selectAll("path")
-                    .filter((d, i) => i === 0)
-                    .transition().duration(200)
-                    .attr("transform", _transformFunction({
-                        scale: 1.25,
-                        rotate: 45
-                    }))
-                    .attr("stroke", _getAnnotationColor);
-                d3.select(node)
-                    .selectAll("text")
-                    .transition().duration(200)
-                    .style("opacity", 1);
-            },
-            exitHandler: function(){
-                d3.select(node)
-                    .selectAll("path")
-                    .filter((d, i) => i === 0)
-                    .transition().duration(200)
-                    .attr("transform", _transformFunction({
-                        scale: 1.0,
-                        rotate: 45
-                    }))
-                    .attr("stroke", _getAnnotationColor);
-                d3.select(node)
-                    .selectAll("text")
-                    .transition().duration(200)
-                    .style("opacity", 0);
-            }
+            dragEndHandler: unHighlight,
+            enterHandler: highlight,
+            exitHandler: unHighlight
         }).setTracking(true);
     }
 
     function _addRegionMouseEvents(d, node) {
         _addAnnotationMouseEvents(d, node);
+
+        function highlight() {
+            d3.select(node)
+                .selectAll("path")
+                .transition().duration(200)
+                .attr("stroke", _getAnnotationColor)
+                .attr("fill", _getAnnotationColor)
+                .attr("fill-opacity", 0.4);
+        }
+
+        function unHighlight() {
+            d3.select(node)
+                .selectAll("path")
+                .transition().duration(200)
+                .attr("stroke", _getAnnotationColor)
+                .attr("fill", _getAnnotationColor)
+                .attr("fill-opacity", 0.2);
+        }
+
         new OpenSeadragon.MouseTracker({
             element: node,
-            enterHandler: function(){
-                d3.select(node)
-                    .selectAll("path")
-                    .transition().duration(200)
-                    .attr("stroke", _getAnnotationColor)
-                    .attr("fill", _getAnnotationColor)
-                    .attr("fill-opacity", 0.4);
-            },
-            exitHandler: function(){
-                d3.select(node)
-                    .selectAll("path")
-                    .transition().duration(200)
-                    .attr("stroke", _getAnnotationColor)
-                    .attr("fill", _getAnnotationColor)
-                    .attr("fill-opacity", 0.2);
-            }
+            dragEndHandler: unHighlight,
+            enterHandler: highlight,
+            exitHandler: unHighlight
         }).setTracking(true);
     }
 
