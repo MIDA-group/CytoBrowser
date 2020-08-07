@@ -230,9 +230,6 @@ const overlayHandler = (function (){
                         rotate: 45,
                         scale: 1
                     }))
-                    .on("end", () =>
-                        group.each(function(d) {_addMarkerMouseEvents(d, this);})
-                    )
             )
             .call(group =>
                 group.append("path")
@@ -247,7 +244,7 @@ const overlayHandler = (function (){
                         scale: 1
                     }))
             )
-            .call(group =>
+            .call(group => {
                 if (_markerText) {
                     group.append("text")
                         .style("fill", _getAnnotationColor)
@@ -259,7 +256,12 @@ const overlayHandler = (function (){
                         .attr("transform", "translate(0.2, -0.2)")
                         .text(d => `#${d.id}: ${d.mclass}`);
                     }
-            );
+                }
+            )
+            .delay(500)
+            .each(function(d) {
+                _addMarkerMouseEvents(d, this);
+            });
     }
 
     function _updateMarker(update) {
