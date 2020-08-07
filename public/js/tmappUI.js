@@ -180,16 +180,19 @@ const tmappUI = (function(){
     }
 
     function _initCollaborationMenu() {
+        function setName() {
+            const name = $("#collaboration_start [name='username']").val();
+            collabClient.changeName(name);
+        }
+
         let nameTimeout;
         const keyUpTime = 3000;
         const defaultName = userInfo.getName();
+        $("#collaboration_menu").on("hide.bs.modal", setName);
         $("#collaboration_start [name='username']").val(defaultName || "");
         $("#collaboration_start [name='username']").keyup(function(event) {
             clearTimeout(nameTimeout);
-            nameTimeout = setTimeout(() => {
-                const name = $("#collaboration_start [name='username']").val();
-                collabClient.changeName(name);
-            }, keyUpTime);
+            nameTimeout = setTimeout(setName, keyUpTime);
         });
         $("#create_collaboration").click(function(event) {
             const name = $("#collaboration_start [name='username']").val();
