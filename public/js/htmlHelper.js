@@ -77,7 +77,7 @@ const htmlHelper = (function() {
             const entry = _annotationComment(comment, event => {
                 event.preventDefault();
                 const index = comments.indexOf(comment);
-                comments.splice(index);
+                comments.splice(index, 1);
                 entry.closest("[tabindex]").focus();
                 entry.remove();
             });
