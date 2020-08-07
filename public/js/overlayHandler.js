@@ -414,10 +414,10 @@ const overlayHandler = (function (){
      * Clear all annotations currently in the overlay, in case you need to quickly replace them.
      */
     function clearAnnotations(){
-        if (!_markerOverlay || !_regionOverlay)
-            return;
-        _markerOverlay.selectAll("g").remove();
-        _regionOverlay.selectAll("g").remove();
+        if (_markerOverlay)
+            _markerOverlay.selectAll("g").remove();
+        if (_regionOverlay)
+            _regionOverlay.selectAll("g").remove();
     }
 
 

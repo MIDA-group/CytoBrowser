@@ -124,6 +124,7 @@ const annotationTool = (function() {
             complete: function(position) {
                 _zLevel = position.z;
                 _mclass = _activeMclass;
+                _points.pop();
                 if (_points.length > 2) {
                     const annotation = _getAnnotation(_points);
                     annotationHandler.addAnnotation(annotation, "image");
