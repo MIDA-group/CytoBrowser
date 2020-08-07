@@ -7,6 +7,31 @@ const annotationVisuals = (function() {
 
     const _tableId = "tmcptablebody";
 
+    function _annotationContent(annotationCell) {
+        annotationCell.text(d =>
+            `(x: ${Math.round(d.centroid.x)}, y: ${Math.round(d.centroid.y)}, z: ${Math.round(d.z)})`)
+            .call(cell =>
+                cell.append("span")
+                    .attr("class", "badge text-white ml-4")
+                    .style("background-color", d =>
+                        bethesdaClassUtils.classColor(d.mclass))
+                    .text(d => d.mclass)
+            )
+            .call(cell =>
+                cell.filter(d => d.comments && d.comments.length)
+                    .append("span")
+                    .attr("class", "badge bg-dark text-white ml-4")
+                    .text(d => `${d.comments.length} comment${d.comments.length > 1 ? "s" : ""}`)
+            )
+
+            .call(cell =>
+                cell.filter(d => d.points.length > 1)
+                    .append("span")
+                    .attr("class", "badge bg-dark text-white ml-4")
+                    .text("Region")
+            )
+    }
+
     /**
      * Update the current visuals for the annotations.
      * @param {Array} annotations All currently placed annotations.
@@ -21,19 +46,13 @@ const annotationVisuals = (function() {
             .data(annotations, d => d.id)
             .join(
                 enter => {
-                    const row = enter.append("tr");
+                    const row = enter.prepend("tr");
                     row.append("td")
                         .attr("class", "align-middle")
                         .text(d => d.id);
                     row.append("td")
                         .attr("class", "align-middle")
-                        .text(d =>
-                            `(x: ${Math.round(d.centroid.x)}, y: ${Math.round(d.centroid.y)}, z: ${Math.round(d.z)})`)
-                        .append("span")
-                            .attr("class", "badge text-white ml-4")
-                            .style("background-color", d =>
-                                bethesdaClassUtils.classColor(d.mclass))
-                            .text(d => d.mclass);
+                        .call(_annotationContent);
                     row.append("td")
                         .attr("class", "align-middle")
                         .append("button")
@@ -47,13 +66,7 @@ const annotationVisuals = (function() {
                     const idCell = cells.filter((d, i) => i === 0);
                     const annotationCell = cells.filter((d, i) => i === 1);
                     idCell.text(d => d.id);
-                    annotationCell.text(d =>
-                        `(x: ${Math.round(d.centroid.x)}, y: ${Math.round(d.centroid.y)}, z: ${Math.round(d.z)})`)
-                        .append("span")
-                            .attr("class", "badge text-white ml-4")
-                            .style("background-color", d =>
-                                bethesdaClassUtils.classColor(d.mclass))
-                            .text(d => d.mclass);
+                    annotationCell.call(_annotationContent);
                 }
             );
     }
