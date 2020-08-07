@@ -247,7 +247,7 @@ const overlayHandler = (function (){
                     .attr("stroke-width", _markerSquareStrokeWidth)
                     .attr("stroke", _getAnnotationColor)
                     .style("fill","rgba(0,0,0,0.2)")
-                    .transition("appear").duration(500)
+                    .transition("appear").duration(250)
                     .attr("transform", _transformFunction({
                         rotate: 45,
                         scale: 1
@@ -266,7 +266,7 @@ const overlayHandler = (function (){
                     .attr("stroke", "gray")
                     .style("fill", "transparent")
                     .style("pointer-events", "none")
-                    .transition("appear").delay(300).duration(200)
+                    .transition("appear").delay(150).duration(100)
                     .attr("transform", _transformFunction({
                         scale: 1
                     }))
