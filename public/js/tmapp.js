@@ -110,6 +110,7 @@ const tmapp = (function() {
         }
         const rotation = _viewer.viewport.getRotation();
         overlayHandler.setOverlayRotation(rotation);
+        tmappUI.setImageRotation(rotation);
         _currState.rotation = rotation;
         _updateCollabPosition();
         _updateURLParams();

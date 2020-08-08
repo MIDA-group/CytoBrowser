@@ -434,6 +434,14 @@ const tmappUI = (function(){
     }
 
     /**
+     * Set the displayed rotation in the UI.
+     * @param {string} txt The rotation value to display.
+     */
+    function setImageRotation(txt) {
+        $("#img_rotation").text(`${txt}°`);
+    }
+
+    /**
      * Push a new state to the URL.
      * @param {string} txt The new state to push.
      */
@@ -464,6 +472,7 @@ const tmappUI = (function(){
         setImageName: setImageName,
         setImageZLevel: setImageZLevel,
         setImageZoom: setImageZoom,
+        setImageRotation: setImageRotation,
         setURL: setURL,
         inFocus: inFocus
     };
