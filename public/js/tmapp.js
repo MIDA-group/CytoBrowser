@@ -39,6 +39,7 @@ const tmapp = (function() {
             x: 0.5,
             y: 0.5,
             z: 0,
+            rotation: 0,
             zoom: 1
         },
         _cursorStatus = {
@@ -103,6 +104,18 @@ const tmapp = (function() {
         _updateURLParams();
     }
 
+    function _updateRotation() {
+        if (!_viewer) {
+            throw new Error("Tried to update rotation of nonexistent viewer.");
+        }
+        const rotation = _viewer.viewport.getRotation();
+        overlayHandler.setOverlayRotation(rotation);
+        tmappUI.setImageRotation(rotation);
+        _currState.rotation = rotation;
+        _updateCollabPosition();
+        _updateURLParams();
+    }
+
     function _updateURLParams() {
         const url = new URL(window.location.href);
         const roundTo = (x, n) => Math.round(x * Math.pow(10, n)) / Math.pow(10, n);
@@ -113,6 +126,7 @@ const tmapp = (function() {
             params.set("x", roundTo(_currState.x, 5));
             params.set("y", roundTo(_currState.y, 5));
             params.set("z", _currState.z);
+            params.set("rotation", _currState.rotation);
         }
         _collab ? params.set("collab", _collab) : params.delete("collab");
         tmappUI.setURL("?" + params.toString());
@@ -233,6 +247,16 @@ const tmapp = (function() {
                     decrementFocus();
                 }
             }
+            if (event.originalEvent.shiftKey) {
+                event.preventDefaultAction = true;
+                const rotation = _currState.rotation;
+                if (event.scroll > 0) {
+                    _viewer.viewport.setRotation(rotation + 15);
+                }
+                else if (event.scroll < 0) {
+                    _viewer.viewport.setRotation(rotation - 15);
+                }
+            }
         };
 
         viewer.addViewerInputHook({hooks: [
@@ -249,6 +273,7 @@ const tmapp = (function() {
         viewer.addHandler("page", _updateFocus);
         viewer.addHandler("zoom", _updateZoom);
         viewer.addHandler("pan", _updatePosition);
+        viewer.addHandler("rotate", _updateRotation);
 
         // When we're done loading
         viewer.addHandler("open", function (event) {
@@ -259,6 +284,7 @@ const tmapp = (function() {
             _updateZoom();
             _updateFocus();
             _updatePosition();
+            _updateRotation();
             callback && callback();
             tmappUI.clearImageError();
             tmappUI.enableCollabCreation();
@@ -401,21 +427,20 @@ const tmapp = (function() {
      * @param {number} state.x The x position of the viewport.
      * @param {number} state.y The y position of the viewport.
      * @param {number} state.z The z level in the viewport.
+     * @param {number} state.rotation The rotation in the viewport.
      * @param {number} state.zoom The zoom in the viewport.
      */
-    function moveTo({x, y, z, zoom}) {
-        if (!_viewer) {
+    function moveTo({x, y, z, rotation, zoom}) {
+        if (!_viewer)
             throw new Error("Tried to move viewport without a viewer.");
-        }
-        if (zoom) {
+        if (zoom !== undefined)
             _viewer.viewport.zoomTo(zoom, true);
-        }
-        if (x && y) {
+        if (x !== undefined && y !== undefined)
             _viewer.viewport.panTo(new OpenSeadragon.Point(x, y), true);
-        }
-        if (z) {
+        if (rotation !== undefined)
+            _viewer.viewport.setRotation(rotation);
+        if (z !== undefined)
             _setFocusLevel(z);
-        }
     }
 
     /**

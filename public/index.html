@@ -43,6 +43,7 @@
                 <li class="nav-item"><a class="nav-link">Image: <span id="img_name"> -</span></a></li>
                 <li class="nav-item"><a class="nav-link"> Z-level: <span id="img_zlevel"> -</span></a></li>
                 <li class="nav-item"><a class="nav-link"> Zoom: <span id="img_zoom"> -</span></a></li>
+                <li class="nav-item"><a class="nav-link"> Rotation: <span id="img_rotation"> -</span></a></li>
 			</ul>
         </div>
     </nav>
@@ -401,7 +402,8 @@
             zoom: params.get("zoom"),
             x: params.get("x"),
             y: params.get("y"),
-            z: params.get("z")
+            z: params.get("z"),
+            rotation: params.get("rotation")
         };
 
         if (imageName !== null) {
