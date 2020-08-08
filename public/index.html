@@ -240,48 +240,94 @@
                   menu</strong>, which can be opened from the right side of the
                   page. You can either create a new collaboration or join
                   an existing one. You can also decide whether or not
-                  markers you have placed before the collaboration should
+                  annotations you have placed before the collaboration should
                   be added to the collaborative workspace or if they
                   should be removed. When collaborating, all participants
-                  see the same points and can update them in real time.
+                  see the same annotations and can update them in real time.
+                  By clicking on another collaborator's name in the collaboration
+                  menu, you can move your viewport to match theirs. By
+                  ticking the checkbox next to their name, you can
+                  automatically follow them.
               </p>
               <h5>Loading images</h5>
               <p>
-                  Click the button labeled <strong>Image browser</strong>
-                  to see a list of available images on the server. Click
-                  one of the images to view it.
+                  Open the <strong>Image browser</strong> to see a list
+                  of available images on the server. Click one of the
+                  images to view it.
               </p>
               <h5>Navigating images</h5>
               <p>
                   The image viewer can be navigated with the mouse. The
-                  mouse wheel is used to zoom in and out of the picture.
+                  mouse wheel is used to zoom in and out of the image.
                   Holding down the left mouse button and dragging it inside
                   the image viewer pans the image. The focus can be changed
                   either by pressing the <strong>Up</strong> and <strong>Down</strong>
                   buttons on the right side of the page, pressing the
                   <kbd>z</kbd> and <kbd>x</kbd> buttons on the keyboard,
                   or holding down the <kbd>ctrl</kbd> key while scrolling
-                  the mouse wheel.
+                  the mouse wheel. In addition, the image can be rotated by holding
+                  down the <kbd>shift</kbd> key and scrolling the mouse wheel.
               </p>
-              <h5>Markers</h5>
+              <h5>Annotations</h5>
               <p>
-                  Click the image viewer to add a marker with the currently
-                  selected class. The selected class can be set by either
-                  clicking the class buttons on the right side of the page
-                  or by pressing the number keys on the keyboard.
-                  Markers can be moved by holding down the mouse button
-                  on them and dragging them. To delete a marker, click
-                  it while holding down the <kbd>ctrl</kbd> key. To quickly
-                  move the image viewer to a specific marker, press the
-                  corresponding button in the marker table.
+                  There are three types of annotations that can be added:
+                  markers, rectangles and polygons. To select which type
+                  of annotation should be placed, a tool can be selected
+                  either by pressing the buttons in the menu to the right
+                  or by pressing the <kbd>c</kbd>, <kbd>v</kbd> or <kbd>b</kbd>
+                  keys on the keyboard. To select which class an annotation
+                  should be placed as, press the buttons to the right or
+                  use the number keys. Once an annotation has been placed,
+                  it can be moved by dragging it with the mouse, and it
+                  can be edited and commented on by right clicking it.
+                  Holding down the <kbd>ctrl</kbd> key and clicking an
+                  annotation removes it. The viewport can be moved to
+                  an annotation by clicking the <strong>Move to</strong>
+                  button in the list of annotations on the right.
               </p>
-              <h5>Saving markers</h5>
+              <h6>Markers</h6>
               <p>
-                  Markers can be saved to a file on the local machine by
+                  With the marker tool active, you can place markers in
+                  the viewport by clicking . In order to interact with a
+                  placed marker, the marker tool has to be active.
+              </p>
+              <h6>Rectangles</h6>
+              <p>
+                  With the rectangle tool active, you can place a rectangular
+                  region by first clicking where one corner of the region
+                  should be, and then clicking where the opposite corner
+                  should be. Once the first corner has been placed, it
+                  can be cancelled by pressing either <kbd>esc</kbd> or
+                  <kbd>backspace</kbd>. In order to interact with a placed
+                  rectangular region, either the rectangle or polygon tool
+                  has to be active.
+              </p>
+              <h6>Polygons</h6>
+              <p>
+                  With the polygon tool active, you can place a polygonal
+                  region by clicking where each corner should be. In order
+                  to complete the region, you can either double click or
+                  press <kbd>enter</kbd>. In order to undo the last placed
+                  corner of the polygon, you can press <kbd>backspace</kbd>,
+                  and in order to cancel the entire polygon, you can press
+                  <kbd>esc</kbd>. In order to interact with a placed
+                  polygonal region, either the rectangle or polygon tool
+                  has to be active.
+              </p>
+              <h5>Saving annotations</h5>
+              <p>
+                  Annotations can be saved to a file on the local machine by
                   pressing the <strong>Download</strong> button. Markers
                   that have been saved can be loaded into the image by
-                  first selecting the file in the image browser and then
-                  pressing the <strong>Import</strong> button.
+                  pressing the <strong>Import</strong> button. By pressing
+                  the <strong>Server storage</strong> button you can open
+                  a file browser for the directory on the server. If you
+                  save a file on the server under a name that's already
+                  used, you can choose to either overwrite the file or
+                  create a new version of it. When overwriting a file,
+                  you will only overwrite the latest version. When loading
+                  a file, you can select which version of the file to load.
+              </p>
           </div>
         </div>
       </div>
