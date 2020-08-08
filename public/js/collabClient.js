@@ -126,7 +126,10 @@ const collabClient = (function(){
     }
 
     function _requestSummary() {
-        send({type: "requestSummary"});
+        send({
+            type: "requestSummary",
+            image: tmapp.getImageName()
+        });
     }
 
     function _handleImageSwap(msg) {
