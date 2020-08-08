@@ -246,6 +246,16 @@ const tmapp = (function() {
                     decrementFocus();
                 }
             }
+            if (event.originalEvent.shiftKey) {
+                event.preventDefaultAction = true;
+                const rotation = _currState.rotation;
+                if (event.scroll > 0) {
+                    _viewer.viewport.setRotation(rotation + 15);
+                }
+                else if (event.scroll < 0) {
+                    _viewer.viewport.setRotation(rotation - 15);
+                }
+            }
         };
 
         viewer.addViewerInputHook({hooks: [
