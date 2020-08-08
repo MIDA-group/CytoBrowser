@@ -161,7 +161,7 @@ class Collaboration {
 
         return pointsA.every((pointA, index) => {
             const pointB = pointsB[index];
-            return pointA.x === pointB.x || pointA.y === pointB.y;
+            return pointA.x === pointB.x && pointA.y === pointB.y;
         });
     }
 
