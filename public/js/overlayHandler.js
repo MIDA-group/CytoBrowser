@@ -17,7 +17,8 @@ const overlayHandler = (function (){
         _pendingRegionOverlay,
         _activeAnnotationOverlayName,
         _previousCursors,
-        _scale;
+        _scale,
+        _rotation;
 
     function _editTransform(transformString, changes) {
         // Turn the transform string into an object
@@ -120,6 +121,11 @@ const overlayHandler = (function (){
         _pendingRegionOverlay.selectAll("path")
             .attr("stroke-width", _regionStrokeWidth())
             .attr("stroke-dasharray", _regionStrokeWidth());
+    }
+
+    function _rotateMarkers() {
+        _markerOverlay.selectAll("g")
+            .attr("transform", _transformFunction({rotate: -_rotation}));
     }
 
     function _addAnnotationMouseEvents(d, node) {
@@ -237,7 +243,7 @@ const overlayHandler = (function (){
             .attr("transform", d => {
                 const viewport = coordinateHelper.imageToViewport(d.points[0]);
                 const coords = coordinateHelper.viewportToOverlay(viewport);
-                return `translate(${coords.x}, ${coords.y}) scale(${_markerSize()})`;
+                return `translate(${coords.x}, ${coords.y}) scale(${_markerSize()}) rotate(${-_rotation})`;
             })
             .attr("opacity", 1)
             .call(group =>
@@ -485,6 +491,16 @@ const overlayHandler = (function (){
     }
 
     /**
+     * Let the overlay handler know the rotation of the viewport in order
+     * to properly adjust any elements that need to be rotated.
+     * @param {number} rotation The current rotation of the OSD viewport.
+     */
+    function setOverlayRotation(rotation) {
+        _rotation = rotation;
+        _rotateMarkers();
+    }
+
+    /**
      * Set which annotation overlay should be able to receive mouse
      * events at the current time.
      * @param {string} name The name of the overlay, either "region" or
@@ -552,6 +568,7 @@ const overlayHandler = (function (){
         updatePendingRegion: updatePendingRegion,
         clearAnnotations: clearAnnotations,
         setOverlayScale: setOverlayScale,
+        setOverlayRotation: setOverlayRotation,
         setActiveAnnotationOverlay: setActiveAnnotationOverlay,
         init: init
     };

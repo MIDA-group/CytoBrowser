@@ -109,6 +109,7 @@ const tmapp = (function() {
             throw new Error("Tried to update rotation of nonexistent viewer.");
         }
         const rotation = _viewer.viewport.getRotation();
+        overlayHandler.setOverlayRotation(rotation);
         _currState.rotation = rotation;
         _updateCollabPosition();
         _updateURLParams();
