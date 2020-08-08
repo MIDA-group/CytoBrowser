@@ -37,7 +37,7 @@ const overlayHandler = (function (){
         let result = "";
         names.forEach(name => {
             const value = changes[name];
-            if (value) {
+            if (value !== undefined) {
                 if (Array.isArray(value)) {
                     transObj[name] = value;
                 }
