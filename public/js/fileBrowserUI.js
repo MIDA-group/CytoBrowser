@@ -161,6 +161,7 @@ const fileBrowserUI = (function() {
         $("#server_refresh").click(_updateRemoteFiles);
         $("#server_load").click(_openSelectedFile);
         $("#server_save").click(_saveFile);
+        $("#serer_storage").on("show.bs.modal", _updateRemoteFiles);
     }
 
     return {
