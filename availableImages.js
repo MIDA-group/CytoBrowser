@@ -37,6 +37,16 @@ function getZLevels(dir, image) {
     image.zLevels = zLevels.sort((a, b) => +a - +b);
 }
 
+/**
+ * Look for appropriate thumbnails for a given image. The function finds
+ * two different thumbnails, one for an overview and one for a detail view.
+ * The overview image is found by looking for the largest image scale that
+ * only contains a single image. The detail image is found by taking a tile
+ * near the center of an image at the smallest scale over a certain limit.
+ * @param {Array<string>} dir The content of the data directory.
+ * @param {Object} image The image data of the image for which thumbnails
+ * should be found.
+ */
 function getThumbnails(dir, image) {
     // Find the file directories for the image name
     const nameFilter = RegExp(`^${image.name}.*_files$`);
@@ -91,6 +101,11 @@ function getThumbnails(dir, image) {
     });
 }
 
+/**
+ * Update the cached image information. This function stores information
+ * about the existing images in availableImages, which can be retrieved
+ * multiple times without having to call this function again.
+ */
 function updateImages() {
     fs.readdir(dataDir, (err, dir) => {
         if (err) {

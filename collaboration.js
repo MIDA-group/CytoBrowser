@@ -57,6 +57,15 @@ class Collaboration {
         this.members.delete(ws);
     }
 
+    /**
+     * Broadcast a message to all members except the one who sent it and
+     * those who aren't ready. A member has to send a summary request with
+     * the right image name before they can be considered ready and receive
+     * broadcasts.
+     * @param {WebSocket} sender The websocket through which the message
+     * was originally received.
+     * @param {Object} msg The message that should be broadcast.
+     */
     broadcastMessage(sender, msg) {
         // Forward the message to all other members
         const msgJSON = JSON.stringify(msg);
@@ -178,6 +187,12 @@ class Collaboration {
     }
 };
 
+/**
+ * Get an existing collab with a given id or create a new one.
+ * @param {string} id The id of the collab.
+ * @param {string} image The image that is being collaborated on. If the
+ * collab already exists, this argument is ignored.
+ */
 function getCollab(id, image) {
     return collab = collabs[id] || (collabs[id] = new Collaboration(id, image));
 }

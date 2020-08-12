@@ -20,6 +20,20 @@ const overlayHandler = (function (){
         _scale,
         _rotation;
 
+    /**
+     * Edit a string with stored in the transform attribute of a node.
+     * This function only edits properties already stored in the string,
+     * it does not add any. This is because of the fact that the order of
+     * transform properties changes the final result. If a property is not
+     * specified by the changes argument, it retains its old value.
+     * @param {string} transformString The original transform string.
+     * @param {Object} changes Key-value pairs of transforms and their
+     * changed properties. The keys are the names of the transforms, and
+     * the values can either be numbers, Arrays, or Functions. Numbers
+     * and Arrays simply assign new values to the transforms. Functions
+     * are run on the old values to produce new values.
+     * @returns {string} The resulting transform string.
+     */
     function _editTransform(transformString, changes) {
         // Turn the transform string into an object
         // Start by finding all the transforms
@@ -57,6 +71,12 @@ const overlayHandler = (function (){
         return result;
     }
 
+    /**
+     * Convenience function for creating a function that can be run
+     * to edit transforms with d3.
+     * @param {Object} transform The transform that should be applied
+     * with the returned function.
+     */
     function _transformFunction(transform) {
         function f(d, i) {
             let appliedTransform;
@@ -128,6 +148,14 @@ const overlayHandler = (function (){
             .attr("transform", _transformFunction({rotate: -_rotation}));
     }
 
+    /**
+     * Add mouse events that should be shared between all annotations,
+     * both markers and regions. These include handlers for dragging an
+     * annotation, ctrl-clicking to remove, and right clicking for
+     * options.
+     * @param {Object} d The data object given by d3.
+     * @param {Object} node The node for the annotation.
+     */
     function _addAnnotationMouseEvents(d, node) {
         new OpenSeadragon.MouseTracker({
             element: node,

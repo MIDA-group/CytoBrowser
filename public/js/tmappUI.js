@@ -151,13 +151,13 @@ const tmappUI = (function(){
                 case 13: // enter
                     annotationTool.complete();
                     break;
-                case 67:
+                case 67: // c
                     $("#tool_marker").click();
                     break;
-                case 86:
+                case 86: // v
                     $("#tool_rect").click();
                     break;
-                case 66:
+                case 66: // b
                     $("#tool_poly").click();
                     break;
                 case 90: // z

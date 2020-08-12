@@ -100,6 +100,17 @@ const annotationHandler = (function (){
         );
     }
 
+    /**
+     * Get an object with a given point's location expressed in all OSD
+     * coordinate systems.
+     * @param {Object} point The point to check.
+     * @param {number} point.x The x coordinate of the point.
+     * @param {number} point.y The y coordinate of the point.
+     * @param {CoordSystem} coordSystem The coordinate system the point
+     * is originally expressed with.
+     * @returns {Object} An object with the properties "web", "viewport"
+     * and "image" that describe the point in each coordinate system.
+     */
     function _getCoordSystems(point, coordSystem) {
         let webPoint, viewportPoint, imagePoint;
         switch(coordSystem) {

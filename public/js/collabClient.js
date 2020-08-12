@@ -12,6 +12,11 @@ const collabClient = (function(){
 
     const _member = {};
 
+    /**
+     * Handle an incoming message from the server.
+     * @param {Object} msg The message being received.
+     * @param {string} msg.type The type of message being received.
+     */
     function _handleMessage(msg) {
         switch(msg.type) {
             case "annotationAction":
@@ -86,6 +91,30 @@ const collabClient = (function(){
         }
     }
 
+    /**
+     * Handle a collaboration summary received from the server. The summary
+     * contains information about the current state of the collaboration,
+     * including which image is being collaborated on, which members are
+     * taking part, and which annotations have been placed. The summary is
+     * only sent to a collaborator if they explicitly request it with
+     * _requestSummary(), and the server will not send any other messages
+     * to a collaborator until they do. If the received summary matches
+     * the image the local member is already on, the annotations  and
+     * members from the collaboration are added locally. If _joinBatch
+     * is truthy, the local member's annotations are first cleared and
+     * then added to the collaboration. If the image does not match, the
+     * image is swapped, _joinBatch is set to null, and another request
+     * summary is sent.
+     * @param {Object} msg The summary message.
+     * @param {string} msg.image The name of the current image being
+     * collaborated on in the collaboration.
+     * @param {Array<annotationHandler.Annotation>} msg.annotations The
+     * annotations currently placed in the collaboration.
+     * @param {Array<Object>} msg.members The members participating in
+     * the collaboration.
+     * @param {number} msg.requesterId The id assigned to the local member
+     * by the server.
+     */
     function _handleSummary(msg) {
         if (msg.image !== tmapp.getImageName()) {
             tmapp.openImage(msg.image, () => {
@@ -139,6 +168,14 @@ const collabClient = (function(){
         }, disconnect);
     }
 
+    /**
+     * Perform any actions that should be performed if the members are
+     * updated. This includes updating cursors in the overlay and moving
+     * the viewport if the local member is following any member.
+     * @param {boolean} hardUpdate If set to true, this means that a
+     * member has updated in a way that requires updating the non-OSD
+     * DOM elements, e.g. if they change their name or leave the collaboration.
+     */
     function _memberUpdate(hardUpdate = true) {
         if (!_members) {
             return;

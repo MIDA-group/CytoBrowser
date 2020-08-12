@@ -7,6 +7,12 @@ const annotationVisuals = (function() {
 
     const _tableId = "tmcptablebody";
 
+    /**
+     * Fill a cell of the annotation list with information about the
+     * annotation's position, class, type and how many comments it has.
+     * @param {d3.selection} annotationCell The d3 selection of the
+     * cell being filled.
+     */
     function _annotationContent(annotationCell) {
         annotationCell.text(d =>
             `(x: ${Math.round(d.centroid.x)}, y: ${Math.round(d.centroid.y)}, z: ${Math.round(d.z)})`)

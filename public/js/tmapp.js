@@ -176,6 +176,13 @@ const tmapp = (function() {
         _currState.z = z;
     }
 
+    /**
+     * Add handlers for mouse events in the OSD viewer. This includes
+     * making calls to the annotationTool module when clicking or double
+     * clicking, sending updates to collabClient when the mouse is moved
+     * inside the viewport, as well as taking care of the shift and ctrl
+     * scrolling to change focus and rotation.
+     */
     function _addMouseTracking(viewer) {
         // Handle quick and slow clicks
         function clickHandler(event) {
@@ -302,6 +309,13 @@ const tmapp = (function() {
         });
     }
 
+    /**
+     * Initialize an instance of OpenSeadragon. This involves getting
+     * a full stack of images based on the image name, loading the
+     * images from the server, and initializing the overlay.
+     * @param {Function} callback Function to call once the images have
+     * been successfully loaded.
+     */
     function _initOSD(callback) {
         const imageStack = _expandImageName(_currentImage.name);
 

@@ -6,6 +6,7 @@
 const annotationTool = (function() {
     "use strict";
 
+    // Tool for placing single-point markers
     const _markerTool = (function() {
         return {
             click: function(position) {
@@ -22,6 +23,7 @@ const annotationTool = (function() {
         };
     })();
 
+    // Tool for adding a rectangle by clicking opposing corners
     const _rectTool = (function() {
         let _startPoint,
             _endPoint,
@@ -86,6 +88,7 @@ const annotationTool = (function() {
         };
     })();
 
+    // Tool for adding a free-form polygon
     const _polyTool = (function() {
         let _points = [],
             _nextPoint,
