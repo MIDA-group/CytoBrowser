@@ -71,7 +71,12 @@ class Collaboration {
         const msgJSON = JSON.stringify(msg);
         for (let [ws, member] of this.members.entries()) {
             if (ws !== sender && member.ready) {
-                ws.send(msgJSON);
+                try {
+                    ws.send(msgJSON);
+                }
+                catch (err) {
+                    this.log(`WebSocket send failed: ${err.message}`, console.warn);
+                }
             }
         }
     }
@@ -254,7 +259,12 @@ function leaveCollab(ws, id) {
  */
 function handleMessage(ws, id, msg) {
     const collab = getCollab(id);
-    collab.handleMessage(ws, JSON.parse(msg));
+    try {
+        collab.handleMessage(ws, JSON.parse(msg));
+    }
+    catch (err) {
+        collab.log(`Ignoring malformed WebSocket message: ${err.message}`, console.warn);
+    }
 }
 
 exports.getId = getId;
