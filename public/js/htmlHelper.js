@@ -174,7 +174,7 @@ const htmlHelper = (function() {
                     <img src="${image.thumbnails.detail}" class="card-img-top fade hide"
                     style="z-index: 9000; pointer-events: none; height: 130px; object-fit: cover;">
                     <div class="card-body text-center" style="padding:0" >
-                        <a class="card-link stretched-link" href="#">
+                        <a class="card-link stretched-link" href="?image=${image.name}">
                             ${image.name}
                         </a>
                     </div>
