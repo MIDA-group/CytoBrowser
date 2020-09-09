@@ -167,18 +167,15 @@ const htmlHelper = (function() {
 
     function _imageBrowserEntry(image) {
         const entry = $(`
-            <div class="col-4 d-flex">
+            <div class="col-3 d-flex">
                 <div class="card w-100">
                     <img src="${image.thumbnails.overview}" class="card-img-top position-absolute"
-                    style="height: 230px; object-fit: cover;">
+                    style="height: 130px; object-fit: cover;">
                     <img src="${image.thumbnails.detail}" class="card-img-top fade hide"
-                    style="z-index: 9000; pointer-events: none; height: 230px; object-fit: cover;">
-                    <div class="card-body">
-                        <h5 class="card-title">${image.name}</h5>
-                    </div>
-                    <div class="card-footer">
+                    style="z-index: 9000; pointer-events: none; height: 130px; object-fit: cover;">
+                    <div class="card-body text-center" style="padding:0" >
                         <a class="card-link stretched-link" href="#">
-                            Open image
+                            ${image.name}
                         </a>
                     </div>
                 </div>
@@ -274,9 +271,9 @@ const htmlHelper = (function() {
      */
     function buildImageBrowser(container, images) {
         let rowNumber = 0;
-        while (rowNumber * 3 < images.length) {
-            const start = rowNumber * 3;
-            const end = start + 3;
+        while (rowNumber * 4 < images.length) {
+            const start = rowNumber * 4;
+            const end = start + 4;
             const rowContent = images.slice(start, end);
             const row = _imageBrowserRow(rowContent);
             container.append(row);
