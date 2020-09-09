@@ -6,7 +6,7 @@
     <link rel="stylesheet" href="css/bootstrap.min.css">
     <link rel="stylesheet" href="css/cytobrowsertheme.css">
     <link rel="stylesheet" href="css/tm-icon-style.css">
-    <title>TissUUmaps</title>
+    <title>CytoBrowser</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <script src="js/d3/d3.min.js"></script>
     <script src="js/d3/d3-scale-chromatic.v0.3.min.js"></script>
@@ -27,24 +27,20 @@
 <body>
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-3">
-        <a class="navbar-brand" href="https://tissuumaps.research.it.uu.se/">
-            <img style="height:50px; margin:-5px; overflow: visible" src="misc/uulogowhitetuum.png">
+        <a class="navbar-brand" href="https://mida.research.it.uu.se/">
+            <img style="height:50px; margin:-5px; overflow: visible" src="misc/uulogowhiteCyBr.png">
         </a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar_items">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbar_items">
             <ul class="nav navbar-nav">
-                <li>
-                    <a id="project_title" class="nav-link" href "#"> Slide A</a>
-                </li>
+                <li class="nav-item"><a class="nav-link font-weight-bold"> User: <span id="user_name"> -</span></a></li>
+                <li class="nav-item"><a class="nav-link font-weight-bold"> Image: <span id="img_name"> -</span></a></li>
+                <li class="nav-item"><a class="nav-link font-weight-bold"> Z-level: <span id="img_zlevel"> -</span></a></li>
+                <li class="nav-item"><a class="nav-link font-weight-bold"> Zoom: <span id="img_zoom"> -</span></a></li>
+                <li class="nav-item"><a class="nav-link font-weight-bold"> Rotation: <span id="img_rotation"> -</span></a></li>
             </ul>
-            <ul class="nav navbar-nav">
-                <li class="nav-item"><a class="nav-link">Image: <span id="img_name"> -</span></a></li>
-                <li class="nav-item"><a class="nav-link"> Z-level: <span id="img_zlevel"> -</span></a></li>
-                <li class="nav-item"><a class="nav-link"> Zoom: <span id="img_zoom"> -</span></a></li>
-                <li class="nav-item"><a class="nav-link"> Rotation: <span id="img_rotation"> -</span></a></li>
-			</ul>
         </div>
     </nav>
 
