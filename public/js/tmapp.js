@@ -366,8 +366,7 @@ const tmapp = (function() {
 
                     // Go to the initial image and/or join the collab
                     if (imageName) {
-                        const image = images.find(image => image.name === imageName);
-                        if (image) {
+                        try {
                             openImage(imageName, () => {
                                 if (collab) {
                                     collabClient.connect(collab);
@@ -377,15 +376,15 @@ const tmapp = (function() {
                                 }
                             });
                         }
-                        else {
+                        catch(err) {
                             tmappUI.displayImageError("badimage");
                         }
                     }
+                    else if (collab) {
+                        collabClient.connect(collab);
+                    }
                     else {
                         tmappUI.displayImageError("noimage");
-                    }
-                    if (collab && !imageName) {
-                        collabClient.connect(collab);
                     }
                     break;
                 case 500:
@@ -420,8 +419,7 @@ const tmapp = (function() {
 
         const image = _images.find(image => image.name === imageName);
         if (!image) {
-            tmappUI.displayImageError("badimage", 5000);
-            throw new Error("Tried to change to an unknown image.");
+            throw new Error(`Failed to open image ${imageName}.`);
         }
         annotationHandler.clear(false);
         _viewer && _viewer.destroy();
