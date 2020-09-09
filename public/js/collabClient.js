@@ -360,6 +360,7 @@ const collabClient = (function(){
      */
     function changeName(newName) {
         userInfo.setName(newName);
+        tmappUI.setUserName(userInfo.getName());
         if (_localMember) {
             _localMember.name = newName;
             send({

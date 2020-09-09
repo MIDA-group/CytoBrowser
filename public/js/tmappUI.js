@@ -220,12 +220,6 @@ const tmappUI = (function(){
      * and add any event handlers that are needed.
      */
     function initUI() {
-        // Set the title
-        $("#project_title").text("Cyto Browser");
-        $("#project_title").click(event => {
-            event.preventDefault();
-        });
-
         _initClassSelectionButtons();
         _initToolSelectionButtons();
         _initViewerEvents();
@@ -410,6 +404,14 @@ const tmappUI = (function(){
     }
 
     /**
+     * Set the displayed user name in the UI.
+     * @param {string} txt The username to display.
+     */
+    function setUserName(txt) {
+        $("#user_name").text(txt);
+    }
+
+    /**
      * Set the displayed image name in the UI.
      * @param {string} txt The image name to display.
      */
@@ -469,6 +471,7 @@ const tmappUI = (function(){
         displayImageError: displayImageError,
         clearImageError: clearImageError,
         updateImageBrowser: updateImageBrowser,
+        setUserName: setUserName,
         setImageName: setImageName,
         setImageZLevel: setImageZLevel,
         setImageZoom: setImageZoom,

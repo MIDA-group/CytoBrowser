@@ -357,6 +357,7 @@ const tmapp = (function() {
             if (imageReq.readyState !== 4) {
                 return;
             }
+            tmappUI.setUserName(userInfo.getName());
             switch (imageReq.status) {
                 case 200:
                     // Add the images to the image browser
@@ -427,6 +428,7 @@ const tmapp = (function() {
         coordinateHelper.clearImage();
         _disabledControls = null;
         _currentImage = image;
+        tmappUI.setImageName(_currentImage.name);
         _updateURLParams();
         _initOSD(callback);
     }

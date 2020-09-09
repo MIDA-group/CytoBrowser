@@ -29,11 +29,11 @@ const userInfo = (function() {
     }
 
     function setName(name) {
-        _setCookie("last_used_collab_name", name);
+        _setCookie("user", name);
     }
 
     function getName() {
-        const name = _retrieveCookie("last_used_collab_name");
+        const name = _retrieveCookie("user");
         return name;
     }
 
