@@ -550,6 +550,8 @@ const overlayHandler = (function (){
      * @param {Array} predictions The current predictions.
      */
     function updatePredictions(predictions) {
+        if (!_predictionOverlay)
+            return;
         const data = predictions;
         _predictionOverlay.selectAll("path")
             .data(data, d => d.id)
