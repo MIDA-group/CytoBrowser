@@ -8,10 +8,6 @@ const predictionHandler = (function (){
 
     const _predictions = [];
 
-    function _drawPredictions() {
-        predictionVisuals.update(_predictions);
-    }
-
     /**
      * Get the predictions made by the model on the server for a given
      * image and store them locally.
@@ -31,7 +27,7 @@ const predictionHandler = (function (){
         };
 
         _predictions.push(prediction);
-        _drawPredictions();
+        predictionVisuals.update(_predictions);
     }
 
     /**
@@ -39,6 +35,7 @@ const predictionHandler = (function (){
      */
     function clearPredictions() {
         _predictions.length = 0;
+        predictionVisuals.update(_predictions);
     }
 
     // Function for debugging

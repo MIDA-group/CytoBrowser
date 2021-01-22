@@ -135,6 +135,11 @@ const overlayHandler = (function (){
             .attr("transform", _transformFunction({scale: _markerSize()}));
     }
 
+    function _resizePredictions() {
+        _predictionOverlay.selectAll("g")
+            .attr("transform", _transformFunction({scale: _markerSize()}));
+    }
+
     function _resizeRegions() {
         _regionOverlay.selectAll("g")
             .select("path")
@@ -432,7 +437,7 @@ const overlayHandler = (function (){
                     .attr("d", d3.symbol().size(_markerSquareSize).type(d3.symbolCircle))
                     .attr("stroke-width", _markerSquareStrokeWidth)
                     .attr("stroke", _getAnnotationColor)
-                    .style("fill", "rgba(0,0,0.2)")
+                    .style("fill", "rgba(0,0,0,0.2)")
             )
             .call(group =>
                 group.append("path")
@@ -566,6 +571,7 @@ const overlayHandler = (function (){
         _scale = zoomLevel * wContainer;
         _resizeMembers();
         _resizeMarkers();
+        _resizePredictions();
         _resizeRegions();
     }
 
