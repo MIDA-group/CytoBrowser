@@ -1,7 +1,16 @@
+/**
+ * Namespace for fetching and handling predictions from the model at
+ * the server.
+ * @namespace predictionHandler
+ */
 const predictionHandler = (function (){
     "use strict";
 
     const _predictions = [];
+
+    function _drawPredictions() {
+        predictionVisuals.update(_predictions);
+    }
 
     /**
      * Get the predictions made by the model on the server for a given
@@ -10,6 +19,8 @@ const predictionHandler = (function (){
      * predictions should be fetched.
      */
     function fetchPredictions(imageName) {
+        clearPredictions();
+
         // TODO: Get from server instead of generating
         const prediction = {
             id: 0,
@@ -20,6 +31,7 @@ const predictionHandler = (function (){
         };
 
         _predictions.push(prediction);
+        _drawPredictions();
     }
 
     /**
@@ -29,8 +41,14 @@ const predictionHandler = (function (){
         _predictions.length = 0;
     }
 
+    // Function for debugging
+    function printPredictions() {
+        _predictions.forEach(pred => console.info(pred));
+    }
+
     return {
         fetchPredictions: fetchPredictions,
-        clearPredictions: clearPredictions
+        clearPredictions: clearPredictions,
+        printPredictions: printPredictions
     };
 })();
