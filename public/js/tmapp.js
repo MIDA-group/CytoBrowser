@@ -423,6 +423,7 @@ const tmapp = (function() {
             throw new Error(`Failed to open image ${imageName}.`);
         }
         annotationHandler.clear(false);
+        predictionHandler.clear();
         _viewer && _viewer.destroy();
         $("#ISS_viewer").empty();
         coordinateHelper.clearImage();

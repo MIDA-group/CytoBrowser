@@ -14,8 +14,8 @@ const predictionHandler = (function (){
      * @param {string} imageName The name of the image for which the
      * predictions should be fetched.
      */
-    function fetchPredictions(imageName) {
-        clearPredictions();
+    function fetch(imageName) {
+        clear();
 
         // TODO: Get from server instead of generating
         const prediction = {
@@ -33,19 +33,19 @@ const predictionHandler = (function (){
     /**
      * Clear the currently stored predictions from local storage
      */
-    function clearPredictions() {
+    function clear() {
         _predictions.length = 0;
         predictionVisuals.update(_predictions);
     }
 
     // Function for debugging
-    function printPredictions() {
+    function print() {
         _predictions.forEach(pred => console.info(pred));
     }
 
     return {
-        fetchPredictions: fetchPredictions,
-        clearPredictions: clearPredictions,
-        printPredictions: printPredictions
+        fetch: fetch,
+        clear: clear,
+        print: print
     };
 })();
