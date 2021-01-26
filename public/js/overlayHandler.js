@@ -277,9 +277,9 @@ const overlayHandler = (function (){
             d3.select(node)
                 .selectAll("path")
                 .filter((d, i) => i === 0)
-                .transition("highlight").duration(200)
+                .transition("highlight").duration(100)
                 .attr("transform", _transformFunction({
-                    scale: 1.25
+                    scale: 1.1
                 }))
                 .attr("stroke", _getAnnotationColor);
         }
@@ -288,7 +288,7 @@ const overlayHandler = (function (){
             d3.select(node)
                 .selectAll("path")
                 .filter((d, i) => i === 0)
-                .transition("highlight").duration(200)
+                .transition("highlight").duration(100)
                 .attr("transform", _transformFunction({
                     scale: 1.0
                 }))
@@ -476,7 +476,7 @@ const overlayHandler = (function (){
             .call(group =>
                 group.append("path")
                     .attr("d", d3.symbol().size(_markerSquareSize).type(d3.symbolCircle))
-                    .attr("transform", "rotate(0) scale(0)")
+                    .attr("transform", "rotate(0) scale(1)")
                     .attr("stroke-width", _markerSquareStrokeWidth)
                     .attr("stroke", _getAnnotationColor)
                     .style("fill", "rgba(0,0,0,0.2)")
