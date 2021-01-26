@@ -62,6 +62,16 @@ const tmappUI = (function(){
         $("#main_content").focus();
     }
 
+    function _initPredictionGetter() {
+        const image = tmapp.getImageName();
+        if (image) {
+            $("#get_predictions").click(predictionHandler.fetch(image));
+        }
+        else {
+            displayImageError("You need to open an image before you can get predictions!", 2000);
+        }
+    }
+
     function _initClassSelectionButtons() {
         const initialMclass = bethesdaClassUtils.getClassFromID(0);
         annotationTool.setMclass(initialMclass.name);
@@ -220,6 +230,7 @@ const tmappUI = (function(){
      * and add any event handlers that are needed.
      */
     function initUI() {
+        _initPredictionGetter();
         _initClassSelectionButtons();
         _initToolSelectionButtons();
         _initViewerEvents();
