@@ -476,6 +476,7 @@ const overlayHandler = (function (){
             .call(group =>
                 group.append("path")
                     .attr("d", d3.symbol().size(_markerSquareSize).type(d3.symbolCircle))
+                    .attr("transform", "rotate(0) scale(0)")
                     .attr("stroke-width", _markerSquareStrokeWidth)
                     .attr("stroke", _getAnnotationColor)
                     .style("fill", "rgba(0,0,0,0.2)")
