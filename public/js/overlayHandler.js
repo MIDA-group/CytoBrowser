@@ -274,11 +274,25 @@ const overlayHandler = (function (){
 
     function _addPredictionMouseEvents(d, node) {
         function highlight() {
-
+            d3.select(node)
+                .selectAll("path")
+                .filter((d, i) => i === 0)
+                .transition("highlight").duration(200)
+                .attr("transform", _transformFunction({
+                    scale: 1.25
+                }))
+                .attr("stroke", _getAnnotationColor);
         }
 
         function unHighlight() {
-
+            d3.select(node)
+                .selectAll("path")
+                .filter((d, i) => i === 0)
+                .transition("highlight").duration(200)
+                .attr("transform", _transformFunction({
+                    scale: 1.0
+                }))
+                .attr("stroke", _getAnnotationColor)
         }
 
         function rightClick(event) {
@@ -451,7 +465,7 @@ const overlayHandler = (function (){
     }
 
     function _enterPrediction(enter) {
-        // TODO: Use its own variables for size
+        // TODO: Could use its own variables if we want to distinguish from markers more
         enter.append("g")
             .attr("transform", d => {
                 const point = {x: d.x, y: d.y};
@@ -482,11 +496,19 @@ const overlayHandler = (function (){
     }
 
     function _updatePrediction(update) {
-        // TODO
+        update.attr("transform", _transformFunction(function(d) {
+            const point = {x: d.x, y: d.y};
+            const viewport = coordinateHelper.imageToViewport(point);
+            const coords = coordinateHelper.viewportToOverlay(viewport);
+            return {translate: [coords.x, coords.y]}
+        }))
+        .selectAll("path")
+        .filter((d, i) => i === 0)
+        .transition("changeColor").duration(500)
+        .attr("stroke", _getAnnotationColor);
     }
 
     function _exitPrediction(exit) {
-        // TODO?
         exit.remove();
     }
 
