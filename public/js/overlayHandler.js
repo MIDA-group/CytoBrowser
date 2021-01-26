@@ -281,24 +281,13 @@ const overlayHandler = (function (){
 
         }
 
-        function rightClick() {
-            if (event.button === 2) {
-                const location = {
-                    x: event.originalEvent.pageX,
-                    y: event.originalEvent.pageY
-                };
-                tmappUI.openPredictionMenu(d.id, location);
-            }
-        }
-
-
-        nonPrimaryReleaseHandler: function(event) {
+        function rightClick(event) {
             if (event.button === 2) { // If right click
                 const location = {
                     x: event.originalEvent.pageX,
                     y: event.originalEvent.pageY
                 };
-                tmappUI.openAnnotationEditMenu(d.id, location);
+                tmappUI.openPredictionMenu(d.id, location);
             }
         }
 
@@ -476,7 +465,7 @@ const overlayHandler = (function (){
                     .attr("stroke-width", _markerSquareStrokeWidth)
                     .attr("stroke", _getAnnotationColor)
                     .style("fill", "rgba(0,0,0,0.2)")
-                    .on("end", () =>
+                    .call(() =>
                         group.each(function(d) {
                             _addPredictionMouseEvents(d, this);
                         })
