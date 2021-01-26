@@ -18,18 +18,6 @@ const predictionVisuals = (function() {
                     .style("background-color", d =>
                         bethesdaClassUtils.classColor(d.mclass))
                     .text(d => d.mclass)
-            )
-            .call(cell =>
-                cell.filter(d => d.points.length > 1)
-                    .append("span")
-                    .attr("class", "badge bg-dark text-white ml-4")
-                    .text("Region")
-            )
-            .call(cell =>
-                cell.filter(d => d.comments && d.comments.length)
-                    .append("span")
-                    .attr("class", "badge bg-dark text-white ml-4")
-                    .text(d => `${d.comments.length} comment${d.comments.length > 1 ? "s" : ""}`)
             );
     }
 
