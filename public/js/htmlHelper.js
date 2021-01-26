@@ -260,7 +260,7 @@ const htmlHelper = (function() {
         const id = _annotationValueRow("Id", prediction.id);
         const certainty = _annotationValueRow("Certainty", prediction.certainty);
         const mclass = _predictionClassRow(prediction.mclass);
-        container.append(id, certainty, mclass, saveBtn);
+        container.append(id, certainty, mclass);
     }
 
     /**
