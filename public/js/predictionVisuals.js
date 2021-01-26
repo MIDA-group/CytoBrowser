@@ -40,7 +40,7 @@ const predictionVisuals = (function() {
     function update(predictions) {
         overlayHandler.updatePredictions(predictions);
 
-        const table = d3.select("`#{_tableId}`");
+        const table = d3.select(`#${_tableId}`);
         table.selectAll("tr")
             .data(predictions, d => d.id)
             .join(
