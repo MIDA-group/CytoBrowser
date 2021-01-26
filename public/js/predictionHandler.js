@@ -71,7 +71,7 @@ const predictionHandler = (function (){
     return {
         fetch: fetch,
         clear: clear,
-	getPredictionById: getPredictionById,
+        getPredictionById: getPredictionById,
         print: print
     };
 })();

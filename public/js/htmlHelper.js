@@ -253,14 +253,13 @@ const htmlHelper = (function() {
      * @param {predictionHandler.prediction} prediction The prediction
      * that should be seen in the menu.
      * @param {Function} saveFun The function that should be run when
-     * pressing the save button in the menu.
+     * pressing the save button in the menu. (TODO: Nothing to save yet)
      */
     function buildPredictionMenu(container, prediction, saveFun) {
         // Reusing functions from annotation settings, might rename them
         const id = _annotationValueRow("Id", prediction.id);
         const certainty = _annotationValueRow("Certainty", prediction.certainty);
         const mclass = _predictionClassRow(prediction.mclass);
-        const saveBtn = _annotationSaveButton(prediction, saveFun);
         container.append(id, certainty, mclass, saveBtn);
     }
 
