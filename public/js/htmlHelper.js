@@ -259,7 +259,7 @@ const htmlHelper = (function() {
         // Reusing functions from annotation settings, might rename them
         const id = _annotationValueRow("Id", prediction.id);
         const certainty = _annotationValueRow("Certainty", prediction.certainty);
-        const mclass = _predictionClassRow("Class", prediction.mclass);
+        const mclass = _predictionClassRow(prediction.mclass);
         const saveBtn = _annotationSaveButton(prediction, saveFun);
         container.append(id, certainty, mclass, saveBtn);
     }

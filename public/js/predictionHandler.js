@@ -52,6 +52,7 @@ const predictionHandler = (function (){
     return {
         fetch: fetch,
         clear: clear,
+	getPredictionById: getPredictionById,
         print: print
     };
 })();
