@@ -8,6 +8,15 @@ const predictionHandler = (function (){
 
     const _predictions = [];
 
+    function _clonePrediction(prediction) {
+        const clone = Object.assign({}, prediction);
+        Object.entries(clone).forEach(([key, value]) => {
+            if (value && value.constructor === Array)
+                clone[key] = [...value];
+        })
+        return clone;
+    }
+
     /**
      * Get the predictions made by the model on the server for a given
      * image and store them locally.
@@ -39,8 +48,18 @@ const predictionHandler = (function (){
         predictionVisuals.update(_predictions);
     }
 
+    /**
+     * Get a copy of the specified prediction by its id.
+     * @param {number} id The id used for looking up the prediction.
+     * @returns {Object} A clone of the prediction or undefined if no
+     * prediction with the given id exists.
+     */
     function getPredictionById(id) {
-        // TODO
+        const prediction = _predictions.find(prediction => prediction.id === id);
+        if (prediction === undefined) {
+            return undefined;
+        }
+        const predictionClone = _clonePrediction(prediction);
         return _predictions[0];
     }
 
