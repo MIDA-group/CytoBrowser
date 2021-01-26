@@ -64,12 +64,15 @@ const tmappUI = (function(){
 
     function _initPredictionGetter() {
         const image = tmapp.getImageName();
-        if (image) {
-            $("#get_predictions").click(predictionHandler.fetch(image));
-        }
-        else {
-            displayImageError("You need to open an image before you can get predictions!", 2000);
-        }
+        $("#get_predictions").click(() => {
+            const image = tmapp.getImageName();
+            if (image) {
+                predictionHandler.fetch(image);
+            }
+            else {
+                displayImageError("You need to open an image before you can get predictions!", 2000);
+            }
+        });
     }
 
     function _initClassSelectionButtons() {
