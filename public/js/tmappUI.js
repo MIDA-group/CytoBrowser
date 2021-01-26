@@ -290,6 +290,28 @@ const tmappUI = (function(){
     }
 
     /**
+     * Open a menu at the mouse cursor for observing a prediction.
+     * @param {number} id The id of the prediction.
+     * @param {Object} location The location of the upper left corner of
+     * the menu being opened.
+     * @param {number} location.x The x coordinate in page coordinates.
+     * @param {number} location.y The y coordinate in page coordinates.
+     */
+    function openPredictionMenu(id, location) {
+        const prediction = predictionHandler.getPredictionById(id);
+        if (!prediction) {
+            throw new Error("Invalid prediction id.");
+        }
+
+        _openContextMenu(location, menuBody => {
+            htmlHelper.buildPredictionMenu(menuBody, prediction, () => {
+                // TODO: Save some correction about the prediction when closing
+                _closeContextMenu();
+            });
+        });
+    }
+
+    /**
      * Set the ID of the current collaboration so it can be displayed,
      * disable the elements for creating and joining collaborations, and
      * enable the button for leaving the collaboration.
@@ -463,6 +485,7 @@ const tmappUI = (function(){
         initUI: initUI,
         choice: choice,
         openAnnotationEditMenu: openAnnotationEditMenu,
+        openPredictionMenu: openPredictionMenu,
         setCollabID: setCollabID,
         clearCollabID: clearCollabID,
         updateCollaborators: updateCollaborators,

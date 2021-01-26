@@ -23,6 +23,7 @@ const predictionHandler = (function (){
             x: 50000,
             y: 50000,
             z: 0,
+            certainty: 0.95,
             mclass: "NILM"
         };
 
@@ -36,6 +37,11 @@ const predictionHandler = (function (){
     function clear() {
         _predictions.length = 0;
         predictionVisuals.update(_predictions);
+    }
+
+    function getPredictionById(id) {
+        // TODO
+        return _predictions[0];
     }
 
     // Function for debugging

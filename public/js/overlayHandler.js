@@ -272,6 +272,44 @@ const overlayHandler = (function (){
         }).setTracking(true);
     }
 
+    function _addPredictionMouseEvents(d, node) {
+        function highlight() {
+
+        }
+
+        function unHighlight() {
+
+        }
+
+        function rightClick() {
+            if (event.button === 2) {
+                const location = {
+                    x: event.originalEvent.pageX,
+                    y: event.originalEvent.pageY
+                };
+                tmappUI.openPredictionMenu(d.id, location);
+            }
+        }
+
+
+        nonPrimaryReleaseHandler: function(event) {
+            if (event.button === 2) { // If right click
+                const location = {
+                    x: event.originalEvent.pageX,
+                    y: event.originalEvent.pageY
+                };
+                tmappUI.openAnnotationEditMenu(d.id, location);
+            }
+        }
+
+        new OpenSeadragon.MouseTracker({
+            element: node,
+            enterHandler: highlight,
+            exitHandler: unHighlight,
+            nonPrimaryReleaseHandler: rightClick
+        }).setTracking(true);
+    }
+
     function _enterMarker(enter) {
         enter.append("g")
             .attr("transform", d => {
@@ -438,6 +476,11 @@ const overlayHandler = (function (){
                     .attr("stroke-width", _markerSquareStrokeWidth)
                     .attr("stroke", _getAnnotationColor)
                     .style("fill", "rgba(0,0,0,0.2)")
+                    .on("end", () =>
+                        group.each(function(d) {
+                            _addPredictionMouseEvents(d, this);
+                        })
+                    )
             )
             .call(group =>
                 group.append("path")
