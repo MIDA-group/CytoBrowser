@@ -60,6 +60,9 @@
                             <button type="button" class="btn btn-block btn-primary" data-toggle="modal" data-target="#image_browser">
                                 Open image browser
                             </button>
+                            <button id="get_predictions" type="button" class="btn btn-block btn-primary">
+                                Get predictions
+                            </button>
                             <button type="button" class="btn btn-block btn-primary" data-toggle="modal" data-target="#collaboration_menu">
                                 Open collaboration menu
                             </button>
@@ -132,6 +135,22 @@
                                     </tr>
                                 </thead>
                                 <tbody id="tmcptablebody">
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- List of predictions -->
+                        <div class="h-100 overflow-auto position-relative">
+                            <table id="predtable" class="table table-striped table-hover position-absolute">
+                                <col width="10%"><col width="70%"> <col width="30%">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Prediction</th>
+                                        <th>&nbsp;</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="predtablebody">
                                 </tbody>
                             </table>
                         </div>
@@ -312,6 +331,12 @@
                   of available images on the server. Click one of the
                   images to view it.
               </p>
+              <h5>Viewing predictions</h5>
+              <p>
+                  Predictions made by the machine learning algorithm can
+                  be loaded by pressing the <strong>Get prediction</strong>
+                  button.
+              </p>
               <h5>Navigating images</h5>
               <p>
                   The image viewer can be navigated with the mouse. The
@@ -475,12 +500,15 @@
 <script src="js/openseadragon/openseadragon-svg-overlay.js"></script>
 <script src="js/utils/bethesdaClassUtils.js"></script>
 <script src="js/collabClient.js"></script>
+<script src="js/predictionHandler.js"></script>
 <script src="js/annotationHandler.js"></script>
 <script src="js/overlayHandler.js"></script>
+<script src="js/tableHandler.js"></script>
 <script src="js/fileBrowserUI.js"></script>
 <script src="js/tmappUI.js"></script>
 <script src="js/tmapp.js"></script>
 <script src="js/annotationVisuals.js"></script>
+<script src="js/predictionVisuals.js"></script>
 <script src="js/annotationStorageConversion.js"></script>
 <script src="js/coordinateHelper.js"></script>
 <script src="js/localStorage.js"></script>

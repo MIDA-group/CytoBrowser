@@ -423,6 +423,7 @@ const tmapp = (function() {
             throw new Error(`Failed to open image ${imageName}.`);
         }
         annotationHandler.clear(false);
+        predictionHandler.clear();
         _viewer && _viewer.destroy();
         $("#ISS_viewer").empty();
         coordinateHelper.clearImage();
@@ -478,6 +479,26 @@ const tmapp = (function() {
             x: target.x,
             y: target.y,
             z: annotation.z
+        });
+    }
+
+    function moveToPrediction(id) {
+        if (_disabledControls) {
+            console.warn("Can't move to prediction when following someone.");
+            return;
+        }
+
+        const prediction = predictionHandler.getPredictionById(id);
+        if (prediction === undefined) {
+            throw new Error("Tried to move to an unused prediction id.");
+        }
+        const point = {x: prediction.x, y: prediction.y};
+        const target = coordinateHelper.imageToViewport(point);
+        moveTo({
+            zoom: 25,
+            x: target.x,
+            y: target.y,
+            z: prediction.z
         });
     }
 
@@ -596,6 +617,7 @@ const tmapp = (function() {
         openImage: openImage,
         moveTo: moveTo,
         moveToAnnotation: moveToAnnotation,
+        moveToPrediction: moveToPrediction,
         setCollab: setCollab,
         clearCollab: clearCollab,
         incrementFocus: incrementFocus,

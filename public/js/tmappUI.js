@@ -62,6 +62,19 @@ const tmappUI = (function(){
         $("#main_content").focus();
     }
 
+    function _initPredictionGetter() {
+        const image = tmapp.getImageName();
+        $("#get_predictions").click(() => {
+            const image = tmapp.getImageName();
+            if (image) {
+                predictionHandler.fetch(image);
+            }
+            else {
+                displayImageError("You need to open an image before you can get predictions!", 2000);
+            }
+        });
+    }
+
     function _initClassSelectionButtons() {
         const initialMclass = bethesdaClassUtils.getClassFromID(0);
         annotationTool.setMclass(initialMclass.name);
@@ -220,6 +233,7 @@ const tmappUI = (function(){
      * and add any event handlers that are needed.
      */
     function initUI() {
+        _initPredictionGetter();
         _initClassSelectionButtons();
         _initToolSelectionButtons();
         _initViewerEvents();
@@ -284,6 +298,28 @@ const tmappUI = (function(){
         _openContextMenu(location, menuBody => {
             htmlHelper.buildAnnotationSettingsMenu(menuBody, annotation, () => {
                 annotationHandler.update(id, annotation, "image");
+                _closeContextMenu();
+            });
+        });
+    }
+
+    /**
+     * Open a menu at the mouse cursor for observing a prediction.
+     * @param {number} id The id of the prediction.
+     * @param {Object} location The location of the upper left corner of
+     * the menu being opened.
+     * @param {number} location.x The x coordinate in page coordinates.
+     * @param {number} location.y The y coordinate in page coordinates.
+     */
+    function openPredictionMenu(id, location) {
+        const prediction = predictionHandler.getPredictionById(id);
+        if (!prediction) {
+            throw new Error("Invalid prediction id.");
+        }
+
+        _openContextMenu(location, menuBody => {
+            htmlHelper.buildPredictionMenu(menuBody, prediction, () => {
+                // TODO: Save some correction about the prediction when closing
                 _closeContextMenu();
             });
         });
@@ -463,6 +499,7 @@ const tmappUI = (function(){
         initUI: initUI,
         choice: choice,
         openAnnotationEditMenu: openAnnotationEditMenu,
+        openPredictionMenu: openPredictionMenu,
         setCollabID: setCollabID,
         clearCollabID: clearCollabID,
         updateCollaborators: updateCollaborators,

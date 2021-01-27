@@ -15,6 +15,7 @@ const overlayHandler = (function (){
         _markerOverlay,
         _regionOverlay,
         _pendingRegionOverlay,
+        _predictionOverlay,
         _activeAnnotationOverlayName,
         _previousCursors,
         _scale,
@@ -131,6 +132,11 @@ const overlayHandler = (function (){
 
     function _resizeMarkers() {
         _markerOverlay.selectAll("g")
+            .attr("transform", _transformFunction({scale: _markerSize()}));
+    }
+
+    function _resizePredictions() {
+        _predictionOverlay.selectAll("g")
             .attr("transform", _transformFunction({scale: _markerSize()}));
     }
 
@@ -263,6 +269,47 @@ const overlayHandler = (function (){
             element: node,
             enterHandler: highlight,
             exitHandler: unHighlight
+        }).setTracking(true);
+    }
+
+    function _addPredictionMouseEvents(d, node) {
+        function highlight() {
+            d3.select(node)
+                .selectAll("path")
+                .filter((d, i) => i === 0)
+                .transition("highlight").duration(100)
+                .attr("transform", _transformFunction({
+                    scale: 1.1
+                }))
+                .attr("stroke", _getAnnotationColor);
+        }
+
+        function unHighlight() {
+            d3.select(node)
+                .selectAll("path")
+                .filter((d, i) => i === 0)
+                .transition("highlight").duration(100)
+                .attr("transform", _transformFunction({
+                    scale: 1.0
+                }))
+                .attr("stroke", _getAnnotationColor)
+        }
+
+        function rightClick(event) {
+            if (event.button === 2) { // If right click
+                const location = {
+                    x: event.originalEvent.pageX,
+                    y: event.originalEvent.pageY
+                };
+                tmappUI.openPredictionMenu(d.id, location);
+            }
+        }
+
+        new OpenSeadragon.MouseTracker({
+            element: node,
+            enterHandler: highlight,
+            exitHandler: unHighlight,
+            nonPrimaryReleaseHandler: rightClick
         }).setTracking(true);
     }
 
@@ -417,6 +464,55 @@ const overlayHandler = (function (){
             .attr("transform", d => `translate(0, ${d.cursor.held ? 0.05 : 0.15})`);
     }
 
+    function _enterPrediction(enter) {
+        // TODO: Could use its own variables if we want to distinguish from markers more
+        enter.append("g")
+            .attr("transform", d => {
+                const point = {x: d.x, y: d.y};
+                const viewport = coordinateHelper.imageToViewport(point);
+                const coords = coordinateHelper.viewportToOverlay(viewport);
+                return `translate(${coords.x}, ${coords.y}) scale(${_markerSize()}) rotate(${-_rotation})`;
+            })
+            .call(group =>
+                group.append("path")
+                    .attr("d", d3.symbol().size(_markerSquareSize).type(d3.symbolCircle))
+                    .attr("transform", "rotate(0) scale(1)")
+                    .attr("stroke-width", _markerSquareStrokeWidth)
+                    .attr("stroke", _getAnnotationColor)
+                    .style("fill", "rgba(0,0,0,0.2)")
+                    .call(() =>
+                        group.each(function(d) {
+                            _addPredictionMouseEvents(d, this);
+                        })
+                    )
+            )
+            .call(group =>
+                group.append("path")
+                    .attr("d", d3.symbol().size(_markerCircleSize).type(d3.symbolCircle))
+                    .attr("stroke-width", _markerCircleStrokeWidth)
+                    .attr("stroke", "gray")
+                    .style("fill", "transparent")
+                    .style("pointer-events", "none")
+            )
+    }
+
+    function _updatePrediction(update) {
+        update.attr("transform", _transformFunction(function(d) {
+            const point = {x: d.x, y: d.y};
+            const viewport = coordinateHelper.imageToViewport(point);
+            const coords = coordinateHelper.viewportToOverlay(viewport);
+            return {translate: [coords.x, coords.y]}
+        }))
+        .selectAll("path")
+        .filter((d, i) => i === 0)
+        .transition("changeColor").duration(500)
+        .attr("stroke", _getAnnotationColor);
+    }
+
+    function _exitPrediction(exit) {
+        exit.remove();
+    }
+
     /**
      * Use d3 to update the collaboration cursors, adding new ones and
      * removing old ones.
@@ -505,6 +601,23 @@ const overlayHandler = (function (){
     }
 
     /**
+     * Update the visuals for the predictions.
+     * @param {Array} predictions The current predictions.
+     */
+    function updatePredictions(predictions) {
+        if (!_predictionOverlay)
+            return;
+        const data = predictions;
+        _predictionOverlay.selectAll("path")
+            .data(data, d => d.id)
+            .join(
+                _enterPrediction,
+                _updatePrediction,
+                _exitPrediction
+            );
+    }
+
+    /**
      * Let the overlay handler know the current zoom level and container
      * size of the viewer in order to properly scale elements.
      * @param {number} zoomLevel The current zoom level of the OSD viewport.
@@ -515,6 +628,7 @@ const overlayHandler = (function (){
         _scale = zoomLevel * wContainer;
         _resizeMembers();
         _resizeMarkers();
+        _resizePredictions();
         _resizeRegions();
     }
 
@@ -581,10 +695,14 @@ const overlayHandler = (function (){
         const cursors = d3.select(svgOverlay.node())
             .append("g")
             .attr("id", "cursors");
+        const predictions = d3.select(svgOverlay.node())
+            .append("g")
+            .attr("id", "predictions");
         _regionOverlay = d3.select(regions.node());
         _pendingRegionOverlay = d3.select(pendingRegion.node());
         _markerOverlay = d3.select(markers.node());
         _cursorOverlay = d3.select(cursors.node());
+        _predictionOverlay = d3.select(predictions.node());
         _previousCursors = d3.local();
         if (_activeAnnotationOverlayName)
             setActiveAnnotationOverlay(_activeAnnotationOverlayName);
@@ -594,6 +712,7 @@ const overlayHandler = (function (){
         updateMembers: updateMembers,
         updateAnnotations: updateAnnotations,
         updatePendingRegion: updatePendingRegion,
+        updatePredictions: updatePredictions,
         clearAnnotations: clearAnnotations,
         setOverlayScale: setOverlayScale,
         setOverlayRotation: setOverlayRotation,

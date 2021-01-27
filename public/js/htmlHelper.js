@@ -43,6 +43,20 @@ const htmlHelper = (function() {
         return container;
     }
 
+    function _predictionClassRow(mclass) {
+        // TODO: Could add color for class
+        return $(`
+            <div class="form-group row">
+                <label class="col-4 col-form-label">
+                    Class
+                </label>
+                <div class="col-8">
+                    <input type="text" readonly class="form-control" value="${mclass}">
+                </div>
+            </div>
+        `);
+    }
+
     function _annotationComment(comment, removeFun) {
         const entry = $(`
             <li class="list-group-item">
@@ -233,6 +247,23 @@ const htmlHelper = (function() {
     }
 
     /**
+     * Fill a jquery selection with the nodes for observing a prediction.
+     * @param {Object} container The selection that should contain the
+     * prediction menu.
+     * @param {predictionHandler.prediction} prediction The prediction
+     * that should be seen in the menu.
+     * @param {Function} saveFun The function that should be run when
+     * pressing the save button in the menu. (TODO: Nothing to save yet)
+     */
+    function buildPredictionMenu(container, prediction, saveFun) {
+        // Reusing functions from annotation settings, might rename them
+        const id = _annotationValueRow("Id", prediction.id);
+        const certainty = _annotationValueRow("Certainty", prediction.certainty);
+        const mclass = _predictionClassRow(prediction.mclass);
+        container.append(id, certainty, mclass);
+    }
+
+    /**
      * Fill a jquery selection with the nodes for selecting a class.
      * @param {Object} container The selection that should contain the
      * class selection buttons.
@@ -283,6 +314,7 @@ const htmlHelper = (function() {
 
     return {
         buildAnnotationSettingsMenu: buildAnnotationSettingsMenu,
+        buildPredictionMenu: buildPredictionMenu,
         buildClassSelectionButtons: buildClassSelectionButtons,
         buildCollaboratorList: buildCollaboratorList,
         buildImageBrowser: buildImageBrowser
