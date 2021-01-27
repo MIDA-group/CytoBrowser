@@ -6,6 +6,19 @@
 const predictionHandler = (function (){
     "use strict";
 
+    /**
+     * Representation of the cell classification predictions made by the
+     * server-side algorithm.
+     * @typedef {Object} Prediction
+     * @property {number} id The id of the prediction.
+     * @property {number} x The x coordinate of the prediction.
+     * @property {number} y The y coordinate of the prediction.
+     * @property {number} z The focus level of the prediction.
+     * @property {number} certainty The certainty of the classification
+     * made by the algorithm.
+     * @property {string} mclass Predicted class.
+     */
+
     const _predictions = [];
 
     function _clonePrediction(prediction) {
