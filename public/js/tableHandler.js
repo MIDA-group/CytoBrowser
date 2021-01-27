@@ -116,7 +116,7 @@ const tableHandler = (function() {
     }
 
     return {
-        updateTable: updateTable,
+        updateLocationTable: updateLocationTable,
         updateAnnotations: updateAnnotations,
         updatePredictions: updatePredictions
     };
