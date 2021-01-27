@@ -47,6 +47,13 @@ app.get("/api/images", (req, res) => {
     }
 });
 
+// Get the predictions made for a given image
+app.get("/api/predictions/:image", (req, res) => {
+    const image = req.params.image;
+    res.status(200);
+    res.send(`Image sent: ${image}`);
+});
+
 // Get a list of files stored on the server
 app.get("/api/storage", (req, res) => {
     serverStorage.files().then(data => {
