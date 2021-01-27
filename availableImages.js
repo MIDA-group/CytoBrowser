@@ -55,6 +55,11 @@ function getThumbnails(dir, image) {
     // Look through the middle file directory
     const fileDir = names[Math.floor(names.length / 2)];
     fs.readdir(`${dataDir}/${fileDir}`, (err, dir) => {
+        if (err) {
+            // TODO: Handle errors
+            console.error(err.toString());
+        }
+
         // Sort the directories numerically
         dir = dir.sort((a, b) => +a - +b);
 
@@ -70,6 +75,7 @@ function getThumbnails(dir, image) {
             fs.readdir(path, (err, dir) => {
                 if (err) {
                     // TODO: Handle errors
+                    console.error(err.toString());
                 }
 
                 // Store suitable thumbnails
@@ -109,6 +115,7 @@ function getThumbnails(dir, image) {
 function updateImages() {
     fs.readdir(dataDir, (err, dir) => {
         if (err) {
+            console.error(err.toString());
             availableImages = null;
             return;
         }

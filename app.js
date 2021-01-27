@@ -54,7 +54,7 @@ app.get("/api/storage", (req, res) => {
         res.json({files: data});
     })
     .catch(err => {
-        console.warn(err.message);
+        console.error(err.toString());
         res.status(500);
         res.send(err.message);
     });
