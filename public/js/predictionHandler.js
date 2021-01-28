@@ -30,6 +30,48 @@ const predictionHandler = (function (){
         return clone;
     }
 
+    // TODO: Same functionality as in remoteStorage, refactor
+    function _httpGet(address){
+        const req = new XMLHttpRequest();
+        req.open("GET", address, true);
+        req.send();
+
+        return new Promise((resolve, reject) => {
+            req.onreadystatechange = function() {
+                if (req.readyState !== 4) {
+                    return;
+                }
+                if (req.status === 200) {
+                    const data = JSON.parse(req.responseText);
+                    resolve(data);
+                }
+                else {
+                    alert(`${req.status}: ${req.responseText}`);
+                    reject(new Error(`${req.status}: ${req.responseText}`));
+                }
+            }
+        });
+    }
+
+    function _addPredictionsFromData(data) {
+        const ids = data.id;
+        ids.forEach((id, i) => {
+            const prediction = {
+                id: id,
+                x: data.x[i],
+                y: data.y[i],
+                z: data.z[i],
+                certainty: data.certainty[i],
+                mclass: data.mclass[i]
+            };
+            _predictions.push(prediction);
+        });
+    }
+
+    function _updateVisuals() {
+        predictionVisuals.update(_predictions);
+    }
+
     /**
      * Get the predictions made by the model on the server for a given
      * image and store them locally.
@@ -38,19 +80,10 @@ const predictionHandler = (function (){
      */
     function fetch(imageName) {
         clear();
-
-        // TODO: Get from server instead of generating
-        const prediction = {
-            id: 0,
-            x: 50000,
-            y: 50000,
-            z: 0,
-            certainty: 0.95,
-            mclass: "NILM"
-        };
-
-        _predictions.push(prediction);
-        predictionVisuals.update(_predictions);
+        const address = `${window.location.origin}/api/predictions/${imageName}`;
+        _httpGet(address)
+            .then(_addPredictionsFromData)
+            .then(_updateVisuals);
     }
 
     /**
