@@ -4,10 +4,12 @@ const hostname = argv._[0] || "localhost";
 const port = argv._[1] || 0;
 const storageDir = argv.storage || argv.s || "./storage";
 const dataDir = argv.data || argv.d || "./data";
+const predDir = argv.predictions || argv.p || "./predictions";
 if (argv.h || argv.help) {
     console.info(`Usage: node app.js hostname port ` +
     `[-s storage path = "./storage"] ` +
-    `[-d image data path = "./data"]`);
+    `[-d image data path = "./data"]` +
+    `[-p prediction data path = "./predictions"]`);
     return;
 }
 
@@ -17,6 +19,7 @@ const express = require("express");
 const availableImages = require("./availableImages")(dataDir);
 const collaboration = require("./collaboration");
 const serverStorage = require("./serverStorage")(storageDir);
+const predictions = require("./predictions")(predDir);
 
 // Initialize the server
 const app = express();
@@ -50,8 +53,15 @@ app.get("/api/images", (req, res) => {
 // Get the predictions made for a given image
 app.get("/api/predictions/:image", (req, res) => {
     const image = req.params.image;
-    res.status(200);
-    res.send(`Image sent: ${image}`);
+    predictions.get(image).then(data => {
+        res.status(200);
+        res.json(data);
+    }).catch(err => {
+        console.error(err.toString());
+        res.status(500);
+        // TODO: Should probably send something more reasonable
+        res.send(err.message);
+    });
 });
 
 // Get a list of files stored on the server
