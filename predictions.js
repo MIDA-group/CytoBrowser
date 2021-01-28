@@ -24,7 +24,7 @@ function get(image) {
             return readJsonFromFile(`${predDir}/${predFile.name}`);
         }
         else {
-            throw new Error("No predictions for the given image exist.");
+            throw new Error(`No predictions for the image '${image}' exist.`);
         }
     });
 }
