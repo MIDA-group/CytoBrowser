@@ -8,16 +8,11 @@ const fs = require("fs");
 const fsPromises = fs.promises;
 let predDir;
 
-// Not as much to send if we don't repeat keys for each prediction
-// TODO: Should use real data!
-const dummyData = {
-    id: [0, 1, 2],
-    x: [50000, 51000, 49000],
-    y: [49000, 50000, 50000],
-    z: [0, 0, 0],
-    certainty: [0.95, 0.7, 0.8],
-    mclass: ["NILM", "ASC-H", "SCC"]
-};
+function readJsonFromFile(path) {
+    return fsPromises.readFile(path).then(data => {
+        return JSON.parse(data);
+    });
+}
 
 function get(image) {
     const name = `${image}.json`;
@@ -26,7 +21,7 @@ function get(image) {
             file.isFile() && file.name === name
         );
         if (predFile !== undefined) {
-            return dummyData;
+            return readJsonFromFile(`${predDir}/${predFile.name}`);
         }
         else {
             throw new Error("No predictions for the given image exist.");
