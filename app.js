@@ -59,7 +59,6 @@ app.get("/api/predictions/:image", (req, res) => {
     }).catch(err => {
         console.error(err.toString());
         res.status(500);
-        // TODO: Should probably send something more reasonable
         res.send(err.message);
     });
 });

@@ -30,7 +30,7 @@ const predictionHandler = (function (){
         return clone;
     }
 
-    // TODO: Same functionality as in remoteStorage, refactor
+    // TODO: Similar functionality as in remoteStorage, refactor
     function _httpGet(address){
         const req = new XMLHttpRequest();
         req.open("GET", address, true);
@@ -46,7 +46,6 @@ const predictionHandler = (function (){
                     resolve(data);
                 }
                 else {
-                    alert(`${req.status}: ${req.responseText}`);
                     reject(new Error(`${req.status}: ${req.responseText}`));
                 }
             }
@@ -83,7 +82,8 @@ const predictionHandler = (function (){
         const address = `${window.location.origin}/api/predictions/${imageName}`;
         _httpGet(address)
             .then(_addPredictionsFromData)
-            .then(_updateVisuals);
+            .then(_updateVisuals)
+            .catch(err => tmappUI.displayImageError(err, 2000));
     }
 
     /**
