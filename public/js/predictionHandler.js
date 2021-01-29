@@ -46,7 +46,7 @@ const predictionHandler = (function (){
                     resolve(data);
                 }
                 else {
-                    reject(new Error(`${req.status}: ${req.responseText}`));
+                    reject(new Error(req.responseText));
                 }
             }
         });
@@ -83,7 +83,7 @@ const predictionHandler = (function (){
         _httpGet(address)
             .then(_addPredictionsFromData)
             .then(_updateVisuals)
-            .catch(err => tmappUI.displayImageError(err, 2000));
+            .catch(err => tmappUI.displayImageError(err, 5000));
     }
 
     /**
