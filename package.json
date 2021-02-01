@@ -4,6 +4,7 @@
   "description": "Tool for annotating cytology images",
   "main": "app.js",
   "dependencies": {
+    "csv": "^5.3.2",
     "express": "^4.17.1",
     "express-ws": "^4.0.0",
     "minimist": "^1.2.5",
