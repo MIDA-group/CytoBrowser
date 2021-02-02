@@ -18,57 +18,57 @@ function parseImageInfo(filenames) {
     const iFinder = /(?<=i)\d+/;
     const jFinder = /(?<=j)\d+/;
     const entries = filenames.map(fn => {
-        const index = fn.match(indexFinder);
-        const i = index.match(iFinder);
-        const j = index.match(jFinder);
+        const index = fn.match(indexFinder)[0];
+        const i = Number(index.match(iFinder)[0]);
+        const j = Number(index.match(jFinder)[0]);
         return {i: i, j: j, filename: fn};
     });
     return entries.sort((a, b) => a.i < b.i || a.j - b.j);
 }
 
-function readPredictedLocations(name, dir) {
-    fsPromises.readdir(dir).then(content => {
-        let fns = content.filter(n => n.startsWith(name));
-        fns = content.filter(n => n.endsWith(".csv"));
-        const entries = parseImageInfo(fns);
-        entries.forEach(entry => entry.path = `${dir}/${entry.filename}`);
-        entries.forEach(entry => entry.data = fs.readFileSync(entry.path));
-        entries.forEach(entry => entry.predictions = parse(entry.data));
-        const output = {
-            id: [],
-            x: [],
-            y: []
-        };
-        entries.forEach(entry => {
-            const offsetX = entry.j * WIDTH;
-            const offsetY = entry.i * HEIGHT; // TODO: Check if dimensions are flipped
-            entry.predictions.forEach(prediction => {
-                output.id.push(id.length);
-                output.x.push(prediction["X"] + offsetX);
-                output.y.push(prediction["Y"] + offsetY);
-            });
-        });
-        return output;
-    });
-}
-
 function readPredictions(name, dir) {
-    fsPromises.readdir(dir).then(content => {
-        let fns = content.filter(n => n.startsWith(name));
-        fns = content.filter(n => n.endsWith(".csv"));
+    return fsPromises.readdir(dir).then(content => {
+        const fns = content.filter(n => {
+            return n.startsWith(name) && n.endsWith(".csv")
+        });
         const entries = parseImageInfo(fns);
-        entries.forEach(entry => entry.path = `${dir}/${entry.filename}`);
-        entries.forEach(entry => entry.data = fs.readFileSync(entry.path));
-        entries.forEach(entry => entry.predictions = parse(entry.data));
+        entries.forEach(entry => {
+            entry.path = `${dir}/${entry.filename}`;
+            const csvData = fs.readFileSync(entry.path);
+            entry.data = parse(csvData, {columns: true});
+        });
+        return entries;
     });
 }
 
-function convertResultsToObject() {
-    const results = {};
-    return results;
+function csvDataEntriesToArray(entries) {
+    const output = {id: [], x: [], y: []};
+    entries.forEach(entry => {
+        const offsetX = entry.j * WIDTH;
+        const offsetY = entry.i * HEIGHT;
+        entry.data.forEach(prediction => {
+            output.id.push(output.id.length);
+            output.x.push(Number(prediction["X"]) + offsetX);
+            output.y.push(Number(prediction["Y"]) + offsetY);
+        });
+    });
+    return output;
+}
+
+function convertResultsToObject(name, dir) {
+    return readPredictions(name, dir).then(csvDataEntriesToArray);
 }
 
 function writeResultsAsJson() {
-    const results = convertResultsToObject();
-
+    const name = "foo";
+    const dir = "./csvresults";
+    const outputDir = "./predictions";
+    convertResultsToObject(name, dir).then(results =>
+        fsPromises.writeFile(`${name}.json`, JSON.stringify(results))
+    );
 }
+
+exports.parseImageInfo = parseImageInfo;
+exports.readPredictions = readPredictions;
+exports.convertResultsToObject = convertResultsToObject;
+exports.writeResultsAsJson = writeResultsAsJson;
