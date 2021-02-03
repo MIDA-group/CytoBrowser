@@ -35,6 +35,13 @@ function prepare(images, zDir, csvDir) {
     });
 }
 
+/**
+ * Get the predictions for a specified image. The prediction data should
+ * already have been generated with `prepare`.
+ * @param {string} image The name of the image.
+ * @returns {Promise<Object>} The promise of an object with prediction
+ * data that can be sent to the client.
+ */
 function get(image) {
     const name = `${image}.json`;
     return fsPromises.readdir(predDir, {withFileTypes: true}).then(dir => {
