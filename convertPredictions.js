@@ -85,9 +85,20 @@ function addCsvDataToEntries(name, dir, entries) {
     });
 }
 
+function adjustEntryOffsets(entries) {
+    entries.sort((a, b) => a.i < b.i || a.j - b.j);
+    entries.forEach((entry, id) => {
+        entry.id = id;
+        entry.x = entry.x + WIDTH * entry.j;
+        entry.y = entry.y + HEIGHT * entry.i;
+    });
+    return entries;
+}
+
 function convertResultsToEntries(name, zDir, csvDir) {
     return createEntriesFromZLevels(name, zDir)
         .then(entries => addCsvDataToEntries(name, csvDir, entries))
+        .then(adjustEntryOffsets)
 }
 
 exports.getCsvData = getCsvData;
