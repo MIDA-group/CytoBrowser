@@ -101,8 +101,34 @@ function convertResultsToEntries(name, zDir, csvDir) {
         .then(adjustEntryOffsets)
 }
 
+function convertEntriesToObject(entries) {
+    const output = {
+        id: [],
+        x: [],
+        y: [],
+        z: [],
+        mclass: [],
+        certainty: []
+    };
+    entries.forEach(entry => {
+        output.id.push(entry.id);
+        output.x.push(entry.x);
+        output.y.push(entry.y);
+        output.z.push(entry.z);
+        output.mclass.push("TODO");
+        output.certainty.push(1);
+    });
+    return output;
+}
+
+function convertResultsToObject(name, zDir, csvDir) {
+    return convertResultsToEntries(name, zDir, csvDir)
+        .then(convertEntriesToObject);
+}
+
 exports.getCsvData = getCsvData;
 exports.convertResultsToEntries = convertResultsToEntries;
+exports.convertResultsToObject = convertResultsToObject;
 /*
 // Some info can be parsed from the filename itself
 function parseImageInfo(filenames) {
