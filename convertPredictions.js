@@ -8,15 +8,93 @@ const fs = require("fs");
 const fsPromises = fs.promises;
 const parse = require("csv-parse/lib/sync");
 
+// Regular expressions for parsing info from file names
+const indexFinder = /i\d+j\d+/;
+const iFinder = /(?<=i)\d+/;
+const jFinder = /(?<=j)\d+/;
+const idFinder = /(?<=i\d+j\d+_)\d+(?=_z-?\d+\.jpg$)/;
+const zFinder = /(?<=z)-?\d+(?=\.jpg$)/;
+
 // TODO: Should be able to set these
 const WIDTH = 10;
 const HEIGHT = 10;
 
+function createEntryFromZLevel(filename) {
+    const index = filename.match(indexFinder)[0];
+    const i = Number(index.match(iFinder)[0]);
+    const j = Number(index.match(jFinder)[0]);
+    const id = Number(filename.match(idFinder)[0]);
+    const z = Number(filename.match(zFinder)[0]);
+    return {i: i, j: j, id: id, z: z};
+}
+
+function createEntriesFromZLevels(name, dir) {
+    return fsPromises.readdir(dir).then(content => {
+        const fns = content.filter(n => {
+            return n.startsWith(name) && n.endsWith(".jpg");
+        });
+        const entries = fns.map(createEntryFromZLevel);
+        return entries;
+    });
+}
+
+function getCsvData(dir, fns) {
+    const data = [];
+    fns.forEach(filename => {
+        const path = `${dir}/${filename}`;
+        const csvData = fs.readFileSync(path);
+        const objectData = parse(csvData, {columns: true});
+        const index = filename.match(indexFinder)[0];
+        const i = Number(index.match(iFinder)[0]);
+        const j = Number(index.match(jFinder)[0]);
+        objectData.forEach(detection => {
+            data.push({
+                i: i,
+                j: j,
+                x: Number(detection["X"]),
+                y: Number(detection["Y"]),
+                id: Number(detection[" "]) - 1 // -1 to match Z file names
+            });
+        });
+    });
+    return data;
+}
+
+function mergeEntriesWithCsvData(entries, csvData) {
+    entries.forEach(entry => {
+        const match = csvData.find(d =>
+            d.i === entry.i
+            && d.j === entry.j
+            && d.id === entry.id
+        );
+        if (match) {
+            entry.x = match.x;
+            entry.y = match.y;
+        }
+    });
+}
+
+function addCsvDataToEntries(name, dir, entries) {
+    return fsPromises.readdir(dir).then(content => {
+        const fns = content.filter(n => {
+            return n.startsWith(name) && n.endsWith(".csv");
+        });
+        const csvData = getCsvData(dir, fns);
+        mergeEntriesWithCsvData(entries, csvData);
+        return entries;
+    });
+}
+
+function convertResultsToEntries(name, zDir, csvDir) {
+    return createEntriesFromZLevels(name, zDir)
+        .then(entries => addCsvDataToEntries(name, csvDir, entries))
+}
+
+exports.getCsvData = getCsvData;
+exports.convertResultsToEntries = convertResultsToEntries;
+/*
 // Some info can be parsed from the filename itself
 function parseImageInfo(filenames) {
-    const indexFinder = /i\d+j\d+/;
-    const iFinder = /(?<=i)\d+/;
-    const jFinder = /(?<=j)\d+/;
     const entries = filenames.map(fn => {
         const index = fn.match(indexFinder)[0];
         const i = Number(index.match(iFinder)[0]);
@@ -55,20 +133,23 @@ function csvDataEntriesToArray(entries) {
     return output;
 }
 
-function convertResultsToObject(name, dir) {
+function convertResultToObject(name, dir) {
     return readPredictions(name, dir).then(csvDataEntriesToArray);
 }
 
-function writeResultsAsJson() {
-    const name = "foo";
-    const dir = "./csvresults";
-    const outputDir = "./predictions";
-    convertResultsToObject(name, dir).then(results =>
-        fsPromises.writeFile(`${name}.json`, JSON.stringify(results))
-    );
+function convertResultToJson(names, csvDir, outputDir) {
+    names.forEach(name => {
+        convertResultsToObject(name, csvDir).then(result => {
+            const outputFile = `${outputDir}/${name}.json`;
+            const resultText = JSON.stringify(result);
+            fsPromises.writeFile(outputFile, resultText);
+        });
+    });
 }
 
 exports.parseImageInfo = parseImageInfo;
 exports.readPredictions = readPredictions;
-exports.convertResultsToObject = convertResultsToObject;
+exports.convertResultToObject = convertResultToObject;
 exports.writeResultsAsJson = writeResultsAsJson;
+exports.convertResultsToJson = convertResultsToJson;
+*/
