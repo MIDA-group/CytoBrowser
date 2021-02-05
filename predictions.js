@@ -23,16 +23,20 @@ function readJsonFromFile(path) {
  * @param {string} zDir The directory where the algorithm has stored the
  * focus-selected image patches.
  * @param {string} csvDir The directory with CSV results
+ * @returns {Promise} Promise that resolves once the preparation is done.
  */
 function prepare(images, zDir, csvDir) {
+    const promises = [];
     images.forEach(image => {
-        convertPredictions.convertResultsToObject(image, zDir, csvDir)
+        const p = convertPredictions.convertResultsToObject(image, zDir, csvDir)
             .then(predictions => {
                 const filename = `${predDir}/${image}.json`;
                 const data = JSON.stringify(predictions);
                 fsPromises.writeFile(filename, data);
             });
+        promises.push(p);
     });
+    return Promise.all(promises);
 }
 
 /**
