@@ -89,8 +89,8 @@ function adjustEntryOffsets(entries) {
     entries.sort((a, b) => a.i < b.i || a.j - b.j);
     entries.forEach((entry, id) => {
         entry.id = id;
-        entry.x = entry.x + WIDTH * entry.j;
-        entry.y = entry.y + HEIGHT * entry.i;
+        entry.x = entry.x + WIDTH * (entry.j - 1); // Offset results if no -1, for some reason
+        entry.y = entry.y + HEIGHT * (entry.i - 1);
     });
     return entries;
 }
