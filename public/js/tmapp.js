@@ -55,6 +55,13 @@ const tmapp = (function() {
         return _currState.z + Math.floor(_currentImage.zLevels.length / 2);
     }
 
+    function _getFocusFromZ(z) {
+        // TODO: A bit weird to need this? Might want to change how z levels work
+        const index = _currImage.zLevels.findIndex(zLevel => zLevel === z);
+        const adjusted = index - Math.floor(_currentImage.zLevels.length / 2);
+        return adjusted;
+    }
+
     function _setFocusLevel(z) {
         const count = _viewer.world.getItemCount();
         const max = Math.floor(count / 2);
@@ -482,6 +489,10 @@ const tmapp = (function() {
         });
     }
 
+    /**
+     * Move the viewport to look at a specific prediction.
+     * @param {number} id The id of the prediction being moved to.
+     */
     function moveToPrediction(id) {
         if (_disabledControls) {
             console.warn("Can't move to prediction when following someone.");
@@ -498,7 +509,7 @@ const tmapp = (function() {
             zoom: 25,
             x: target.x,
             y: target.y,
-            z: prediction.z
+            z: _getFocusFromZ(prediction.z)
         });
     }
 
