@@ -106,7 +106,7 @@ const predictionHandler = (function (){
             return undefined;
         }
         const predictionClone = _clonePrediction(prediction);
-        return _predictions[0];
+        return predictionClone;
     }
 
     // Function for debugging
