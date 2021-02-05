@@ -115,7 +115,7 @@ function convertEntriesToObject(entries) {
         output.x.push(entry.x);
         output.y.push(entry.y);
         output.z.push(entry.z);
-        output.mclass.push("TODO");
+        output.mclass.push("Other");
         output.certainty.push(1);
     });
     return output;
