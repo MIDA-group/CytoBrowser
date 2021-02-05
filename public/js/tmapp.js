@@ -57,7 +57,7 @@ const tmapp = (function() {
 
     function _getFocusFromZ(z) {
         // TODO: A bit weird to need this? Might want to change how z levels work
-        const index = _currImage.zLevels.findIndex(zLevel => zLevel === z);
+        const index = _currentImage.zLevels.findIndex(zLevel => Number(zLevel) === z);
         const adjusted = index - Math.floor(_currentImage.zLevels.length / 2);
         return adjusted;
     }
