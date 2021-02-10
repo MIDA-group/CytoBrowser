@@ -15,10 +15,10 @@ Fork of [TissUUmaps](https://github.com/wahlby-lab/TissUUmaps) aimed at Cytology
 npm install
 
 #Start the web server on a specified host
-node app.js 127.0.0.1 8080
+node cytobrowser.js 127.0.0.1 8080
 
 #Or more generally
-node app.js [hostname] [port]
+node cytobrowser.js [hostname] [port]
 
 #Optionally open an ssh-pipe from your local machine to the web server
 ssh -L 8080:localhost:8080 remote.host

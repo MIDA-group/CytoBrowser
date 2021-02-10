@@ -5,7 +5,7 @@ const port = argv._[1] || 0;
 const storageDir = argv.storage || argv.s || "./storage";
 const dataDir = argv.data || argv.d || "./data";
 if (argv.h || argv.help) {
-    console.info(`Usage: node app.js hostname port ` +
+    console.info(`Usage: node cytobrowser.js hostname port ` +
     `[-s storage path = "./storage"] ` +
     `[-d image data path = "./data"]`);
     return;
@@ -14,9 +14,9 @@ if (argv.h || argv.help) {
 // Declare required modules
 const fs = require("fs");
 const express = require("express");
-const availableImages = require("./availableImages")(dataDir);
-const collaboration = require("./collaboration");
-const serverStorage = require("./serverStorage")(storageDir);
+const availableImages = require("./server/availableImages")(dataDir);
+const collaboration = require("./server/collaboration");
+const serverStorage = require("./server/serverStorage")(storageDir);
 
 // Initialize the server
 const app = express();
