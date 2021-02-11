@@ -4,6 +4,12 @@
  * @namespace htmlHelper
  */
 const htmlHelper = (function() {
+
+    function _scaleRGB(color, scale) {
+        return '#' + color.replace(/^#/, '').replace(/../g, color =>
+          ('0' + Math.min(255, Math.max(0, Math.round(parseInt(color, 16) * scale))).toString(16)).substr(-2));
+    }
+      
     function _annotationValueRow(label, value) {
         return $(`
             <div class="form-group row">
@@ -117,6 +123,10 @@ const htmlHelper = (function() {
     }
 
     function _classSelectionButton(mclass, active) {
+        const active_color=_scaleRGB(mclass.color,0.5);
+        
+        //To set 'style="background-color: ${mclass.color};"' works here, but se we cannot use 
+        //pseudo-selectors (e.g. hover) in inline style, we do all colors below with CSS
         const button = $(`
             <label id="class_${mclass.name}" class="btn btn-dark" title="${mclass.description}">
                 <input type="radio" name="class_options" autocomplete="off">${mclass.name}</input>
@@ -127,6 +137,16 @@ const htmlHelper = (function() {
         button.click(() => {
             annotationTool.setMclass(mclass.name);
         });
+
+        //Since we cannot set pseudo-selectors inline, we have to create CSS
+        cssHelper.createCSSSelector(`#class_${mclass.name}`,`background-color: ${mclass.color};`);
+        cssHelper.createCSSSelector(`#class_${mclass.name}:hover`,`background-color: ${active_color};`);
+        cssHelper.createCSSSelector(`#class_${mclass.name}:active`,`background-color: ${active_color};`); //while pressed
+        //Keep the select-box-shadow permanently (offset-x,offset-y,blur,width,color)
+        cssHelper.createCSSSelector(`#class_${mclass.name}.active`,`background-color: ${mclass.color};box-shadow: 0 0 0.1rem .25rem rgba(0,0,0,0.5);`); //if enabled
+        cssHelper.createCSSSelector(`#class_${mclass.name}:visited`,`background-color: ${active_color};`);
+        cssHelper.createCSSSelector(`#class_${mclass.name}:focus`,`background-color: ${active_color};`);
+
         return button;
     }
 
