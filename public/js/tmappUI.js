@@ -141,6 +141,7 @@ const tmappUI = (function(){
         //1,2,... for class selection
         //z,x for focus up down
         $("#main_content").keydown(function(){
+            let caught=true; //Assume we use the key (setting to false in 'default')
             switch(event.keyCode) {
                 case 27: // esc
                     annotationTool.reset();
@@ -151,6 +152,17 @@ const tmappUI = (function(){
                 case 13: // enter
                     annotationTool.complete();
                     break;
+                // ASDF...
+                case 70: // f
+                    //catching 'f' to disable 'Flip' in OSD, we do not support it
+                    break;
+                // ZXCV...
+                case 90: // z
+                    $("#focus_prev").click();
+                    break;
+                case 88: // x
+                    $("#focus_next").click();
+                    break;
                 case 67: // c
                     $("#tool_marker").click();
                     break;
@@ -160,21 +172,20 @@ const tmappUI = (function(){
                 case 66: // b
                     $("#tool_poly").click();
                     break;
-                case 90: // z
-                    $("#focus_prev").click();
-                    break;
-                case 88: // x
-                    $("#focus_next").click();
-                    break;
                 default:
+                    caught=false; //Assume we miss the key
                     // Handle digit keys being pressed for classes
                     const digits = Array.from({length: 10}, (v, k) => String((k+1) % 10));
                     const chars = digits.map(digit => digit.charCodeAt());
                     chars.slice(0, bethesdaClassUtils.count()).forEach((char, index) => {
                         if (event.which === char) {
                             $("#class_" + bethesdaClassUtils.getClassFromID(index).name).click();
+                            caught=true; //We did take it
                         }
                     });
+            }
+            if (caught) {
+                event.preventDefault(); //prevent e.g. Firefox to open search box
             }
         });
     }
