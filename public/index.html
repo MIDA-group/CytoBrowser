@@ -49,11 +49,12 @@
     <!-- Main content -->
     <div id="main_content" class="container-fluid d-flex flex-column flex-fill" tabindex="-1">
         <div class="row flex-fill">
-            <div class="col mb-3">
+            <div class="col mb-10">
                 <div id="ISS_viewer" class="ISS_viewer blurrable"></div>
                 <div id="alert_wrapper" style="height: 100%; width: 100%; display: flex; justify-content: center; align-items: center; position: absolute; top: 0; pointer-events: none"></div>
             </div>
 
+            <!-- Right side main toolbar -->
             <div class="col-auto d-flex flex-column mb-2">
                 <div class="row flex-fill">
                     <div class="card m-2 w-100">
@@ -74,34 +75,41 @@
                         <!-- Functionality buttons -->
                         <div class="card-body">
                             <div class="card-block pb-4">
-                                <h6 class="card-subtitle mb-2 text-muted">Annotation tool</h6>
-                                <div class="btn-group btn-group-toggle d-flex" data-toggle="buttons" role="group">
-                                    <label id="tool_marker" type="button" class="btn btn-primary">
-                                        <input name="tool_selection" type="radio" autocomplete="off">
-                                        Marker
-                                    </label>
-                                    <label id="tool_rect" type="button" class="btn btn-primary">
-                                        <input name="tool_selection" type="radio" autocomplete="off">
-                                        Rectangle
-                                    </label>
-                                    <label id="tool_poly" type="button" class="btn btn-primary">
-                                        <input name="tool_selection" type="radio" autocomplete="off">
-                                        Polygon
-                                    </label>
-                                </div>
-                            </div>
-                            <div class="card-block">
                                 <div class="row">
-                                    <div class="col-auto">
-                                        <h6 class="card-subtitle mb-2 text-muted">Annotation class</h6>
-                                        <div id="class_buttons" class="btn-group btn-group-toggle d-flex" data-toggle="buttons" role="group">
+                                    <!-- Annotation tools -->
+                                    <div class="col-8">
+                                        <h6 class="card-subtitle mb-2 text-muted">Annotation tool</h6>
+                                        <div class="btn-group btn-group-toggle d-flex" data-toggle="buttons" role="group">
+                                            <label id="tool_marker" type="button" class="btn btn-primary">
+                                                <input name="tool_selection" type="radio" autocomplete="off">
+                                                Marker
+                                            </label>
+                                            <label id="tool_rect" type="button" class="btn btn-primary">
+                                                <input name="tool_selection" type="radio" autocomplete="off">
+                                                Rectangle
+                                            </label>
+                                            <label id="tool_poly" type="button" class="btn btn-primary">
+                                                <input name="tool_selection" type="radio" autocomplete="off">
+                                                Polygon
+                                            </label>
                                         </div>
                                     </div>
-                                    <div class="col">
+                                    <!-- Focus up/down --> <!-- TODO, move elsewhere -->
+                                    <div class="col-4 ml-auto">
                                         <h6 class="card-subtitle mb-2 text-muted">Change focus</h6>
                                         <div class="btn-group d-flex" role="group">
                                             <button id="focus_next" type="button" class="btn btn-primary">Up</button>
                                             <button id="focus_prev" type="button" class="btn btn-primary">Down</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-block">
+                                <div class="row">
+                                    <!-- Annotation class buttons -->
+                                    <div class="col">
+                                        <h6 class="card-subtitle mb-2 text-muted">Annotation class</h6>
+                                        <div id="class_buttons" class="btn-group btn-group-toggle d-flex" data-toggle="buttons" role="group">
                                         </div>
                                     </div>
                                 </div>
@@ -112,7 +120,7 @@
                         <div class="card-body">
                             <div class="row pb-3">
                                 <div class="col-3">
-                                    <button id="points_to_json" class="btn btn-primary btn-block" type="button"> Download</button>
+                                    <button id="points_to_json" class="btn btn-primary btn-block" type="button"> Export </button>
                                 </div>
                                 <div class="col-3">
                                     <input class="d-none" type="file" id="data_files_import" name="files[]">
