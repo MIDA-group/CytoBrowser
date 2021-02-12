@@ -193,6 +193,7 @@ const tmapp = (function() {
                     y: coords.y,
                     z: _currState.z
                 };
+                setCursorStatus(position);
                 annotationTool.click(position);
             }
         };
@@ -205,6 +206,7 @@ const tmapp = (function() {
                     y: coords.y,
                     z: _currState.z
                 };
+                setCursorStatus(position);
                 annotationTool.complete(position);
             }
         };
