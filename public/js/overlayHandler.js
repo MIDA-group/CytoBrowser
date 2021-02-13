@@ -167,6 +167,9 @@ const overlayHandler = (function (){
             pressHandler: function(event) {
                 tmapp.setCursorStatus({held: true});
             },
+            releaseHandler: function(event) {
+                tmapp.setCursorStatus({held: false});
+            },
             dragHandler: function(event) {
                 const reference = coordinateHelper.webToImage({x: 0, y: 0});
                 const delta = coordinateHelper.webToImage(event.delta);
@@ -180,9 +183,6 @@ const overlayHandler = (function (){
                     y: event.originalEvent.pageY
                 });
                 tmapp.setCursorStatus(viewportCoords);
-            },
-            dragEndHandler: function(event) {
-                tmapp.setCursorStatus({held: false});
             },
             nonPrimaryReleaseHandler: function(event) {
                 if (event.button === 2) { // If right click
