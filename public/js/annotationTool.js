@@ -28,12 +28,13 @@ const annotationTool = (function() {
         let _startPoint,
             _endPoint,
             _zLevel,
-            _mclass;
+            _mclass,
+            _clicks = 0; //Counting clicks to i) allow dblClick to behave like click, while ii) not starting new rectangle on dblClick-complete
 
         function _getAnnotation() {
             const points = [
                 _startPoint,
-                {x: _startPoint.x, y: _endPoint.y},
+                {x: _startPoint.x, y: _endPoint.y}, //Diagonal corner
                 _endPoint,
                 {x: _endPoint.x, y: _startPoint.y}
             ];
@@ -54,25 +55,54 @@ const annotationTool = (function() {
             _startPoint = null;
             _endPoint = null;
             overlayHandler.updatePendingRegion(null);
+            _clicks = 0;
+        }
+
+        function addPoint(position) {
+            _clicks++;
+            let coords = coordinateHelper.viewportToImage({
+                x: position.x,
+                y: position.y
+            });
+            _zLevel = position.z;
+            _mclass = _activeMclass;
+            _endPoint = coords;
+            if (_startPoint) {
+                if (_startPoint.x === coords.x && _startPoint.y === coords.y) {
+                    console.info("Zero sized rectangle (double click?), ignoring click.");
+                    return;
+                }
+                complete(position);
+            }
+            else {
+                _startPoint = coords;
+                _updatePending();
+            }
+        }
+
+        function complete(position) {
+            _zLevel = position.z;
+            _mclass = _activeMclass;
+            if (_startPoint && _endPoint) {
+                const annotation = _getAnnotation();
+                annotationHandler.add(annotation, "image");
+                reset();
+            } 
+            else {
+                console.warn("Complete called with incomplete rectangle!");
+            }
         }
 
         return {
-            click: function(position) {
-                let coords = coordinateHelper.viewportToImage({
-                    x: position.x,
-                    y: position.y
-                });
-                _zLevel = position.z;
-                _mclass = _activeMclass;
-                if (_startPoint) {
-                    _endPoint = coords;
-                    const annotation = _getAnnotation();
-                    annotationHandler.add(annotation, "image");
+            click: addPoint,  
+            // Prevent starting a new rectangle by the two separate click events   
+            dblClick: function(position) { 
+                if (_clicks<2) { // only one click for this rect = new rect created from (half) dblClick-closing
+                    console.info("Double-click close, reset to avoid creating new rectangle.");
                     reset();
                 }
-                else
-                    _startPoint = coords;
-            },
+            }, 
+            complete: addPoint, 
             update: function(position) {
                 if (_startPoint) {
                     _mclass = _activeMclass;
@@ -103,7 +133,7 @@ const annotationTool = (function() {
             };
         }
 
-        function _updatePending(points) {
+        function _updatePending() {
             const annotation = _getAnnotation([..._points, _nextPoint]);
             overlayHandler.updatePendingRegion(annotation);
         }
@@ -113,30 +143,35 @@ const annotationTool = (function() {
             _nextPoint = null;
             overlayHandler.updatePendingRegion(null);
         }
+        
+        function addPoint(position) {
+            _nextPoint = coordinateHelper.viewportToImage({
+                x: position.x,
+                y: position.y
+            });
+            _zLevel = position.z;
+            _mclass = _activeMclass;
+            const last = _points.pop();
+            if (last && last.x !== _nextPoint.x && last.y !== _nextPoint.y)
+                _points.push(last);
+            _points.push(_nextPoint);
+            _updatePending();
+        }
+
+        function complete(position) {
+            _zLevel = position.z;
+            _mclass = _activeMclass;
+            if (_points.length > 2) {
+                const annotation = _getAnnotation(_points);
+                annotationHandler.add(annotation, "image");
+                reset();
+            }
+        }
 
         return {
-            click: function(position) {
-                _nextPoint = coordinateHelper.viewportToImage({
-                    x: position.x,
-                    y: position.y
-                });
-                _zLevel = position.z;
-                _mclass = _activeMclass;
-                const last = _points.pop();
-                if (last && last.x !== _nextPoint.x && last.y !== _nextPoint.y)
-                    _points.push(last);
-                _points.push(_nextPoint);
-                _updatePending();
-            },
-            complete: function(position) {
-                _zLevel = position.z;
-                _mclass = _activeMclass;
-                if (_points.length > 2) {
-                    const annotation = _getAnnotation(_points);
-                    annotationHandler.add(annotation, "image");
-                    reset();
-                }
-            },
+            click: addPoint,
+            dblClick: complete,    
+            complete: complete,
             update: function(position) {
                 if (_points.length) {
                     _mclass = _activeMclass;
@@ -229,6 +264,17 @@ const annotationTool = (function() {
      * @param {number} position.y The y coordinate in viewport coordinates.
      * @param {number} position.z The focus level.
      */
+    function dblClick(position) {
+        _callToolFunction("dblClick", position);
+    }
+
+    /**
+     * Complete the currently active annotation.
+     * @param {Object} position The position of the click.
+     * @param {number} position.x The x coordinate in viewport coordinates.
+     * @param {number} position.y The y coordinate in viewport coordinates.
+     * @param {number} position.z The focus level.
+     */
     function complete(position) {
         _callToolFunction("complete", position);
     }
@@ -263,6 +309,7 @@ const annotationTool = (function() {
         setTool: setTool,
         setMclass: setMclass,
         click: click,
+        dblClick: dblClick,
         complete: complete,
         reset: reset,
         revert: revert,

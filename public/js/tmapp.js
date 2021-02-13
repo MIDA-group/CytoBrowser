@@ -198,6 +198,7 @@ const tmapp = (function() {
             }
         };
 
+        // Note, a dblClick triggers: click+click+dblClick
         function dblClickHandler(event) {
             if(!event.ctrlKey && tmappUI.inFocus()){
                 const coords = coordinateHelper.webToViewport(event.position);
@@ -207,7 +208,7 @@ const tmapp = (function() {
                     z: _currState.z
                 };
                 setCursorStatus(position);
-                annotationTool.complete(position);
+                annotationTool.dblClick(position);
             }
         };
 
