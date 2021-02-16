@@ -20,7 +20,7 @@ const annotationVisuals = (function() {
                 cell.append("span")
                     .attr("class", "badge text-white ml-4")
                     .style("background-color", d =>
-                        bethesdaClassUtils.classColor(d.mclass))
+                        classUtils.classColor(d.mclass))
                     .text(d => d.mclass)
             )
             .call(cell =>

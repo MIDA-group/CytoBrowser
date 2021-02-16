@@ -63,7 +63,7 @@ const tmappUI = (function(){
     }
 
     function _initClassSelectionButtons() {
-        const initialMclass = bethesdaClassUtils.getClassFromID(0);
+        const initialMclass = classUtils.getClassFromID(0);
         annotationTool.setMclass(initialMclass.name);
         const container = $("#class_buttons");
         htmlHelper.buildClassSelectionButtons(container, 0);
@@ -177,9 +177,9 @@ const tmappUI = (function(){
                     // Handle digit keys being pressed for classes
                     const digits = Array.from({length: 10}, (v, k) => String((k+1) % 10));
                     const chars = digits.map(digit => digit.charCodeAt());
-                    chars.slice(0, bethesdaClassUtils.count()).forEach((char, index) => {
+                    chars.slice(0, classUtils.count()).forEach((char, index) => {
                         if (event.which === char) {
-                            $("#class_" + bethesdaClassUtils.getClassFromID(index).name).click();
+                            $("#class_" + classUtils.getClassFromID(index).name).click();
                             caught=true; //We did take it
                         }
                     });

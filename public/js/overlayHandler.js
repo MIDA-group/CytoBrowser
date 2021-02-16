@@ -115,7 +115,7 @@ const overlayHandler = (function (){
     }
 
     function _getAnnotationColor(d) {
-        return bethesdaClassUtils.classColor(d.mclass);
+        return classUtils.classColor(d.mclass);
     }
 
     function _getAnnotationText(d) {
