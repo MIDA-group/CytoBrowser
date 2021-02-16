@@ -36,7 +36,7 @@ const htmlHelper = (function() {
             </div>
         `);
         const select = container.find("select");
-        bethesdaClassUtils.forEachClass(mclass => {
+        classUtils.forEachClass(mclass => {
             const selected = annotation.mclass === mclass.name;
             const option = $(`
                 <option value="${mclass.name}" ${selected ? "selected='selected'" : ""}>
@@ -260,7 +260,7 @@ const htmlHelper = (function() {
      * class.
      */
     function buildClassSelectionButtons(container, activeIndex) {
-        bethesdaClassUtils.forEachClass((mclass, index) => {
+        classUtils.forEachClass((mclass, index) => {
             const active = activeIndex === index;
             const button = _classSelectionButton(mclass, active);
             container.append(button);

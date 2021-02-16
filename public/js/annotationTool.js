@@ -238,7 +238,7 @@ const annotationTool = (function() {
      * @param {string} mclass The currently active marker class.
      */
     function setMclass(mclass) {
-        if (bethesdaClassUtils.getIDFromName(mclass) >= 0) {
+        if (classUtils.getIDFromName(mclass) >= 0) {
             _activeMclass = mclass;
             _callToolFunction("update");
         }
