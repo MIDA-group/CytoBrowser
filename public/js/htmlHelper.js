@@ -47,7 +47,7 @@ const htmlHelper = (function() {
         });
         select.change(() => {
             annotation.mclass = select.val();
-            updateFun && updateFun();
+            updateFun();
         });
         return container;
     }
