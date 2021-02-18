@@ -101,7 +101,7 @@ const htmlHelper = (function() {
 
     function _annotationCommentInput(inputFun) {
         const container = $(`
-            <div class="input-group mb-4">
+            <div class="input-group">
                 <textarea class="form-control" rows="1" style="resize: none;"></textarea>
                 <div class="input-group-append">
                     <button type="button" class="btn btn-primary">Add comment</button>
