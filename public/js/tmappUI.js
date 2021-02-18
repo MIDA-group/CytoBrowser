@@ -35,7 +35,8 @@ const tmappUI = (function(){
         }
     };
 
-    function _openContextMenu(location, buildFun) {
+    function _openContextMenu(title, location, buildFun) {
+        $("#context_menu_title").text(title);
         const menu = $("#context_menu");
         const body = menu.find(".card-body");
         body.empty();
@@ -45,7 +46,7 @@ const tmappUI = (function(){
         const maxRight = menu.width() + location.x;
         const winh = $(window).height();
         const winw = $(window).width();
-        const top = maxBottom < winh ? location.y : location.y - menu.height();
+        const top = maxBottom < winh ? location.y : Math.max(15, location.y - menu.height());
         const left = maxRight < winw ? location.x : location.x - menu.width();
         menu.css({top: top, left: left, pointerEvents: "auto"});
 
@@ -56,10 +57,12 @@ const tmappUI = (function(){
 
     function _closeContextMenu() {
         const menu = $("#context_menu");
-        setTimeout(() => _pageInFocus = true, 100);
-        menu.removeClass("show");
-        menu.css({pointerEvents: "none"});
-        $("#main_content").focus();
+        if (menu.hasClass("show")) {
+            setTimeout(() => _pageInFocus = true, 100);
+            menu.removeClass("show");
+            menu.css({pointerEvents: "none"});
+            $("#main_content").focus();
+        }
     }
 
     function _initClassSelectionButtons() {
@@ -103,6 +106,8 @@ const tmappUI = (function(){
                 _closeContextMenu();
         });
         menu.contextmenu(() => false);
+        const close = $("#close_context_menu");
+        close.click(_closeContextMenu);
     }
 
     function _initDocumentFocusFunctionality() {
@@ -138,6 +143,15 @@ const tmappUI = (function(){
     }
 
     function _initKeyboardShortcuts() {
+        // Shortcuts for the context menu
+        $("#context_menu").keydown(function(){
+            switch(event.keyCode) {
+                case 27: // esc
+                    _closeContextMenu();
+                    break;
+            }
+        });
+
         //1,2,... for class selection
         //z,x for focus up down
         $("#main_content").keydown(function(){
@@ -292,10 +306,9 @@ const tmappUI = (function(){
             throw new Error("Invalid annotation id.");
         }
 
-        _openContextMenu(location, menuBody => {
+        _openContextMenu("Edit annotation", location, menuBody => {
             htmlHelper.buildAnnotationSettingsMenu(menuBody, annotation, () => {
                 annotationHandler.update(id, annotation, "image");
-                _closeContextMenu();
             });
         });
     }
