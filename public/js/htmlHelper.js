@@ -9,7 +9,7 @@ const htmlHelper = (function() {
         return '#' + color.replace(/^#/, '').replace(/../g, color =>
           ('0' + Math.min(255, Math.max(0, Math.round(parseInt(color, 16) * scale))).toString(16)).substr(-2));
     }
-      
+
     function _annotationValueRow(label, value) {
         return $(`
             <div class="form-group row">
@@ -23,7 +23,7 @@ const htmlHelper = (function() {
         `);
     }
 
-    function _annotationMclassOptions(annotation) {
+    function _annotationMclassOptions(annotation, updateFun) {
         const container = $(`
             <div class="form-group row">
                 <label class="col-4 col-form-label">
@@ -45,7 +45,10 @@ const htmlHelper = (function() {
             `);
             select.append(option);
         });
-        select.change(() => annotation.mclass = select.val());
+        select.change(() => {
+            annotation.mclass = select.val();
+            updateFun && updateFun();
+        });
         return container;
     }
 
@@ -68,7 +71,7 @@ const htmlHelper = (function() {
         return entry;
     }
 
-    function _annotationCommentList(annotation) {
+    function _annotationCommentList(annotation, updateFun) {
         if (!annotation.comments)
             annotation.comments = [];
         const comments = annotation.comments;
@@ -86,8 +89,10 @@ const htmlHelper = (function() {
                 comments.splice(index, 1);
                 entry.closest("[tabindex]").focus();
                 entry.remove();
+                updateFun();
             });
             list.append(entry);
+            updateFun();
         };
         const list = container.find("ul");
         comments.forEach(container.appendAnnotationComment);
@@ -111,21 +116,11 @@ const htmlHelper = (function() {
         });
         return container;
     }
-
-    function _annotationSaveButton(annotation, saveFun) {
-        const button = $(`
-            <button class="btn btn-primary btn-block">
-                Save changes
-            </button>
-        `);
-        button.click(saveFun);
-        return button;
-    }
-
+    
     function _classSelectionButton(mclass, active) {
         const active_color=_scaleRGB(mclass.color,0.5);
-        
-        //To set 'style="background-color: ${mclass.color};"' works here, but se we cannot use 
+
+        //To set 'style="background-color: ${mclass.color};"' works here, but se we cannot use
         //pseudo-selectors (e.g. hover) in inline style, we do all colors below with CSS
         const button = $(`
             <label id="class_${mclass.name}" class="btn btn-dark" title="${mclass.description}">
@@ -236,10 +231,11 @@ const htmlHelper = (function() {
      * pressing the save button in the menu.
      */
     function buildAnnotationSettingsMenu(container, annotation, saveFun) {
+        const updateFun = saveFun;
         const id = _annotationValueRow("Id", annotation.id);
         const author = _annotationValueRow("Created by", annotation.author);
-        const classes = _annotationMclassOptions(annotation);
-        const list = _annotationCommentList(annotation);
+        const classes = _annotationMclassOptions(annotation, updateFun);
+        const list = _annotationCommentList(annotation, updateFun);
         const input = _annotationCommentInput(body => {
             const comment = {
                 author: userInfo.getName(),
@@ -247,8 +243,8 @@ const htmlHelper = (function() {
             };
             list.appendAnnotationComment(comment);
             annotation.comments.push(comment);
+            updateFun();
         });
-        const saveBtn = _annotationSaveButton(annotation, saveFun);
         container.append(id, author, classes, list, input, saveBtn);
     }
 
