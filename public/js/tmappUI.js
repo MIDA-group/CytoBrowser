@@ -35,7 +35,8 @@ const tmappUI = (function(){
         }
     };
 
-    function _openContextMenu(location, buildFun) {
+    function _openContextMenu(title, location, buildFun) {
+        $("#context_menu_title").text(title);
         const menu = $("#context_menu");
         const body = menu.find(".card-body");
         body.empty();
@@ -103,6 +104,8 @@ const tmappUI = (function(){
                 _closeContextMenu();
         });
         menu.contextmenu(() => false);
+        const close = $("#close_context_menu");
+        close.click(_closeContextMenu);
     }
 
     function _initDocumentFocusFunctionality() {
@@ -292,7 +295,7 @@ const tmappUI = (function(){
             throw new Error("Invalid annotation id.");
         }
 
-        _openContextMenu(location, menuBody => {
+        _openContextMenu("Edit annotation", location, menuBody => {
             htmlHelper.buildAnnotationSettingsMenu(menuBody, annotation, () => {
                 annotationHandler.update(id, annotation, "image");
                 _closeContextMenu();
