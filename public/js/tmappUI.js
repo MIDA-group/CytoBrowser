@@ -143,13 +143,21 @@ const tmappUI = (function(){
     }
 
     function _initKeyboardShortcuts() {
+        // Shortcuts for the context menu
+        $("#context_menu").keydown(function(){
+            switch(event.keyCode) {
+                case 27: // esc
+                    _closeContextMenu();
+                    break;
+            }
+        });
+        
         //1,2,... for class selection
         //z,x for focus up down
         $("#main_content").keydown(function(){
             let caught=true; //Assume we use the key (setting to false in 'default')
             switch(event.keyCode) {
                 case 27: // esc
-                    _closeContextMenu();
                     annotationTool.reset();
                     break;
                 case 8: // backspace
