@@ -57,10 +57,12 @@ const tmappUI = (function(){
 
     function _closeContextMenu() {
         const menu = $("#context_menu");
-        setTimeout(() => _pageInFocus = true, 100);
-        menu.removeClass("show");
-        menu.css({pointerEvents: "none"});
-        $("#main_content").focus();
+        if (menu.hasClass("show")) {
+            setTimeout(() => _pageInFocus = true, 100);
+            menu.removeClass("show");
+            menu.css({pointerEvents: "none"});
+            $("#main_content").focus();
+        }
     }
 
     function _initClassSelectionButtons() {
@@ -147,6 +149,7 @@ const tmappUI = (function(){
             let caught=true; //Assume we use the key (setting to false in 'default')
             switch(event.keyCode) {
                 case 27: // esc
+                    _closeContextMenu();
                     annotationTool.reset();
                     break;
                 case 8: // backspace
