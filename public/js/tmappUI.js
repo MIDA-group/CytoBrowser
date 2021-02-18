@@ -151,7 +151,7 @@ const tmappUI = (function(){
                     break;
             }
         });
-        
+
         //1,2,... for class selection
         //z,x for focus up down
         $("#main_content").keydown(function(){
@@ -309,7 +309,6 @@ const tmappUI = (function(){
         _openContextMenu("Edit annotation", location, menuBody => {
             htmlHelper.buildAnnotationSettingsMenu(menuBody, annotation, () => {
                 annotationHandler.update(id, annotation, "image");
-                _closeContextMenu();
             });
         });
     }

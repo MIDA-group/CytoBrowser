@@ -116,7 +116,7 @@ const htmlHelper = (function() {
         });
         return container;
     }
-    
+
     function _classSelectionButton(mclass, active) {
         const active_color=_scaleRGB(mclass.color,0.5);
 
@@ -245,7 +245,7 @@ const htmlHelper = (function() {
             annotation.comments.push(comment);
             updateFun();
         });
-        container.append(id, author, classes, list, input, saveBtn);
+        container.append(id, author, classes, list, input);
     }
 
     /**
