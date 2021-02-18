@@ -46,7 +46,7 @@ const tmappUI = (function(){
         const maxRight = menu.width() + location.x;
         const winh = $(window).height();
         const winw = $(window).width();
-        const top = maxBottom < winh ? location.y : location.y - menu.height();
+        const top = maxBottom < winh ? location.y : Max(15, location.y - menu.height());
         const left = maxRight < winw ? location.x : location.x - menu.width();
         menu.css({top: top, left: left, pointerEvents: "auto"});
 
