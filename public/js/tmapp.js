@@ -392,6 +392,12 @@ const tmapp = (function() {
                     }
                     catch(err) {
                         tmappUI.displayImageError("badimage");
+                        if (collab) {
+                            collabClient.connect(collab);
+                        }
+                        else {
+                            collabClient.createCollab();
+                        }
                     }
                     break;
                 case 500:
