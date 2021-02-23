@@ -31,6 +31,9 @@ const collabClient = (function(){
             case "imageSwap":
                 _handleImageSwap(msg);
                 break;
+            case "forceUpdate":
+                _requestSummary();
+                break;
             default:
                 console.warn(`Unknown message type received in collab: ${msg.type}`);
         }
