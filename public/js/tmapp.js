@@ -422,7 +422,8 @@ const tmapp = (function() {
      * decide not to change.
      */
     function openImage(imageName, callback, nochange) {
-        if (!annotationHandler.isEmpty() && !confirm(`You are about to open ` +
+        if (!annotationHandler.isEmpty() && !_collab &&
+            !confirm(`You are about to open ` +
             `the image "${imageName}". Do you want to ` +
             `open this image? Any annotations placed on the ` +
             `current image will be lost unless you save ` +
