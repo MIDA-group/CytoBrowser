@@ -91,16 +91,16 @@ class Collaboration {
         const member = this.members.get(sender);
         switch (msg.type) {
             case "annotationAction":
-                handleAnnotationAction(sender, member, msg);
+                this.handleAnnotationAction(sender, member, msg);
                 break;
             case "memberEvent":
-                handleMemberEvent(sender, member, msg);
+                this.handleMemberEvent(sender, member, msg);
                 break;
             case "imageSwap":
-                handleImageSwap(sender, member, msg);
+                this.handleImageSwap(sender, member, msg);
                 break;
             case "requestSummary":
-                handleRequestSummary(sender, member, msg);
+                this.handleRequestSummary(sender, member, msg);
                 break;
             default:
                 this.broadcastMessage(sender, msg);
