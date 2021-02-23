@@ -335,6 +335,14 @@ const tmapp = (function() {
         overlayHandler.init(overlay);
     }
 
+    function _clearCurrentImage() {
+        annotationHandler.clear(false);
+        _viewer && _viewer.destroy();
+        $("#ISS_viewer").empty();
+        coordinateHelper.clearImage();
+        _disabledControls = null;
+    }
+
     /**
      * Initiate tmapp by fetching a list of images from the server,
      * filling the image browser, and going to the image specified
@@ -405,7 +413,8 @@ const tmapp = (function() {
      * Open a specified image in the viewport. If annotations have been
      * placed, the user is first prompted to see if they actually want
      * to open the image or if they want to cancel.
-     * @param {string} imageName The name of the image being opened.
+     * @param {string} imageName The name of the image being opened. If
+     * the image name is falsy, the current image will be closed.
      * @param {Function} callback Function to call if and only if the
      * image is successfully opened, before the viewport is moved.
      * @param {Function} nochange Function to call if the user is
@@ -422,19 +431,24 @@ const tmapp = (function() {
             return;
         }
 
-        const image = _images.find(image => image.name === imageName);
-        if (!image) {
-            throw new Error(`Failed to open image ${imageName}.`);
+        if (!imageName) {
+            _clearCurrentImage();
+            _currentImage = null;
+            tmappUI.setImageName(null);
+            tmappUI.displayImageError("noimage");
+            _updateURLParams();
         }
-        annotationHandler.clear(false);
-        _viewer && _viewer.destroy();
-        $("#ISS_viewer").empty();
-        coordinateHelper.clearImage();
-        _disabledControls = null;
-        _currentImage = image;
-        tmappUI.setImageName(_currentImage.name);
-        _updateURLParams();
-        _initOSD(callback);
+        else {
+            const image = _images.find(image => image.name === imageName);
+            if (!image) {
+                throw new Error(`Failed to open image ${imageName}.`);
+            }
+            _clearCurrentImage();
+            _currentImage = image;
+            tmappUI.setImageName(_currentImage.name);
+            _updateURLParams();
+            _initOSD(callback);
+        }
     }
 
     /**
