@@ -31,7 +31,7 @@ class Collaboration {
         this.nextColor = generateColor();
         this.image = image;
         this.loadState();
-        setInterval(this.saveState, 60000); // TODO: More proper autosave
+        setInterval(() => this.trySavingState(), 60000);
         this.log(`Initializing collaboration.`, console.info);
     }
 
@@ -95,6 +95,7 @@ class Collaboration {
                     // Members who aren't ready shouldn't do anything with annotations
                     break;
                 }
+                this.updatesHaveBeenMade = true;
                 switch (msg.actionType) {
                     case "add":
                         if (!this.isDuplicateAnnotation(msg.annotation)) {
@@ -216,13 +217,20 @@ class Collaboration {
     }
 
     saveState() {
-        notifyAutosave();
+        this.notifyAutosave();
         const data = {
             version: "1.0",
             image: this.image,
             annotations: this.annotations
         };
         autosave.saveAnnotations(this.id, this.image, data);
+    }
+
+    trySavingState() {
+        if (this.updatesHaveBeenMade) {
+            this.saveState();
+            this.updatesHaveBeenMade = false;
+        }
     }
 
     pointsAreDuplicate(pointsA, pointsB) {
