@@ -231,8 +231,9 @@ const collabClient = (function(){
             disconnect();
         }
         var wsProtocol = (window.location.protocol === 'https:')?'wss://':'ws://';
+        const imageName = tmapp.getImageName();
         const address = `${window.location.host}/collaboration/`+
-            `${id}?name=${name}&image=${tmapp.getImageName()}`;
+            `${id}?name=${name}&image=${imageName ? imageName : ""}`;
         const ws = new WebSocket(wsProtocol+address);
         ws.onopen = function(event) {
             console.info(`Successfully connected to collaboration ${id}.`);

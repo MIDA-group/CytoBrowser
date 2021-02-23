@@ -382,20 +382,15 @@ const tmapp = (function() {
                     }
                     else {
                         collabClient.createCollab();
-                        if (imageName) {
-                            try {
-                                openImage(imageName, () => {
-                                    if (initialState) {
-                                        moveTo(initialState);
-                                    }
-                                });
-                            }
-                            catch(err) {
-                                tmappUI.displayImageError("badimage");
-                            }
+                        try {
+                            openImage(imageName, () => {
+                                if (initialState) {
+                                    moveTo(initialState);
+                                }
+                            });
                         }
-                        else {
-                            tmappUI.displayImageError("noimage");
+                        catch(err) {
+                            tmappUI.displayImageError("badimage");
                         }
                     }
                     break;
