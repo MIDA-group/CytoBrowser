@@ -87,82 +87,98 @@ class Collaboration {
     }
 
     handleMessage(sender, msg) {
-        // Keep track of the current annotations
+        // Keep track of the member that sent the message
         const member = this.members.get(sender);
         switch (msg.type) {
             case "annotationAction":
-                if (!member.ready) {
-                    // Members who aren't ready shouldn't do anything with annotations
-                    break;
-                }
-                this.updatesHaveBeenMade = true;
-                switch (msg.actionType) {
-                    case "add":
-                        if (!this.isDuplicateAnnotation(msg.annotation)) {
-                            this.annotations.push(msg.annotation);
-                            this.broadcastMessage(sender, msg);
-                        }
-                        else {
-                            this.log(`${member.name} tried to add a duplicate annotation, ignoring.`, console.info);
-                        }
-                        break;
-                    case "update":
-                        Object.assign(this.annotations.find(annotation => annotation.id === msg.id), msg.annotation);
-                        this.broadcastMessage(sender, msg);
-                        break;
-                    case "remove":
-                        const index = this.annotations.findIndex(annotation => annotation.id === msg.id);
-                        this.annotations.splice(index, 1);
-                        this.broadcastMessage(sender, msg);
-                        break;
-                    case "clear":
-                        this.annotations = [];
-                        this.broadcastMessage(sender, msg);
-                        break;
-                    default:
-                        this.log(`Tried to handle unknown annotation action: ${msg.actionType}`, console.warn);
-                        this.broadcastMessage(sender, msg);
-                }
+                handleAnnotationAction(sender, member, msg);
                 break;
             case "memberEvent":
-                this.broadcastMessage(sender, msg);
-                switch (msg.eventType) {
-                    case "update":
-                        Object.assign(member, msg.member);
-                        break;
-                    case "cursorUpdate":
-                        member.cursor = msg.cursor;
-                        break;
-                    default:
-                        this.log(`Tried to handle unknown member event: ${msg.eventType}`, console.warn);
-                }
+                handleMemberEvent(sender, member, msg);
                 break;
             case "imageSwap":
-                this.saveState();
-                this.broadcastMessage(sender, msg);
-                for (let [ws, member] of this.members.entries()) {
-                    if (ws !== sender) {
-                        member.ready = false;
-                    }
-                }
-                this.image = msg.image;
-                this.loadState();
+                handleImageSwap(sender, member, msg);
                 break;
             case "requestSummary":
-                if (msg.image === this.image)
-                    member.ready = true;
-                sender.send(JSON.stringify(this.stateSummary(sender)));
-                this.broadcastMessage(sender, {
-                    type: "memberEvent",
-                    eventType: "update",
-                    hardUpdate: true,
-                    member: member
-                });
+                handleRequestSummary(sender, member, msg);
                 break;
             default:
                 this.broadcastMessage(sender, msg);
                 this.log("Received a message with an unknown type, forwarding anyway.", console.info);
         }
+    }
+
+    handleAnnotationAction(sender, member, msg) {
+        if (!member.ready) {
+            // Members who aren't ready shouldn't do anything with annotations
+            return;
+        }
+        this.updatesHaveBeenMade = true;
+        switch (msg.actionType) {
+            case "add":
+                if (!this.isDuplicateAnnotation(msg.annotation)) {
+                    this.annotations.push(msg.annotation);
+                    this.broadcastMessage(sender, msg);
+                }
+                else {
+                    this.log(`${member.name} tried to add a duplicate annotation, ignoring.`, console.info);
+                }
+                break;
+            case "update":
+                Object.assign(this.annotations.find(annotation => annotation.id === msg.id), msg.annotation);
+                this.broadcastMessage(sender, msg);
+                break;
+            case "remove":
+                const index = this.annotations.findIndex(annotation => annotation.id === msg.id);
+                this.annotations.splice(index, 1);
+                this.broadcastMessage(sender, msg);
+                break;
+            case "clear":
+                this.annotations = [];
+                this.broadcastMessage(sender, msg);
+                break;
+            default:
+                this.log(`Tried to handle unknown annotation action: ${msg.actionType}`, console.warn);
+                this.broadcastMessage(sender, msg);
+        }
+    }
+
+    handleMemberEvent(sender, member, msg) {
+        this.broadcastMessage(sender, msg);
+        switch (msg.eventType) {
+            case "update":
+                Object.assign(member, msg.member);
+                break;
+            case "cursorUpdate":
+                member.cursor = msg.cursor;
+                break;
+            default:
+                this.log(`Tried to handle unknown member event: ${msg.eventType}`, console.warn);
+        }
+    }
+
+    handleImageSwap(sender, member, msg) {
+        this.saveState();
+        this.broadcastMessage(sender, msg);
+        for (let [ws, member] of this.members.entries()) {
+            if (ws !== sender) {
+                member.ready = false;
+            }
+        }
+        this.image = msg.image;
+        this.loadState();
+    }
+
+    handleRequestSummary(sender, member, msg) {
+        if (msg.image === this.image)
+            member.ready = true;
+        sender.send(JSON.stringify(this.stateSummary(sender)));
+        this.broadcastMessage(sender, {
+            type: "memberEvent",
+            eventType: "update",
+            hardUpdate: true,
+            member: member
+        });
     }
 
     stateSummary(sender) {
