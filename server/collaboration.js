@@ -220,6 +220,10 @@ class Collaboration {
     }
 
     loadState() {
+        if (!this.image) {
+            return;
+        }
+
         autosave.loadAnnotations(this.id, this.image).then(data => {
             if (data.version === "1.0") {
                 this.annotations = data.annotations;
@@ -233,6 +237,10 @@ class Collaboration {
     }
 
     saveState() {
+        if (!this.image) {
+            return;
+        }
+
         this.notifyAutosave();
         const data = {
             version: "1.0",
