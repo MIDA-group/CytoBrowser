@@ -102,7 +102,7 @@ app.get("/api/collaboration/id", (req, res) => {
 // Add websocket endpoints for collaboration
 app.ws("/collaboration/:id", (ws, req) => {
     const id = req.params.id;
-    const image = req.query.image;
+    const image = req.query.image ? req.query.image : null;
     const name = req.query.name || "Unnamed";
     collaboration.joinCollab(ws, name, id, image);
 

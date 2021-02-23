@@ -26,7 +26,7 @@ class Collaboration {
         this.id = id;
         this.nextMemberId = 0;
         this.nextColor = generateColor();
-        this.image = image ? image : null;
+        this.image = image;
         this.log(`Initializing collaboration.`, console.info);
     }
 
