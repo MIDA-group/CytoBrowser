@@ -5,8 +5,8 @@ const sanitize = require("sanitize-filename");
 let autosaveDir;
 
 function getFilename(id, image) {
-    const sanitizedId = sanitize(id);
-    const sanitizedImage = sanitize(image);
+    const sanitizedId = sanitize(String(id));
+    const sanitizedImage = sanitize(String(image));
     return `${sanitizedId}_${sanitizedImage}`;
 }
 
