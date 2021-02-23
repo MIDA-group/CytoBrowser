@@ -203,7 +203,7 @@ const collabClient = (function(){
      * @param {boolean} include Whether or not already-placed annotations
      * should be included in the collaborative workspace.
      */
-    function createCollab(name, include) {
+    function createCollab(name=getDefaultName(), include=false) {
         // Get a new code for a collab first
         const idReq = new XMLHttpRequest();
         idReq.open("GET", window.location.origin + "/api/collaboration/id", true)

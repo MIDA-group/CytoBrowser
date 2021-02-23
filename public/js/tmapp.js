@@ -369,26 +369,26 @@ const tmapp = (function() {
                     _images = images;
 
                     // Go to the initial image and/or join the collab
-                    if (imageName) {
-                        try {
-                            openImage(imageName, () => {
-                                if (collab) {
-                                    collabClient.connect(collab);
-                                }
-                                if (initialState) {
-                                    moveTo(initialState);
-                                }
-                            });
-                        }
-                        catch(err) {
-                            tmappUI.displayImageError("badimage");
-                        }
-                    }
-                    else if (collab) {
+                    if (collab) {
                         collabClient.connect(collab);
                     }
                     else {
-                        tmappUI.displayImageError("noimage");
+                        collabClient.createCollab();
+                        if (imageName) {
+                            try {
+                                openImage(imageName, () => {
+                                    if (initialState) {
+                                        moveTo(initialState);
+                                    }
+                                });
+                            }
+                            catch(err) {
+                                tmappUI.displayImageError("badimage");
+                            }
+                        }
+                        else {
+                            tmappUI.displayImageError("noimage");
+                        }
                     }
                     break;
                 case 500:
