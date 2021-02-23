@@ -432,7 +432,7 @@ const tmappUI = (function(){
      * @param {string} txt The username to display.
      */
     function setUserName(txt) {
-        $("#user_name").text(txt ? txt : "-");
+        $("#user_name").text(txt || txt === 0 ? txt : "-");
     }
 
     /**
@@ -440,7 +440,7 @@ const tmappUI = (function(){
      * @param {string} txt The image name to display.
      */
     function setImageName(txt) {
-        $("#img_name").text(txt ? txt : "-");
+        $("#img_name").text(txt || txt === 0 ? txt : "-");
     }
 
     /**
@@ -448,7 +448,7 @@ const tmappUI = (function(){
      * @param {string} txt The z level to display.
      */
     function setImageZLevel(txt) {
-        $("#img_zlevel").text(txt ? txt : "-");
+        $("#img_zlevel").text(txt || txt === 0 ? txt : "-");
     }
 
     /**
@@ -456,7 +456,7 @@ const tmappUI = (function(){
      * @param {string} txt The zoom value to display.
      */
     function setImageZoom(txt) {
-        $("#img_zoom").text(txt ? txt : "-");
+        $("#img_zoom").text(txt || txt === 0 ? txt : "-");
     }
 
     /**
@@ -464,7 +464,7 @@ const tmappUI = (function(){
      * @param {string} txt The rotation value to display.
      */
     function setImageRotation(txt) {
-        $("#img_rotation").text(txt ? `${txt}°` : "-");
+        $("#img_rotation").text(txt || txt === 0 ? `${txt}°` : "-");
     }
 
     /**
