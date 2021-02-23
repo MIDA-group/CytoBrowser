@@ -31,6 +31,9 @@ const collabClient = (function(){
             case "imageSwap":
                 _handleImageSwap(msg);
                 break;
+            case "autosave":
+                _handleAutosave(msg);
+                break;
             case "forceUpdate":
                 _requestSummary();
                 break;
@@ -169,6 +172,11 @@ const collabClient = (function(){
             // Make sure to get any new information from before you swapped
             _requestSummary();
         }, disconnect);
+    }
+
+    function _handleAutosave(msg) {
+        // TODO: Some visuals in UI
+        console.info("The server has saved the current state.");
     }
 
     /**

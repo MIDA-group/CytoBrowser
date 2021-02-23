@@ -30,6 +30,8 @@ class Collaboration {
         this.nextMemberId = 0;
         this.nextColor = generateColor();
         this.image = image;
+        this.loadState();
+        setInterval(this.saveState, 60000); // TODO: More proper autosave
         this.log(`Initializing collaboration.`, console.info);
     }
 
@@ -187,13 +189,26 @@ class Collaboration {
         }
     }
 
+    notifyAutosave() {
+        const msg = {type: "autosave", time: Date.now()};
+        const msgJSON = JSON.stringify(msg);
+        for (let [ws, member] of this.members.entries()) {
+            try {
+                ws.send(msgJSON);
+            }
+            catch (err) {
+                this.log(`WebSocket send failed: ${err.message}`, console.warn);
+            }
+        }
+    }
+
     loadState() {
         autosave.loadAnnotations(this.id, this.image).then(data => {
             if (data.version === "1.0") {
                 this.annotations = data.annotations;
             }
         }).catch(() => {
-            this.log("Couldn't load preexisting annotations", console.info);
+            this.log(`Couldn't load preexisting annotations for ${this.image}.`, console.info);
             this.annotations = [];
         }).finally(() => {
             this.forceUpdate();
@@ -201,6 +216,7 @@ class Collaboration {
     }
 
     saveState() {
+        notifyAutosave();
         const data = {
             version: "1.0",
             image: this.image,
