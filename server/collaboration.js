@@ -4,6 +4,9 @@
  * different users of the CytoBrowser.
  */
 
+// TODO: Make this settable
+const autosave = require("./autosave")("./collab_storage");
+
 // Object for storing all ongoing collaborations
 const collabs = {};
 
@@ -132,14 +135,15 @@ class Collaboration {
                 }
                 break;
             case "imageSwap":
+                this.saveState();
                 this.broadcastMessage(sender, msg);
                 for (let [ws, member] of this.members.entries()) {
                     if (ws !== sender) {
                         member.ready = false;
                     }
                 }
-                this.annotations = [];
                 this.image = msg.image;
+                this.loadState();
                 break;
             case "requestSummary":
                 if (msg.image === this.image)
@@ -167,6 +171,42 @@ class Collaboration {
             members: Array.from(this.members.values()),
             annotations: this.annotations
         }
+    }
+
+    forceUpdate() {
+        const msg = {type: "forceUpdate"};
+        const msgJSON = JSON.stringify(msg);
+        for (let [ws, member] of this.members.entries()) {
+            member.ready = false;
+            try {
+                ws.send(msgJSON);
+            }
+            catch (err) {
+                this.log(`WebSocket send failed: ${err.message}`, console.warn);
+            }
+        }
+    }
+
+    loadState() {
+        autosave.loadAnnotations(this.id, this.image).then(data => {
+            if (data.version === "1.0") {
+                this.annotations = data.annotations;
+            }
+        }).catch(() => {
+            this.log("Couldn't load preexisting annotations", console.info);
+            this.annotations = [];
+        }).finally(() => {
+            this.forceUpdate();
+        });
+    }
+
+    saveState() {
+        const data = {
+            version: "1.0",
+            image: this.image,
+            annotations: this.annotations
+        };
+        autosave.saveAnnotations(this.id, this.image, data);
     }
 
     pointsAreDuplicate(pointsA, pointsB) {
