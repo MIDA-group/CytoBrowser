@@ -426,6 +426,10 @@ const overlayHandler = (function (){
      * local member.
      */
     function updateMembers(nonLocalMembers) {
+        if (!_cursorOverlay) {
+            return;
+        }
+
         const visibleMembers = nonLocalMembers.filter(member => {
             return member.cursor;
         });
