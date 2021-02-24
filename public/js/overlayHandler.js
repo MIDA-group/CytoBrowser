@@ -9,6 +9,7 @@ const overlayHandler = (function (){
         _markerCircleSize = 1/32,
         _markerSquareStrokeWidth = 0.02,
         _markerCircleStrokeWidth = 0.01,
+        _scaleFloor = 0.25, // _scaleFloor * maxZoom = lowest zoom level where markers have a constant size on screen
         _markerText = true;
 
     let _cursorOverlay,
@@ -513,7 +514,7 @@ const overlayHandler = (function (){
      */
     function setOverlayScale(zoomLevel, maxZoom) {
         _scale = 1 / zoomLevel;
-        _maxScale = 2 / maxZoom;
+        _maxScale = 1 / (_scaleFloor * maxZoom);
         _resizeMembers();
         _resizeMarkers();
         _resizeRegions();
