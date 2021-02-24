@@ -23,7 +23,7 @@ const localStorage = (function (){
         const fileData = `text/json;charset=utf-8,${dataJSON}`;
         const a = document.createElement("a");
         a.setAttribute("href", `data:${fileData}`);
-        a.setAttribute("download", "data.json");
+        a.setAttribute("download", "annotation.json");
         a.setAttribute('visibility', 'hidden');
         a.setAttribute('display', 'none');
         a.click();
