@@ -129,7 +129,7 @@ const coordinateHelper = (function() {
      * @returns {number} The length in pixels.
      */
     function getMinDimension() {
-        if (!_minDimension) {
+        if (!_minDimension && _minDimension !== 0) {
             throw new Error ("Can't get the shortest dimension without an image.");
         }
         return _minDimension;
@@ -167,6 +167,7 @@ const coordinateHelper = (function() {
         viewportToWeb: viewportToWeb,
         viewportToOverlay: viewportToOverlay,
         pageToViewport: pageToViewport,
+        getMinDimension: getMinDimension,
         setImage: setImage,
         clearImage: clearImage
     };

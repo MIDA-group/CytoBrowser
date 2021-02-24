@@ -512,7 +512,12 @@ const overlayHandler = (function (){
      * @param {number} hContainer The height in pixels of the OSD viewport.
      */
     function setOverlayScale(zoomLevel, wContainer, hContainer) {
-        _scale = zoomLevel * wContainer;
+        try {
+            _scale = zoomLevel * wContainer * coordinateHelper.getMinDimension() / 1e5;
+        }
+        catch {
+            _scale = zoomLevel * wContainer;
+        }
         _resizeMembers();
         _resizeMarkers();
         _resizeRegions();
