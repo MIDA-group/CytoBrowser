@@ -65,7 +65,8 @@ function getThumbnails(dir, image) {
 
         // Look through each directory to find thumbnails
         let idx = 0;
-        let magnifications = 4;
+        let remainingZooms = 4;
+        const maxTiles = 200;
         const thumbnails = {overview: null, detail: null};
         image.thumbnails = thumbnails;
         function findThumbnails(){
@@ -85,7 +86,7 @@ function getThumbnails(dir, image) {
                     thumbnails.detail = thumbnails.overview;
                 }
                 else if (dir.length > 1) {
-                    magnifications--;
+                    remainingZooms--;
                     const rows = [];
                     const cols = [];
                     dir.map(name => {
@@ -100,7 +101,9 @@ function getThumbnails(dir, image) {
                 }
 
                 // Check if all thumbnails have been found
-                if (!(thumbnails.overview && thumbnails.detail) || magnifications > 0) {
+                if (!(thumbnails.overview && thumbnails.detail)
+                    || remainingZooms > 0
+                    && dir.length < maxTiles) {
                     idx++;
                     findThumbnails();
                 }
