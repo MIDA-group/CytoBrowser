@@ -512,9 +512,10 @@ const overlayHandler = (function (){
      * @param {number} zoomLevel The current zoom level of the OSD viewport.
      * @param {number} wContainer The maximum zoom level of the OSD viewport.
      */
-    function setOverlayScale(zoomLevel, maxZoom) {
-        _scale = 1 / zoomLevel;
-        _maxScale = 1 / (_scaleFloor * maxZoom);
+    function setOverlayScale(zoomLevel, maxZoom, wContainer, hContainer) {
+        const windowSizeAdjustment = 1400 / wContainer;
+        _scale = windowSizeAdjustment / zoomLevel;
+        _maxScale = windowSizeAdjustment / (_scaleFloor * maxZoom);
         _resizeMembers();
         _resizeMarkers();
         _resizeRegions();

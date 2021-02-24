@@ -85,7 +85,8 @@ const tmapp = (function() {
         }
         const zoom = _viewer.viewport.getZoom();
         const maxZoom = _viewer.viewport.getMaxZoom();
-        overlayHandler.setOverlayScale(zoom, maxZoom);
+        const size = _viewer.viewport.getContainerSize();
+        overlayHandler.setOverlayScale(zoom, maxZoom, size.x, size.y);
         tmappUI.setImageZoom(Math.round(zoom*10)/10);
         _currState.zoom = zoom;
 
