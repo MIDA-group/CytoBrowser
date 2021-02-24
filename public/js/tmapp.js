@@ -451,7 +451,7 @@ const tmapp = (function() {
         if (!_viewer)
             throw new Error("Tried to move viewport without a viewer.");
         if (zoom !== undefined)
-            _viewer.viewport.zoomTo(zoom, true);
+            _viewer.viewport.zoomTo(Math.max(zoom, _viewer.viewport.getMaxZoom()), true);
         if (x !== undefined && y !== undefined)
             _viewer.viewport.panTo(new OpenSeadragon.Point(x, y), true);
         if (rotation !== undefined)
