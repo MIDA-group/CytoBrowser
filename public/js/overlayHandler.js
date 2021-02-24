@@ -18,6 +18,7 @@ const overlayHandler = (function (){
         _activeAnnotationOverlayName,
         _previousCursors,
         _scale,
+        _maxScale,
         _rotation;
 
     /**
@@ -94,15 +95,15 @@ const overlayHandler = (function (){
 
     function _cursorSize(cursor) {
         const normalSize = cursor.inside || cursor.held;
-        return (normalSize ? 15000 : 12000) / _scale;
+        return (normalSize ? 15 : 12) * _scale;
     }
 
     function _markerSize() {
-        return 100000 / Math.max(_scale, 20000);
+        return 100 * Math.min(_scale, _maxScale);
     }
 
     function _regionStrokeWidth() {
-        return 2000 / _scale;
+        return 2 * _scale;
     }
 
     function _getRegionPath(d) {
@@ -505,19 +506,14 @@ const overlayHandler = (function (){
     }
 
     /**
-     * Let the overlay handler know the current zoom level and container
-     * size of the viewer in order to properly scale elements.
+     * Let the overlay handler know the current zoom level and maximum
+     * zoom level of the viewer in order to properly scale elements.
      * @param {number} zoomLevel The current zoom level of the OSD viewport.
-     * @param {number} wContainer The width in pixels of the OSD viewport.
-     * @param {number} hContainer The height in pixels of the OSD viewport.
+     * @param {number} wContainer The maximum zoom level of the OSD viewport.
      */
-    function setOverlayScale(zoomLevel, wContainer, hContainer) {
-        try {
-            _scale = zoomLevel * wContainer * coordinateHelper.getMinDimension() / 1e5;
-        }
-        catch {
-            _scale = zoomLevel * wContainer;
-        }
+    function setOverlayScale(zoomLevel, maxZoom) {
+        _scale = 1 / zoomLevel;
+        _maxScale = 2 / maxZoom;
         _resizeMembers();
         _resizeMarkers();
         _resizeRegions();
