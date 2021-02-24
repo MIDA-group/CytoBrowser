@@ -84,8 +84,8 @@ const tmapp = (function() {
             throw new Error("Tried to update zoom of nonexistent viewer.");
         }
         const zoom = _viewer.viewport.getZoom();
-        const size = _viewer.viewport.getContainerSize();
-        overlayHandler.setOverlayScale(zoom, size.x, size.y);
+        const maxZoom = _viewer.viewport.getMaxZoom();
+        overlayHandler.setOverlayScale(zoom, maxZoom);
         tmappUI.setImageZoom(Math.round(zoom*10)/10);
         _currState.zoom = zoom;
 
