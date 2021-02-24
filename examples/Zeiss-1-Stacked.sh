@@ -2,6 +2,10 @@
 # Download and convert a Zeiss fluorescence image with 13 z-planes
 
 
+#Exit on error (sourced or subshell)
+trap 'echo Error $? on line $LINENO; trap - ERR; return 2>/dev/null || exit' ERR
+
+
 #Download an example image - HER2 FISH, fluorescence, 3 channels, 13 Z-planes; credited to Yves Sucaet
 wget -nc http://openslide.cs.cmu.edu/download/openslide-testdata/Zeiss/Zeiss-1-Stacked.zvi
 file="Zeiss-1-Stacked.zvi"
@@ -12,7 +16,7 @@ name="${file%.*}"
 
 
 #Using Bio-Formats to extract one tiff for each z-level, note '_z' prefix for the z-offset
-# https://www.openmicroscopy.org/bio-formats/downloads/
+#"Command Line Tools" from https://www.openmicroscopy.org/bio-formats/downloads/
 
 #Since bfconvert messes up the dimensions, we extract one z-level at a time in a for loop
 mkdir -p tmp

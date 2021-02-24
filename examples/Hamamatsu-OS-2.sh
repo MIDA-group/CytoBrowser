@@ -2,6 +2,10 @@
 # Download and convert a Hamamatsu brightfield WSI with 1 z-plane
 
 
+#Exit on error (sourced or subshell)
+trap 'echo Error $? on line $LINENO; trap - ERR; return 2>/dev/null || exit' ERR
+
+
 #Download a 1GB example image - Ki-67 stain, brightfield, circa 2012
 wget -nc http://openslide.cs.cmu.edu/download/openslide-testdata/Hamamatsu/OS-2.ndpi
 file="OS-2.ndpi"
