@@ -10,7 +10,8 @@
  */
 const coordinateHelper = (function() {
     "use strict";
-    let _activeImage;
+    let _activeImage,
+        _minDimension;
 
     /**
      * Convert from image coordinates to viewport coordinates.
@@ -123,6 +124,18 @@ const coordinateHelper = (function() {
     }
 
     /**
+     * Get the length of the shortest dimension of the image in image
+     * coordinates.
+     * @returns {number} The length in pixels.
+     */
+    function getMinDimension() {
+        if (!_minDimension) {
+            throw new Error ("Can't get the shortest dimension without an image.");
+        }
+        return _minDimension;
+    }
+
+    /**
      * Set the coordinate helper to work with a given image. Due to
      * inaccuracies in coordinates when working with multiple images
      * in OpenSeadragon, this should be called with a specific image
@@ -131,6 +144,10 @@ const coordinateHelper = (function() {
      */
     function setImage(image) {
         _activeImage = image;
+        const bounds = image.getBounds();
+        const width = viewportToImage({x: 1, y: 0}).x;
+        const height = bounds.height * width;
+        _minDimension = Math.min(width, height);
     }
 
     /**
@@ -138,6 +155,7 @@ const coordinateHelper = (function() {
      */
     function clearImage() {
         _activeImage = null;
+        _minDimension = null;
     }
 
     return {
