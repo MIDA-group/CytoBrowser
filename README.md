@@ -20,8 +20,8 @@ npm install
 
 #Put your OpenSeadragon compatible images in the 'data/' directory
 
-#or download an example image and convert it to Deep Zoom Image (dzi) format
-./examples/Zeiss-1-Stacked.sh  #This required bftools and libvips
+#Or download an example image and convert it to Deep Zoom Image (dzi) format
+./examples/Zeiss-1-Stacked.sh  #This requires bftools and libvips
 
 #Start the web server on a specified host
 node cytobrowser.js 127.0.0.1 8080
