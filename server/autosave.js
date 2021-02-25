@@ -1,3 +1,12 @@
+/**
+ * @module autosave
+ * @desc Module used to help with the autosave functionality of the
+ * collaborations. Automatically sets and gets filenames for saves
+ * based on the collaboration id and image, and stores it in the proper
+ * location. Could potentially also be used for general storage of
+ * objects with some other associated id and image.
+ */
+
 const fs = require("fs");
 const fsPromises = fs.promises;
 const sanitize = require("sanitize-filename");
@@ -15,6 +24,12 @@ function getFilename(id, image) {
     return `${sanitizedImage}_${sanitizedId}`;
 }
 
+/**
+ * Load data from the autosave file structure.
+ * @param {string} id The id of the collaboration.
+ * @param {string} image The name of the image being saved.
+ * @returns {Promise} Promise that resolves with the parsed data.
+ */
 function loadAnnotations(id, image) {
     const subDir = getSubDirName(id, image);
     const filename = getFilename(id, image);
@@ -22,6 +37,13 @@ function loadAnnotations(id, image) {
     return fsPromises.readFile(path).then(JSON.parse);
 }
 
+/**
+ * Save data in the autosave file structure.
+ * @param {string} id The id of the collaboration.
+ * @param {string} image The name of the image being saved.
+ * @param {Object} data The data to be stored.
+ * @returns {Promise} Promise that resolves once the data is stored.
+ */
 function saveAnnotations(id, image, data) {
     const subDir = getSubDirName(id, image);
     const filename = getFilename(id, image);
