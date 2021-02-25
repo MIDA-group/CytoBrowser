@@ -175,8 +175,8 @@ const collabClient = (function(){
     }
 
     function _handleAutosave(msg) {
-        // TODO: Some visuals in UI
-        console.info("The server has saved the current state.");
+        const time = new Date(msg.time);
+        tmappUI.setLastAutosave(time);
     }
 
     /**
