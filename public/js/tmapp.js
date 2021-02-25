@@ -84,8 +84,9 @@ const tmapp = (function() {
             throw new Error("Tried to update zoom of nonexistent viewer.");
         }
         const zoom = _viewer.viewport.getZoom();
+        const maxZoom = _viewer.viewport.getMaxZoom();
         const size = _viewer.viewport.getContainerSize();
-        overlayHandler.setOverlayScale(zoom, size.x, size.y);
+        overlayHandler.setOverlayScale(zoom, maxZoom, size.x, size.y);
         tmappUI.setImageZoom(Math.round(zoom*10)/10);
         _currState.zoom = zoom;
 
@@ -468,7 +469,7 @@ const tmapp = (function() {
         if (!_viewer)
             throw new Error("Tried to move viewport without a viewer.");
         if (zoom !== undefined)
-            _viewer.viewport.zoomTo(zoom, true);
+            _viewer.viewport.zoomTo(Math.min(zoom, _viewer.viewport.getMaxZoom()), true);
         if (x !== undefined && y !== undefined)
             _viewer.viewport.panTo(new OpenSeadragon.Point(x, y), true);
         if (rotation !== undefined)

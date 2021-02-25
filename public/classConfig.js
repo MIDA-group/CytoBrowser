@@ -7,12 +7,12 @@ const classConfig = [
     {
         name: "NILM",
         description: "Negative for intraepithelial lesion or malignancy",
-        color: "#f03c3c"
+        color: "#346d2e"
     },
     {
         name: "ASC-US",
         description: "Atypical squamous cells of undetermined significance",
-        color: "#e86f26"
+        color: "#a0b520"
     },
     {
         name: "ASC-H",
@@ -22,22 +22,22 @@ const classConfig = [
     {
         name: "LSIL",
         description: "Low squamous intraepithelial lesion",
-        color: "#44b74d"
+        color: "#e86f26"
     },
     {
         name: "HSIL",
         description: "High squamous intraepithelial lesion",
-        color: "#346d2e"
+        color: "#f03c3c"
     },
     {
         name: "SCC",
         description: "Squamous cell carcinoma",
-        color: "#07b5da"
+        color: "#67b5da"
     },
     {
         name: "AdC",
         description: "Adenocarcinoma",
-        color: "#4754ed"
+        color: "#6754ff"
     },
     {
         name: "Other",

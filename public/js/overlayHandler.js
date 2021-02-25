@@ -9,6 +9,7 @@ const overlayHandler = (function (){
         _markerCircleSize = 1/32,
         _markerSquareStrokeWidth = 0.02,
         _markerCircleStrokeWidth = 0.01,
+        _scaleFloor = 0.25, // _scaleFloor * maxZoom = lowest zoom level where markers have a constant size on screen
         _markerText = true;
 
     let _cursorOverlay,
@@ -18,6 +19,7 @@ const overlayHandler = (function (){
         _activeAnnotationOverlayName,
         _previousCursors,
         _scale,
+        _maxScale,
         _rotation;
 
     /**
@@ -94,15 +96,15 @@ const overlayHandler = (function (){
 
     function _cursorSize(cursor) {
         const normalSize = cursor.inside || cursor.held;
-        return (normalSize ? 15000 : 12000) / _scale;
+        return (normalSize ? 15 : 12) * _scale;
     }
 
     function _markerSize() {
-        return 100000 / Math.max(_scale, 20000);
+        return 100 * Math.min(_scale, _maxScale);
     }
 
     function _regionStrokeWidth() {
-        return 2000 / _scale;
+        return 2 * _scale;
     }
 
     function _getRegionPath(d) {
@@ -509,14 +511,15 @@ const overlayHandler = (function (){
     }
 
     /**
-     * Let the overlay handler know the current zoom level and container
-     * size of the viewer in order to properly scale elements.
+     * Let the overlay handler know the current zoom level and maximum
+     * zoom level of the viewer in order to properly scale elements.
      * @param {number} zoomLevel The current zoom level of the OSD viewport.
-     * @param {number} wContainer The width in pixels of the OSD viewport.
-     * @param {number} hContainer The height in pixels of the OSD viewport.
+     * @param {number} wContainer The maximum zoom level of the OSD viewport.
      */
-    function setOverlayScale(zoomLevel, wContainer, hContainer) {
-        _scale = zoomLevel * wContainer;
+    function setOverlayScale(zoomLevel, maxZoom, wContainer, hContainer) {
+        const windowSizeAdjustment = 1400 / wContainer;
+        _scale = windowSizeAdjustment / zoomLevel;
+        _maxScale = windowSizeAdjustment / (_scaleFloor * maxZoom);
         _resizeMembers();
         _resizeMarkers();
         _resizeRegions();
