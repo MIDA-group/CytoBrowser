@@ -31,7 +31,6 @@ class Collaboration {
         this.nextColor = generateColor();
         this.image = image;
         this.loadState();
-        setInterval(() => this.trySavingState(), 60000);
         this.log(`Initializing collaboration.`, console.info);
     }
 
@@ -113,7 +112,7 @@ class Collaboration {
             // Members who aren't ready shouldn't do anything with annotations
             return;
         }
-        this.updatesHaveBeenMade = true;
+        this.trySavingState();
         switch (msg.actionType) {
             case "add":
                 if (!this.isDuplicateAnnotation(msg.annotation)) {
@@ -252,9 +251,11 @@ class Collaboration {
     }
 
     trySavingState() {
-        if (this.updatesHaveBeenMade) {
-            this.saveState();
-            this.updatesHaveBeenMade = false;
+        if (!this.autosaveTimeout) {
+            this.autosaveTimeout = setTimeout(() => {
+                this.saveState();
+                this.autosaveTimeout = null;
+            }, 20000);
         }
     }
 
