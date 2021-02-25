@@ -468,6 +468,15 @@ const tmappUI = (function(){
     }
 
     /**
+     * Set the last autosave time in the UI.
+     * @param {Date} time The time of the last autosave.
+     */
+    function setLastAutosave(time) {
+        const txt = `Last saved at: ${time.toLocaleString}`;
+        $("#last_autosave").txt(time || time === 0 ? txt : "");
+    }
+
+    /**
      * Push a new state to the URL.
      * @param {string} txt The new state to push.
      */
@@ -500,6 +509,7 @@ const tmappUI = (function(){
         setImageZLevel: setImageZLevel,
         setImageZoom: setImageZoom,
         setImageRotation: setImageRotation,
+        setLastAutosave: setLastAutosave,
         setURL: setURL,
         inFocus: inFocus
     };
