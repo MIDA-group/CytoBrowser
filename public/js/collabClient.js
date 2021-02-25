@@ -195,7 +195,7 @@ const collabClient = (function(){
 
     function _attemptReconnect() {
         console.info(`Attempting to reconnect to ${_collabId}.`);
-        connect(_collabId);
+        connect(_collabId, getDefaultName(), true);
     }
 
     /**
@@ -292,8 +292,7 @@ const collabClient = (function(){
                 _destroy();
             }
             else {
-                console.warn("Connection lost, attempting to reconnect...");
-                _reconnectInterval = setInterval(_attemptReconnect, 10000);
+                setTimeout(_attemptReconnect, 5000);
             }
         }
     }
