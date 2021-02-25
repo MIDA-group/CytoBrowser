@@ -4,23 +4,33 @@ const sanitize = require("sanitize-filename");
 
 let autosaveDir;
 
+function getSubDirName(id, image) {
+    const sanitizedImage = sanitize(String(image));
+    return sanitizedImage;
+}
+
 function getFilename(id, image) {
     const sanitizedId = sanitize(String(id));
     const sanitizedImage = sanitize(String(image));
-    return `${sanitizedId}_${sanitizedImage}`;
+    return `${sanitizedImage}_${sanitizedId}`;
 }
 
 function loadAnnotations(id, image) {
+    const subDir = getSubDirName(id, image);
     const filename = getFilename(id, image);
-    const path = `${autosaveDir}/${filename}.json`;
+    const path = `${autosaveDir}/${subDir}/${filename}.json`;
     return fsPromises.readFile(path).then(JSON.parse);
 }
 
 function saveAnnotations(id, image, data) {
+    const subDir = getSubDirName(id, image);
     const filename = getFilename(id, image);
-    const path = `${autosaveDir}/${filename}.json`;
+    const dir = `${autosaveDir}/${subDir}`;
+    const path = `${autosaveDir}/${subDir}/${filename}.json`;
     const rawData = JSON.stringify(data);
-    return fsPromises.writeFile(path, rawData);
+    return fsPromises.mkdir(dir, {recursive: true}).then(() => {
+        return fsPromises.writeFile(path, rawData);
+    });
 }
 
 module.exports = function(dir) {
