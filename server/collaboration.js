@@ -241,13 +241,14 @@ class Collaboration {
             return;
         }
 
-        this.notifyAutosave();
         const data = {
             version: "1.0",
             image: this.image,
             annotations: this.annotations
         };
-        autosave.saveAnnotations(this.id, this.image, data);
+        autosave.saveAnnotations(this.id, this.image, data).then(() => {
+            this.notifyAutosave();
+        });
     }
 
     trySavingState() {
