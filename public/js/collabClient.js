@@ -5,6 +5,8 @@
 const collabClient = (function(){
     "use strict";
     let _ws,
+        _collabId,
+        _reconnectInterval,
         _joinBatch,
         _members,
         _localMember,
@@ -179,6 +181,23 @@ const collabClient = (function(){
         tmappUI.setLastAutosave(time);
     }
 
+    function _destroy() {
+        stopFollowing();
+        _joinBatch = null;
+        _members = null;
+        _localMember = null;
+        _ws = null;
+        _collabId  = null;
+        overlayHandler.updateMembers([]);
+        tmappUI.clearCollaborators();
+        tmapp.clearCollab();
+    }
+
+    function _attemptReconnect() {
+        console.info(`Attempting to reconnect to ${_collabId}.`);
+        connect(_collabId);
+    }
+
     /**
      * Perform any actions that should be performed if the members are
      * updated. This includes updating cursors in the overlay and moving
@@ -249,6 +268,8 @@ const collabClient = (function(){
         ws.onopen = function(event) {
             console.info(`Successfully connected to collaboration ${id}.`);
             _ws = ws;
+            _collabId = id;
+            clearInterval(_reconnectInterval);
             tmapp.setCollab(id);
 
             if (include) {
@@ -267,14 +288,13 @@ const collabClient = (function(){
             _handleMessage(JSON.parse(event.data));
         }
         ws.onclose = function(event) {
-            stopFollowing();
-            _joinBatch = null;
-            _members = null;
-            _localMember = null;
-            _ws = null;
-            overlayHandler.updateMembers([]);
-            tmappUI.clearCollaborators();
-            tmapp.clearCollab();
+            if (event.code === 1000) {
+                _destroy();
+            }
+            else {
+                console.warn("Connection lost, attempting to reconnect...");
+                _reconnectInterval = setInterval(_attemptReconnect, 10000);
+            }
         }
     }
 
@@ -283,7 +303,7 @@ const collabClient = (function(){
      */
     function disconnect() {
         if (_ws) {
-            _ws.close();
+            _ws.close(1000, "Collaboration was closed normally.");
         }
         else {
             console.warn("Tried to disconnect from nonexistent collaboration.");
