@@ -6,7 +6,6 @@ const collabClient = (function(){
     "use strict";
     let _ws,
         _collabId,
-        _reconnectInterval,
         _joinBatch,
         _members,
         _localMember,
@@ -269,7 +268,6 @@ const collabClient = (function(){
             console.info(`Successfully connected to collaboration ${id}.`);
             _ws = ws;
             _collabId = id;
-            clearInterval(_reconnectInterval);
             tmapp.setCollab(id);
 
             if (include) {
