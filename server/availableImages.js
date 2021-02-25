@@ -16,9 +16,8 @@ const fs = require("fs");
 // Directory where the data can be found
 let dataDir;
 
-// Variables to avoid having to figure out which images exist every call
-const checkInterval = 60000;
-let lastCheck = Date.now();
+// Time when the data was last altered
+let lastUpdate = 0;
 
 // Variable to cache the available images
 let availableImages = null;
@@ -136,17 +135,30 @@ function updateImages() {
 }
 
 /**
+ * Look to see if any data has changed since the last time it was
+ * collected. If it has, fetch the new data.
+ */
+function checkForDataUpdates() {
+    fs.stat(dataDir, (err, stats) => {
+        if (err) {
+            console.error(err.toString());
+            return;
+        }
+        const updateTime = stats.ctime.getTime();
+        if (updateTime !== lastUpdate) {
+            updateImages();
+            lastUpdate = updateTime;
+        }
+    })
+}
+
+/**
  * Get the currently available images from the /data directory on the
  * server.
  * @returns {Array} An array of image information, each entry including
  * an image name, an array of z levels, and two thumbnail routes.
  */
 function getAvailableImages() {
-    // Update the available images if enough time has passed
-    if (Date.now() - checkInterval > lastCheck) {
-        updateImages();
-    }
-
     return availableImages;
 }
 
@@ -155,6 +167,7 @@ module.exports = function(dir) {
         throw new Error("A data directory has to be specified.");
     }
     dataDir = dir;
-    updateImages();
+    checkForDataUpdates();
+    setInterval(checkForDataUpdates, 10000);
     return getAvailableImages;
 }
