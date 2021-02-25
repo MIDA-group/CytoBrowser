@@ -3,10 +3,12 @@ const argv = require("minimist")(process.argv.slice(2));
 const hostname = argv._[0] || "localhost";
 const port = argv._[1] || 0;
 const storageDir = argv.storage || argv.s || "./storage";
+const collabDir = argv.collab || argv.c || "./collab_storage";
 const dataDir = argv.data || argv.d || "./data";
 if (argv.h || argv.help) {
     console.info(`Usage: node cytobrowser.js hostname port ` +
     `[-s storage path = "./storage"] ` +
+    `[-c collab storage path = "./collab_storage"] ` +
     `[-d image data path = "./data"]`);
     return;
 }
@@ -15,7 +17,7 @@ if (argv.h || argv.help) {
 const fs = require("fs");
 const express = require("express");
 const availableImages = require("./server/availableImages")(dataDir);
-const collaboration = require("./server/collaboration");
+const collaboration = require("./server/collaboration")(collabDir);
 const serverStorage = require("./server/serverStorage")(storageDir);
 
 // Initialize the server

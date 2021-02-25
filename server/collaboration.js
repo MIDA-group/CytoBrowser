@@ -4,8 +4,8 @@
  * different users of the CytoBrowser.
  */
 
-// TODO: Make this settable
-const autosave = require("./autosave")("./collab_storage");
+// Autosave module, initialized in export
+let autosave;
 
 // Object for storing all ongoing collaborations
 const collabs = {};
@@ -362,7 +362,12 @@ function handleMessage(ws, id, msg) {
     }
 }
 
-exports.getId = getId;
-exports.joinCollab = joinCollab;
-exports.leaveCollab = leaveCollab;
-exports.handleMessage = handleMessage;
+module.exports = function(dir) {
+    autosave = require("./autosave")(dir);
+    return {
+        getId: getId,
+        joinCollab: joinCollab,
+        leaveCollab: leaveCollab,
+        handleMessage: handleMessage
+    };
+}
