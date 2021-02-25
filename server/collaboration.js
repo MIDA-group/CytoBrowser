@@ -30,7 +30,8 @@ class Collaboration {
         this.nextMemberId = 0;
         this.nextColor = generateColor();
         this.image = image;
-        this.loadState();
+        this.loadState(false);
+        this.ongoingLoad = new Promise(r => r()); // Dummy promise just in case
         this.log(`Initializing collaboration.`, console.info);
     }
 
@@ -90,7 +91,9 @@ class Collaboration {
         const member = this.members.get(sender);
         switch (msg.type) {
             case "annotationAction":
-                this.handleAnnotationAction(sender, member, msg);
+                this.ongoingLoad.then(() => {
+                    this.handleAnnotationAction(sender, member, msg);
+                });
                 break;
             case "memberEvent":
                 this.handleMemberEvent(sender, member, msg);
@@ -218,12 +221,12 @@ class Collaboration {
         }
     }
 
-    loadState() {
+    loadState(forceUpdate=true) {
         if (!this.image) {
             return;
         }
 
-        autosave.loadAnnotations(this.id, this.image).then(data => {
+        this.ongoingLoad = autosave.loadAnnotations(this.id, this.image).then(data => {
             if (data.version === "1.0") {
                 this.annotations = data.annotations;
             }
@@ -231,7 +234,9 @@ class Collaboration {
             this.log(`Couldn't load preexisting annotations for ${this.image}.`, console.info);
             this.annotations = [];
         }).finally(() => {
-            this.forceUpdate();
+            if (forceUpdate) {
+                this.forceUpdate();
+            }
         });
     }
 
