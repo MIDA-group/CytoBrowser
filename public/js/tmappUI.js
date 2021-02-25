@@ -472,8 +472,8 @@ const tmappUI = (function(){
      * @param {Date} time The time of the last autosave.
      */
     function setLastAutosave(time) {
-        const txt = `Last saved at: ${time.toLocaleString}`;
-        $("#last_autosave").txt(time || time === 0 ? txt : "");
+        const txt = `Saved at: ${time.toLocaleString()}`;
+        $("#last_autosave").text(time || time === 0 ? txt : "");
     }
 
     /**
