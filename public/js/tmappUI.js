@@ -219,24 +219,9 @@ const tmappUI = (function(){
             clearTimeout(nameTimeout);
             nameTimeout = setTimeout(setName, keyUpTime);
         });
-        $("#create_collaboration").click(function(event) {
-            const name = $("#collaboration_start [name='username']").val();
-            const include = $("#include_points").prop("checked");
-            collabClient.createCollab(name, include);
-        });
-        $("#join_collaboration").click(function(event) {
-            const name = $("#collaboration_start [name='username']").val();
-            const id = $("#collaboration_start [name='joined_id']").val();
-            const include = $("#include_points").prop("checked");
-            $("#collaboration_menu").modal("hide");
-            collabClient.connect(id, name, include);
-        });
         $("#copy_collaboration").click(function(event) {
             $("#collaboration_start [name='collab_url']").select();
             document.execCommand("copy");
-        });
-        $("#leave_collaboration").click(function(event) {
-            collabClient.disconnect();
         });
     }
 
