@@ -235,6 +235,9 @@ class Collaboration {
 
         this.ongoingLoad = autosave.loadAnnotations(this.id, this.image).then(data => {
             if (data.version === "1.0") {
+                if (data.name) {
+                    this.name = data.name;
+                }
                 this.annotations = data.annotations;
             }
         }).catch(() => {
@@ -254,6 +257,7 @@ class Collaboration {
 
         const data = {
             version: "1.0",
+            name: this.name,
             image: this.image,
             annotations: this.annotations
         };
