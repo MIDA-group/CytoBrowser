@@ -240,6 +240,10 @@ const tmappUI = (function(){
             $("#collaboration_start [name='collab_url']").select();
             document.execCommand("copy");
         });
+        $("#change_session").click(function(event) {
+            const image = tmapp.getImageName();
+            collabClient.promptCollabSelection(image);
+        });
     }
 
     /**
