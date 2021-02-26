@@ -10,6 +10,7 @@ const collabClient = (function(){
         _members,
         _localMember,
         _followedMember,
+        _desiredMember,
         _userId;
 
     let _ongoingDestruction = new Promise(r => r());
@@ -156,15 +157,6 @@ const collabClient = (function(){
         _localMember = _members.find(member => member.id === msg.requesterId);
         _userId= _localMember.id;
 
-        // If the summary was requested because of an image swap, refollow
-        if (_followedMember) {
-            const newFollow = _members.find(member => member.id === _followedMember.id);
-            stopFollowing();
-            if (newFollow) {
-                followView(newFollow);
-            }
-        }
-
         _memberUpdate();
         tmappUI.setCollabName(msg.name);
         tmapp.updateCollabStatus();
@@ -239,6 +231,13 @@ const collabClient = (function(){
             }
             if (_followedMember.removed) {
                 stopFollowing();
+            }
+        }
+        else if (_desiredMember) {
+            const target = _members.find(member => member.id === _desiredMember);
+            if (target) {
+                _desiredMember = null;
+                followView(target);
             }
         }
     }
@@ -548,6 +547,7 @@ const collabClient = (function(){
         if (!member || member.id === undefined || !member.position) {
             throw new Error("Argument should be a member.");
         }
+        _desiredMember = null;
         _followedMember = member;
         _followedMember.followed = true;
         _followedMember.updated = true;
@@ -560,6 +560,10 @@ const collabClient = (function(){
      */
     function stopFollowing() {
         if (_followedMember) {
+            // If you stopped following because they disappeared, remember them
+            if (_followedMember.removed) {
+                _desiredMember = _followedMember.id;
+            }
             _followedMember.followed = false;
             _followedMember = null;
         }
