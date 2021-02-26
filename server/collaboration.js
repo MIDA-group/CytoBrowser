@@ -27,6 +27,7 @@ class Collaboration {
         this.members = new Map();
         this.annotations = [];
         this.id = id;
+        this.name = id;
         this.nextMemberId = 0;
         this.nextColor = generateColor();
         this.image = image;
@@ -122,6 +123,9 @@ class Collaboration {
             case "requestSummary":
                 this.handleRequestSummary(sender, member, msg);
                 break;
+            case "nameChange":
+                this.handleNameChange(sender, member, msg);
+                break;
             default:
                 this.forwardMessage(sender, msg);
                 this.log("Received a message with an unknown type, forwarding anyway.", console.info);
@@ -194,10 +198,16 @@ class Collaboration {
         });
     }
 
+    handleNameChange(sender, member, msg) {
+        this.name = msg.name;
+        this.forwardMessage(sender, msg);
+    }
+
     stateSummary(sender) {
         return {
             type: "summary",
             id: this.id,
+            name: this.name,
             requesterId: this.members.get(sender).id,
             image: this.image,
             members: Array.from(this.members.values()),

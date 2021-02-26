@@ -38,6 +38,9 @@ const collabClient = (function(){
             case "forceUpdate":
                 _requestSummary();
                 break;
+            case "nameChange":
+                _handleNameChange();
+                break;
             default:
                 console.warn(`Unknown message type received in collab: ${msg.type}`);
         }
@@ -158,6 +161,7 @@ const collabClient = (function(){
         }
 
         _memberUpdate();
+        tmappUI.setCollabName(msg.name);
         tmapp.updateCollabStatus();
     }
 
@@ -182,6 +186,10 @@ const collabClient = (function(){
     function _handleAutosave(msg) {
         const time = new Date(msg.time);
         tmappUI.setLastAutosave(time);
+    }
+
+    function _handleNameChange(msg) {
+        tmappUI.setCollabName(msg.name);
     }
 
     function _destroy() {
@@ -395,7 +403,7 @@ const collabClient = (function(){
      * Change the name of the local collaboration member.
      * @param {string} newName The new name to be assigned to the member.
      */
-    function changeName(newName) {
+    function changeUsername(newName) {
         userInfo.setName(newName);
         tmappUI.setUserName(userInfo.getName());
         if (_localMember) {
@@ -417,6 +425,18 @@ const collabClient = (function(){
      */
     function getDefaultName() {
         return userInfo.getName();
+    }
+
+    /**
+     * Change the name of the collaboration.
+     * @param {string} newName The new name of the collaboration.
+     */
+    function changeCollabName(newName) {
+        tmappUI.setCollabName(newName);
+        send({
+            type: "nameChange",
+            name: newName
+        });
     }
 
     /**
@@ -574,8 +594,9 @@ const collabClient = (function(){
         updateAnnotation: updateAnnotation,
         removeAnnotation: removeAnnotation,
         clearAnnotations: clearAnnotations,
-        changeName: changeName,
+        changeUsername: changeUsername,
         getDefaultName: getDefaultName,
+        changeCollabName: changeCollabName,
         updatePosition: updatePosition,
         updateCursor: updateCursor,
         followView: followView,

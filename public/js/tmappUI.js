@@ -205,19 +205,32 @@ const tmappUI = (function(){
     }
 
     function _initCollaborationMenu() {
-        function setName() {
+        function setUsernameField() {
             const name = $("#collaboration_start [name='username']").val();
-            collabClient.changeName(name);
+            collabClient.changeUsername(name);
+        }
+        function setCollabNameField() {
+            const name = $("#collaboration_start [name='collab_name']").val();
+            collabClient.changeCollabName(name);
         }
 
-        let nameTimeout;
+        let usernameTimeout;
+        let collabNameTimeout;
         const keyUpTime = 3000;
         const defaultName = userInfo.getName();
-        $("#collaboration_menu").on("hide.bs.modal", setName);
+        $("#collaboration_menu").on("hide.bs.modal", () => {
+            setUsernameField();
+            setCollabNameField();
+        });
         $("#collaboration_start [name='username']").val(defaultName || "");
         $("#collaboration_start [name='username']").keyup(function(event) {
-            clearTimeout(nameTimeout);
-            nameTimeout = setTimeout(setName, keyUpTime);
+            clearTimeout(usernameTimeout);
+            nameTimeout = setTimeout(setUsernameField, keyUpTime);
+        });
+        $("#collaboration_start [name='collab_name']").val("");
+        $("#collaboration_start [name='collab_name']").keyup(function(event) {
+            clearTimeout(collabNameTimeout);
+            collabNameTimeout = setTimeout(setCollabNameField, keyUpTime);
         });
         $("#copy_collaboration").click(function(event) {
             $("#collaboration_start [name='collab_url']").select();
@@ -429,6 +442,15 @@ const tmappUI = (function(){
     }
 
     /**
+     * Set the displayed collab name in the UI.
+     * @param {string} txt The collab name to display.
+     */
+    function setCollabName(txt) {
+        $("#collaboration_start [name='collab_name']").val(txt || txt === 0 ? txt : "");
+        $("#collab_name").text(txt || txt === 0 ? txt : "-");
+    }
+
+    /**
      * Set the displayed image name in the UI.
      * @param {string} txt The image name to display.
      */
@@ -498,6 +520,7 @@ const tmappUI = (function(){
         clearImageError: clearImageError,
         updateImageBrowser: updateImageBrowser,
         setUserName: setUserName,
+        setCollabName: setCollabName,
         setImageName: setImageName,
         setImageZLevel: setImageZLevel,
         setImageZoom: setImageZoom,
