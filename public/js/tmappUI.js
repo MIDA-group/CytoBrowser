@@ -305,10 +305,12 @@ const tmappUI = (function(){
      * disable the elements for creating and joining collaborations, and
      * enable the button for leaving the collaboration.
      * @param {string} id Identifier for the active collaboration.
+     * @param {string} image Name of the image the collab is for.
      */
-    function setCollabID(id) {
+    function setCollabID(id, image) {
         const collabUrl = new URL(window.location.href.split('?')[0]);
         collabUrl.searchParams.set("collab", id);
+        collabUrl.searchParams.set("image", image)
         $("#collaboration_start [name='collab_url']").val(collabUrl.href);
         $("#collaboration_start [name='active_id']").val(id);
         $("#collaboration_start input, #collaboration_start button").prop("disabled", true);
