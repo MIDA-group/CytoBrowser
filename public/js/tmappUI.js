@@ -250,6 +250,8 @@ const tmappUI = (function(){
      * @param {Array<Object>} choices An array of choices that can be
      * chosen from. Each choice should contain a label property and
      * a click property to properly display and handle their buttons.
+     * Can also include a truthy highlight property to set as different
+     * color than normal choices.
      * @param {Function} onCancel Function to call if the modal is closed.
      */
     function choice(title, choices, onCancel) {
@@ -258,7 +260,7 @@ const tmappUI = (function(){
         $("#multiple_choice .modal-title").text(title);
         $("#choice_list").empty();
         choices.forEach(choice => {
-            const choiceButton = $(`<button class="btn btn-primary btn-block">
+            const choiceButton = $(`<button class="btn btn-${choice.highlight ? "dark" : "primary"} btn-block">
                 ${choice.label}
             </button>`);
             choiceButton.click(choice.click);
