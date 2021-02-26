@@ -298,21 +298,18 @@ function getCollab(id, image) {
 }
 
 /**
- * Generate an unused, randomly generated collaboration ID. There are
- * around 6*10^7 possible IDs that can be generated with this function,
- * as they are generated as five-character lower-case alphanumeric strings.
+ * Generate random collaboration ID. There are around 3e15 possible IDs
+ * that can be generated with this function, as they are generated as
+ * ten-character lower-case alphanumeric strings.
  * @returns {string} A randomly generated, unused collaboration ID.
  */
 function getId() {
-    let id;
-    do {
-        // Generate a random number
-        const num = Math.random();
-        // Convert the number to an alphanumeric string
-        const str = num.toString(36);
-        // Shorten the string to something more human-readable
-        id = str.slice(2,7);
-    } while (collabs[id]);
+    // Generate a random number
+    const num = Math.random();
+    // Convert the number to an alphanumeric string
+    const str = num.toString(36);
+    // Remove the decimal
+    const id = str.split(".")[1];
     return id;
 }
 

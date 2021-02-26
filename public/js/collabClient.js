@@ -550,7 +550,7 @@ const collabClient = (function(){
                 tmappUI.choice("Choose a session", choices);
             }
             else if (collabReq.readyState === 4) {
-                tmappUI.displayImageError("servererror");
+                tmappUI.displayImageError("servererror", 10000);
             }
         };
     }
