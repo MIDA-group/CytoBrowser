@@ -246,7 +246,7 @@ class Collaboration {
             this.annotations = [];
         }).finally(() => {
             const nameChangeMsg = {type: "nameChange", name: this.name};
-            this.broadcast(nameChangeMsg);
+            this.broadcastMessage(nameChangeMsg);
             if (forceUpdate) {
                 this.forceUpdate();
             }
@@ -377,8 +377,8 @@ function handleMessage(ws, id, msg) {
  * Get a list of all collaborations that have previously been saved
  * for a given image.
  * @param {string} image The name of the image.
- * @returns {Promise<Array<string>>} A promise of the list of available
- * image ids.
+ * @returns {Promise<Array<Object>>} A promise of the list of available
+ * image ids and their names.
  */
 function getAvailable(image) {
     return autosave.getSavedIds(image);

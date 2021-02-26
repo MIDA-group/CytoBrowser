@@ -60,15 +60,26 @@ function saveAnnotations(id, image, data) {
  * Get a list of ids for the collaborations that have been saved in the
  * autosave directory for a given image.
  * @param {string} image The name of the image.
- * @returns {Promise<Array<string>>} A promise that resolves with the
- * list of ids.
+ * @returns {Promise<Array<Object>>} A promise that resolves with the
+ * list of ids and their names.
  */
 function getSavedIds(image) {
     const subDir = getSubDirName(image);
     const dir = `${autosaveDir}/${subDir}`;
     return fsPromises.readdir(dir).then(files => {
         files.filter(file => idPattern.test(file));
-        return files.map(file => file.match(idPattern)[0]);
+        // Check the files and get their names
+        const entries = files.map(file => {
+            const path = `${dir}/${file}`;
+            return fsPromises.readFile(path).then(JSON.parse).then(data => {
+                const id = file.match(idPattern)[0];
+                return {
+                    id: id,
+                    name: data.name ? data.name : id
+                };
+            });
+        });
+        return Promise.all(entries);
     }).catch(err => {
         if (err.code === "ENOENT") {
             return [];

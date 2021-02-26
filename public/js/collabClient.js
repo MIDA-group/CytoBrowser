@@ -559,12 +559,12 @@ const collabClient = (function(){
         collabReq.onreadystatechange = () => {
             if (collabReq.readyState === 4 && collabReq.status === 200) {
                 const available = JSON.parse(collabReq.responseText).available;
-                const choices = available.map(id => {
+                const choices = available.map(entry => {
                     const click = () => {
-                        tmapp.openImage(image, () => connect(id));
+                        tmapp.openImage(image, () => connect(entry.id));
                     };
                     return {
-                        label: id,
+                        label: entry.name,
                         click: click
                     };
                 });
