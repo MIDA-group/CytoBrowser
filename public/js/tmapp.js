@@ -497,7 +497,7 @@ const tmapp = (function() {
      */
     function setCollab(id) {
         _collab = id;
-        tmappUI.setCollabID(id);
+        tmappUI.setCollabID(id, _currentImage.name);
         _updateURLParams();
     }
 
