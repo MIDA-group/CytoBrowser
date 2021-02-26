@@ -117,8 +117,9 @@ app.get("/api/collaboration/available", (req, res) => {
 app.ws("/collaboration/:id", (ws, req) => {
     const id = req.params.id;
     const image = req.query.image ? req.query.image : null;
+    const userId = req.query.userId ? req.query.userId : null;
     const name = req.query.name || "Unnamed";
-    collaboration.joinCollab(ws, name, id, image);
+    collaboration.joinCollab(ws, name, userId, id, image);
 
     ws.on("message", msg => {
         collaboration.handleMessage(ws, id, msg);
