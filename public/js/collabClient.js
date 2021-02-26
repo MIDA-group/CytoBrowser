@@ -39,7 +39,7 @@ const collabClient = (function(){
                 _requestSummary();
                 break;
             case "nameChange":
-                _handleNameChange();
+                _handleNameChange(msg);
                 break;
             default:
                 console.warn(`Unknown message type received in collab: ${msg.type}`);

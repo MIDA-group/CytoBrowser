@@ -332,6 +332,7 @@ const tmappUI = (function(){
         $("#collaboration_start [name='active_id']").val(id);
         $("#collaboration_start input, #collaboration_start button").prop("disabled", true);
         $("#collaboration_start [name='username']").prop("disabled", false);
+        $("#collaboration_start [name='collab_name']").prop("disabled", false);
         $("#collaboration_start [name='collab_url']").prop("disabled", false);
         $("#copy_collaboration").prop("disabled", false);
         $("#leave_collaboration").prop("disabled", false);
