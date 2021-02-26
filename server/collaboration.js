@@ -362,12 +362,24 @@ function handleMessage(ws, id, msg) {
     }
 }
 
+/**
+ * Get a list of all collaborations that have previously been saved
+ * for a given image.
+ * @param {string} image The name of the image.
+ * @returns {Promise<Array<string>>} A promise of the list of available
+ * image ids.
+ */
+function getAvailable(image) {
+    return autosave.getSavedIds(image);
+}
+
 module.exports = function(dir) {
     autosave = require("./autosave")(dir);
     return {
         getId: getId,
         joinCollab: joinCollab,
         leaveCollab: leaveCollab,
-        handleMessage: handleMessage
+        handleMessage: handleMessage,
+        getAvailable: getAvailable
     };
 }

@@ -11,9 +11,10 @@ const fs = require("fs");
 const fsPromises = fs.promises;
 const sanitize = require("sanitize-filename");
 
+const idPattern = /(?<=_)[^_]*(?=\.json$)/;
 let autosaveDir;
 
-function getSubDirName(id, image) {
+function getSubDirName(image) {
     const sanitizedImage = sanitize(String(image));
     return sanitizedImage;
 }
@@ -31,7 +32,7 @@ function getFilename(id, image) {
  * @returns {Promise} Promise that resolves with the parsed data.
  */
 function loadAnnotations(id, image) {
-    const subDir = getSubDirName(id, image);
+    const subDir = getSubDirName(image);
     const filename = getFilename(id, image);
     const path = `${autosaveDir}/${subDir}/${filename}.json`;
     return fsPromises.readFile(path).then(JSON.parse);
@@ -45,13 +46,36 @@ function loadAnnotations(id, image) {
  * @returns {Promise} Promise that resolves once the data is stored.
  */
 function saveAnnotations(id, image, data) {
-    const subDir = getSubDirName(id, image);
+    const subDir = getSubDirName(image);
     const filename = getFilename(id, image);
     const dir = `${autosaveDir}/${subDir}`;
     const path = `${autosaveDir}/${subDir}/${filename}.json`;
     const rawData = JSON.stringify(data);
     return fsPromises.mkdir(dir, {recursive: true}).then(() => {
         return fsPromises.writeFile(path, rawData);
+    });
+}
+
+/**
+ * Get a list of ids for the collaborations that have been saved in the
+ * autosave directory for a given image.
+ * @param {string} image The name of the image.
+ * @returns {Promise<Array<string>>} A promise that resolves with the
+ * list of ids.
+ */
+function getSavedIds(image) {
+    const subDir = getSubDirName(image);
+    const dir = `${autosaveDir}/${subDir}`;
+    return fsPromises.readdir(dir).then(files => {
+        files.filter(file => file.test(idPattern));
+        return files.map(file => file.match(idPattern)[0]);
+    }).catch(err => {
+        if (err.code === "ENOENT") {
+            return [];
+        }
+        else {
+            throw err;
+        }
     });
 }
 
@@ -63,6 +87,7 @@ module.exports = function(dir) {
     fs.mkdirSync(autosaveDir, {recursive: true});
     return {
         loadAnnotations: loadAnnotations,
-        saveAnnotations: saveAnnotations
+        saveAnnotations: saveAnnotations,
+        getSavedIds: getSavedIds
     };
 }
