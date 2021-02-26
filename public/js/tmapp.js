@@ -379,6 +379,7 @@ const tmapp = (function() {
 
                     // Go to the initial image and/or join the collab
                     if (imageName && collab) {
+                        tmappUI.displayImageError("loadingcollab");
                         openImage(imageName, () => collabClient.connect(collab));
                     }
                     else if (imageName) {

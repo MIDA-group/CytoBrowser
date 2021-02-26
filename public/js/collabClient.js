@@ -278,7 +278,6 @@ const collabClient = (function(){
             swapImage(tmapp.getImageName(), id);
             disconnect();
         }
-        tmappUI.displayImageError("loadingcollab");
         _ongoingDestruction = _ongoingDestruction.then(() => {
             const wsProtocol = (window.location.protocol === 'https:')?'wss://':'ws://';
             const imageName = tmapp.getImageName();
@@ -314,6 +313,7 @@ const collabClient = (function(){
                     _destroy();
                 }
                 else {
+                    tmappUI.displayImageError("loadingcollab");
                     setTimeout(_attemptReconnect, 5000);
                 }
             }
