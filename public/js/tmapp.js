@@ -378,27 +378,11 @@ const tmapp = (function() {
                     _images = images;
 
                     // Go to the initial image and/or join the collab
-                    try {
-                        openImage(imageName, () => {
-                            if (initialState) {
-                                moveTo(initialState);
-                            }
-                            if (collab) {
-                                collabClient.connect(collab);
-                            }
-                            else {
-                                collabClient.createCollab();
-                            }
-                        });
+                    if (imageName && collab) {
+                        openImage(imageName, () => collabClient.connect(collab));
                     }
-                    catch(err) {
-                        tmappUI.displayImageError("badimage");
-                        if (collab) {
-                            collabClient.connect(collab);
-                        }
-                        else {
-                            collabClient.createCollab();
-                        }
+                    else if (imageName) {
+                        collabClient.promptCollabSelection(imageName, true);
                     }
                     break;
                 case 500:
@@ -444,6 +428,7 @@ const tmapp = (function() {
         else {
             const image = _images.find(image => image.name === imageName);
             if (!image) {
+                tmappUI.displayImageError("badimage");
                 throw new Error(`Failed to open image ${imageName}.`);
             }
             _clearCurrentImage();
