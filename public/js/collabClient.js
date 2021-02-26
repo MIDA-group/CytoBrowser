@@ -173,7 +173,7 @@ const collabClient = (function(){
             swapImage(msg.image, msg.id);
             disconnect();
             tmapp.openImage(msg.image, () => {
-                connect(id);
+                connect(msg.collab);
                 // TODO: Keep following!
             }, disconnect);
         }
@@ -338,7 +338,7 @@ const collabClient = (function(){
             type: "imageSwap",
             image: imageName,
             collab: collabId,
-            id: _localMember.id;
+            id: _localMember.id
         });
     }
 
@@ -540,8 +540,10 @@ const collabClient = (function(){
                 const available = JSON.parse(collabReq.responseText).available;
                 const choices = available.map(id => {
                     const click = () => {
-                        swapImage(image, id);
-                        disconnect();
+                        if (_ws) {
+                            swapImage(image, id);
+                            disconnect();
+                        }
                         tmapp.openImage(image, () => connect(id));
                     };
                     return {
@@ -553,8 +555,11 @@ const collabClient = (function(){
                     label: "Start new session",
                     highlight: true,
                     click: () => {
-                        swapImage(image, id);
-                        disconnect();
+                        // TODO: Need to somehow know id when sending
+                        if (_ws) {
+                            swapImage(image, id);
+                            disconnect();
+                        }
                         tmapp.openImage(image, () => createCollab());
                     }
                 });
