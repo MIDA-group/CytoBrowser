@@ -517,6 +517,34 @@ const collabClient = (function(){
         _memberUpdate();
     }
 
+    /**
+     * Prompt the user to either start a new collaboration or select an
+     * existing collaboration for a given image.
+     * @param {string} image The name of the image being collaborated on.
+     * @param {boolean} forceChoice The user cannot cancel the choice.
+     */
+    function promptCollabSelection(image, forceChoice=false) {
+        const collabReq = new XMLHttpRequest();
+        const address = `${window.location.origin}/api/collaboration/available?image=${image}`;
+        collabReq.open("GET", address, true);
+        collabReq.send(null);
+        collabReq.onreadystatechange = () => {
+            if (imageReq.readyState === 4 && imageReq.status === 200) {
+                const available = JSON.parse(imageReq.responseText).available;
+                const choices = available.map(id => {
+                    return {
+                        label: id,
+                        click: () => console.log(`Clicked ${id}`); // TODO
+                    };
+                });
+                tmappUI.choice("Choose a session", choices);
+            }
+            else if (imageReq.readyState === 4) {
+                tmappUI.displayImageError("servererror");
+            }
+        };
+    }
+
 
     return {
         createCollab: createCollab,
@@ -533,6 +561,7 @@ const collabClient = (function(){
         updatePosition: updatePosition,
         updateCursor: updateCursor,
         followView: followView,
-        stopFollowing: stopFollowing
+        stopFollowing: stopFollowing,
+        promptCollabSelection: promptCollabSelection
     };
 })();
