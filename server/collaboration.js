@@ -101,7 +101,7 @@ class Collaboration {
     forwardMessage(sender, msg) {
         const allMembers = Array.from(this.members.keys());
         const recipients = allMembers.filter(member => member !== sender);
-        broadcastMessage(msg, recipients, true);
+        this.broadcastMessage(msg, recipients, true);
     }
 
     handleMessage(sender, msg) {
