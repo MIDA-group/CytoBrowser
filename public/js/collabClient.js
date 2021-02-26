@@ -529,17 +529,17 @@ const collabClient = (function(){
         collabReq.open("GET", address, true);
         collabReq.send(null);
         collabReq.onreadystatechange = () => {
-            if (imageReq.readyState === 4 && imageReq.status === 200) {
-                const available = JSON.parse(imageReq.responseText).available;
+            if (collabReq.readyState === 4 && collabReq.status === 200) {
+                const available = JSON.parse(collabReq.responseText).available;
                 const choices = available.map(id => {
                     return {
                         label: id,
-                        click: () => console.log(`Clicked ${id}`); // TODO
+                        click: () => console.log(`Clicked ${id}`) // TODO
                     };
                 });
                 tmappUI.choice("Choose a session", choices);
             }
-            else if (imageReq.readyState === 4) {
+            else if (collabReq.readyState === 4) {
                 tmappUI.displayImageError("servererror");
             }
         };
