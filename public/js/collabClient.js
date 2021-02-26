@@ -555,6 +555,13 @@ const collabClient = (function(){
         _followedMember.updated = true;
         tmapp.disableControls();
         _memberUpdate();
+        _localMember.following = member.id;
+        send({
+            type: "memberEvent",
+            eventType: "update",
+            hardUpdate: true,
+            member: _localMember
+        });
     }
 
     /**
@@ -567,6 +574,13 @@ const collabClient = (function(){
         }
         tmapp.enableControls();
         _memberUpdate();
+        _localMember.following = null;
+        send({
+            type: "memberEvent",
+            eventType: "update",
+            hardUpdate: true,
+            member: _localMember
+        });
     }
 
     /**
