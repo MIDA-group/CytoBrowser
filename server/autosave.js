@@ -67,7 +67,7 @@ function getSavedIds(image) {
     const subDir = getSubDirName(image);
     const dir = `${autosaveDir}/${subDir}`;
     return fsPromises.readdir(dir).then(files => {
-        files.filter(file => file.test(idPattern));
+        files.filter(file => idPattern.test(file));
         return files.map(file => file.match(idPattern)[0]);
     }).catch(err => {
         if (err.code === "ENOENT") {

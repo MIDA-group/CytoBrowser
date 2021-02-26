@@ -103,7 +103,7 @@ app.get("/api/collaboration/id", (req, res) => {
 
 // Get a list of existing collaborations
 app.get("/api/collaboration/available", (req, res) => {
-    const image = req.params.image;
+    const image = req.query.image;
     collaboration.getAvailable(image).then(available => {
         res.status(200);
         res.json({available: available});
