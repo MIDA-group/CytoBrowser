@@ -261,6 +261,7 @@ const collabClient = (function(){
      */
     function connect(id, name=getDefaultName(), include=false) {
         if (_ws) {
+            swapImage(tmapp.getImageName(), id);
             disconnect();
         }
         var wsProtocol = (window.location.protocol === 'https:')?'wss://':'ws://';
@@ -540,10 +541,6 @@ const collabClient = (function(){
                 const available = JSON.parse(collabReq.responseText).available;
                 const choices = available.map(id => {
                     const click = () => {
-                        if (_ws) {
-                            swapImage(image, id);
-                            disconnect();
-                        }
                         tmapp.openImage(image, () => connect(id));
                     };
                     return {
@@ -555,11 +552,6 @@ const collabClient = (function(){
                     label: "Start new session",
                     highlight: true,
                     click: () => {
-                        // TODO: Need to somehow know id when sending
-                        if (_ws) {
-                            swapImage(image, id);
-                            disconnect();
-                        }
                         tmapp.openImage(image, () => createCollab());
                     }
                 });
