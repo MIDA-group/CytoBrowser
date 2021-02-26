@@ -80,7 +80,7 @@ class Collaboration {
             try {
                 if (recipient.readyState === 1
                     && (!requireReady || this.members.get(recipient).ready)) {
-                    ws.send(msgJSON);
+                    recipient.send(msgJSON);
                 }
             }
             catch (err) {
