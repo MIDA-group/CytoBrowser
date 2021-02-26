@@ -169,10 +169,14 @@ const collabClient = (function(){
     }
 
     function _handleImageSwap(msg) {
-        tmapp.openImage(msg.image, () => {
-            // Make sure to get any new information from before you swapped
-            _requestSummary();
-        }, disconnect);
+        if (_followedMember && _followedMember.id === msg.id) {
+            swapImage(msg.image, msg.id);
+            disconnect();
+            tmapp.openImage(msg.image, () => {
+                connect(id);
+                // TODO: Keep following!
+            }, disconnect);
+        }
     }
 
     function _handleAutosave(msg) {
@@ -325,13 +329,16 @@ const collabClient = (function(){
     }
 
     /**
-     * Notify collaborators about an image being swapped.
+     * Notify collaborators that you are moving to another image.
      * @param {string} imageName Name of the image being swapped to.
+     * @param {string} collabId The collab being joined.
      */
-    function swapImage(imageName) {
+    function swapImage(imageName, collabId) {
         send({
             type: "imageSwap",
-            image: imageName
+            image: imageName,
+            collab: collabId,
+            id: _localMember.id;
         });
     }
 
@@ -533,6 +540,8 @@ const collabClient = (function(){
                 const available = JSON.parse(collabReq.responseText).available;
                 const choices = available.map(id => {
                     const click = () => {
+                        swapImage(image, id);
+                        disconnect();
                         tmapp.openImage(image, () => connect(id));
                     };
                     return {
@@ -544,6 +553,8 @@ const collabClient = (function(){
                     label: "Start new session",
                     highlight: true,
                     click: () => {
+                        swapImage(image, id);
+                        disconnect();
                         tmapp.openImage(image, () => createCollab());
                     }
                 });

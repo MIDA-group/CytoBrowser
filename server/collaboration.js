@@ -162,13 +162,6 @@ class Collaboration {
     handleImageSwap(sender, member, msg) {
         this.saveState();
         this.broadcastMessage(sender, msg);
-        for (let [ws, member] of this.members.entries()) {
-            if (ws !== sender) {
-                member.ready = false;
-            }
-        }
-        this.image = msg.image;
-        this.loadState();
     }
 
     handleRequestSummary(sender, member, msg) {
