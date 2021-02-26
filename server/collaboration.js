@@ -44,7 +44,7 @@ class Collaboration {
             ready: false,
         });
         this.log(`${name} has connected.`, console.info);
-        this.broadcastMessage(ws, {
+        this.forwardMessage(ws, {
             type: "memberEvent",
             eventType: "add",
             member: this.members.get(ws)
@@ -53,13 +53,40 @@ class Collaboration {
 
     removeMember(ws) {
         const member = this.members.get(ws);
-        this.broadcastMessage(ws, {
+        this.forwardMessage(ws, {
             type: "memberEvent",
             eventType: "remove",
             member: member
         });
         this.log(`${member.name} has disconnected.`, console.info);
         this.members.delete(ws);
+    }
+
+    /**
+     * Send a message to a specified list of recipients. If the recipients
+     * parameter is left falsy, it will be sent to all connected users.
+     * @param {Object} msg The message to send.
+     * @param {Array<WebSocket>} recipients The websockets that should
+     * receive the message, or falsy if all should receive.
+     * @param {boolean} requireReady Whether or not users have to be
+     * ready to receive the message.
+     */
+    broadcastMessage(msg, recipients, requireReady=false) {
+        const msgJSON = JSON.stringify(msg);
+        if (!recipients) {
+            recipients = Array.from(this.members.keys());
+        }
+        recipients.forEach(recipient => {
+            try {
+                if (recipient.readyState === 1
+                    && (!requireReady || this.members.get(recipient).ready)) {
+                    ws.send(msgJSON);
+                }
+            }
+            catch (err) {
+                this.log(`WebSocket send failed: ${err.message}`, console.warn);
+            }
+        });
     }
 
     /**
@@ -71,19 +98,10 @@ class Collaboration {
      * was originally received.
      * @param {Object} msg The message that should be broadcast.
      */
-    broadcastMessage(sender, msg) {
-        // Forward the message to all other members
-        const msgJSON = JSON.stringify(msg);
-        for (let [ws, member] of this.members.entries()) {
-            if (ws !== sender && member.ready) {
-                try {
-                    ws.send(msgJSON);
-                }
-                catch (err) {
-                    this.log(`WebSocket send failed: ${err.message}`, console.warn);
-                }
-            }
-        }
+    forwardMessage(sender, msg) {
+        const allMembers = Array.from(this.members.keys());
+        const recipients = allMembers.filter(member => member !== sender);
+        broadcastMessage(msg, recipients, true);
     }
 
     handleMessage(sender, msg) {
@@ -105,7 +123,7 @@ class Collaboration {
                 this.handleRequestSummary(sender, member, msg);
                 break;
             default:
-                this.broadcastMessage(sender, msg);
+                this.forwardMessage(sender, msg);
                 this.log("Received a message with an unknown type, forwarding anyway.", console.info);
         }
     }
@@ -120,7 +138,7 @@ class Collaboration {
             case "add":
                 if (!this.isDuplicateAnnotation(msg.annotation)) {
                     this.annotations.push(msg.annotation);
-                    this.broadcastMessage(sender, msg);
+                    this.forwardMessage(sender, msg);
                 }
                 else {
                     this.log(`${member.name} tried to add a duplicate annotation, ignoring.`, console.info);
@@ -128,25 +146,25 @@ class Collaboration {
                 break;
             case "update":
                 Object.assign(this.annotations.find(annotation => annotation.id === msg.id), msg.annotation);
-                this.broadcastMessage(sender, msg);
+                this.forwardMessage(sender, msg);
                 break;
             case "remove":
                 const index = this.annotations.findIndex(annotation => annotation.id === msg.id);
                 this.annotations.splice(index, 1);
-                this.broadcastMessage(sender, msg);
+                this.forwardMessage(sender, msg);
                 break;
             case "clear":
                 this.annotations = [];
-                this.broadcastMessage(sender, msg);
+                this.forwardMessage(sender, msg);
                 break;
             default:
                 this.log(`Tried to handle unknown annotation action: ${msg.actionType}`, console.warn);
-                this.broadcastMessage(sender, msg);
+                this.forwardMessage(sender, msg);
         }
     }
 
     handleMemberEvent(sender, member, msg) {
-        this.broadcastMessage(sender, msg);
+        this.forwardMessage(sender, msg);
         switch (msg.eventType) {
             case "update":
                 Object.assign(member, msg.member);
@@ -161,14 +179,14 @@ class Collaboration {
 
     handleImageSwap(sender, member, msg) {
         this.saveState();
-        this.broadcastMessage(sender, msg);
+        this.forwardMessage(sender, msg);
     }
 
     handleRequestSummary(sender, member, msg) {
         if (msg.image === this.image)
             member.ready = true;
         sender.send(JSON.stringify(this.stateSummary(sender)));
-        this.broadcastMessage(sender, {
+        this.forwardMessage(sender, {
             type: "memberEvent",
             eventType: "update",
             hardUpdate: true,
@@ -189,29 +207,15 @@ class Collaboration {
 
     forceUpdate() {
         const msg = {type: "forceUpdate"};
-        const msgJSON = JSON.stringify(msg);
-        for (let [ws, member] of this.members.entries()) {
+        for (let member of this.members.values()) {
             member.ready = false;
-            try {
-                ws.send(msgJSON);
-            }
-            catch (err) {
-                this.log(`WebSocket send failed: ${err.message}`, console.warn);
-            }
         }
+        this.broadcastMessage(msg);
     }
 
     notifyAutosave() {
         const msg = {type: "autosave", time: Date.now()};
-        const msgJSON = JSON.stringify(msg);
-        for (let [ws, member] of this.members.entries()) {
-            try {
-                ws.send(msgJSON);
-            }
-            catch (err) {
-                this.log(`WebSocket send failed: ${err.message}`, console.warn);
-            }
-        }
+        this.broadcastMessage(msg);
     }
 
     loadState(forceUpdate=true) {
