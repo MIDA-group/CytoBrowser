@@ -171,11 +171,12 @@ const collabClient = (function(){
 
     function _handleImageSwap(msg) {
         if (_followedMember && _followedMember.id === msg.id) {
+            const target = _followedMember.id;
             swapImage(msg.image, msg.id);
             disconnect();
             tmapp.openImage(msg.image, () => {
                 connect(msg.collab);
-                // TODO: Keep following!
+                _desiredMember = target;
             }, disconnect);
         }
     }
@@ -560,10 +561,6 @@ const collabClient = (function(){
      */
     function stopFollowing() {
         if (_followedMember) {
-            // If you stopped following because they disappeared, remember them
-            if (_followedMember.removed) {
-                _desiredMember = _followedMember.id;
-            }
             _followedMember.followed = false;
             _followedMember = null;
         }
