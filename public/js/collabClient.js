@@ -563,7 +563,7 @@ const collabClient = (function(){
                         tmapp.openImage(image, () => createCollab());
                     }
                 });
-                tmappUI.choice("Choose a session", choices);
+                tmappUI.choice("Choose a session", choices, null, forceChoice);
             }
             else if (collabReq.readyState === 4) {
                 tmappUI.displayImageError("servererror", 10000);
