@@ -225,7 +225,7 @@ const tmappUI = (function(){
         $("#collaboration_start [name='username']").val(defaultName || "");
         $("#collaboration_start [name='username']").keyup(function(event) {
             clearTimeout(usernameTimeout);
-            nameTimeout = setTimeout(setUsernameField, keyUpTime);
+            usernameTimeout = setTimeout(setUsernameField, keyUpTime);
         });
         $("#collaboration_start [name='collab_name']").val("");
         $("#collaboration_start [name='collab_name']").keyup(function(event) {
