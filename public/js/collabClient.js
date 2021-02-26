@@ -11,6 +11,9 @@ const collabClient = (function(){
         _localMember,
         _followedMember;
 
+    let _ongoingDestruction = new Promise(r => r());
+    let _resolveOngoingDestruction;
+
     const _member = {};
 
     /**
@@ -202,6 +205,7 @@ const collabClient = (function(){
         overlayHandler.updateMembers([]);
         tmappUI.clearCollaborators();
         tmapp.clearCollab();
+        _resolveOngoingDestruction && _resolveOngoingDestruction();
     }
 
     function _attemptReconnect() {
@@ -272,40 +276,42 @@ const collabClient = (function(){
             swapImage(tmapp.getImageName(), id);
             disconnect();
         }
-        var wsProtocol = (window.location.protocol === 'https:')?'wss://':'ws://';
-        const imageName = tmapp.getImageName();
-        const address = `${window.location.host}/collaboration/`+
-            `${id}?name=${name}&image=${imageName ? imageName : ""}`;
-        const ws = new WebSocket(wsProtocol+address);
-        ws.onopen = function(event) {
-            console.info(`Successfully connected to collaboration ${id}.`);
-            _ws = ws;
-            _collabId = id;
-            tmapp.setCollab(id);
+        _ongoingDestruction.then(() => {
+            const wsProtocol = (window.location.protocol === 'https:')?'wss://':'ws://';
+            const imageName = tmapp.getImageName();
+            const address = `${window.location.host}/collaboration/`+
+                `${id}?name=${name}&image=${imageName ? imageName : ""}`;
+            const ws = new WebSocket(wsProtocol+address);
+            ws.onopen = function(event) {
+                console.info(`Successfully connected to collaboration ${id}.`);
+                _ws = ws;
+                _collabId = id;
+                tmapp.setCollab(id);
 
-            if (include) {
-                _joinBatch = [];
-                _requestSummary();
+                if (include) {
+                    _joinBatch = [];
+                    _requestSummary();
+                }
+                else if (annotationHandler.isEmpty() || confirm("All your placed annotations will be lost unless you have saved them. Do you want to continue anyway?")) {
+                    annotationHandler.clear(false);
+                    _requestSummary();
+                }
+                else {
+                    disconnect();
+                }
             }
-            else if (annotationHandler.isEmpty() || confirm("All your placed annotations will be lost unless you have saved them. Do you want to continue anyway?")) {
-                annotationHandler.clear(false);
-                _requestSummary();
+            ws.onmessage = function(event) {
+                _handleMessage(JSON.parse(event.data));
             }
-            else {
-                disconnect();
+            ws.onclose = function(event) {
+                if (event.code === 1000) {
+                    _destroy();
+                }
+                else {
+                    setTimeout(_attemptReconnect, 5000);
+                }
             }
-        }
-        ws.onmessage = function(event) {
-            _handleMessage(JSON.parse(event.data));
-        }
-        ws.onclose = function(event) {
-            if (event.code === 1000) {
-                _destroy();
-            }
-            else {
-                setTimeout(_attemptReconnect, 5000);
-            }
-        }
+        });
     }
 
     /**
@@ -314,6 +320,13 @@ const collabClient = (function(){
     function disconnect() {
         if (_ws) {
             _ws.close(1000, "Collaboration was closed normally.");
+            _ongoingDestruction.then(() => {
+                return new Promise((resolve, reject) => {
+                    _resolveOngoingDestruction = resolve;
+                }).then(() => {
+                    _resolveOngoingDestruction = null;
+                });
+            });
         }
         else {
             console.warn("Tried to disconnect from nonexistent collaboration.");
