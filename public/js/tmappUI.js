@@ -496,12 +496,20 @@ const tmappUI = (function(){
         $("#last_autosave").text(time || time === 0 ? txt : "");
     }
 
+    let _urlTimeout,
+        _urlCache;
     /**
-     * Push a new state to the URL.
+     * Push a new state to the URL if it's been long enough.
      * @param {string} txt The new state to push.
      */
     function setURL(txt) {
-        window.history.pushState(null, "", txt);
+        _urlCache = txt;
+        if (_urlTimeout) {
+            clearTimeout(_urlTimeout);
+        }
+        _urlTimeout = setTimeout(() => {
+            window.history.pushState(null, "", txt);
+        }, 3000);
     }
 
     /**
