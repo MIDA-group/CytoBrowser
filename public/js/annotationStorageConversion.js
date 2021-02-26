@@ -34,12 +34,10 @@ const annotationStorageConversion = (function() {
                     annotationHandler.add(annotation, "image");
                 });
 
-                // Change image if data is for another image
+                // Change to a collab on the right image if we're on the wrong one
                 if (data.image !== tmapp.getImageName()) {
-                    tmapp.openImage(data.image, () => {
-                        collabClient.swapImage(data.image);
-                        addAnnotations();
-                    });
+                    alert(`The selected data does not belong to this image. ` +
+                        `Open a session on the image ${data.image} and try again.`);
                 }
                 else if (!annotationHandler.isEmpty()) {
                     tmappUI.choice("What should be done with the current annotations?", [

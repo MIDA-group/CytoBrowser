@@ -73,7 +73,7 @@ class Collaboration {
         this.log(`${member.name} has disconnected.`, console.info);
         this.members.delete(ws);
         if (this.members.size === 0) {
-            this.deathClock = setTimeout(this.close, 300000);
+            this.deathClock = setTimeout(() => this.close(), 300000);
         }
     }
 
