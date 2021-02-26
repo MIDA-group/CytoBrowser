@@ -274,6 +274,7 @@ const collabClient = (function(){
      * should be included in the collaborative workspace.
      */
     function connect(id, name=getDefaultName(), include=false) {
+        tmappUI.displayImageError("loadingcollab");
         if (_ws) {
             swapImage(tmapp.getImageName(), id);
             disconnect();
