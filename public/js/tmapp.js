@@ -408,9 +408,13 @@ const tmapp = (function() {
      * @param {Function} nochange Function to call if the user is
      * prompted on whether or not they want to change images and they
      * decide not to change.
+     * @param {boolean} askAboutSaving If the user has ended up outside
+     * of a collaboration and tries to swap images, this prompts them
+     * if they want to stay on the image so they can save their progress
+     * manually.
      */
-    function openImage(imageName, callback, nochange) {
-        if (!annotationHandler.isEmpty() && !_collab &&
+    function openImage(imageName, callback, nochange, askAboutSaving=false) {
+        if (!annotationHandler.isEmpty() && !_collab && askAboutSaving &&
             !confirm(`You are about to open ` +
             `the image "${imageName}". Do you want to ` +
             `open this image? Any annotations placed on the ` +
