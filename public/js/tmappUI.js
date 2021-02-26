@@ -515,7 +515,7 @@ const tmappUI = (function(){
         }
         _urlTimeout = setTimeout(() => {
             window.history.pushState(null, "", txt);
-        }, 3000);
+        }, 1000);
     }
 
     /**

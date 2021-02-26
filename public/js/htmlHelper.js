@@ -145,7 +145,7 @@ const htmlHelper = (function() {
         return button;
     }
 
-    function _collaboratorListEntry(member, active) {
+    function _collaboratorListEntry(member, active, following) {
         const entry = $(`
             <a class="list-group-item list-group-item-action d-flex
             justify-content-between align-items-center" href="#">
@@ -154,7 +154,7 @@ const htmlHelper = (function() {
                         &nbsp;
                     </span>
                     &nbsp;&nbsp;&nbsp;
-                    ${member.name}
+                    ${member.name}${following ? " (following)" : ""}
                 </span>
                 <span>
                     <input type="checkbox">
@@ -272,7 +272,8 @@ const htmlHelper = (function() {
         members.forEach(member => {
             const isLocal = localMember === member;
             const isActive = !isLocal && member.ready;
-            const entry = _collaboratorListEntry(member, isActive);
+            const isFollowing = member.following === localMember.id;
+            const entry = _collaboratorListEntry(member, isActive, isFollowing);
             container.append(entry);
         });
     }
