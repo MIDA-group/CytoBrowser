@@ -344,6 +344,7 @@ const tmappUI = (function(){
         $("#collaboration_start [name='collab_url']").prop("disabled", false);
         $("#copy_collaboration").prop("disabled", false);
         $("#leave_collaboration").prop("disabled", false);
+        $("#change_session").prop("disabled", false);
     }
 
     /**
@@ -359,6 +360,7 @@ const tmappUI = (function(){
         $("#collaboration_start [name='collab_url']").prop("disabled", true);
         $("#copy_collaboration").prop("disabled", true);
         $("#leave_collaboration").prop("disabled", true);
+        $("#change_session").prop("disabled", true);
     }
 
     /**
