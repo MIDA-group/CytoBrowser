@@ -200,6 +200,7 @@ class Collaboration {
 
     handleNameChange(sender, member, msg) {
         this.name = msg.name;
+        this.saveState();
         this.forwardMessage(sender, msg);
     }
 
@@ -244,6 +245,8 @@ class Collaboration {
             this.log(`Couldn't load preexisting annotations for ${this.image}.`, console.info);
             this.annotations = [];
         }).finally(() => {
+            const nameChangeMsg = {type: "nameChange", name: this.name};
+            this.broadcast(nameChangeMsg);
             if (forceUpdate) {
                 this.forceUpdate();
             }
