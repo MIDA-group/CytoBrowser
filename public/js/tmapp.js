@@ -296,9 +296,9 @@ const tmapp = (function() {
             _updateFocus();
             _updatePosition();
             _updateRotation();
-            callback && callback();
             tmappUI.clearImageError();
             tmappUI.enableCollabCreation();
+            callback && callback();
         });
 
         // Error message if we fail to load
@@ -379,7 +379,6 @@ const tmapp = (function() {
 
                     // Go to the initial image and/or join the collab
                     if (imageName && collab) {
-                        tmappUI.displayImageError("loadingcollab");
                         openImage(imageName, () => collabClient.connect(collab));
                     }
                     else if (imageName) {
