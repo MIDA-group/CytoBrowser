@@ -36,9 +36,9 @@ class Collaboration {
         this.log(`Initializing collaboration.`, console.info);
     }
 
-    addMember(ws, name) {
+    addMember(ws, name, id) {
         this.members.set(ws, {
-            id: this.nextMemberId++,
+            id: id ? id : getId(),
             name: name,
             color: this.nextColor(),
             position: {},
@@ -334,13 +334,14 @@ function getId() {
  * does not already exist, it is created.
  * @param {WebSocket} ws WebSocket object to add to collab.
  * @param {string} name Human-readable name for identifying the new member.
+ * @param {string} userId The id of the user joining, if one exists.
  * @param {string} id ID of the collab being joined.
  * @param {string} image Name of the image observed in the collab. Only
  * has an effect if the collaboration has not been created yet.
  */
-function joinCollab(ws, name, id, image) {
+function joinCollab(ws, name, userId, id, image) {
     const collab = getCollab(id, image);
-    collab.addMember(ws, name);
+    collab.addMember(ws, name, userId);
 }
 
 /**

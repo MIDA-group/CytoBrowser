@@ -9,7 +9,8 @@ const collabClient = (function(){
         _joinBatch,
         _members,
         _localMember,
-        _followedMember;
+        _followedMember,
+        _userId;
 
     let _ongoingDestruction = new Promise(r => r());
     let _resolveOngoingDestruction;
@@ -153,6 +154,7 @@ const collabClient = (function(){
         }
         _members = msg.members;
         _localMember = _members.find(member => member.id === msg.requesterId);
+        _userId= _localMember.id;
 
         // If the summary was requested because of an image swap, refollow
         if (_followedMember) {
@@ -280,8 +282,9 @@ const collabClient = (function(){
         _ongoingDestruction = _ongoingDestruction.then(() => {
             const wsProtocol = (window.location.protocol === 'https:')?'wss://':'ws://';
             const imageName = tmapp.getImageName();
-            const address = `${window.location.host}/collaboration/`+
-                `${id}?name=${name}&image=${imageName ? imageName : ""}`;
+            const address = `${window.location.host}/collaboration/` +
+                `${id}?name=${name}&image=${imageName ? imageName : ""}` +
+                `&userId=${_userId ? _userId : ""}`;
             const ws = new WebSocket(wsProtocol+address);
             ws.onopen = function(event) {
                 console.info(`Successfully connected to collaboration ${id}.`);
