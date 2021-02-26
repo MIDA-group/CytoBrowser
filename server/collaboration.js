@@ -36,7 +36,18 @@ class Collaboration {
         this.log(`Initializing collaboration.`, console.info);
     }
 
+    close() {
+        this.saveState().then(() => {
+            this.log("Closing collaboration.", console.info);
+            delete collabs[this.id];
+        });
+    }
+
     addMember(ws, name, id) {
+        if (this.deathClock) {
+            clearTimeout(this.deathClock);
+            this.deathClock = null;
+        }
         this.members.set(ws, {
             id: id ? id : getId(),
             name: name,
@@ -61,6 +72,9 @@ class Collaboration {
         });
         this.log(`${member.name} has disconnected.`, console.info);
         this.members.delete(ws);
+        if (this.members.size === 0) {
+            this.deathClock = setTimeout(this.close, 300000);
+        }
     }
 
     /**
@@ -264,7 +278,7 @@ class Collaboration {
             image: this.image,
             annotations: this.annotations
         };
-        autosave.saveAnnotations(this.id, this.image, data).then(() => {
+        return autosave.saveAnnotations(this.id, this.image, data).then(() => {
             this.notifyAutosave();
         });
     }
