@@ -32,6 +32,10 @@ const tmappUI = (function(){
         tilefail: {
             message: "Failed to load image tile from server.",
             type: "alert-danger"
+        },
+        loadingcollab: {
+            message: "Connecting to the session, please wait.",
+            type: "alert-info"
         }
     };
 

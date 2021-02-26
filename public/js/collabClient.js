@@ -276,7 +276,8 @@ const collabClient = (function(){
             swapImage(tmapp.getImageName(), id);
             disconnect();
         }
-        _ongoingDestruction.then(() => {
+        tmappUI.displayImageError("loadingcollab");
+        _ongoingDestruction = _ongoingDestruction.then(() => {
             const wsProtocol = (window.location.protocol === 'https:')?'wss://':'ws://';
             const imageName = tmapp.getImageName();
             const address = `${window.location.host}/collaboration/`+
@@ -284,6 +285,8 @@ const collabClient = (function(){
             const ws = new WebSocket(wsProtocol+address);
             ws.onopen = function(event) {
                 console.info(`Successfully connected to collaboration ${id}.`);
+                tmappUI.clearImageError();
+                
                 _ws = ws;
                 _collabId = id;
                 tmapp.setCollab(id);
