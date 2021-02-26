@@ -286,7 +286,7 @@ const collabClient = (function(){
             ws.onopen = function(event) {
                 console.info(`Successfully connected to collaboration ${id}.`);
                 tmappUI.clearImageError();
-                
+
                 _ws = ws;
                 _collabId = id;
                 tmapp.setCollab(id);
@@ -326,6 +326,9 @@ const collabClient = (function(){
             _ongoingDestruction = _ongoingDestruction.then(() => {
                 return new Promise((resolve, reject) => {
                     _resolveOngoingDestruction = resolve;
+                    if (_ws.readyState === 4 || _ws.readyState === 3) {
+                        _resolveOngoingDestruction();
+                    }
                 }).then(() => {
                     _resolveOngoingDestruction = null;
                 });
