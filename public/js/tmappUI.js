@@ -253,8 +253,10 @@ const tmappUI = (function(){
      * Can also include a truthy highlight property to set as different
      * color than normal choices.
      * @param {Function} onCancel Function to call if the modal is closed.
+     * @param {boolean} forceChoice Whether or not the choice has to be
+     * made.
      */
-    function choice(title, choices, onCancel) {
+    function choice(title, choices, onCancel, forceChoice=false) {
         const activeModal = $(".modal.show");
         activeModal.modal("hide");
         $("#multiple_choice .modal-title").text(title);
@@ -267,12 +269,14 @@ const tmappUI = (function(){
             choiceButton.click(() => $("#multiple_choice").modal("hide"));
             $("#choice_list").append(choiceButton);
         });
-        const cancelButton = $(`<button class="btn btn-secondary btn-block">
-            Cancel
-        </button>`);
-        cancelButton.click(() => $("#multiple_choice").modal("hide"));
-        $("#choice_list").append(cancelButton);
-        $("#multiple_choice").modal("show");
+        if (!forceChoice) {
+            const cancelButton = $(`<button class="btn btn-secondary btn-block">
+                Cancel
+            </button>`);
+            cancelButton.click(() => $("#multiple_choice").modal("hide"));
+            $("#choice_list").append(cancelButton);
+        }
+        $("#multiple_choice").modal({backdrop: "static", keyboard: false});
         $("#multiple_choice").one("hide.bs.modal", () => activeModal.modal("show"));
         $("#multiple_choice").one("hidden.bs.modal", $("#choice_list").empty);
         onCancel && $("#multiple_choice").one("hidden.bs.modal", onCancel);
