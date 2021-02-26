@@ -172,7 +172,7 @@ const collabClient = (function(){
     function _handleImageSwap(msg) {
         if (_followedMember && _followedMember.id === msg.id) {
             const target = _followedMember.id;
-            swapImage(msg.image, msg.id);
+            swapImage(msg.image, msg.collab);
             disconnect();
             tmapp.openImage(msg.image, () => {
                 connect(msg.collab);
@@ -549,6 +549,7 @@ const collabClient = (function(){
         if (!member || member.id === undefined || !member.position) {
             throw new Error("Argument should be a member.");
         }
+        stopFollowing();
         _desiredMember = null;
         _followedMember = member;
         _followedMember.followed = true;
