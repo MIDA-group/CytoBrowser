@@ -540,7 +540,7 @@ const collabClient = (function(){
                         click: click
                     };
                 });
-                const.choices.unshift({
+                choices.unshift({
                     label: "Start new session",
                     highlight: true,
                     click: () => {

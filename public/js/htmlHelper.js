@@ -201,9 +201,7 @@ const htmlHelper = (function() {
         anchor.click(event => {
             event.preventDefault();
             entry.closest(".modal").modal("hide");
-            tmapp.openImage(image.name, () => {
-                collabClient.swapImage(image.name);
-            });
+            collabClient.promptCollabSelection(image.name);
         });
         anchor.hover(
             () => detail.addClass("show").removeClass("hide"),
