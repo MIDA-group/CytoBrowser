@@ -320,7 +320,7 @@ const collabClient = (function(){
     function disconnect() {
         if (_ws) {
             _ws.close(1000, "Collaboration was closed normally.");
-            _ongoingDestruction.then(() => {
+            _ongoingDestruction = _ongoingDestruction.then(() => {
                 return new Promise((resolve, reject) => {
                     _resolveOngoingDestruction = resolve;
                 }).then(() => {
