@@ -532,10 +532,20 @@ const collabClient = (function(){
             if (collabReq.readyState === 4 && collabReq.status === 200) {
                 const available = JSON.parse(collabReq.responseText).available;
                 const choices = available.map(id => {
+                    const click = () => {
+                        tmapp.openImage(image, () => connect(id));
+                    };
                     return {
                         label: id,
-                        click: () => console.log(`Clicked ${id}`) // TODO
+                        click: click
                     };
+                });
+                const.choices.unshift({
+                    label: "Start new session",
+                    highlight: true,
+                    click: () => {
+                        tmapp.openImage(image, () => createCollab());
+                    }
                 });
                 tmappUI.choice("Choose a session", choices);
             }
