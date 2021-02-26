@@ -384,6 +384,9 @@ const tmapp = (function() {
                     else if (imageName) {
                         collabClient.promptCollabSelection(imageName, true);
                     }
+                    else {
+                        tmappUI.displayImageError("noimage");
+                    }
                     break;
                 case 500:
                     tmappUI.displayImageError("servererror");
