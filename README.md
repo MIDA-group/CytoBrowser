@@ -27,6 +27,7 @@ node cytobrowser.js [hostname] [port]
 #Put your OpenSeadragon compatible images in the 'data/' directory
 
 #Or download an example image and convert it to Deep Zoom Image (dzi) format
+#(There are more examples in the 'examples/' directory)
 ./examples/Zeiss-1-Stacked.sh  #This requires bftools and libvips
 
 #Optionally open an ssh-pipe from your local machine to the web server
