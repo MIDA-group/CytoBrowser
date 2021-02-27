@@ -4,6 +4,7 @@
 <a href="media/CytoBrowser_example_multiuser_multidevice.jpg?raw=true"><img alt="Photo of CytoBrowser multiuser and multidevice usage" title="Example view of multiuser and multidevice usage" align="right" width="44%" src="media/CytoBrowser_example_multiuser_multidevice.jpg"></a>
 
 <br />
+<br clear="left"/>
 
 ---
 
