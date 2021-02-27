@@ -2,7 +2,7 @@
 
 <img alt="Screenshot of CytoBrowser usage" title="Example view of CytoBrowser usages" align="right" width="50%" src="../../blob/gh-pages/media/CytoBrowser_example_view.jpg">
 
-Fork of [TissUUmaps](https://github.com/wahlby-lab/TissUUmaps) aimed at Cytology
+A fork of [TissUUmaps](https://github.com/wahlby-lab/TissUUmaps) aimed at Cytology
 
 1. Handling z-stacks (focus stacks), ctrl-scroll on your mouse to focus
 2. Multi-user shared view with follow options, also when changing images and annotation layers
