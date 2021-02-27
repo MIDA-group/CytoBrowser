@@ -37,7 +37,7 @@ ssh -L 8080:localhost:8080 remote.host
 $BROWSER http://localhost:8080
 
 #Or open a specific image directly
-$BROWSER http://localhost:8080/?image=filename
+$BROWSER http://localhost:8080/?image=image_name
 
 #Enjoy! =)
 ```
