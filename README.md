@@ -1,5 +1,7 @@
 ## CytoBrowser
 
+<img alt="Screenshot of CytoBrowser usage" title="Example view of CytoBrowser usages" align="right" width="50%" src="../../blob/gh-pages/media/CytoBrowser_example_view.jpg">
+
 Fork of [TissUUmaps](https://github.com/wahlby-lab/TissUUmaps) aimed at Cytology
 
 1. Handling z-stacks (focus stacks), ctrl-scroll on your mouse to focus
