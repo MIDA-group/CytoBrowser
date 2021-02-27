@@ -1,12 +1,12 @@
 ## CytoBrowser
-===========
 
 Fork of [TissUUmaps](https://github.com/wahlby-lab/TissUUmaps) aimed at Cytology
 
 1. Handling z-stacks (focus stacks)
 2. Multi-user shared view
-3. Point and region annotations with class label and textual comments
-4. Server side storage of annotations
+3. URL encodes the current view and annotation layer; easy to bookmark views, copy and share
+4. Point and region annotations with class label and textual comments
+5. Server side storage of annotations
 
 
 #### Example
