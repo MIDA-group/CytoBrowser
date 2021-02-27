@@ -7,4 +7,4 @@
 
 <img alt="Screenshot of CytoBrowser region marking" title="Marking a region in CytoBrowser" align="left" width="52%" src="media/CytoBrowser_example_region.jpg">
 
----
+<hr style="border:2px solid gray width=100%;"> </hr>
