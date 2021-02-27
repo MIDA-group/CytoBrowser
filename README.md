@@ -1,4 +1,4 @@
-## CytoBrowser
+## [CytoBrowser](https://mida-group.github.io/CytoBrowser/)
 
 <img alt="Screenshot of CytoBrowser usage" title="Example view of CytoBrowser usages" align="right" width="50%" src="../../blob/gh-pages/media/CytoBrowser_example_view.jpg">
 
