@@ -180,6 +180,14 @@ const htmlHelper = (function() {
         return entry;
     }
 
+    function _emptyImageBrowser() {
+        return $(`
+            <div class="col-12 text-center">
+                <p class="m-4">No images were found on the server.</p>
+            </div>
+        `);
+    }
+
     function _imageBrowserEntry(image) {
         const entry = $(`
             <div class="col-3 d-flex">
@@ -285,14 +293,20 @@ const htmlHelper = (function() {
      * @param {Array<Object>} images The images that should be browsable.
      */
     function buildImageBrowser(container, images) {
-        let rowNumber = 0;
-        while (rowNumber * 4 < images.length) {
-            const start = rowNumber * 4;
-            const end = start + 4;
-            const rowContent = images.slice(start, end);
-            const row = _imageBrowserRow(rowContent);
-            container.append(row);
-            rowNumber++;
+        if (images.length > 0) {
+            let rowNumber = 0;
+            while (rowNumber * 4 < images.length) {
+                const start = rowNumber * 4;
+                const end = start + 4;
+                const rowContent = images.slice(start, end);
+                const row = _imageBrowserRow(rowContent);
+                container.append(row);
+                rowNumber++;
+            }
+        }
+        else {
+            const message = _emptyImageBrowser();
+            container.append(message);
         }
     }
 
