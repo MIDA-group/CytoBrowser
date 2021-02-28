@@ -17,6 +17,10 @@ const tmappUI = (function(){
             message: "No image has been specified. Select one from the menu on the right.",
             type: "alert-info"
         },
+        noavailableimages: {
+            message: "The server was not able to find any images in the data directory. Make sure it's populated and try again.",
+            type: "alert-info"
+        },
         badimage: {
             message: "The specified image was not found. Select a new one from the menu on the right.",
             type: "alert-warning"
