@@ -121,8 +121,14 @@ function getThumbnails(dir, image) {
 function updateImages() {
     fs.readdir(dataDir, (err, dir) => {
         if (err) {
-            console.error(err.toString());
-            availableImages = null;
+            if (err.code === "ENOENT") {
+                console.error(`The specified data directory ${dataDir} does not exist.`);
+                availableImages = {missingDataDir: true};
+            }
+            else {
+                console.error(err.toString());
+                availableImages = null;
+            }
             return;
         }
 
