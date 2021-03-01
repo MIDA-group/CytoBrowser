@@ -17,7 +17,7 @@ const tmappUI = (function(){
             message: "The server has been set up to look for images in a " +
             "directory that does not exist. Make sure the directory exists " +
             "or select a different directory.",
-            type: "alert-danger"
+            type: "alert-warning"
         },
         noimage: {
             message: "No image has been specified. Select one from the " +
