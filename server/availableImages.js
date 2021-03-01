@@ -122,8 +122,8 @@ function updateImages() {
     fs.readdir(dataDir, (err, dir) => {
         if (err) {
             if (err.code === "ENOENT") {
-                console.error(`The specified data directory ${dataDir} does not exist.`);
-                availableImages = {missingDataDir: true};
+                console.error(`WARNING -- The specified data directory \`${dataDir}\` does not exist.`);
+                availableImages = {images: [], missingDataDir: true};
             }
             else {
                 console.error(err.toString());
