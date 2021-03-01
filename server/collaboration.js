@@ -24,10 +24,11 @@ function generateColor() {
 
 class Collaboration {
     constructor(id, image) {
+        const date = new Date().toLocaleString().split(" ")[0];
         this.members = new Map();
         this.annotations = [];
         this.id = id;
-        this.name = id;
+        this.name = `Unnamed (Created on ${date})`;
         this.nextMemberId = 0;
         this.nextColor = generateColor();
         this.image = image;
