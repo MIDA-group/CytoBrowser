@@ -7,7 +7,8 @@ Once Node.js and npm are installed, enter the top-level directory of CytoBrowser
 npm install
 ```
 
-The server requires access to three different directories. These are the data directory, where **.dzi** files are stored, the storage directory, where users can manually save annotation data, and the collaboration storage directory, where annotation data is automatically saved from collaboration sessions. By default, the server will assume that these directories can be found in the top-level directory of CytoBrowser as `./data`, `./storage`, and `./collab_storage`. It's possible, but not necessary, to make these symbolic links to other parts of the file system. On Unix machines, this can be done for the data directory with:
+The server requires access to three different directories. These are the data directory, where **.dzi** files are stored, the storage directory, where users can manually save annotation data, and the collaboration storage directory, where annotation data is automatically saved from collaboration sessions; the latter two will be created automatically if not existing whereas the data directory will not. 
+By default, the server will assume that these directories can be found in the top-level directory of CytoBrowser as `./data`, `./storage`, and `./collab_storage`. It is possible, but not necessary, to make these symbolic links to other parts of the file system. On Unix machines, this can be done for the data directory with:
 
 ```bash
 ln -s /path/to/data ./data
