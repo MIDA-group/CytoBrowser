@@ -145,7 +145,7 @@ const htmlHelper = (function() {
         return button;
     }
 
-    function _collaboratorListEntry(member, active) {
+    function _collaboratorListEntry(member, active, following) {
         const entry = $(`
             <a class="list-group-item list-group-item-action d-flex
             justify-content-between align-items-center" href="#">
@@ -154,7 +154,7 @@ const htmlHelper = (function() {
                         &nbsp;
                     </span>
                     &nbsp;&nbsp;&nbsp;
-                    ${member.name}
+                    ${member.name}${following ? " (following)" : ""}
                 </span>
                 <span>
                     <input type="checkbox">
@@ -180,6 +180,14 @@ const htmlHelper = (function() {
         return entry;
     }
 
+    function _emptyImageBrowser() {
+        return $(`
+            <div class="col-12 text-center">
+                <p class="m-4">No images were found on the server.</p>
+            </div>
+        `);
+    }
+
     function _imageBrowserEntry(image) {
         const entry = $(`
             <div class="col-3 d-flex">
@@ -201,9 +209,7 @@ const htmlHelper = (function() {
         anchor.click(event => {
             event.preventDefault();
             entry.closest(".modal").modal("hide");
-            tmapp.openImage(image.name, () => {
-                collabClient.swapImage(image.name);
-            });
+            collabClient.promptCollabSelection(image.name);
         });
         anchor.hover(
             () => detail.addClass("show").removeClass("hide"),
@@ -274,7 +280,8 @@ const htmlHelper = (function() {
         members.forEach(member => {
             const isLocal = localMember === member;
             const isActive = !isLocal && member.ready;
-            const entry = _collaboratorListEntry(member, isActive);
+            const isFollowing = member.following === localMember.id;
+            const entry = _collaboratorListEntry(member, isActive, isFollowing);
             container.append(entry);
         });
     }
@@ -286,14 +293,20 @@ const htmlHelper = (function() {
      * @param {Array<Object>} images The images that should be browsable.
      */
     function buildImageBrowser(container, images) {
-        let rowNumber = 0;
-        while (rowNumber * 4 < images.length) {
-            const start = rowNumber * 4;
-            const end = start + 4;
-            const rowContent = images.slice(start, end);
-            const row = _imageBrowserRow(rowContent);
-            container.append(row);
-            rowNumber++;
+        if (images.length > 0) {
+            let rowNumber = 0;
+            while (rowNumber * 4 < images.length) {
+                const start = rowNumber * 4;
+                const end = start + 4;
+                const rowContent = images.slice(start, end);
+                const row = _imageBrowserRow(rowContent);
+                container.append(row);
+                rowNumber++;
+            }
+        }
+        else {
+            const message = _emptyImageBrowser();
+            container.append(message);
         }
     }
 

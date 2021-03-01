@@ -5,10 +5,16 @@
 const collabClient = (function(){
     "use strict";
     let _ws,
+        _collabId,
         _joinBatch,
         _members,
         _localMember,
-        _followedMember;
+        _followedMember,
+        _desiredMember,
+        _userId;
+
+    let _ongoingDestruction = new Promise(r => r());
+    let _resolveOngoingDestruction;
 
     const _member = {};
 
@@ -30,6 +36,15 @@ const collabClient = (function(){
                 break;
             case "imageSwap":
                 _handleImageSwap(msg);
+                break;
+            case "autosave":
+                _handleAutosave(msg);
+                break;
+            case "forceUpdate":
+                _requestSummary();
+                break;
+            case "nameChange":
+                _handleNameChange(msg);
                 break;
             default:
                 console.warn(`Unknown message type received in collab: ${msg.type}`);
@@ -140,17 +155,10 @@ const collabClient = (function(){
         }
         _members = msg.members;
         _localMember = _members.find(member => member.id === msg.requesterId);
-
-        // If the summary was requested because of an image swap, refollow
-        if (_followedMember) {
-            const newFollow = _members.find(member => member.id === _followedMember.id);
-            stopFollowing();
-            if (newFollow) {
-                followView(newFollow);
-            }
-        }
+        _userId= _localMember.id;
 
         _memberUpdate();
+        tmappUI.setCollabName(msg.name);
         tmapp.updateCollabStatus();
     }
 
@@ -162,10 +170,42 @@ const collabClient = (function(){
     }
 
     function _handleImageSwap(msg) {
-        tmapp.openImage(msg.image, () => {
-            // Make sure to get any new information from before you swapped
-            _requestSummary();
-        }, disconnect);
+        if (_followedMember && _followedMember.id === msg.id) {
+            const target = _followedMember.id;
+            swapImage(msg.image, msg.collab);
+            disconnect();
+            tmapp.openImage(msg.image, () => {
+                connect(msg.collab);
+                _desiredMember = target;
+            }, disconnect);
+        }
+    }
+
+    function _handleAutosave(msg) {
+        const time = new Date(msg.time);
+        tmappUI.setLastAutosave(time);
+    }
+
+    function _handleNameChange(msg) {
+        tmappUI.setCollabName(msg.name);
+    }
+
+    function _destroy() {
+        stopFollowing();
+        _joinBatch = null;
+        _members = null;
+        _localMember = null;
+        _ws = null;
+        _collabId  = null;
+        overlayHandler.updateMembers([]);
+        tmappUI.clearCollaborators();
+        tmapp.clearCollab();
+        _resolveOngoingDestruction && _resolveOngoingDestruction();
+    }
+
+    function _attemptReconnect() {
+        console.info(`Attempting to reconnect to ${_collabId}.`);
+        connect(_collabId, getDefaultName(), true);
     }
 
     /**
@@ -194,6 +234,13 @@ const collabClient = (function(){
                 stopFollowing();
             }
         }
+        else if (_desiredMember) {
+            const target = _members.find(member => member.id === _desiredMember);
+            if (target) {
+                _desiredMember = null;
+                followView(target);
+            }
+        }
     }
 
     /**
@@ -203,7 +250,7 @@ const collabClient = (function(){
      * @param {boolean} include Whether or not already-placed annotations
      * should be included in the collaborative workspace.
      */
-    function createCollab(name, include) {
+    function createCollab(name=getDefaultName(), include=false) {
         // Get a new code for a collab first
         const idReq = new XMLHttpRequest();
         idReq.open("GET", window.location.origin + "/api/collaboration/id", true)
@@ -227,43 +274,51 @@ const collabClient = (function(){
      * should be included in the collaborative workspace.
      */
     function connect(id, name=getDefaultName(), include=false) {
+        tmappUI.displayImageError("loadingcollab");
         if (_ws) {
+            swapImage(tmapp.getImageName(), id);
             disconnect();
         }
-        var wsProtocol = (window.location.protocol === 'https:')?'wss://':'ws://';
-        const address = `${window.location.host}/collaboration/`+
-            `${id}?name=${name}&image=${tmapp.getImageName()}`;
-        const ws = new WebSocket(wsProtocol+address);
-        ws.onopen = function(event) {
-            console.info(`Successfully connected to collaboration ${id}.`);
-            _ws = ws;
-            tmapp.setCollab(id);
+        _ongoingDestruction = _ongoingDestruction.then(() => {
+            const wsProtocol = (window.location.protocol === 'https:')?'wss://':'ws://';
+            const imageName = tmapp.getImageName();
+            const address = `${window.location.host}/collaboration/` +
+                `${id}?name=${name}&image=${imageName ? imageName : ""}` +
+                `&userId=${_userId ? _userId : ""}`;
+            const ws = new WebSocket(wsProtocol+address);
+            ws.onopen = function(event) {
+                console.info(`Successfully connected to collaboration ${id}.`);
+                tmappUI.clearImageError();
 
-            if (include) {
-                _joinBatch = [];
-                _requestSummary();
+                _ws = ws;
+                _collabId = id;
+                tmapp.setCollab(id);
+
+                if (include) {
+                    _joinBatch = [];
+                    _requestSummary();
+                }
+                else if (annotationHandler.isEmpty() || confirm("All your placed annotations will be lost unless you have saved them. Do you want to continue anyway?")) {
+                    annotationHandler.clear(false);
+                    _requestSummary();
+                }
+                else {
+                    disconnect();
+                }
             }
-            else if (annotationHandler.isEmpty() || confirm("All your placed annotations will be lost unless you have saved them. Do you want to continue anyway?")) {
-                annotationHandler.clear(false);
-                _requestSummary();
+            ws.onmessage = function(event) {
+                _handleMessage(JSON.parse(event.data));
             }
-            else {
-                disconnect();
+            ws.onclose = function(event) {
+                if (event.code === 1000) {
+                    _destroy();
+                }
+                else {
+                    tmappUI.displayImageError("loadingcollab");
+                    setTimeout(_attemptReconnect, 5000);
+                }
             }
-        }
-        ws.onmessage = function(event) {
-            _handleMessage(JSON.parse(event.data));
-        }
-        ws.onclose = function(event) {
-            stopFollowing();
-            _joinBatch = null;
-            _members = null;
-            _localMember = null;
-            _ws = null;
-            overlayHandler.updateMembers([]);
-            tmappUI.clearCollaborators();
-            tmapp.clearCollab();
-        }
+        });
     }
 
     /**
@@ -271,7 +326,17 @@ const collabClient = (function(){
      */
     function disconnect() {
         if (_ws) {
-            _ws.close();
+            _ws.close(1000, "Collaboration was closed normally.");
+            _ongoingDestruction = _ongoingDestruction.then(() => {
+                return new Promise((resolve, reject) => {
+                    _resolveOngoingDestruction = resolve;
+                    if (_ws.readyState === 4 || _ws.readyState === 3) {
+                        _resolveOngoingDestruction();
+                    }
+                }).then(() => {
+                    _resolveOngoingDestruction = null;
+                });
+            });
         }
         else {
             console.warn("Tried to disconnect from nonexistent collaboration.");
@@ -296,13 +361,16 @@ const collabClient = (function(){
     }
 
     /**
-     * Notify collaborators about an image being swapped.
+     * Notify collaborators that you are moving to another image.
      * @param {string} imageName Name of the image being swapped to.
+     * @param {string} collabId The collab being joined.
      */
-    function swapImage(imageName) {
+    function swapImage(imageName, collabId) {
         send({
             type: "imageSwap",
-            image: imageName
+            image: imageName,
+            collab: collabId,
+            id: _localMember.id
         });
     }
 
@@ -358,7 +426,7 @@ const collabClient = (function(){
      * Change the name of the local collaboration member.
      * @param {string} newName The new name to be assigned to the member.
      */
-    function changeName(newName) {
+    function changeUsername(newName) {
         userInfo.setName(newName);
         tmappUI.setUserName(userInfo.getName());
         if (_localMember) {
@@ -380,6 +448,18 @@ const collabClient = (function(){
      */
     function getDefaultName() {
         return userInfo.getName();
+    }
+
+    /**
+     * Change the name of the collaboration.
+     * @param {string} newName The new name of the collaboration.
+     */
+    function changeCollabName(newName) {
+        tmappUI.setCollabName(newName);
+        send({
+            type: "nameChange",
+            name: newName
+        });
     }
 
     /**
@@ -469,11 +549,20 @@ const collabClient = (function(){
         if (!member || member.id === undefined || !member.position) {
             throw new Error("Argument should be a member.");
         }
+        stopFollowing();
+        _desiredMember = null;
         _followedMember = member;
         _followedMember.followed = true;
         _followedMember.updated = true;
         tmapp.disableControls();
         _memberUpdate();
+        _localMember.following = member.id;
+        send({
+            type: "memberEvent",
+            eventType: "update",
+            hardUpdate: true,
+            member: _localMember
+        });
     }
 
     /**
@@ -486,6 +575,51 @@ const collabClient = (function(){
         }
         tmapp.enableControls();
         _memberUpdate();
+        _localMember.following = null;
+        send({
+            type: "memberEvent",
+            eventType: "update",
+            hardUpdate: true,
+            member: _localMember
+        });
+    }
+
+    /**
+     * Prompt the user to either start a new collaboration or select an
+     * existing collaboration for a given image.
+     * @param {string} image The name of the image being collaborated on.
+     * @param {boolean} forceChoice The user cannot cancel the choice.
+     */
+    function promptCollabSelection(image, forceChoice=false) {
+        const collabReq = new XMLHttpRequest();
+        const address = `${window.location.origin}/api/collaboration/available?image=${image}`;
+        collabReq.open("GET", address, true);
+        collabReq.send(null);
+        collabReq.onreadystatechange = () => {
+            if (collabReq.readyState === 4 && collabReq.status === 200) {
+                const available = JSON.parse(collabReq.responseText).available;
+                const choices = available.map(entry => {
+                    const click = () => {
+                        tmapp.openImage(image, () => connect(entry.id));
+                    };
+                    return {
+                        label: entry.name,
+                        click: click
+                    };
+                });
+                choices.unshift({
+                    label: "Start new session",
+                    highlight: true,
+                    click: () => {
+                        tmapp.openImage(image, () => createCollab());
+                    }
+                });
+                tmappUI.choice("Choose a session", choices, null, forceChoice);
+            }
+            else if (collabReq.readyState === 4) {
+                tmappUI.displayImageError("servererror", 10000);
+            }
+        };
     }
 
 
@@ -499,11 +633,13 @@ const collabClient = (function(){
         updateAnnotation: updateAnnotation,
         removeAnnotation: removeAnnotation,
         clearAnnotations: clearAnnotations,
-        changeName: changeName,
+        changeUsername: changeUsername,
         getDefaultName: getDefaultName,
+        changeCollabName: changeCollabName,
         updatePosition: updatePosition,
         updateCursor: updateCursor,
         followView: followView,
-        stopFollowing: stopFollowing
+        stopFollowing: stopFollowing,
+        promptCollabSelection: promptCollabSelection
     };
 })();

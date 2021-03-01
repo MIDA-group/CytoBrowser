@@ -13,25 +13,44 @@ const tmappUI = (function(){
         _errorDisplayTimeout = null;
 
     const _errors = {
+        missingdatadir: {
+            message: "The server has been set up to look for images in a " +
+            "directory that does not exist. Make sure the directory exists " +
+            "or select a different directory.",
+            type: "alert-warning"
+        },
         noimage: {
-            message: "No image has been specified. Select one from the menu on the right.",
+            message: "No image has been specified. Select one from the " +
+            "menu on the right.",
+            type: "alert-info"
+        },
+        noavailableimages: {
+            message: "The server was not able to find any images in the " +
+            "data directory. Make sure it's populated and try again.",
             type: "alert-info"
         },
         badimage: {
-            message: "The specified image was not found. Select a new one from the menu on the right.",
+            message: "The specified image was not found. Select a new one " +
+            "from the menu on the right.",
             type: "alert-warning"
         },
         servererror: {
-            message: "Something went wrong on the server. Try again or contact an administrator.",
+            message: "Something went wrong on the server. Try again or " +
+            "contact an administrator.",
             type: "alert-warning"
         },
         unexpected: {
-            message: "An unexpected error was encountered when retrieving the image list.",
+            message: "An unexpected error was encountered when retrieving " +
+            "the image list.",
             type: "alert-warning"
         },
         tilefail: {
             message: "Failed to load image tile from server.",
             type: "alert-danger"
+        },
+        loadingcollab: {
+            message: "Connecting to the session, please wait.",
+            type: "alert-info"
         }
     };
 
@@ -205,38 +224,40 @@ const tmappUI = (function(){
     }
 
     function _initCollaborationMenu() {
-        function setName() {
+        function setUsernameField() {
             const name = $("#collaboration_start [name='username']").val();
-            collabClient.changeName(name);
+            collabClient.changeUsername(name);
+        }
+        function setCollabNameField() {
+            const name = $("#collaboration_start [name='collab_name']").val();
+            collabClient.changeCollabName(name);
         }
 
-        let nameTimeout;
+        let usernameTimeout;
+        let collabNameTimeout;
         const keyUpTime = 3000;
         const defaultName = userInfo.getName();
-        $("#collaboration_menu").on("hide.bs.modal", setName);
+        $("#collaboration_menu").on("hide.bs.modal", () => {
+            setUsernameField();
+            setCollabNameField();
+        });
         $("#collaboration_start [name='username']").val(defaultName || "");
         $("#collaboration_start [name='username']").keyup(function(event) {
-            clearTimeout(nameTimeout);
-            nameTimeout = setTimeout(setName, keyUpTime);
+            clearTimeout(usernameTimeout);
+            usernameTimeout = setTimeout(setUsernameField, keyUpTime);
         });
-        $("#create_collaboration").click(function(event) {
-            const name = $("#collaboration_start [name='username']").val();
-            const include = $("#include_points").prop("checked");
-            collabClient.createCollab(name, include);
-        });
-        $("#join_collaboration").click(function(event) {
-            const name = $("#collaboration_start [name='username']").val();
-            const id = $("#collaboration_start [name='joined_id']").val();
-            const include = $("#include_points").prop("checked");
-            $("#collaboration_menu").modal("hide");
-            collabClient.connect(id, name, include);
+        $("#collaboration_start [name='collab_name']").val("");
+        $("#collaboration_start [name='collab_name']").keyup(function(event) {
+            clearTimeout(collabNameTimeout);
+            collabNameTimeout = setTimeout(setCollabNameField, keyUpTime);
         });
         $("#copy_collaboration").click(function(event) {
             $("#collaboration_start [name='collab_url']").select();
             document.execCommand("copy");
         });
-        $("#leave_collaboration").click(function(event) {
-            collabClient.disconnect();
+        $("#change_session").click(function(event) {
+            const image = tmapp.getImageName();
+            collabClient.promptCollabSelection(image);
         });
     }
 
@@ -265,27 +286,33 @@ const tmappUI = (function(){
      * @param {Array<Object>} choices An array of choices that can be
      * chosen from. Each choice should contain a label property and
      * a click property to properly display and handle their buttons.
+     * Can also include a truthy highlight property to set as different
+     * color than normal choices.
      * @param {Function} onCancel Function to call if the modal is closed.
+     * @param {boolean} forceChoice Whether or not the choice has to be
+     * made.
      */
-    function choice(title, choices, onCancel) {
+    function choice(title, choices, onCancel, forceChoice=false) {
         const activeModal = $(".modal.show");
         activeModal.modal("hide");
         $("#multiple_choice .modal-title").text(title);
         $("#choice_list").empty();
         choices.forEach(choice => {
-            const choiceButton = $(`<button class="btn btn-primary btn-block">
+            const choiceButton = $(`<button class="btn btn-${choice.highlight ? "dark" : "primary"} btn-block">
                 ${choice.label}
             </button>`);
             choiceButton.click(choice.click);
             choiceButton.click(() => $("#multiple_choice").modal("hide"));
             $("#choice_list").append(choiceButton);
         });
-        const cancelButton = $(`<button class="btn btn-secondary btn-block">
-            Cancel
-        </button>`);
-        cancelButton.click(() => $("#multiple_choice").modal("hide"));
-        $("#choice_list").append(cancelButton);
-        $("#multiple_choice").modal("show");
+        if (!forceChoice) {
+            const cancelButton = $(`<button class="btn btn-secondary btn-block">
+                Cancel
+            </button>`);
+            cancelButton.click(() => $("#multiple_choice").modal("hide"));
+            $("#choice_list").append(cancelButton);
+        }
+        $("#multiple_choice").modal({backdrop: "static", keyboard: false});
         $("#multiple_choice").one("hide.bs.modal", () => activeModal.modal("show"));
         $("#multiple_choice").one("hidden.bs.modal", $("#choice_list").empty);
         onCancel && $("#multiple_choice").one("hidden.bs.modal", onCancel);
@@ -318,17 +345,21 @@ const tmappUI = (function(){
      * disable the elements for creating and joining collaborations, and
      * enable the button for leaving the collaboration.
      * @param {string} id Identifier for the active collaboration.
+     * @param {string} image Name of the image the collab is for.
      */
-    function setCollabID(id) {
+    function setCollabID(id, image) {
         const collabUrl = new URL(window.location.href.split('?')[0]);
         collabUrl.searchParams.set("collab", id);
+        collabUrl.searchParams.set("image", image)
         $("#collaboration_start [name='collab_url']").val(collabUrl.href);
         $("#collaboration_start [name='active_id']").val(id);
         $("#collaboration_start input, #collaboration_start button").prop("disabled", true);
         $("#collaboration_start [name='username']").prop("disabled", false);
+        $("#collaboration_start [name='collab_name']").prop("disabled", false);
         $("#collaboration_start [name='collab_url']").prop("disabled", false);
         $("#copy_collaboration").prop("disabled", false);
         $("#leave_collaboration").prop("disabled", false);
+        $("#change_session").prop("disabled", false);
     }
 
     /**
@@ -344,6 +375,7 @@ const tmappUI = (function(){
         $("#collaboration_start [name='collab_url']").prop("disabled", true);
         $("#copy_collaboration").prop("disabled", true);
         $("#leave_collaboration").prop("disabled", true);
+        $("#change_session").prop("disabled", true);
     }
 
     /**
@@ -432,7 +464,16 @@ const tmappUI = (function(){
      * @param {string} txt The username to display.
      */
     function setUserName(txt) {
-        $("#user_name").text(txt);
+        $("#user_name").text(txt || txt === 0 ? txt : "-");
+    }
+
+    /**
+     * Set the displayed collab name in the UI.
+     * @param {string} txt The collab name to display.
+     */
+    function setCollabName(txt) {
+        $("#collaboration_start [name='collab_name']").val(txt || txt === 0 ? txt : "");
+        $("#collab_name").text(txt || txt === 0 ? txt : "-");
     }
 
     /**
@@ -440,7 +481,7 @@ const tmappUI = (function(){
      * @param {string} txt The image name to display.
      */
     function setImageName(txt) {
-        $("#img_name").text(txt);
+        $("#img_name").text(txt || txt === 0 ? txt : "-");
     }
 
     /**
@@ -448,7 +489,7 @@ const tmappUI = (function(){
      * @param {string} txt The z level to display.
      */
     function setImageZLevel(txt) {
-        $("#img_zlevel").text(txt);
+        $("#img_zlevel").text(txt || txt === 0 ? txt : "-");
     }
 
     /**
@@ -456,7 +497,7 @@ const tmappUI = (function(){
      * @param {string} txt The zoom value to display.
      */
     function setImageZoom(txt) {
-        $("#img_zoom").text(txt);
+        $("#img_zoom").text(txt || txt === 0 ? txt : "-");
     }
 
     /**
@@ -464,15 +505,32 @@ const tmappUI = (function(){
      * @param {string} txt The rotation value to display.
      */
     function setImageRotation(txt) {
-        $("#img_rotation").text(`${txt}°`);
+        $("#img_rotation").text(txt || txt === 0 ? `${txt}°` : "-");
     }
 
     /**
-     * Push a new state to the URL.
+     * Set the last autosave time in the UI.
+     * @param {Date} time The time of the last autosave.
+     */
+    function setLastAutosave(time) {
+        const txt = `Saved at: ${time.toLocaleString()}`;
+        $("#last_autosave").text(time || time === 0 ? txt : "");
+    }
+
+    let _urlTimeout,
+        _urlCache;
+    /**
+     * Push a new state to the URL if it's been long enough.
      * @param {string} txt The new state to push.
      */
     function setURL(txt) {
-        window.history.pushState(null, "", txt);
+        _urlCache = txt;
+        if (_urlTimeout) {
+            clearTimeout(_urlTimeout);
+        }
+        _urlTimeout = setTimeout(() => {
+            window.history.pushState(null, "", txt);
+        }, 1000);
     }
 
     /**
@@ -496,10 +554,12 @@ const tmappUI = (function(){
         clearImageError: clearImageError,
         updateImageBrowser: updateImageBrowser,
         setUserName: setUserName,
+        setCollabName: setCollabName,
         setImageName: setImageName,
         setImageZLevel: setImageZLevel,
         setImageZoom: setImageZoom,
         setImageRotation: setImageRotation,
+        setLastAutosave: setLastAutosave,
         setURL: setURL,
         inFocus: inFocus
     };

@@ -27,7 +27,7 @@
 <body>
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary py-0 py-md-1 pt-xl-2">
-        <a class="navbar-brand" href="https://mida-group.github.io/CytoBrowser/">
+        <a class="navbar-brand" href="https://mida-group.github.io/CytoBrowser/" target="_blank" rel="noopener noreferrer">
             <img style="height:50px; margin:-5px; overflow: visible;" src="misc/uulogowhiteCyBr.png">
         </a>
 
@@ -40,8 +40,10 @@
                 <li class="nav-item"><a class="nav-link font-weight-bold"> Z-level: <span id="img_zlevel"> -</span></a></li>
                 <li class="nav-item"><a class="nav-link font-weight-bold"> Zoom: <span id="img_zoom"> -</span></a></li>
                 <li class="nav-item"><a class="nav-link font-weight-bold"> Rotation: <span id="img_rotation"> -</span></a></li>
+                <li class="nav-item"><a class="nav-link font-weight-bold"> <span id="last_autosave"></span></a></li>
             </ul>
             <ul class="nav navbar-nav ml-auto">
+                <li class="nav-item"><a class="nav-link font-weight-bold"> Session: <span id="collab_name"> -</span></a></li>
                 <li class="nav-item"><a class="nav-link font-weight-bold"> User: <span id="user_name"> -</span></a></li>
             </ul>
         </div>
@@ -52,7 +54,7 @@
         <div class="row flex-fill">
             <div class="col md-10 flex-grow-1 px-1" style="min-width: 50%; min-height: 80%; width: 100%; overflow: hidden;"> <!-- Doesn't make sense to have overflow of the viewer -->
                 <div id="ISS_viewer" class="ISS_viewer blurrable flex-grow-1" style="height: 100%; width: 100%;"></div>
-                <div id="alert_wrapper" style="height: 100%; width: 100%; display: flex; justify-content: center; align-items: center; position: absolute; top: 0; pointer-events: none"></div>
+                <div id="alert_wrapper" style="height: 100%; width: 100%; display: flex; justify-content: center; align-items: center; position: absolute; top: 0; padding: 5%; pointer-events: none"></div>
             </div>
 
             <!-- Right side main toolbar -->
@@ -218,7 +220,7 @@
     </div> <!-- End of version select -->
 
     <!-- Multiple choice -->
-    <div class="modal fade" id="multiple_choice" tabindex="-1" role="dialog">
+    <div class="modal fade overflow-auto" id="multiple_choice" tabindex="-1" role="dialog">
       <div class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-header">
@@ -232,7 +234,7 @@
 
     <!-- Instructions -->
     <div class="modal fade" id="instructions" tabindex="-1" role="dialog">
-      <div class="modal-dialog" role="document">
+      <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title">How to use</h5>
@@ -240,7 +242,7 @@
               <span>&times;</span>
             </button>
           </div>
-          <div class="modal-body">
+          <div class="modal-body p-4">
               <h5>Controls</h5>
                 <p class="d-flex justify-content-between">
                     <span><kbd>left mouse click</kbd></span>
@@ -414,34 +416,15 @@
           <div class="modal-body">
               <div id="collaboration_start">
                   <div class="form-row pb-4">
-                      <div class="col-12">
+                      <label class="col-3 col-form-label">Username</label>
+                      <div class="col-9">
                           <input type="text" name="username" class="form-control" placeholder="Your name">
                       </div>
                   </div>
                   <div class="form-row pb-4">
-                      <div class="col-8">
-                          <input type="text" name="active_id" readonly class="form-control" placeholder="-">
-                      </div>
-                      <div class="col-4">
-                          <button id="create_collaboration" class="btn btn-block btn-primary" disabled>Create</button>
-                      </div>
-                  </div>
-                  <div class="form-row pb-4">
-                      <div class="col-8">
-                          <input type="text" name="joined_id" class="form-control" placeholder="Collaboration ID">
-                      </div>
-                      <div class="col-4">
-                          <button id="join_collaboration" class="btn btn-block btn-primary">Join</button>
-                      </div>
-                  </div>
-                  <div class="form-row pb-4">
-                      <div class="col-12">
-                          <div class="form-check">
-                              <input class="form-check-input" type="checkbox" id="include_points">
-                              <label class="form-check-label" for="include_points">
-                                  Add existing annotations to collaboration
-                              </label>
-                          </div>
+                      <label class="col-3 col-form-label">Session name</label>
+                      <div class="col-9">
+                          <input type="text" name="collab_name" class="form-control" placeholder="Session name">
                       </div>
                   </div>
                   <h5>Collaboration members</h5>
@@ -461,7 +444,9 @@
                   </div>
                   <div class="form-row pb-2">
                       <div class="col-12">
-                          <button id="leave_collaboration" class="btn btn-block btn-secondary" disabled>Leave collaboration</button>
+                          <button id="change_session" type="button" class="btn btn-block btn-primary" disabled>
+                              Change session
+                          </button>
                       </div>
                   </div>
               </div>

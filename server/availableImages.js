@@ -64,6 +64,8 @@ function getThumbnails(dir, image) {
 
         // Look through each directory to find thumbnails
         let idx = 0;
+        let remainingZooms = 4;
+        const maxTiles = 200;
         const thumbnails = {overview: null, detail: null};
         image.thumbnails = thumbnails;
         function findThumbnails(){
@@ -80,8 +82,10 @@ function getThumbnails(dir, image) {
                 // Store suitable thumbnails
                 if (dir.length === 1) {
                     thumbnails.overview = `${path}/${dir[0]}`.slice(1);
+                    thumbnails.detail = thumbnails.overview;
                 }
-                else if (dir.length > 64) {
+                else if (dir.length > 1) {
+                    remainingZooms--;
                     const rows = [];
                     const cols = [];
                     dir.map(name => {
@@ -96,7 +100,9 @@ function getThumbnails(dir, image) {
                 }
 
                 // Check if all thumbnails have been found
-                if (!(thumbnails.overview && thumbnails.detail)) {
+                if (!(thumbnails.overview && thumbnails.detail)
+                    || remainingZooms > 0
+                    && dir.length < maxTiles) {
                     idx++;
                     findThumbnails();
                 }
@@ -114,8 +120,14 @@ function getThumbnails(dir, image) {
 function updateImages() {
     fs.readdir(dataDir, (err, dir) => {
         if (err) {
-            console.error(err.toString());
-            availableImages = null;
+            if (err.code === "ENOENT") {
+                console.error(`WARNING -- The specified data directory \`${dataDir}\` does not exist.`);
+                availableImages = {images: [], missingDataDir: true};
+            }
+            else {
+                console.error(err.toString());
+                availableImages = null;
+            }
             return;
         }
 

@@ -84,8 +84,9 @@ const tmapp = (function() {
             throw new Error("Tried to update zoom of nonexistent viewer.");
         }
         const zoom = _viewer.viewport.getZoom();
+        const maxZoom = _viewer.viewport.getMaxZoom();
         const size = _viewer.viewport.getContainerSize();
-        overlayHandler.setOverlayScale(zoom, size.x, size.y);
+        overlayHandler.setOverlayScale(zoom, maxZoom, size.x, size.y);
         tmappUI.setImageZoom(Math.round(zoom*10)/10);
         _currState.zoom = zoom;
 
@@ -295,9 +296,9 @@ const tmapp = (function() {
             _updateFocus();
             _updatePosition();
             _updateRotation();
-            callback && callback();
             tmappUI.clearImageError();
             tmappUI.enableCollabCreation();
+            callback && callback();
         });
 
         // Error message if we fail to load
@@ -334,6 +335,14 @@ const tmapp = (function() {
         overlayHandler.init(overlay);
     }
 
+    function _clearCurrentImage() {
+        annotationHandler.clear(false);
+        _viewer && _viewer.destroy();
+        $("#ISS_viewer").empty();
+        coordinateHelper.clearImage();
+        _disabledControls = null;
+    }
+
     /**
      * Initiate tmapp by fetching a list of images from the server,
      * filling the image browser, and going to the image specified
@@ -364,28 +373,24 @@ const tmapp = (function() {
             switch (imageReq.status) {
                 case 200:
                     // Add the images to the image browser
-                    const images = JSON.parse(imageReq.responseText).images;
+                    const response = JSON.parse(imageReq.responseText);
+                    const missingDataDir = response.missingDataDir;
+                    const images = response.images;
                     tmappUI.updateImageBrowser(images);
                     _images = images;
 
                     // Go to the initial image and/or join the collab
-                    if (imageName) {
-                        try {
-                            openImage(imageName, () => {
-                                if (collab) {
-                                    collabClient.connect(collab);
-                                }
-                                if (initialState) {
-                                    moveTo(initialState);
-                                }
-                            });
-                        }
-                        catch(err) {
-                            tmappUI.displayImageError("badimage");
-                        }
+                    if (missingDataDir) {
+                        tmappUI.displayImageError("missingdatadir");
                     }
-                    else if (collab) {
-                        collabClient.connect(collab);
+                    else if (images.length === 0) {
+                        tmappUI.displayImageError("noavailableimages");
+                    }
+                    else if (imageName && collab) {
+                        openImage(imageName, () => collabClient.connect(collab));
+                    }
+                    else if (imageName) {
+                        collabClient.promptCollabSelection(imageName, true);
                     }
                     else {
                         tmappUI.displayImageError("noimage");
@@ -404,15 +409,21 @@ const tmapp = (function() {
      * Open a specified image in the viewport. If annotations have been
      * placed, the user is first prompted to see if they actually want
      * to open the image or if they want to cancel.
-     * @param {string} imageName The name of the image being opened.
+     * @param {string} imageName The name of the image being opened. If
+     * the image name is falsy, the current image will be closed.
      * @param {Function} callback Function to call if and only if the
      * image is successfully opened, before the viewport is moved.
      * @param {Function} nochange Function to call if the user is
      * prompted on whether or not they want to change images and they
      * decide not to change.
+     * @param {boolean} askAboutSaving If the user has ended up outside
+     * of a collaboration and tries to swap images, this prompts them
+     * if they want to stay on the image so they can save their progress
+     * manually.
      */
-    function openImage(imageName, callback, nochange) {
-        if (!annotationHandler.isEmpty() && !confirm(`You are about to open ` +
+    function openImage(imageName, callback, nochange, askAboutSaving=false) {
+        if (!annotationHandler.isEmpty() && !_collab && askAboutSaving &&
+            !confirm(`You are about to open ` +
             `the image "${imageName}". Do you want to ` +
             `open this image? Any annotations placed on the ` +
             `current image will be lost unless you save ` +
@@ -421,19 +432,26 @@ const tmapp = (function() {
             return;
         }
 
-        const image = _images.find(image => image.name === imageName);
-        if (!image) {
-            throw new Error(`Failed to open image ${imageName}.`);
+        if (!imageName) {
+            _clearCurrentImage();
+            _currentImage = null;
+            tmappUI.setImageName(null);
+            tmappUI.displayImageError("noimage");
+            _updateURLParams();
+            callback && callback();
         }
-        annotationHandler.clear(false);
-        _viewer && _viewer.destroy();
-        $("#ISS_viewer").empty();
-        coordinateHelper.clearImage();
-        _disabledControls = null;
-        _currentImage = image;
-        tmappUI.setImageName(_currentImage.name);
-        _updateURLParams();
-        _initOSD(callback);
+        else {
+            const image = _images.find(image => image.name === imageName);
+            if (!image) {
+                tmappUI.displayImageError("badimage");
+                throw new Error(`Failed to open image ${imageName}.`);
+            }
+            _clearCurrentImage();
+            _currentImage = image;
+            tmappUI.setImageName(_currentImage.name);
+            _updateURLParams();
+            _initOSD(callback);
+        }
     }
 
     /**
@@ -451,7 +469,7 @@ const tmapp = (function() {
         if (!_viewer)
             throw new Error("Tried to move viewport without a viewer.");
         if (zoom !== undefined)
-            _viewer.viewport.zoomTo(zoom, true);
+            _viewer.viewport.zoomTo(Math.min(zoom, _viewer.viewport.getMaxZoom()), true);
         if (x !== undefined && y !== undefined)
             _viewer.viewport.panTo(new OpenSeadragon.Point(x, y), true);
         if (rotation !== undefined)
@@ -491,7 +509,7 @@ const tmapp = (function() {
      */
     function setCollab(id) {
         _collab = id;
-        tmappUI.setCollabID(id);
+        tmappUI.setCollabID(id, _currentImage.name);
         _updateURLParams();
     }
 

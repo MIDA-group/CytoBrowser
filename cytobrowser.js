@@ -3,10 +3,12 @@ const argv = require("minimist")(process.argv.slice(2));
 const hostname = argv._[0] || "localhost";
 const port = argv._[1] || 0;
 const storageDir = argv.storage || argv.s || "./storage";
+const collabDir = argv.collab || argv.c || "./collab_storage";
 const dataDir = argv.data || argv.d || "./data";
 if (argv.h || argv.help) {
     console.info(`Usage: node cytobrowser.js hostname port ` +
     `[-s storage path = "./storage"] ` +
+    `[-c collab storage path = "./collab_storage"] ` +
     `[-d image data path = "./data"]`);
     return;
 }
@@ -15,7 +17,7 @@ if (argv.h || argv.help) {
 const fs = require("fs");
 const express = require("express");
 const availableImages = require("./server/availableImages")(dataDir);
-const collaboration = require("./server/collaboration");
+const collaboration = require("./server/collaboration")(collabDir);
 const serverStorage = require("./server/serverStorage")(storageDir);
 
 // Initialize the server
@@ -99,12 +101,25 @@ app.get("/api/collaboration/id", (req, res) => {
     res.json({id: id});
 });
 
+// Get a list of existing collaborations
+app.get("/api/collaboration/available", (req, res) => {
+    const image = req.query.image;
+    collaboration.getAvailable(image).then(available => {
+        res.status(200);
+        res.json({available: available});
+    }).catch(err => {
+        console.warn(err.message);
+        res.status(400);
+    });
+});
+
 // Add websocket endpoints for collaboration
 app.ws("/collaboration/:id", (ws, req) => {
     const id = req.params.id;
-    const image = req.query.image;
+    const image = req.query.image ? req.query.image : null;
+    const userId = req.query.userId ? req.query.userId : null;
     const name = req.query.name || "Unnamed";
-    collaboration.joinCollab(ws, name, id, image);
+    collaboration.joinCollab(ws, name, userId, id, image);
 
     ws.on("message", msg => {
         collaboration.handleMessage(ws, id, msg);
