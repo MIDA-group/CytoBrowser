@@ -1,4 +1,10 @@
 # CytoBrowser
+
+Download the latest release from: https://github.com/MIDA-group/CytoBrowser/releases/latest
+
+[Installation instructions](../../blob/master/INSTALL.md)
+
+
 <a href="media/CytoBrowser_example_view.jpg?raw=true"><img alt="Screenshot of CytoBrowser usage" title="Example view of CytoBrowser usage" align="left" width="52%" src="media/CytoBrowser_example_view.jpg"></a>
 
 <a href="media/CytoBrowser_example_multiuser_multidevice.jpg?raw=true"><img alt="Photo of CytoBrowser multiuser and multidevice usage" title="Example view of multiuser and multidevice usage" align="right" width="44%" src="media/CytoBrowser_example_multiuser_multidevice.jpg"></a>
