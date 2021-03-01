@@ -15,7 +15,7 @@ A fork of [TissUUmaps](https://github.com/wahlby-lab/TissUUmaps) aimed at Cytolo
 ```
 #Clone from github
 git clone https://github.com/MIDA-group/CytoBrowser.git
-cd Cytobrowser
+cd CytoBrowser
 
 #Install the necessary dependencies
 npm install

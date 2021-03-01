@@ -21,12 +21,12 @@ const classConfig = [
     },
     {
         name: "LSIL",
-        description: "Low grade squamous intraepithelial lesion",
+        description: "Low-grade squamous intraepithelial lesion",
         color: "#e86f26"
     },
     {
         name: "HSIL",
-        description: "High grade squamous intraepithelial lesion",
+        description: "High-grade squamous intraepithelial lesion",
         color: "#f03c3c"
     },
     {
