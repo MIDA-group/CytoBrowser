@@ -112,6 +112,17 @@ function getThumbnails(dir, image) {
     });
 }
 
+function handleDirError(err) {
+    if (err.code === "ENOENT") {
+        console.error(`WARNING -- The specified data directory \`${dataDir}\` does not exist.`);
+        availableImages = {images: [], missingDataDir: true};
+    }
+    else {
+        console.error(err.toString());
+        availableImages = null;
+    }
+}
+
 /**
  * Update the cached image information. This function stores information
  * about the existing images in availableImages, which can be retrieved
@@ -120,14 +131,7 @@ function getThumbnails(dir, image) {
 function updateImages() {
     fs.readdir(dataDir, (err, dir) => {
         if (err) {
-            if (err.code === "ENOENT") {
-                console.error(`WARNING -- The specified data directory \`${dataDir}\` does not exist.`);
-                availableImages = {images: [], missingDataDir: true};
-            }
-            else {
-                console.error(err.toString());
-                availableImages = null;
-            }
+            handleDirError(err);
             return;
         }
 
@@ -153,9 +157,10 @@ function updateImages() {
 function checkForDataUpdates() {
     fs.stat(dataDir, (err, stats) => {
         if (err) {
-            console.error(err.toString());
+            handleDirError(err);
             return;
         }
+
         const updateTime = stats.ctime.getTime();
         if (updateTime !== lastUpdate) {
             updateImages();
