@@ -373,12 +373,17 @@ const tmapp = (function() {
             switch (imageReq.status) {
                 case 200:
                     // Add the images to the image browser
-                    const images = JSON.parse(imageReq.responseText).images;
+                    const response = JSON.parse(imageReq.responseText);
+                    const missingDataDir = response.missingDataDir;
+                    const images = response.images;
                     tmappUI.updateImageBrowser(images);
                     _images = images;
 
                     // Go to the initial image and/or join the collab
-                    if (images.length === 0) {
+                    if (missingDataDir) {
+                        tmappUI.displayImageError("missingdatadir");
+                    }
+                    else if (images.length === 0) {
                         tmappUI.displayImageError("noavailableimages");
                     }
                     else if (imageName && collab) {

@@ -14,23 +14,34 @@ const tmappUI = (function(){
 
     const _errors = {
         noimage: {
-            message: "No image has been specified. Select one from the menu on the right.",
+            message: "The server has been set up to look for images in a " +
+            "directory that does not exist. Ask the server administrator " +
+            "create the directory or to select a different directory.",
+            type: "alert-danger"
+        },
+        noimage: {
+            message: "No image has been specified. Select one from the " +
+            "menu on the right.",
             type: "alert-info"
         },
         noavailableimages: {
-            message: "The server was not able to find any images in the data directory. Make sure it's populated and try again.",
+            message: "The server was not able to find any images in the " +
+            "data directory. Make sure it's populated and try again.",
             type: "alert-info"
         },
         badimage: {
-            message: "The specified image was not found. Select a new one from the menu on the right.",
+            message: "The specified image was not found. Select a new one " +
+            "from the menu on the right.",
             type: "alert-warning"
         },
         servererror: {
-            message: "Something went wrong on the server. Try again or contact an administrator.",
+            message: "Something went wrong on the server. Try again or " +
+            "contact an administrator.",
             type: "alert-warning"
         },
         unexpected: {
-            message: "An unexpected error was encountered when retrieving the image list.",
+            message: "An unexpected error was encountered when retrieving " +
+            "the image list.",
             type: "alert-warning"
         },
         tilefail: {
