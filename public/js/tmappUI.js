@@ -13,10 +13,10 @@ const tmappUI = (function(){
         _errorDisplayTimeout = null;
 
     const _errors = {
-        noimage: {
+        missingdatadir: {
             message: "The server has been set up to look for images in a " +
-            "directory that does not exist. Ask the server administrator " +
-            "create the directory or to select a different directory.",
+            "directory that does not exist. Make sure the directory exists " +
+            "or select a different directory.",
             type: "alert-danger"
         },
         noimage: {
