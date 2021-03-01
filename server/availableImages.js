@@ -19,6 +19,9 @@ let dataDir;
 // Time when the data was last altered
 let lastUpdate = 0;
 
+// Whether or not the data failed to load the last time we tried
+let lastUpdateFailed = false;
+
 // Variable to cache the available images
 let availableImages = null;
 
@@ -113,6 +116,7 @@ function getThumbnails(dir, image) {
 }
 
 function handleDirError(err) {
+    lastUpdateFailed = true;
     if (err.code === "ENOENT") {
         console.error(`WARNING -- The specified data directory \`${dataDir}\` does not exist.`);
         availableImages = {images: [], missingDataDir: true};
@@ -162,9 +166,10 @@ function checkForDataUpdates() {
         }
 
         const updateTime = stats.ctime.getTime();
-        if (updateTime !== lastUpdate) {
+        if (updateTime !== lastUpdate || lastUpdateFailed) {
             updateImages();
             lastUpdate = updateTime;
+            lastUpdateFailed = false;
         }
     })
 }
