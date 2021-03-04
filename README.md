@@ -1,6 +1,8 @@
 # CytoBrowser
 Download the latest release from: https://github.com/MIDA-group/CytoBrowser/releases/latest
 
+[ReadMe](https://github.com/MIDA-group/CytoBrowser/blob/master/README.md), including brief usage example
+
 [Installation instructions](https://github.com/MIDA-group/CytoBrowser/blob/master/INSTALL.md)
 
 ---
