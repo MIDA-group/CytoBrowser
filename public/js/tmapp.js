@@ -387,7 +387,12 @@ const tmapp = (function() {
                         tmappUI.displayImageError("noavailableimages");
                     }
                     else if (imageName && collab) {
-                        openImage(imageName, () => collabClient.connect(collab));
+                        openImage(imageName, () => {
+                            collabClient.connect(collab)
+                            if (initialState) {
+                                moveTo(initialState);
+                            }
+                        });
                     }
                     else if (imageName) {
                         collabClient.promptCollabSelection(imageName, true);
