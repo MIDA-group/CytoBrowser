@@ -589,8 +589,11 @@ const collabClient = (function(){
      * existing collaboration for a given image.
      * @param {string} image The name of the image being collaborated on.
      * @param {boolean} forceChoice The user cannot cancel the choice.
+     * @param {Function} imageCallback Function to be called when the
+     * image opened through the prompt has finished loading. Is passed
+     * into tmapp.openImage and behaves the same way.
      */
-    function promptCollabSelection(image, forceChoice=false) {
+    function promptCollabSelection(image, forceChoice=false, imageCallback) {
         const collabReq = new XMLHttpRequest();
         const address = `${window.location.origin}/api/collaboration/available?image=${image}`;
         collabReq.open("GET", address, true);
@@ -600,7 +603,10 @@ const collabClient = (function(){
                 const available = JSON.parse(collabReq.responseText).available;
                 const choices = available.map(entry => {
                     const click = () => {
-                        tmapp.openImage(image, () => connect(entry.id));
+                        tmapp.openImage(image, () => {
+                            connect(entry.id);
+                            imageCallback && imageCallback();
+                        });
                     };
                     return {
                         label: entry.name,
@@ -611,7 +617,10 @@ const collabClient = (function(){
                     label: "Start new session",
                     highlight: true,
                     click: () => {
-                        tmapp.openImage(image, () => createCollab());
+                        tmapp.openImage(image, () => {
+                            createCollab();
+                            imageCallback && imageCallback();
+                        });
                     }
                 });
                 tmappUI.choice("Choose a session", choices, null, forceChoice);
