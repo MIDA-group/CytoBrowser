@@ -1,5 +1,4 @@
 # CytoBrowser
-
 Download the latest release from: https://github.com/MIDA-group/CytoBrowser/releases/latest
 
 [Installation instructions](https://github.com/MIDA-group/CytoBrowser/blob/master/INSTALL.md)
@@ -16,3 +15,9 @@ Download the latest release from: https://github.com/MIDA-group/CytoBrowser/rele
 <a href="media/CytoBrowser_example_region.jpg?raw=true"><img alt="Screenshot of CytoBrowser region marking" title="Marking a region in CytoBrowser" align="left" width="52%" src="media/CytoBrowser_example_region.jpg"></a>
 
 <br clear="both"/>
+
+---
+
+|   |
+| --- |
+| CytoBrowser is an open-source (GPLv3) JavaScript and Node.js driven environment for fast and accessible collaborative online visualization, assessment, and annotation of very large microscopy images, including, but not limited to, z-stacks (focus stacks) of cytology or histology whole slide images. It provides a web-based viewer for high-resolution zoomable images and facilitates easy remote collaboration, with options for joint-view visualization and simultaneous collaborative annotation of very large datasets. It delivers a combination of functionalities suitable for large scale annotation of whole slide image data. The web browser interface is directly accessible on any modern computer, without need for additional software. By sharing a "session", several remote users can interactively explore and jointly annotate whole slide image data, thereby reaching improved data understanding and annotation quality, effortless project scaling and distribution of resources to/from remote locations, efficient creation of "ground truth" annotations for methods' evaluation and training of machine learning-based approaches, a user-friendly learning environment for medical students, to name a few. Rectangle and polygon region annotations complement point-based annotations, each with a selectable annotation-class as well as free-form text fields. The default setting of CytoBrowser presents an interface for the Bethesda cancer grading system, while other annotation schemes can easily be incorporated. Automatic server side storage of annotations is complemented by JSON-based import/export options facilitating easy interoperability with other tools. |
