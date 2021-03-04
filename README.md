@@ -1,5 +1,7 @@
 # CytoBrowser
 Download the latest release from: https://github.com/MIDA-group/CytoBrowser/releases/latest
+<br>
+Or alternatively from Zenodo via [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4570576.svg)](https://doi.org/10.5281/zenodo.4570576)
 
 [ReadMe](https://github.com/MIDA-group/CytoBrowser/blob/master/README.md), including brief usage example
 
