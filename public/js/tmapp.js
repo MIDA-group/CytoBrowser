@@ -395,7 +395,11 @@ const tmapp = (function() {
                         });
                     }
                     else if (imageName) {
-                        collabClient.promptCollabSelection(imageName, true);
+                        collabClient.promptCollabSelection(imageName, true, () => {
+                            if (initialState) {
+                                moveTo(initialState);
+                            }
+                        });
                     }
                     else {
                         tmappUI.displayImageError("noimage");
