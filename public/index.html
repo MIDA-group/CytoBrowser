@@ -26,22 +26,22 @@
 
 <body>
     <!-- Navbar -->
-    <nav class="navbar position-static top-0 start-0 w-100 navbar-expand-lg navbar-dark bg-primary py-0 py-md-1 pt-xl-2" style="cursor: pointer;">
+    <nav class="navbar navbar-fixed-top navbar-expand-lg navbar-dark bg-primary pl-2 pl-lg-0 py-0" style="cursor: pointer;" id="navbar">
         <div class="container-fluid">
-            <a class="navbar-brand" href="https://mida-group.github.io/CytoBrowser/" target="_blank" rel="noopener noreferrer">
-                <img style="height:50px; margin:-5px; overflow: visible;" src="misc/uulogowhiteCyBr.png">
+            <a class="navbar-brand" style="padding-top:0.5vh; padding-bottom:0.5vh;" href="https://mida-group.github.io/CytoBrowser/" target="_blank" rel="noopener noreferrer">
+                <img style="height:40px; min-height:20px; max-height:8vh; overflow: visible;" src="misc/uulogowhiteCyBr.png">
             </a>
 
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar_items">
-                <span class="navbar-toggler-icon"></span>
+            <button class="navbar-toggler ml-auto" type="button" data-toggle="collapse" data-target="#navbar_items">
+                <span class="navbar-toggler-icon" style="min-height:12px; max-height:5vh;"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbar_items">
                 <ul class="nav navbar-nav">
                     <li class="nav-item"><a class="nav-link font-weight-bold" data-toggle="modal" data-target="#image_browser"> Image: <span id="img_name"> -</span></a></li>
                     <li class="navbar-text font-weight-bold p-2"> Z-level: <span id="img_zlevel"> -</span></li>
-                    <li class="nav-item"><a class="nav-link font-weight-bold"> Zoom: <span id="img_zoom"> -</span></a></li>
-                    <li class="nav-item"><a class="nav-link font-weight-bold"> Rotation: <span id="img_rotation"> -</span></a></li>
-                    <li class="nav-item"><a class="nav-link font-weight-bold"> <span id="last_autosave"></span></a></li>
+                    <li class="navbar-text font-weight-bold p-2"> Zoom: <span id="img_zoom"> -</span></li>
+                    <li class="navbar-text font-weight-bold p-2"> Rotation: <span id="img_rotation"> -</span></li>
+                    <li class="navbar-text font-weight-bold p-2"> <span id="last_autosave"></span></li>
                 </ul>
                 <ul class="nav navbar-nav ml-auto">
                     <li class="nav-item"><a class="nav-link font-weight-bold"> Session: <span id="collab_name"> -</span></a></li>
@@ -53,14 +53,14 @@
 
     <!-- Main content -->
     <div id="main_content" class="container-fluid d-flex h-100" tabindex="-1">
-        <div class="row flex-fill">
-            <div class="col md-10 flex-grow-1 px-1" style="min-width: 50%; min-height: 80%; width: 100%; overflow: hidden;"> <!-- Doesn't make sense to have overflow of the viewer -->
+        <div class="row flex-fill" id="main_row">
+            <div class="col md-10 flex-grow-1 px-1" style="min-width: 50%; min-height: 85%; width: 100%; overflow: hidden;"> <!-- Doesn't make sense to have overflow of the viewer -->
                 <div id="ISS_viewer" class="ISS_viewer blurrable flex-grow-1" style="height: 100%; width: 100%;"></div>
                 <div id="alert_wrapper" style="height: 100%; width: 100%; display: flex; justify-content: center; align-items: center; position: absolute; top: 0; padding: 5%; pointer-events: none"></div>
             </div>
 
             <!-- Right side main toolbar -->
-            <div class="col-auto d-flex flex-column md-2 pt-2 pl-0 pr-1" style="overflow-y:auto; overflow-x:hidden;">
+            <div class="col-auto d-flex flex-column md-2 pt-2 pl-0 pr-1" style="overflow-y:auto; overflow-x:hidden;" id="rtoolbar">
                 <div class="card w-100">
                     <!-- Modal access -->
                     <div class="card-body pb-2 px-2">
@@ -497,6 +497,13 @@
 <script>
     tmappUI.initUI();
 
+    // Only way I manage to get correct size navbar on vertical phone layout (due to zoom, content is wider than 100%)!
+    function resizeNavbar() {
+        document.getElementById("navbar").style.width = `${Math.max(document.getElementById("main_row").clientWidth,document.body.clientWidth)}px`;
+        console.log(`${Math.max(document.getElementById("main_row").clientWidth,document.body.clientWidth)}px`);
+    }
+    window.addEventListener('resize', resizeNavbar);
+
     // Start our tmapp
     $(document).ready(() => {
         // Options when initializing tmapp
@@ -537,6 +544,7 @@
 
         // Initialize tmapp
         tmapp.init(tmappOptions);
+        resizeNavbar();
     });
 </script>
 </html>
