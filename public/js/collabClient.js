@@ -205,7 +205,7 @@ const collabClient = (function(){
 
     function _attemptReconnect() {
         console.info(`Attempting to reconnect to ${_collabId}.`);
-        connect(_collabId, getDefaultName(), true);
+        connect(_collabId, getDefaultName(), false);
     }
 
     /**
