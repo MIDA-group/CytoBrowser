@@ -276,7 +276,9 @@ const collabClient = (function(){
     function connect(id, name=getDefaultName(), include=false) {
         tmappUI.displayImageError("loadingcollab");
         if (_ws) {
-            swapImage(tmapp.getImageName(), id);
+            if (_ws.readyState === 1) {
+                swapImage(tmapp.getImageName(), id);
+            }
             disconnect();
         }
         _ongoingDestruction = _ongoingDestruction.then(() => {
