@@ -294,8 +294,10 @@ const collabClient = (function(){
      * @param {string} name The name used to identify the participant.
      * @param {boolean} include Whether or not already-placed annotations
      * should be included in the collaborative workspace.
+     * @param {boolean} askAboutInclude Whether or not the user should be
+     * prompted about the inclusion of annotations.
      */
-    function connect(id, name=getDefaultName(), include=false) {
+    function connect(id, name=getDefaultName(), include=false, askAboutInclude=false) {
         tmappUI.displayImageError("loadingcollab");
         if (_ws) {
             if (_ws.readyState === 1) {
@@ -322,7 +324,7 @@ const collabClient = (function(){
                     _joinBatch = [];
                     _requestSummary();
                 }
-                else if (annotationHandler.isEmpty() || confirm("All your placed annotations will be lost unless you have saved them. Do you want to continue anyway?")) {
+                else if (!askAboutInclude || annotationHandler.isEmpty() || confirm("All your placed annotations will be lost unless you have saved them. Do you want to continue anyway?")) {
                     annotationHandler.clear(false);
                     _requestSummary();
                 }
