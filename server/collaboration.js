@@ -249,22 +249,24 @@ class Collaboration {
             return;
         }
 
-        this.ongoingLoad = autosave.loadAnnotations(this.id, this.image).then(data => {
-            if (data.version === "1.0") {
-                if (data.name) {
-                    this.name = data.name;
+        this.ongoingLoad = this.ongoingLoad.then(() => {
+            return autosave.loadAnnotations(this.id, this.image).then(data => {
+                if (data.version === "1.0") {
+                    if (data.name) {
+                        this.name = data.name;
+                    }
+                    this.annotations = data.annotations;
                 }
-                this.annotations = data.annotations;
-            }
-        }).catch(() => {
-            this.log(`Couldn't load preexisting annotations for ${this.image}.`, console.info);
-            this.annotations = [];
-        }).finally(() => {
-            const nameChangeMsg = {type: "nameChange", name: this.name};
-            this.broadcastMessage(nameChangeMsg);
-            if (forceUpdate) {
-                this.forceUpdate();
-            }
+            }).catch(() => {
+                this.log(`Couldn't load preexisting annotations for ${this.image}.`, console.info);
+                this.annotations = [];
+            }).finally(() => {
+                const nameChangeMsg = {type: "nameChange", name: this.name};
+                this.broadcastMessage(nameChangeMsg);
+                if (forceUpdate) {
+                    this.forceUpdate();
+                }
+            });
         });
     }
 
