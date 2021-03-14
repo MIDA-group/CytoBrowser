@@ -342,7 +342,7 @@ const collabClient = (function(){
                     const title = event.code === 4000 ?
                         "Connection closed due to inactivity"
                         : "Lost connection to the server";
-                    _promptReconnect(title);
+                    setTimeout(() => _promptReconnect(title), 2000);
                 }
             }
         });
