@@ -13,6 +13,9 @@ const collabClient = (function(){
         _desiredMember,
         _userId;
 
+    const _idleTime = 20 * 60 * 1000; // 20 minutes
+    let _idleTimeout;
+
     let _ongoingDestruction = new Promise(r => r());
     let _resolveOngoingDestruction;
 
@@ -208,6 +211,25 @@ const collabClient = (function(){
         connect(_collabId, getDefaultName(), false);
     }
 
+    function _promptReconnect(title) {
+        const choices = [{
+            label: "Reconnect",
+            click: _attemptReconnect
+        }];
+        tmappUI.choice(title, choices, null, true);
+    }
+
+    function _becomeIdle() {
+        if (_ws && _ws.readyState === 1) {
+            _ws.close(4000, "User was idle for too long.");
+        }
+    }
+
+    function _postponeIdle() {
+        clearTimeout(_idleTimeout);
+        _idleTimeout = setTimeout(_becomeIdle, _idleTime);
+    }
+
     /**
      * Perform any actions that should be performed if the members are
      * updated. This includes updating cursors in the overlay and moving
@@ -317,7 +339,10 @@ const collabClient = (function(){
                 }
                 else {
                     tmappUI.displayImageError("loadingcollab");
-                    setTimeout(_attemptReconnect, 5000);
+                    const title = event.code === 4000 ?
+                        "Connection closed due to inactivity"
+                        : "Lost connection to the server";
+                    _promptReconnect(title);
                 }
             }
         });
@@ -353,6 +378,7 @@ const collabClient = (function(){
      */
     function send(msg) {
         if (_ws) {
+            _postponeIdle();
             if (typeof(msg) === "object") {
                 _ws.send(JSON.stringify(msg));
             }
