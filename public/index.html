@@ -27,7 +27,7 @@
 
 <body>
     <!-- Navbar -->
-    <nav class="navbar navbar-fixed-top navbar-expand-lg navbar-dark bg-primary pl-2 pl-lg-0 py-0 py-xl-1" style="cursor: pointer;" id="navbar">
+    <nav class="navbar navbar-fixed-top navbar-expand-lg navbar-dark bg-primary pl-2 pl-lg-0 py-0 py-xl-1" id="navbar">
         <div class="container-fluid">
             <a class="navbar-brand" style="padding-top:0.5vh; padding-bottom:0.5vh; outline: none;" href="https://mida-group.github.io/CytoBrowser/" target="_blank" rel="noopener noreferrer">
                 <img style="height:35px; min-height:20px; max-height:8vh; overflow: visible;" src="misc/uulogowhiteCyBr.png">
@@ -38,7 +38,7 @@
             </button>
             <div class="collapse navbar-collapse" id="navbar_items">
                 <ul class="nav navbar-nav align-items-end">
-                    <li class="nav-item"><a class="nav-link font-weight-bold" style="font-size: 1.2rem;" data-toggle="modal" data-target="#image_browser">
+                    <li class="nav-item"><a class="nav-link font-weight-bold" style="cursor: pointer; font-size: 1.2rem;" data-toggle="modal" data-target="#image_browser">
                         <span class="fa fa-caret-down"> </span> Image: <span id="img_name"> -</span>
                     </a></li>
                     <li class="navbar-text font-weight-bold p-2"> Z-level: <span id="img_zlevel"> -</span></li>
@@ -47,10 +47,10 @@
                     <li class="navbar-text font-weight-bold p-2"> <span id="last_autosave"></span></li>
                 </ul>
                 <ul class="nav navbar-nav ml-auto">
-                    <li class="nav-item"><a class="nav-link font-weight-bold" style="font-size: 1.2rem;" data-toggle="modal" data-target="#collaboration_menu">
+                    <li class="nav-item"><a class="nav-link font-weight-bold" style="cursor: pointer; font-size: 1.2rem;" data-toggle="modal" data-target="#collaboration_menu">
                             <span class="fa fa-caret-down"> </span> Session: <span id="collab_name"> -</span>
                         </a></li>
-                    <li class="nav-item"><a class="nav-link font-weight-bold" style="font-size: 1.2rem;" id="user_dropdown" data-toggle="dropdown"> 
+                    <li class="nav-item"><a class="nav-link font-weight-bold" style="cursor: pointer; font-size: 1.2rem;" id="user_dropdown" data-toggle="dropdown"> 
                             <span class="fa fa-caret-down"> </span> User: <span id="user_name"> -</span>
                         </a>
                         <form class="dropdown-menu dropdown-menu-right" aria-labelledby="user_dropdown" onsubmit="this.textfield.blur();return false;">
