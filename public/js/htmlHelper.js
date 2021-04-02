@@ -145,7 +145,7 @@ const htmlHelper = (function() {
         return button;
     }
 
-    function _collaboratorListEntry(member, active, following) {
+    function _collaboratorListEntry(member, local, active, following) {
         const entry = $(`
             <a class="list-group-item list-group-item-action d-flex
             justify-content-between align-items-center" href="#">
@@ -154,21 +154,23 @@ const htmlHelper = (function() {
                         &nbsp;
                     </span>
                     &nbsp;&nbsp;&nbsp;
-                    ${member.name}${following ? " (following)" : ""}
+                    ${member.name}${local? " (you)" : following ? " (following)" : ""}
                 </span>
                 <span>
                     <input type="checkbox">
                 </span>
             </a>
         `);
-        if (!active)
+        const checkbox = entry.find("input");
+        if (!active) {
             entry.addClass("disabled");
+            checkbox.prop("disabled", true);
+        }
         entry.click(event => {
             event.preventDefault();
             entry.closest(".modal").modal("hide");
             tmapp.moveTo(member.position);
         });
-        const checkbox = entry.find("input");
         checkbox.prop("checked", member.followed);
         checkbox.click(event => {
             event.stopPropagation();
@@ -281,7 +283,7 @@ const htmlHelper = (function() {
             const isLocal = localMember === member;
             const isActive = !isLocal && member.ready;
             const isFollowing = member.following === localMember.id;
-            const entry = _collaboratorListEntry(member, isActive, isFollowing);
+            const entry = _collaboratorListEntry(member, isLocal, isActive, isFollowing);
             container.append(entry);
         });
     }
