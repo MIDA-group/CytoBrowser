@@ -44,3 +44,9 @@ $BROWSER http://localhost:8080/?image=image_name
 
 #Enjoy! =)
 ```
+
+#### Citing
+If you find the CytoBrowser software useful in your research, please consider citing the following article.
+
+Rydell C and Lindblad J. "CytoBrowser: a browser-based collaborative annotation platform for whole slide images". 
+F1000Research 2021, 10:226 (https://doi.org/10.12688/f1000research.51916.1)
