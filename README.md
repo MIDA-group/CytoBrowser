@@ -50,3 +50,14 @@ If you find the CytoBrowser software useful in your research, please consider ci
 
 *Rydell C and Lindblad J. "CytoBrowser: a browser-based collaborative annotation platform for whole slide images". 
 F1000Research 2021, 10:226 (https://doi.org/10.12688/f1000research.51916.1)*
+```
+@article{ 10.12688/f1000research.51916.1,
+  author = {Rydell, C and Lindblad, J},
+  title = {CytoBrowser: a browser-based collaborative annotation platform for whole slide images [version 1; peer review: awaiting peer review]},
+  journal = {F1000Research},
+  volune = {10},
+  year = {2021},
+  number = {226},
+  doi = {10.12688/f1000research.51916.1}
+}
+```
