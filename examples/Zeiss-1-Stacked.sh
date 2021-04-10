@@ -34,4 +34,4 @@ done
 rmdir --ignore-fail-on-non-empty tmp
 
 
-$BROWSER http://localhost:8080/?image="${name}"
+xdg-open http://localhost:8080/?image="${name}"

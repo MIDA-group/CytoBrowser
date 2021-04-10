@@ -24,4 +24,4 @@ vips --vips-progress dzsave "${file}" --tile-size 256 --overlap 0 --suffix .jpg[
 # https://www.imnc.in2p3.fr/pagesperso/deroulers/software/ndpitools/
 
 
-$BROWSER http://localhost:8080/?image="${name}"
+xdg-open http://localhost:8080/?image="${name}"
