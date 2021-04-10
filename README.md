@@ -13,7 +13,7 @@ A fork of [TissUUmaps](https://github.com/wahlby-lab/TissUUmaps) aimed at Cytolo
 
 
 #### Example
-```
+<pre>
 #Clone from github
 git clone https://github.com/MIDA-group/CytoBrowser.git
 cd CytoBrowser
@@ -28,7 +28,7 @@ node cytobrowser.js 127.0.0.1 8080
 node cytobrowser.js [hostname] [port]
 
 #Put your OpenSeadragon compatible images in the 'data/' directory
-#For converters, see e.g.: http://openseadragon.github.io/examples/creating-zooming-images/
+#For converters, see e.g.: <a href="http://openseadragon.github.io/examples/creating-zooming-images/">http://openseadragon.github.io/examples/creating-zooming-images/</a>
 
 #Or download an example image and convert it to Deep Zoom Image (dzi) format
 #(There are more examples in the 'examples/' directory)
@@ -38,13 +38,13 @@ node cytobrowser.js [hostname] [port]
 ssh -L 8080:localhost:8080 remote.host
 
 #Open a browser on your local machine, load an image and start annotating
-$BROWSER http://localhost:8080
+xdg-open <a href="http://localhost:8080">http://localhost:8080</a>
 
 #Or open a specific image directly
 $BROWSER http://localhost:8080/?image=image_name
 
 #Enjoy! =)
-```
+</pre>
 
 ### Citing
 If you find the CytoBrowser software useful in your research, please consider citing the following article:
@@ -61,4 +61,4 @@ F1000Research 2021, 10:226 (https://doi.org/10.12688/f1000research.51916.1)*
   number = {226},
   doi = {10.12688/f1000research.51916.1}
 }
-```
+</code>
