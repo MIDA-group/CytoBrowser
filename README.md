@@ -28,6 +28,7 @@ node cytobrowser.js 127.0.0.1 8080
 node cytobrowser.js [hostname] [port]
 
 #Put your OpenSeadragon compatible images in the 'data/' directory
+#For converters, see e.g.: http://openseadragon.github.io/examples/creating-zooming-images/
 
 #Or download an example image and convert it to Deep Zoom Image (dzi) format
 #(There are more examples in the 'examples/' directory)
