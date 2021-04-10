@@ -31,7 +31,7 @@ node cytobrowser.js [hostname] [port]
 #For converters, see e.g.: <a href="http://openseadragon.github.io/examples/creating-zooming-images/">http://openseadragon.github.io/examples/creating-zooming-images/</a>
 
 #Or download an example image and convert it to Deep Zoom Image (dzi) format
-#(There are more examples in the 'examples/' directory)
+#(There are more examples in the '<a href="https://github.com/MIDA-group/CytoBrowser/tree/master/examples">examples/</a>' directory)
 ./examples/Zeiss-1-Stacked.sh  #This requires bftools and libvips
 
 #Optionally open an ssh-pipe from your local machine to the web server
