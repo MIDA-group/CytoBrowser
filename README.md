@@ -37,11 +37,11 @@ node cytobrowser.js [hostname] [port]
 #Optionally open an ssh-pipe from your local machine to the web server
 ssh -L 8080:localhost:8080 remote.host
 
-#Open a browser on your local machine, load an image and start annotating
+#Open a web browser on your local machine, load an image and start annotating
 xdg-open <a href="http://localhost:8080">http://localhost:8080</a>
 
 #Or open a specific image directly
-$BROWSER http://localhost:8080/?image=image_name
+xdg-open http://localhost:8080/?image=image_name
 
 #Enjoy! =)
 </pre>
