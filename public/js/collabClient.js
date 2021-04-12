@@ -14,7 +14,8 @@ const collabClient = (function(){
         _userId;
 
     const _idleTime = 20 * 60 * 1000; // 20 minutes
-    let _idleTimeout;
+    const _keepaliveTime = 30 * 1000;
+    let _idleTimeout, _keepaliveTimeout;
 
     let _ongoingDestruction = new Promise(r => r());
     let _resolveOngoingDestruction;
@@ -27,6 +28,9 @@ const collabClient = (function(){
      * @param {string} msg.type The type of message being received.
      */
     function _handleMessage(msg) {
+        if (msg === "__pong__") {
+            return;
+        }
         switch(msg.type) {
             case "annotationAction":
                 _handleAnnotationAction(msg);
@@ -230,6 +234,15 @@ const collabClient = (function(){
         _idleTimeout = setTimeout(_becomeIdle, _idleTime);
     }
 
+    function _keepalive() {
+        send("__ping__");
+        _keepaliveTimeout = setTimeout(_keepalive, _keepaliveTimeout);
+    }
+
+    function _stopKeepalive() {
+        clearTimeout(_keepaliveTimeout);
+    }
+
     /**
      * Perform any actions that should be performed if the members are
      * updated. This includes updating cursors in the overlay and moving
@@ -319,6 +332,7 @@ const collabClient = (function(){
                 _ws = ws;
                 _collabId = id;
                 tmapp.setCollab(id);
+                _keepalive();
 
                 if (include) {
                     _joinBatch = [];

@@ -382,6 +382,10 @@ function leaveCollab(ws, id) {
  * @param {string} msg JSON representation of the message object.
  */
 function handleMessage(ws, id, msg) {
+    if (msg === "__ping__") {
+        ws.send("__pong__");
+        return;
+    }
     const collab = getCollab(id);
     try {
         collab.handleMessage(ws, JSON.parse(msg));
