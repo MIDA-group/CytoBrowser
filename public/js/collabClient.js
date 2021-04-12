@@ -28,9 +28,6 @@ const collabClient = (function(){
      * @param {string} msg.type The type of message being received.
      */
     function _handleMessage(msg) {
-        if (msg === "__pong__") {
-            return;
-        }
         switch(msg.type) {
             case "annotationAction":
                 _handleAnnotationAction(msg);
@@ -236,7 +233,7 @@ const collabClient = (function(){
 
     function _keepalive() {
         send("__ping__");
-        _keepaliveTimeout = setTimeout(_keepalive, _keepaliveTimeout);
+        _keepaliveTimeout = setTimeout(_keepalive, _keepaliveTime);
     }
 
     function _stopKeepalive() {
@@ -347,7 +344,9 @@ const collabClient = (function(){
                 }
             }
             ws.onmessage = function(event) {
-                _handleMessage(JSON.parse(event.data));
+                if (event.data !== "__pong__") {
+                    _handleMessage(JSON.parse(event.data));
+                }
             }
             ws.onclose = function(event) {
                 if (event.code === 1000) {
