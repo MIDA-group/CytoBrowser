@@ -14,7 +14,7 @@ const collabClient = (function(){
         _userId;
 
     const _idleTime = 20 * 60 * 1000; // 20 minutes
-    const _keepaliveTime = 30 * 1000;
+    const _keepaliveTime = 30 * 1000; // sending ping every 30s
     let _idleTimeout, _keepaliveTimeout;
 
     let _ongoingDestruction = new Promise(r => r());
@@ -232,7 +232,7 @@ const collabClient = (function(){
     }
 
     function _keepalive() {
-        send("__ping__");
+        send("__ping__", false);
         _keepaliveTimeout = setTimeout(_keepalive, _keepaliveTime);
     }
 
@@ -391,9 +391,11 @@ const collabClient = (function(){
      * @param {Object} msg Message to be sent.
      * @param {string} msg.type Type of the message being sent.
      */
-    function send(msg) {
+    function send(msg, resetIdle=true) {
         if (_ws) {
-            _postponeIdle();
+            if (resetIdle) {
+                _postponeIdle();
+            }
             if (typeof(msg) === "object") {
                 _ws.send(JSON.stringify(msg));
             }
