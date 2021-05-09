@@ -92,6 +92,9 @@ const tmapp = (function() {
         _updateBrightnessContrast();
     }
 
+    /**
+     * Apply _currState brightness/contrast to current viewer
+     */
     function _updateBrightnessContrast() {
 
         function contrast_brightness(c,b) {
@@ -340,6 +343,7 @@ const tmapp = (function() {
             _updateFocus();
             _updatePosition();
             _updateRotation();
+            _updateBrightnessContrast();
             tmappUI.clearImageError();
             tmappUI.enableCollabCreation();
             callback && callback();
