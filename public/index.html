@@ -4,6 +4,7 @@
 <head>
     <link rel="stylesheet" href="css/tmcpmain.min.css">
     <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/bootstrap-slider.min.css">
     <link rel="stylesheet" href="css/cytobrowsertheme.css">
     <link rel="stylesheet" href="css/tm-icon-style.css">
     <title>CytoBrowser</title>
@@ -70,6 +71,26 @@
                         <button type="button" class="btn btn-block btn-primary" data-toggle="modal" data-target="#collaboration_menu">
                             Open collaboration menu
                         </button>
+                        
+                        <!-- Collapse -->
+                        <button type="button" class="btn btn-block btn-primary" data-toggle="collapse" data-target="#visualization_collapse">
+                            Visualization adjustments
+                        </button>
+                        <div class="m-2">
+                            <div class="collapse card" id="visualization_collapse">
+                                <div class="card-body">
+                                    <h6 class="card-subtitle text-muted">Brightness</h6>
+                                    <span class="m-2">
+                                        -1 <input id="brightness_slider" type="text" data-slider-min="-1" data-slider-max="1" data-slider-step="0.1" data-slider-value="0"/> &nbsp;1
+                                    </span>
+                                    <h6 class="card-subtitle mt-2 text-muted">Contrast</h6>
+                                    <span class="m-2">
+                                        -1 <input id="contrast_slider" type="text" data-slider-min="-1" data-slider-max="1" data-slider-step="0.1" data-slider-value="0"/> &nbsp;1
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
                         <button type="button" class="btn btn-block btn-secondary" data-toggle="modal" data-target="#instructions">
                             Usage instructions
                         </button>
@@ -473,6 +494,7 @@
 </body>
 
 <script src="js/bootstrap/bootstrap.4.0.0.bundle.min.js" ></script>
+<script src="js/bootstrap/bootstrap-slider.min.js" ></script>
 <script src="js/openseadragon/openseadragon.2.4.0.min.js"></script>
 <script src="js/openseadragon/openseadragon-viewerinputhook.js"></script>
 <script src="js/openseadragon/openseadragon-filtering.js"></script>
