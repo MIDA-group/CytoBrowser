@@ -25,3 +25,13 @@
 .blurrable > * {
     transition: 1s ease-in-out all;
 }
+
+.collapse_rotate {
+    transition: .3s transform ease-in-out;
+}
+.collapsed .collapse_rotate {
+    transform: rotate(90deg);
+}
+  
+  
+    
