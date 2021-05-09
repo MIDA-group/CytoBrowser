@@ -349,6 +349,7 @@ const collabClient = (function(){
                 }
             }
             ws.onclose = function(event) {
+                _stopKeepalive();
                 if (event.code === 1000) {
                     _destroy();
                 }
@@ -368,7 +369,6 @@ const collabClient = (function(){
      */
     function disconnect() {
         if (_ws) {
-            _stopKeepalive();
             _ws.close(1000, "Collaboration was closed normally.");
             _ongoingDestruction = _ongoingDestruction.then(() => {
                 return new Promise((resolve, reject) => {
