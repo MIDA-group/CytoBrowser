@@ -71,10 +71,11 @@
                         <button type="button" class="btn btn-block btn-primary" data-toggle="modal" data-target="#collaboration_menu">
                             Open collaboration menu
                         </button>
-                        
+
                         <!-- Collapse -->
-                        <button type="button" class="btn btn-block btn-primary" data-toggle="collapse" data-target="#visualization_collapse">
-                            Visualization adjustments
+                        <!-- Inspired by: https://disjfa.github.io/bootstrap-tricks/card-collapse-tricks/ -->
+                        <button type="button" class="btn btn-block btn-primary collapsed" data-toggle="collapse" data-target="#visualization_collapse">
+                            <div class="d-flex flex-row w-100"><div class="w-100">Visualization adjustments</div> <i class="collapse_rotate fa fa-chevron-down pull-right pt-1"></i></div>
                         </button>
                         <div class="m-2">
                             <div class="collapse card" id="visualization_collapse">
