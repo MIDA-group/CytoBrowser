@@ -17,6 +17,7 @@ const tmapp = (function() {
         navigatorSizeRatio: 0.25,
         animationTime: 0.0,
         blendTime: 0,
+        maxImageCacheCount: 800, //need more for z-stacks
         minZoomImageRatio: 1,
         maxZoomPixelRatio: 4,
         gestureSettingsMouse: {clickToZoom: false},
