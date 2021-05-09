@@ -121,7 +121,8 @@ const tmapp = (function() {
         }
     
         _viewer.setFilterOptions({ 
-            filters: { processors: pixelwise(contrast_brightness(_currState.contrast,_currState.brightness)) }, 
+            filters: { processors: _currState.contrast==0 && _currState.brightness==0? [] 
+                : pixelwise(contrast_brightness(_currState.contrast,_currState.brightness)) }, 
             loadMode: 'sync' });
     
     }
