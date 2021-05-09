@@ -41,7 +41,9 @@ const tmapp = (function() {
             y: 0.5,
             z: 0,
             rotation: 0,
-            zoom: 1
+            zoom: 1,
+            brightness: 0,
+            contrast: 0
         },
         _cursorStatus = {
             x: 0.5,
@@ -78,6 +80,47 @@ const tmapp = (function() {
         coordinateHelper.setImage(_viewer.world.getItemAt(index));
         _updateCollabPosition();
         _updateURLParams();
+    }
+
+    function setBrightness(b) {
+        _currState.brightness = b;
+        _updateBrightnessContrast();
+    }
+
+    function setContrast(c) {
+        _currState.contrast = c;
+        _updateBrightnessContrast();
+    }
+
+    function _updateBrightnessContrast() {
+
+        function contrast_brightness(c,b) {
+            return function(x) {return Math.pow(10,c)*(x-128)+128 + b*128;}
+        }
+    
+        function pixelwise(f) {
+            var precomputedBrightness = [];
+            for (var i = 0; i < 256; i++) {
+                precomputedBrightness[i] = f(i);
+            }
+            return function(context, callback) {
+                var imgData = context.getImageData(
+                    0, 0, context.canvas.width, context.canvas.height);
+                var pixels = imgData.data;
+                for (var i = 0; i < pixels.length; i += 4) {
+                    pixels[i] = precomputedBrightness[pixels[i]];
+                    pixels[i + 1] = precomputedBrightness[pixels[i + 1]];
+                    pixels[i + 2] = precomputedBrightness[pixels[i + 2]];
+                }
+                context.putImageData(imgData, 0, 0);
+                callback();
+            };
+        }
+    
+        _viewer.setFilterOptions({ 
+            filters: { processors: pixelwise(contrast_brightness(_currState.contrast,_currState.brightness)) }, 
+            loadMode: 'sync' });
+    
     }
 
     function _updateZoom() {
@@ -551,6 +594,21 @@ const tmapp = (function() {
     }
 
     /**
+     * Change brightness level by delta.
+     */
+    function changeBrightness(delta) {
+        setBrightness(_currState.brightness+delta);
+    }
+
+    /**
+     * Change contrast level by delta.
+     */
+    function changeContrast(delta) {
+        setContrast(_currState.contrast+delta);
+    }
+
+    
+    /**
      * Get the name of the currently opened image.
      * @returns {string} The current image name.
      */
@@ -631,6 +689,12 @@ const tmapp = (function() {
         clearCollab: clearCollab,
         incrementFocus: incrementFocus,
         decrementFocus: decrementFocus,
+
+        setBrightness: setBrightness,
+        setContrast: setContrast,
+        changeBrightness: changeBrightness,
+        changeContrast: changeContrast,
+
         getImageName: getImageName,
         updateCollabStatus: updateCollabStatus,
         setCursorStatus: setCursorStatus,

@@ -161,6 +161,11 @@ const tmappUI = (function(){
         $("#focus_prev").click(tmapp.decrementFocus);
     }
 
+    function _initVisualizationSliders() {
+        $("#brightness_slider").slider().on('change', function(e) {tmapp.setBrightness(e.value.newValue);});
+        $("#contrast_slider").slider().on('change', function(e) {tmapp.setContrast(e.value.newValue);});
+    }
+
     function _initKeyboardShortcuts() {
         // Shortcuts for the context menu
         $("#context_menu").keydown(function(){
@@ -186,6 +191,12 @@ const tmappUI = (function(){
                     annotationTool.complete();
                     break;
                 // ASDF...
+                case 65: // a
+                    tmapp.changeBrightness(+0.1);
+                    break;
+                case 83: // s
+                    tmapp.changeBrightness(-0.1);
+                    break;
                 case 70: // f
                     //catching 'f' to disable 'Flip' in OSD, we do not support it
                     break;
@@ -273,6 +284,7 @@ const tmappUI = (function(){
         _initDocumentFocusFunctionality();
         _initStorageButtonEvents();
         _initFocusButtonEvents();
+        _initVisualizationSliders();
         _initKeyboardShortcuts();
         _initCollaborationMenu();
         fileBrowserUI.init();
