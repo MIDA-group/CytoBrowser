@@ -191,13 +191,6 @@ const tmappUI = (function(){
                     annotationTool.complete();
                     break;
                 // ASDF...
-/*                 case 65: // a
-                    tmapp.changeBrightness(+0.1);
-                    break;
-                case 83: // s
-                    tmapp.changeBrightness(-0.1);
-                    break;
- */
                 case 70: // f
                     //catching 'f' to disable 'Flip' in OSD, we do not support it
                     break;
