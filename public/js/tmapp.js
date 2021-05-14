@@ -65,7 +65,7 @@ const tmapp = (function() {
         z = Math.min(Math.max(z,min),max);
         for (let i = min; i <= max; i++) {
             let idx = i + Math.floor(_currentImage.zLevels.length / 2);
-            _viewer.world.getItemAt(idx).setOpacity(z === i);
+            _viewer.world.getItemAt(idx).setOpacity(z == i);
         }
         _currState.z = z;
         _updateFocus();
@@ -96,35 +96,18 @@ const tmapp = (function() {
      * Apply _currState brightness/contrast to current viewer
      */
     function _updateBrightnessContrast() {
-
-        function contrast_brightness(c,b) {
-            return function(x) {return Math.pow(10,c)*(x-128)+128 + b*128;}
+        //const ctx=_viewer.drawer.context;
+        //Since I'm not 100% sure that Safari supports the above 
+        // https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/filter 
+        //we use the css-style property instead
+        const ctx=document.getElementById("ISS_viewer").querySelector('.openseadragon-canvas').style;
+        if (_currState.contrast==0 && _currState.brightness==0) {
+            ctx.filter = 'none';
         }
-    
-        function pixelwise(f) {
-            var precomputedBrightness = [];
-            for (var i = 0; i < 256; i++) {
-                precomputedBrightness[i] = f(i);
-            }
-            return function(context, callback) {
-                var imgData = context.getImageData(
-                    0, 0, context.canvas.width, context.canvas.height);
-                var pixels = imgData.data;
-                for (var i = 0; i < pixels.length; i += 4) {
-                    pixels[i] = precomputedBrightness[pixels[i]];
-                    pixels[i + 1] = precomputedBrightness[pixels[i + 1]];
-                    pixels[i + 2] = precomputedBrightness[pixels[i + 2]];
-                }
-                context.putImageData(imgData, 0, 0);
-                callback();
-            };
+        else {
+            ctx.filter = `brightness(${_currState.brightness+1}) contrast(${Math.pow(4,_currState.contrast)})`;
         }
-    
-        _viewer.setFilterOptions({ 
-            filters: { processors: _currState.contrast==0 && _currState.brightness==0? [] 
-                : pixelwise(contrast_brightness(_currState.contrast,_currState.brightness)) }, 
-            loadMode: 'sync' });
-    
+        _viewer.world.draw();
     }
 
     function _updateZoom() {
@@ -208,7 +191,7 @@ const tmapp = (function() {
         imageStack.forEach((image, i) => {
             _viewer.addTiledImage({
                 tileSource: image,
-                opacity: i === zIndex,
+                opacity: i == zIndex,
                 index: i++,
                 success: () => {
                     if (_viewer.world.getItemCount() === imageStack.length) {

@@ -56,7 +56,7 @@
     <div id="main_content" class="container-fluid d-flex h-100" style="min-width: 400px;" tabindex="-1">
         <div class="row flex-fill" id="main_row">
             <div class="col md-10 px-1" style="min-width: 50%; min-height: 85%; width: 100%; overflow: hidden; flex-grow: 100;"> <!-- Doesn't make sense to have overflow of the viewer -->
-                <div id="ISS_viewer" class="ISS_viewer blurrable flex-grow-1" style="height: 100%; width: 100%;"></div>
+                <div id="ISS_viewer" class="ISS_viewer blurrable flex-grow-1 h-100 w-100"></div>
                 <div id="alert_wrapper" style="height: 100%; width: 100%; display: flex; justify-content: center; align-items: center; position: absolute; top: 0; padding: 5%; pointer-events: none"></div>
             </div>
 
@@ -83,10 +83,12 @@
                                     <h6 class="card-subtitle text-muted">Brightness</h6>
                                     <span class="m-2">
                                         -1 <input id="brightness_slider" type="text" data-slider-min="-1" data-slider-max="1" data-slider-step="0.1" data-slider-value="0"/> &nbsp;1
+                                        <input id="brightness_reset" class="btn btn-secondary btn-sm p-0 px-1 m-0 mb-1 ml-3" type="reset" value="Reset">
                                     </span>
                                     <h6 class="card-subtitle mt-2 text-muted">Contrast</h6>
                                     <span class="m-2">
                                         -1 <input id="contrast_slider" type="text" data-slider-min="-1" data-slider-max="1" data-slider-step="0.1" data-slider-value="0"/> &nbsp;1
+                                        <input id="contrast_reset" class="btn btn-secondary btn-sm p-0 px-1 m-0 mb-1 ml-3" type="reset" value="Reset">
                                     </span>
                                 </div>
                             </div>

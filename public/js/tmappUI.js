@@ -164,6 +164,8 @@ const tmappUI = (function(){
     function _initVisualizationSliders() {
         $("#brightness_slider").slider().on('change', function(e) {tmapp.setBrightness(e.value.newValue);});
         $("#contrast_slider").slider().on('change', function(e) {tmapp.setContrast(e.value.newValue);});
+        $("#brightness_reset").click(function() { $('#brightness_slider').slider('setValue', 0, true, true);});
+        $("#contrast_reset").click(function() { $('#contrast_slider').slider('setValue', 0, true, true);});
     }
 
     function _initKeyboardShortcuts() {
