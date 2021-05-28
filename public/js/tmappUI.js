@@ -304,7 +304,7 @@ const tmappUI = (function(){
         const activeModal = $(".modal.show");
         activeModal.modal("hide");
         $("#multiple_choice .modal-title").text(title);
-        $("#choice_list").empty();
+        $("#multiple_choice #choice_list").empty();
         choices.forEach(choice => {
             const choiceButton = $(`<button class="btn btn-${choice.highlight ? "dark" : "primary"} btn-block">
                 ${choice.label}
@@ -314,15 +314,20 @@ const tmappUI = (function(){
             $("#choice_list").append(choiceButton);
         });
         if (!forceChoice) {
+            $("#multiple_choice #exit_button").show();
+
             const cancelButton = $(`<button class="btn btn-secondary btn-block">
                 Cancel
             </button>`);
             cancelButton.click(() => $("#multiple_choice").modal("hide"));
-            $("#choice_list").append(cancelButton);
+            $("#multiple_choice #choice_list").append(cancelButton);
+        }
+        else {
+            $("#multiple_choice #exit_button").hide();
         }
         $("#multiple_choice").modal({backdrop: "static", keyboard: false});
         $("#multiple_choice").one("hide.bs.modal", () => activeModal.modal("show"));
-        $("#multiple_choice").one("hidden.bs.modal", $("#choice_list").empty);
+        $("#multiple_choice").one("hidden.bs.modal", $("#multiple_choice #choice_list").empty);
         onCancel && $("#multiple_choice").one("hidden.bs.modal", onCancel);
     }
 
