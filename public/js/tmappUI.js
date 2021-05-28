@@ -21,7 +21,7 @@ const tmappUI = (function(){
         },
         noimage: {
             message: "No image has been specified. Select one from the " +
-            "menu on the right.",
+            "image browser.",
             type: "alert-info"
         },
         noavailableimages: {

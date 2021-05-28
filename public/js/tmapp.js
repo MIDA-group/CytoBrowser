@@ -435,6 +435,7 @@ const tmapp = (function() {
                     }
                     else {
                         tmappUI.displayImageError("noimage");
+                        $("#image_browser").modal();
                     }
                     break;
                 case 500:
