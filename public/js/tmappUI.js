@@ -316,6 +316,13 @@ const tmappUI = (function(){
         if (!forceChoice) {
             $("#multiple_choice #exit_button").show();
 
+            // Escape key, from https://simplyaccessible.com/article/closing-modals/
+            $("#multiple_choice").keydown(function(event){
+                if (event.keyCode == 27){
+                    $("#multiple_choice").modal("hide");
+                }
+            });
+            
             const cancelButton = $(`<button class="btn btn-secondary btn-block">
                 Cancel
             </button>`);
