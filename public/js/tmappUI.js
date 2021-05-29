@@ -169,7 +169,7 @@ const tmappUI = (function(){
     }
 
     function _initKeyboardShortcuts() {
-        // Shortcuts for the context menu
+        // Shortcuts for the pop-up context menu
         $("#context_menu").keydown(function(){
             switch(event.keyCode) {
                 case 27: // esc
@@ -303,6 +303,10 @@ const tmappUI = (function(){
     function choice(title, choices, onCancel, forceChoice=false) {
         const activeModal = $(".modal.show");
         activeModal.modal("hide");
+
+        //https://stackoverflow.com/questions/34440464/bootstrap-modal-backdrop-static-not-working/
+        $("#multiple_choice").data('bs.modal',null); // clear the BS modal data so that we can change settings
+
         $("#multiple_choice .modal-title").text(title);
         $("#multiple_choice #choice_list").empty();
         choices.forEach(choice => {
@@ -316,23 +320,17 @@ const tmappUI = (function(){
         if (!forceChoice) {
             $("#multiple_choice #exit_button").show();
 
-            // Escape key, from https://simplyaccessible.com/article/closing-modals/
-            $("#multiple_choice").keydown(function(event){
-                if (event.keyCode == 27){
-                    $("#multiple_choice").modal("hide");
-                }
-            });
-            
             const cancelButton = $(`<button class="btn btn-secondary btn-block">
                 Cancel
             </button>`);
             cancelButton.click(() => $("#multiple_choice").modal("hide"));
             $("#multiple_choice #choice_list").append(cancelButton);
+            $("#multiple_choice").modal();
         }
         else {
             $("#multiple_choice #exit_button").hide();
+            $("#multiple_choice").modal({backdrop: "static", keyboard: false});
         }
-        $("#multiple_choice").modal({backdrop: "static", keyboard: false});
         $("#multiple_choice").one("hide.bs.modal", () => activeModal.modal("show"));
         $("#multiple_choice").one("hidden.bs.modal", $("#multiple_choice #choice_list").empty);
         onCancel && $("#multiple_choice").one("hidden.bs.modal", onCancel);
