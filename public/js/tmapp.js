@@ -427,10 +427,12 @@ const tmapp = (function() {
                         });
                     }
                     else if (imageName) {
-                        collabClient.promptCollabSelection(imageName, true, () => {
-                            if (initialState) {
-                                moveTo(initialState);
-                            }
+                        openImage(imageName, () => {
+                            collabClient.promptCollabSelection(imageName, true, () => {
+                                if (initialState) {
+                                    moveTo(initialState);
+                                }
+                            });
                         });
                     }
                     else {
