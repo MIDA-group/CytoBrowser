@@ -285,7 +285,7 @@ const collabClient = (function(){
     function createCollab(name=getDefaultName(), include=false) {
         // Get a new code for a collab first
         const idReq = new XMLHttpRequest();
-        idReq.open("GET", window.location.origin + "/api/collaboration/id", true)
+        idReq.open("GET", window.location.api + "/collaboration/id", true)
         idReq.send();
         idReq.onreadystatechange = function() {
             if (idReq.readyState === 4 && idReq.status === 200) {
@@ -318,7 +318,7 @@ const collabClient = (function(){
         _ongoingDestruction = _ongoingDestruction.then(() => {
             const wsProtocol = (window.location.protocol === 'https:')?'wss://':'ws://';
             const imageName = tmapp.getImageName();
-            const address = `${window.location.host}/collaboration/` +
+            const address = `${window.location.host}${window.location.dirname}/collaboration/` +
                 `${id}?name=${name}&image=${imageName ? imageName : ""}` +
                 `&userId=${_userId ? _userId : ""}`;
             const ws = new WebSocket(wsProtocol+address);
@@ -641,7 +641,7 @@ const collabClient = (function(){
      */
     function promptCollabSelection(image, forceChoice=false, imageCallback) {
         const collabReq = new XMLHttpRequest();
-        const address = `${window.location.origin}/api/collaboration/available?image=${image}`;
+        const address = `${window.location.api}/collaboration/available?image=${image}`;
         collabReq.open("GET", address, true);
         collabReq.send(null);
         collabReq.onreadystatechange = () => {
