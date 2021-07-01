@@ -2,6 +2,7 @@
 <html>
 
 <head>
+    <link rel="shortcut icon" href="favicon.ico">
     <link rel="stylesheet" href="css/tmcpmain.min.css">
     <link rel="stylesheet" href="css/bootstrap.min.css">
     <link rel="stylesheet" href="css/bootstrap-slider.min.css">
@@ -540,6 +541,12 @@
     }
 </script>
 <script>
+    // Store path to server api (if not at the domain root)
+    window.location.dirname = window.location.pathname.replace(/\/[^/]*$/,''); // Remove last '/' and everything following
+    window.location.base = window.location.origin + window.location.dirname;
+    window.location.api = window.location.base + '/api';
+
+    // Uses window.location.base for remoteStorage
     tmappUI.initUI();
 
     // Only way I manage to get correct size navbar on vertical phone layout (due to zoom, content is wider than 100%)!

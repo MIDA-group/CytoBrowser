@@ -392,9 +392,10 @@ const tmapp = (function() {
      * @param {number} options.initialState.zoom Zoom in viewport.
      */
     function init({imageName, collab, initialState}) {
+
         // Initiate a HTTP request and send it to the image info endpoint
         const imageReq = new XMLHttpRequest();
-        imageReq.open("GET", window.location.origin + "/api/images", true);
+        imageReq.open("GET", window.location.api + "/images", true);
         imageReq.send(null);
 
         imageReq.onreadystatechange = function() {
