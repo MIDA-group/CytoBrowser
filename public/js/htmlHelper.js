@@ -154,7 +154,7 @@ const htmlHelper = (function() {
                         &nbsp;
                     </span>
                     &nbsp;&nbsp;&nbsp;
-                    ${member.name}${local? " (you)" : following ? " (following)" : ""}
+                    ${member.name}${local? " (me)" : following ? " (following)" : ""}
                 </span>
                 <span>
                     <input type="checkbox">
