@@ -671,6 +671,18 @@ const tmapp = (function() {
         _viewer.clearControls();
     }
 
+    /**
+     * Sending events to OSDs keyboard handlers
+     */
+    function keyDownHandler(event) {
+        // Only arrow keys
+        _viewer.innerTracker.keyDownHandler(event);
+    }
+    function keyHandler(event) {
+        // All other OSD keys
+        _viewer.innerTracker.keyHandler(event);
+    }
+
     return {
         init: init,
         openImage: openImage,
@@ -690,6 +702,9 @@ const tmapp = (function() {
         updateCollabStatus: updateCollabStatus,
         setCursorStatus: setCursorStatus,
         enableControls: enableControls,
-        disableControls: disableControls
+        disableControls: disableControls,
+
+        keyHandler: keyHandler,
+        keyDownHandler: keyDownHandler
     };
 })();

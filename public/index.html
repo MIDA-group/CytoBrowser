@@ -111,7 +111,7 @@
                                 <!-- Annotation tools -->
                                 <div class="col-8">
                                     <h6 class="card-subtitle mb-2 text-muted">Annotation tool</h6>
-                                    <div class="btn-group btn-group-toggle d-flex" data-toggle="buttons" role="group">
+                                    <div class="btn-group btn-group-toggle d-flex" data-toggle="buttons" role="group" onkeydown="noArrows()">
                                         <label id="tool_marker" type="button" class="btn btn-primary">
                                             <input name="tool_selection" type="radio" autocomplete="off">
                                             Marker
@@ -129,7 +129,7 @@
                                 <!-- Focus up/down --> <!-- TODO, move elsewhere -->
                                 <div class="col-4 ml-auto">
                                     <h6 class="card-subtitle mb-2 text-muted">Change focus</h6>
-                                    <div class="btn-group d-flex" role="group">
+                                    <div class="btn-group d-flex" role="group" onkeydown="noArrows()">
                                         <button id="focus_next" type="button" class="btn btn-primary">Up</button>
                                         <button id="focus_prev" type="button" class="btn btn-primary">Down</button>
                                     </div>
@@ -141,7 +141,7 @@
                                 <!-- Annotation class buttons -->
                                 <div class="col">
                                     <h6 class="card-subtitle mb-2 text-muted">Annotation class</h6>
-                                    <div id="class_buttons" class="btn-group btn-group-toggle d-flex" data-toggle="buttons" role="group">
+                                    <div id="class_buttons" class="btn-group btn-group-toggle d-flex" data-toggle="buttons" role="group" onkeydown="noArrows()">
                                     </div>
                                 </div>
                             </div>
@@ -526,6 +526,19 @@
 <script src="js/cssHelper.js"></script>
 <script src="js/htmlHelper.js"></script>
 <script src="js/annotationTool.js"></script>
+
+<script>
+    function noArrows() {
+        switch( event.keyCode ){
+            case 37://left arrow
+            case 38://up arrow
+            case 39://right arrow
+            case 40://down arrow
+                event.preventDefault();
+                break;
+        }
+    }
+</script>
 <script>
     tmappUI.initUI();
 

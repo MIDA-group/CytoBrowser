@@ -178,6 +178,11 @@ const tmappUI = (function(){
             }
         });
 
+        // Propagate keypress events to OSD (also when not focused)
+        $("#main_content").keypress(function(){
+            tmapp.keyHandler(event);
+        });
+
         //1,2,... for class selection
         //z,x for focus up down
         $("#main_content").keydown(function(){
@@ -226,6 +231,9 @@ const tmappUI = (function(){
             }
             if (caught) {
                 event.preventDefault(); //prevent e.g. Firefox to open search box
+            }
+            else {
+                tmapp.keyDownHandler(event); //Send events on to OSD (also if not in focus)
             }
         });
     }
