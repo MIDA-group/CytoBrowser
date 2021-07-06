@@ -272,11 +272,11 @@ class Collaboration {
 
     saveState() {
         if (!this.image) {
-            return;
+            return Promise.resolve();
         }
-        else if (a.length === 0) {
+        else if (this.annotations.length === 0) {
             this.log("Tried to save session, ignored as there was no data.", console.info);
-            return;
+            return Promise.resolve();
         }
 
         const data = {
