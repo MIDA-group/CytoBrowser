@@ -274,6 +274,10 @@ class Collaboration {
         if (!this.image) {
             return;
         }
+        else if (a.length === 0) {
+            this.log("Tried to save session, ignored as there was no data.", console.info);
+            return;
+        }
 
         const data = {
             version: "1.0",
