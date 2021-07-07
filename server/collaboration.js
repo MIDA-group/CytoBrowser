@@ -38,8 +38,13 @@ class Collaboration {
     }
 
     close() {
-        this.saveState().then(() => {
-            this.log("Closing collaboration.", console.info);
+        this.saveState().then(wasSaved => {
+            if (wasSaved) {
+                this.log("Closing collaboration.", console.info);
+            }
+            else {
+                this.log("Closing collaboration without saving.", console.info);
+            }
             delete collabs[this.id];
         });
     }
@@ -271,23 +276,27 @@ class Collaboration {
     }
 
     saveState() {
-        if (!this.image) {
-            return Promise.resolve();
+        if (this.isWorthSaving()) {
+            const data = {
+                version: "1.0",
+                name: this.name,
+                image: this.image,
+                annotations: this.annotations
+            };
+            return autosave.saveAnnotations(this.id, this.image, data).then(() => {
+                this.notifyAutosave();
+                return true;
+            });
         }
-        else if (this.annotations.length === 0) {
-            this.log("Tried to save session, ignored as there was no data.", console.info);
-            return Promise.resolve();
+        else {
+            return Promise.resolve(false);
         }
+    }
 
-        const data = {
-            version: "1.0",
-            name: this.name,
-            image: this.image,
-            annotations: this.annotations
-        };
-        return autosave.saveAnnotations(this.id, this.image, data).then(() => {
-            this.notifyAutosave();
-        });
+    isWorthSaving() {
+        const hasImage = this.image;
+        const hasAnnotations = this.annotations.length !== 0;
+        return hasImage && hasAnnotations;
     }
 
     trySavingState() {
