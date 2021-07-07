@@ -410,13 +410,24 @@ function handleMessage(ws, id, msg) {
 
 /**
  * Get a list of all collaborations that have previously been saved
- * for a given image.
+ * for a given image, as well as empty collaborations currently open on
+ * the server.
  * @param {string} image The name of the image.
  * @returns {Promise<Array<Object>>} A promise of the list of available
  * image ids and their names.
  */
 function getAvailable(image) {
-    return autosave.getSavedIds(image);
+    const availableInStorage = autosave.getSavedIds(image);
+    const availableRunning = collabs.map(collab => {
+        return {
+            id: collab.id,
+            name: collab.name
+        };
+    });
+    const availableNotInStorage = availableRunning.filter(collab => {
+        return !availableInStorage.some(entry => entry.id === collab.id);
+    });
+    return availableInStorage.concat(availableNotInStorage);
 }
 
 module.exports = function(dir) {
