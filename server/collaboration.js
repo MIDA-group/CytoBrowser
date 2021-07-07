@@ -417,17 +417,18 @@ function handleMessage(ws, id, msg) {
  * image ids and their names.
  */
 function getAvailable(image) {
-    const availableInStorage = autosave.getSavedIds(image);
-    const availableRunning = collabs.map(collab => {
-        return {
-            id: collab.id,
-            name: collab.name
-        };
+    return autosave.getSavedIds(image).then(availableInStorage => {
+        const availableRunning = Object.values(collabs).map(collab => {
+            return {
+                id: collab.id,
+                name: collab.name
+            };
+        });
+        const availableNotInStorage = availableRunning.filter(collab => {
+            return !availableInStorage.some(entry => entry.id === collab.id);
+        });
+        return availableInStorage.concat(availableNotInStorage);
     });
-    const availableNotInStorage = availableRunning.filter(collab => {
-        return !availableInStorage.some(entry => entry.id === collab.id);
-    });
-    return availableInStorage.concat(availableNotInStorage);
 }
 
 module.exports = function(dir) {
