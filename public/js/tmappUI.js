@@ -289,6 +289,7 @@ const tmappUI = (function(){
      * and add any event handlers that are needed.
      */
     function initUI() {
+        _initGlobalComments();
         _initClassSelectionButtons();
         _initToolSelectionButtons();
         _initViewerEvents();

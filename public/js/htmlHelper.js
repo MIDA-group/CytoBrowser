@@ -329,6 +329,7 @@ const htmlHelper = (function() {
     }
 
     return {
+        buildCommentSection: buildCommentSection,
         buildAnnotationSettingsMenu: buildAnnotationSettingsMenu,
         buildClassSelectionButtons: buildClassSelectionButtons,
         buildCollaboratorList: buildCollaboratorList,
