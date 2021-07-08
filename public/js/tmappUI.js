@@ -84,6 +84,14 @@ const tmappUI = (function(){
         }
     }
 
+    function _initGlobalComments() {
+        const container = $("#global_comments");
+        const commentHolder = {}; // TODO
+        htmlHelper.buildCommentSection(container, commentHolder, comment => {
+            console.log("Made a comment!", commentHolder);
+        });
+    }
+
     function _initClassSelectionButtons() {
         const initialMclass = classUtils.getClassFromID(0);
         annotationTool.setMclass(initialMclass.name);

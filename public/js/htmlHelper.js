@@ -238,7 +238,7 @@ const htmlHelper = (function() {
      * field of the object, which will be created if no such field
      * already exists.
      * @param {Object} updateFun The function that should be run when
-     * the comments are updated.
+     * pressing the save button in the menu.
      */
     function buildCommentSection(container, commentable, updateFun) {
         const list = _commentList(commentable, updateFun);
