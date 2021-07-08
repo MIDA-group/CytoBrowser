@@ -33,6 +33,7 @@ class Collaboration {
         this.nextColor = generateColor();
         this.image = image;
         this.ongoingLoad = new Promise(r => r()); // Dummy promise just in case
+        this.hasUnsavedChanges = false;
         this.loadState(false);
         this.log(`Initializing collaboration.`, console.info);
     }
@@ -157,7 +158,6 @@ class Collaboration {
             // Members who aren't ready shouldn't do anything with annotations
             return;
         }
-        this.trySavingState();
         switch (msg.actionType) {
             case "add":
                 if (!this.isDuplicateAnnotation(msg.annotation)) {
@@ -185,6 +185,8 @@ class Collaboration {
                 this.log(`Tried to handle unknown annotation action: ${msg.actionType}`, console.warn);
                 this.forwardMessage(sender, msg);
         }
+        this.flagUnsavedChanges();
+        this.trySavingState();
     }
 
     handleMemberEvent(sender, member, msg) {
@@ -220,6 +222,7 @@ class Collaboration {
 
     handleNameChange(sender, member, msg) {
         this.name = msg.name;
+        this.flagUnsavedChanges();
         this.saveState();
         this.forwardMessage(sender, msg);
     }
@@ -276,7 +279,7 @@ class Collaboration {
     }
 
     saveState() {
-        if (this.isWorthSaving()) {
+        if (this.hasUnsavedChanges) {
             const data = {
                 version: "1.0",
                 name: this.name,
@@ -285,6 +288,7 @@ class Collaboration {
             };
             return autosave.saveAnnotations(this.id, this.image, data).then(() => {
                 this.notifyAutosave();
+                this.hasUnsavedChanges = false;
                 return true;
             });
         }
@@ -293,10 +297,8 @@ class Collaboration {
         }
     }
 
-    isWorthSaving() {
-        const hasImage = this.image;
-        const hasAnnotations = this.annotations.length !== 0;
-        return hasImage && hasAnnotations;
+    flagUnsavedChanges() {
+        this.hasUnsavedChanges = true;
     }
 
     trySavingState() {
