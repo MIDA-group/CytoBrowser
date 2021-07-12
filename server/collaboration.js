@@ -291,11 +291,14 @@ class Collaboration {
         this.ongoingLoad = this.ongoingLoad.then(() => {
             return autosave.loadAnnotations(this.id, this.image);
         }).then(data => {
-            if (data.version === "1.0") {
+            if (data.version === "1.0" || data.version === "1.1") {
                 if (data.name) {
                     this.name = data.name;
                 }
                 this.annotations = data.annotations;
+            }
+            if (data.version === "1.1") {
+                this.comments = data.comments;
             }
         }).catch(() => {
             this.log(`Couldn't load preexisting annotations for ${this.image}.`, console.info);
@@ -313,10 +316,11 @@ class Collaboration {
     saveState() {
         if (this.hasUnsavedChanges) {
             const data = {
-                version: "1.0",
+                version: "1.1",
                 name: this.name,
                 image: this.image,
-                annotations: this.annotations
+                annotations: this.annotations,
+                comments: this.comments
             };
             return autosave.saveAnnotations(this.id, this.image, data).then(() => {
                 this.notifyAutosave();

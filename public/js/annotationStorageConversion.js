@@ -28,38 +28,44 @@ const annotationStorageConversion = (function() {
      * information.
      */
     function addAnnotationStorageData(data) {
-        switch (data.version) {
-            case "1.0":
-                const addAnnotations = () => data.annotations.forEach(annotation => {
+        if (data.version === "1.0" || data.version === "1.1") {
+            const addAnnotations = () => {
+                data.annotations.forEach(annotation => {
                     annotationHandler.add(annotation, "image");
                 });
+                if (data.version === "1.1") {
+                    data.comments.forEach(comment => {
+                        metadataHandler.handleCommentFromServer(comment);
+                    });
+                }
+            }
 
-                // Change to a collab on the right image if we're on the wrong one
-                if (data.image !== tmapp.getImageName()) {
-                    alert(`The selected data does not belong to this image. ` +
-                        `Open a session on the image ${data.image} and try again.`);
-                }
-                else if (!annotationHandler.isEmpty()) {
-                    tmappUI.choice("What should be done with the current annotations?", [
-                        {
-                            label: "Add loaded annotations to existing ones",
-                            click: addAnnotations
-                        },
-                        {
-                            label: "Replace existing annotations with loaded ones",
-                            click: () => {
-                                annotationHandler.clear();
-                                addAnnotations();
-                            }
+            // Change to a collab on the right image if we're on the wrong one
+            if (data.image !== tmapp.getImageName()) {
+                alert(`The selected data does not belong to this image. ` +
+                    `Open a session on the image ${data.image} and try again.`);
+            }
+            else if (!annotationHandler.isEmpty()) {
+                tmappUI.choice("What should be done with the current annotations?", [
+                    {
+                        label: "Add loaded annotations to existing ones",
+                        click: addAnnotations
+                    },
+                    {
+                        label: "Replace existing annotations with loaded ones",
+                        click: () => {
+                            annotationHandler.clear();
+                            addAnnotations();
                         }
-                    ]);
-                }
-                else {
-                    addAnnotations();
-                }
-                break;
-            default:
-                throw new Error(`Data format version ${data.version} not implemented.`);
+                    }
+                ]);
+            }
+            else {
+                addAnnotations();
+            }
+        }
+        else {
+            throw new Error(`Data format version ${data.version} not implemented.`);
         }
     }
 
@@ -69,12 +75,16 @@ const annotationStorageConversion = (function() {
      */
     function getAnnotationStorageData() {
         const data = {
-            version: "1.0", // Version of the formatting
+            version: "1.1", // Version of the formatting
             image: tmapp.getImageName(),
-            annotations: []
+            annotations: [],
+            comments: []
         };
         annotationHandler.forEachAnnotation(annotation => {
             data.annotations.push(annotation)
+        });
+        metadataHandler.forEachComment(comment => {
+            data.comments.push(comment)
         });
         return data;
     }

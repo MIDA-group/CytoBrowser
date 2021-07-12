@@ -18,8 +18,14 @@ const metadataHandler = (function() {
         // TODO
     }
 
+    function forEachComment(f) {
+        comments.forEach(comment => f(comment));
+        // TODO
+    }
+
     return {
         sendCommentToServer: sendCommentToServer,
-        handleCommentFromServer: handleCommentFromServer
+        handleCommentFromServer: handleCommentFromServer,
+        forEachComment: forEachComment
     };
 })();
