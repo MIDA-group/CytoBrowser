@@ -32,6 +32,9 @@ const collabClient = (function(){
             case "annotationAction":
                 _handleAnnotationAction(msg);
                 break;
+            case "metadataAction":
+                _handleMetadataAction(msg);
+                break;
             case "memberEvent":
                 _handleMemberEvent(msg);
                 break;
@@ -71,6 +74,14 @@ const collabClient = (function(){
                 break;
             default:
                 console.warn(`Unknown annotation action type: ${msg.actionType}`);
+        }
+    }
+
+    function _handleMetadataAction(msg) {
+        switch(msg.actionType) {
+            case "addComment":
+                metadataHandler.handleCommentFromServer(msg.comment);
+                break;
         }
     }
 
@@ -469,6 +480,18 @@ const collabClient = (function(){
     }
 
     /**
+     * Add a comment to the current collaboration.
+     * @param {string} content The text content of the comment.
+     */
+    function addComment(content) {
+        send({
+            type: "metadataAction",
+            actionType: "addComment",
+            content: content
+        });
+    }
+
+    /**
      * Change the name of the local collaboration member.
      * @param {string} newName The new name to be assigned to the member.
      */
@@ -688,6 +711,7 @@ const collabClient = (function(){
         updateAnnotation: updateAnnotation,
         removeAnnotation: removeAnnotation,
         clearAnnotations: clearAnnotations,
+        addComment: addComment,
         changeUsername: changeUsername,
         getDefaultName: getDefaultName,
         changeCollabName: changeCollabName,

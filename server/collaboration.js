@@ -135,6 +135,10 @@ class Collaboration {
                     this.handleAnnotationAction(sender, member, msg);
                 });
                 break;
+            case "metadataAction":
+                this.ongoingLoad.then(() => {
+                    this.handleMetadataAction(sender, member, msg);
+                });
             case "memberEvent":
                 this.handleMemberEvent(sender, member, msg);
                 break;
@@ -187,6 +191,30 @@ class Collaboration {
         }
         this.flagUnsavedChanges();
         this.trySavingState();
+    }
+
+    handleMetadataAction(sender, member, msg) {
+        if (!member.ready) {
+            return;
+        }
+
+        switch (msg.actionType) {
+            case "addComment":
+                const comment = {
+                    id: 3, // TODO
+                    author: member.name,
+                    time: Date.now(),
+                    content: msg.content
+                };
+                this.broadcastMessage({
+                    type: "metadataAction",
+                    actionType: "addComment",
+                    comment: comment
+                }, null, true);
+                break;
+        }
+        this.flagUnsavedChanges();
+        this.trySavingState()
     }
 
     handleMemberEvent(sender, member, msg) {
