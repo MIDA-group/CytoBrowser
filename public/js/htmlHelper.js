@@ -52,6 +52,25 @@ const htmlHelper = (function() {
         return container;
     }
 
+    function _commentAlt(comment, removeFun) {
+        const entry = $(`
+            <li class="list-group-item">
+                <p>${comment.content}</p>
+                <div class="small d-flex justify-content-between">
+                    <span class="text-muted">
+                        Added by ${comment.author}
+                    </span>
+                    <a href="#">
+                        Remove
+                    </a>
+                </div>
+            </li>
+        `);
+        const removeBtn = entry.find("a");
+        removeBtn.click(() => removeFun(comment.id));
+        return entry;
+    }
+
     function _comment(comment, removeFun) {
         const entry = $(`
             <li class="list-group-item">
@@ -67,8 +86,26 @@ const htmlHelper = (function() {
             </li>
         `);
         const removeBtn = entry.find("a");
-        removeBtn.click(removeFun);
+        removeBtn.click(() => removeFun(comment.id));
         return entry;
+    }
+
+    function _commentListAlt(removeFun) {
+        const container = $(`
+            <div class="card bg-secondary mb-2" style="height: 15vh; overflow-y: auto;">
+                <ul class="list-group list-group-flush">
+                </ul>
+            </div>
+        `);
+        const list = container.find("ul");
+        container.updateComments = comments => {
+            list.empty();
+            comments.forEach(comment => {
+                const entry = _commentAlt(comment, removeFun);
+                list.append(entry);
+            });
+        };
+        return container;
     }
 
     function _commentList(commentable, updateFun) {
@@ -96,6 +133,24 @@ const htmlHelper = (function() {
         };
         const list = container.find("ul");
         comments.forEach(container.appendComment);
+        return container;
+    }
+
+    function _commentInputAlt(inputFun) {
+        const container = $(`
+            <div class="input-group">
+                <textarea class="form-control" rows="1" style="resize: none;"></textarea>
+                <div class="input-group-append">
+                    <button type="button" class="btn btn-primary">Add comment</button>
+                </div>
+            </div>
+        `);
+        container.find("button").click(() => {
+            const textarea = container.find("textarea");
+            const body = textarea.val();
+            textarea.val("");
+            inputFun(body);
+        });
         return container;
     }
 
@@ -255,6 +310,26 @@ const htmlHelper = (function() {
     }
 
     /**
+     * Fill a jquery selection with a comment section.
+     * @param {Object} container The selection that should contain the
+     * comment section.
+     * @param {Function} inputFun The function to which the comment text
+     * should be passed when the submit button is pressed.
+     * @param {Function} removeFun The function to which the comment id
+     * should be passed when the remove button is pressed.
+     * @returns {Function} Function that is to be called with a list of
+     * comments whenever the comments are updated.
+     */
+    function buildCommentSectionAlt(container, inputFun, removeFun) {
+        // TODO: Change the other comment section to use this
+        const list = _commentListAlt(removeFun);
+        const updateFun = list.updateComments;
+        const input = _commentInputAlt(inputFun);
+        container.append(list, input);
+        return updateFun;
+    }
+
+    /**
      * Fill a jquery selection with the nodes for editing an annotation.
      * @param {Object} container The selection that should contain the
      * annotation editing menu.
@@ -330,6 +405,7 @@ const htmlHelper = (function() {
 
     return {
         buildCommentSection: buildCommentSection,
+        buildCommentSectionAlt: buildCommentSectionAlt,
         buildAnnotationSettingsMenu: buildAnnotationSettingsMenu,
         buildClassSelectionButtons: buildClassSelectionButtons,
         buildCollaboratorList: buildCollaboratorList,

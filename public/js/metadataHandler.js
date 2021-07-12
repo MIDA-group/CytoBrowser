@@ -3,28 +3,39 @@
  * @namespace metadataHandler
  */
 const metadataHandler = (function() {
-    // TODO: Comments
-    const comments = [];
+    const _comments = [];
+    let _updateFun = null;
 
-    // Get a copy of the comments
-    // Update the comment list
-    // Send comments over collaboration
+    function _updateCommentSection() {
+        if (!_updateFun) {
+            console.warn("Could not handle comment as there is no update function set.");
+        }
+        else {
+            _updateFun(_comments);
+        }
+    }
+
     function sendCommentToServer(commentText) {
         collabClient.addComment(commentText);
     }
 
     function handleCommentFromServer(comment) {
-        console.log(comment);
-        // TODO
+        _comments.push(comment);
+        _updateCommentSection();
+    }
+
+    function setCommentUpdateFun(updateFun) {
+        _updateFun = updateFun;
     }
 
     function forEachComment(f) {
-        comments.forEach(comment => f(comment));
+        _comments.forEach(comment => f(comment));
         // TODO
     }
 
     function clear() {
-        // TODO
+        _comments.length = 0;
+        _updateCommentSection();
     }
 
     return {
