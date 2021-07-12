@@ -215,6 +215,7 @@ const collabClient = (function(){
         _localMember = null;
         _ws = null;
         _collabId  = null;
+        metadataHandler.clear();
         overlayHandler.updateMembers([]);
         tmappUI.clearCollaborators();
         tmapp.clearCollab();
