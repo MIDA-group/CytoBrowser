@@ -55,6 +55,7 @@ const annotationStorageConversion = (function() {
                         label: "Replace existing annotations with loaded ones",
                         click: () => {
                             annotationHandler.clear();
+                            metadataHandler.clear();
                             addAnnotations();
                         }
                     }

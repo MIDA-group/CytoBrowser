@@ -23,9 +23,14 @@ const metadataHandler = (function() {
         // TODO
     }
 
+    function clear() {
+        // TODO
+    }
+
     return {
         sendCommentToServer: sendCommentToServer,
         handleCommentFromServer: handleCommentFromServer,
-        forEachComment: forEachComment
+        forEachComment: forEachComment,
+        clear: clear
     };
 })();
