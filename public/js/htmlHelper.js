@@ -151,6 +151,9 @@ const htmlHelper = (function() {
             textarea.val("");
             inputFun(body);
         });
+        container.keyup(e => e.stopPropagation());
+        container.keydown(e => e.stopPropagation());
+        container.keypress(e => e.stopPropagation()); // TODO: Esc to unfocus
         return container;
     }
 

@@ -41,6 +41,7 @@ const metadataHandler = (function() {
     return {
         sendCommentToServer: sendCommentToServer,
         handleCommentFromServer: handleCommentFromServer,
+        setCommentUpdateFun: setCommentUpdateFun,
         forEachComment: forEachComment,
         clear: clear
     };
