@@ -168,6 +168,9 @@ const collabClient = (function(){
             });
             _joinBatch = null;
         }
+        msg.comments.forEach(comment => {
+            metadataHandler.handleCommentFromServer(comment);
+        });
         _members = msg.members;
         _localMember = _members.find(member => member.id === msg.requesterId);
         _userId= _localMember.id;

@@ -27,6 +27,7 @@ class Collaboration {
         const date = new Date().toISOString().split("T")[0];
         this.members = new Map();
         this.annotations = [];
+        this.comments = [];
         this.id = id;
         this.name = `Unnamed (Created on ${date})`;
         this.nextMemberId = 0;
@@ -206,6 +207,7 @@ class Collaboration {
                     time: Date.now(),
                     content: msg.content
                 };
+                this.comments.push(comment);
                 this.broadcastMessage({
                     type: "metadataAction",
                     actionType: "addComment",
@@ -263,7 +265,8 @@ class Collaboration {
             requesterId: this.members.get(sender).id,
             image: this.image,
             members: Array.from(this.members.values()),
-            annotations: this.annotations
+            annotations: this.annotations,
+            comments: this.comments
         }
     }
 
@@ -297,6 +300,7 @@ class Collaboration {
         }).catch(() => {
             this.log(`Couldn't load preexisting annotations for ${this.image}.`, console.info);
             this.annotations = [];
+            this.comments = [];
         }).finally(() => {
             const nameChangeMsg = {type: "nameChange", name: this.name};
             this.broadcastMessage(nameChangeMsg);
