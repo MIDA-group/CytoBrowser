@@ -19,9 +19,26 @@ const metadataHandler = (function() {
         collabClient.addComment(commentText);
     }
 
+    function sendCommentRemovalToServer(id) {
+        collabClient.removeComment(id);
+    }
+
     function handleCommentFromServer(comment) {
         _comments.push(comment);
         _updateCommentSection();
+    }
+
+    function handleCommentRemovalFromServer(id) {
+        const commentIndex = _comments.findIndex(comment =>
+            comment.id === id
+        );
+        if (commentIndex >= 0) {
+            _comments.splice(commentIndex, 1);
+            _updateCommentSection();
+        }
+        else {
+            throw Error("Server tried to delete a comment that doesn't exist locally.");
+        }
     }
 
     function setCommentUpdateFun(updateFun) {
@@ -40,7 +57,9 @@ const metadataHandler = (function() {
 
     return {
         sendCommentToServer: sendCommentToServer,
+        sendCommentRemovalToServer: sendCommentRemovalToServer,
         handleCommentFromServer: handleCommentFromServer,
+        handleCommentRemovalFromServer: handleCommentRemovalFromServer,
         setCommentUpdateFun: setCommentUpdateFun,
         forEachComment: forEachComment,
         clear: clear

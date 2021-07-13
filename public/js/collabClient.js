@@ -82,6 +82,11 @@ const collabClient = (function(){
             case "addComment":
                 metadataHandler.handleCommentFromServer(msg.comment);
                 break;
+            case "removeComment":
+                metadataHandler.handleCommentRemovalFromServer(msg.id);
+                break;
+            default:
+                console.warn(`Unknown metadata action type: ${msg.actionType}`);
         }
     }
 
@@ -495,6 +500,14 @@ const collabClient = (function(){
         });
     }
 
+    function removeComment(id) {
+        send({
+            type: "metadataAction",
+            actionType: "removeComment",
+            id: id
+        });
+    }
+
     /**
      * Change the name of the local collaboration member.
      * @param {string} newName The new name to be assigned to the member.
@@ -716,6 +729,7 @@ const collabClient = (function(){
         removeAnnotation: removeAnnotation,
         clearAnnotations: clearAnnotations,
         addComment: addComment,
+        removeComment: removeComment,
         changeUsername: changeUsername,
         getDefaultName: getDefaultName,
         changeCollabName: changeCollabName,

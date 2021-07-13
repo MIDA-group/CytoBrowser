@@ -28,6 +28,7 @@ class Collaboration {
         this.members = new Map();
         this.annotations = [];
         this.comments = [];
+        this.nextCommentId = 0;
         this.id = id;
         this.name = `Unnamed (Created on ${date})`;
         this.nextMemberId = 0;
@@ -202,7 +203,7 @@ class Collaboration {
         switch (msg.actionType) {
             case "addComment":
                 const comment = {
-                    id: 3, // TODO
+                    id: nextCommentId++,
                     author: member.name,
                     time: Date.now(),
                     content: msg.content
@@ -214,6 +215,12 @@ class Collaboration {
                     comment: comment
                 }, null, true);
                 break;
+            case "removeComment":
+                const commentIndex = this.comments.findIndex(comment =>
+                    comment.id === msg.id
+                );
+                this.comments.splice(commentIndex, 1);
+                this.broadcastMessage(msg, null, true);
         }
         this.flagUnsavedChanges();
         this.trySavingState()
@@ -299,6 +306,10 @@ class Collaboration {
             }
             if (data.version === "1.1") {
                 this.comments = data.comments;
+                if (this.comments.length > 0) {
+                    const commentIds = this.comments.map(comment => comment.id);
+                    nextCommentId = Math.max(...commentIds) + 1;
+                }
             }
         }).catch(() => {
             this.log(`Couldn't load preexisting annotations for ${this.image}.`, console.info);

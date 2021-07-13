@@ -87,9 +87,7 @@ const tmappUI = (function(){
     function _initGlobalComments() {
         const container = $("#global_comments");
         const inputFun = metadataHandler.sendCommentToServer;
-        const removeFun = id => {
-            console.log("TODO: Delete comment with id ", id);
-        };
+        const removeFun = metadataHandler.sendCommentRemovalToServer;
         const updateFun = htmlHelper.buildCommentSectionAlt(container, inputFun, removeFun);
         metadataHandler.setCommentUpdateFun(updateFun);
     }
