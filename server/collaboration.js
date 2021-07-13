@@ -141,6 +141,7 @@ class Collaboration {
                 this.ongoingLoad.then(() => {
                     this.handleMetadataAction(sender, member, msg);
                 });
+                break;
             case "memberEvent":
                 this.handleMemberEvent(sender, member, msg);
                 break;
@@ -203,7 +204,7 @@ class Collaboration {
         switch (msg.actionType) {
             case "addComment":
                 const comment = {
-                    id: nextCommentId++,
+                    id: this.nextCommentId++,
                     author: member.name,
                     time: Date.now(),
                     content: msg.content
