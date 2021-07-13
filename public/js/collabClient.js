@@ -158,6 +158,7 @@ const collabClient = (function(){
                 _joinBatch.push(annotation);
             });
         }
+        metadataHandler.clear();
         annotationHandler.clear(false);
         msg.annotations.forEach(annotation => {
             annotationHandler.add(annotation, "image", false)
@@ -215,7 +216,6 @@ const collabClient = (function(){
         _localMember = null;
         _ws = null;
         _collabId  = null;
-        metadataHandler.clear();
         overlayHandler.updateMembers([]);
         tmappUI.clearCollaborators();
         tmapp.clearCollab();
