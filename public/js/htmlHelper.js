@@ -149,15 +149,18 @@ const htmlHelper = (function() {
         submitButton.click(() => {
             const textarea = container.find("textarea");
             const body = textarea.val();
-            textarea.val("");
-            inputFun(body);
+	    if (body.length > 0) {
+                textarea.val("");
+                inputFun(body);
+            }
         });
         container.keypress(e => e.stopPropagation());
-        container.keydown(e => e.stopPropagation());
-        container.keyup(e => {
-            e.stopPropagation()
+        container.keyup(e => e.stopPropagation());
+        container.keydown(e => {
+            e.stopPropagation();
             if ((e.code === "Enter" || e.code === "NumpadEnter") && !e.shiftKey) {
-                submitButton.click();
+                e.preventDefault();
+		submitButton.click();
             }
             else if (e.code === "Escape") {
                 $("#main_content").focus();

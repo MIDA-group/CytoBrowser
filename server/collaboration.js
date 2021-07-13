@@ -203,14 +203,15 @@ class Collaboration {
 
         switch (msg.actionType) {
             case "addComment":
-                if (msg.content.length === 0) {
+                const cleanContent = msg.content.trim();
+                if (cleanContent.length === 0) {
                     return;
                 }
                 const comment = {
                     id: this.nextCommentId++,
                     author: member.name,
                     time: Date.now(),
-                    content: msg.content
+                    content: cleanContent
                 };
                 this.comments.push(comment);
                 this.broadcastMessage({
