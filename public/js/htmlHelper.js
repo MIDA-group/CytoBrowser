@@ -104,12 +104,13 @@ const htmlHelper = (function() {
             stuckToBottom = distToBottom < 20;
         });
         container.updateComments = comments => {
+            const shouldStickToBottom = stuckToBottom;
             list.empty();
             comments.forEach(comment => {
                 const entry = _commentAlt(comment, removeFun);
                 list.append(entry);
             });
-            if (stuckToBottom) {
+            if (shouldStickToBottom) {
                 container.scrollTop(list.height() - container.height());
             }
         };
