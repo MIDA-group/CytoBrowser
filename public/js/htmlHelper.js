@@ -98,13 +98,20 @@ const htmlHelper = (function() {
             </div>
         `);
         const list = container.find("ul");
+        let stuckToBottom = true;
+        container.scroll(() => {
+            const distToBottom = list.height() - (container.height() + container.scrollTop());
+            stuckToBottom = distToBottom < 20;
+        });
         container.updateComments = comments => {
             list.empty();
             comments.forEach(comment => {
                 const entry = _commentAlt(comment, removeFun);
                 list.append(entry);
             });
-            container.scrollTop(list.height() - container.height());
+            if (stuckToBottom) {
+                container.scrollTop(list.height() - container.height());
+            }
         };
         return container;
     }
