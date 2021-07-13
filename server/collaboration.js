@@ -309,7 +309,7 @@ class Collaboration {
                 this.comments = data.comments;
                 if (this.comments.length > 0) {
                     const commentIds = this.comments.map(comment => comment.id);
-                    nextCommentId = Math.max(...commentIds) + 1;
+                    this.nextCommentId = Math.max(...commentIds) + 1;
                 }
             }
         }).catch(() => {
