@@ -104,6 +104,7 @@ const htmlHelper = (function() {
                 const entry = _commentAlt(comment, removeFun);
                 list.append(entry);
             });
+            container.scrollTop(list.height() - container.height());
         };
         return container;
     }
