@@ -152,17 +152,17 @@ const htmlHelper = (function() {
             textarea.val("");
             inputFun(body);
         });
-        container.keyup(e => e.stopPropagation());
+        container.keypress(e => e.stopPropagation());
         container.keydown(e => e.stopPropagation());
-        container.keypress(e => {
+        container.keyup(e => {
             e.stopPropagation()
-            if ((e.code === "Enter" || e.code === "NumpadEnter" && !e.shiftKey) {
+            if ((e.code === "Enter" || e.code === "NumpadEnter") && !e.shiftKey) {
                 submitButton.click();
             }
             else if (e.code === "Escape") {
                 $("#main_content").focus();
             }
-        );
+        });
         return container;
     }
 
