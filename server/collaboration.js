@@ -203,6 +203,9 @@ class Collaboration {
 
         switch (msg.actionType) {
             case "addComment":
+                if (msg.content.length === 0) {
+                    return;
+                }
                 const comment = {
                     id: this.nextCommentId++,
                     author: member.name,
