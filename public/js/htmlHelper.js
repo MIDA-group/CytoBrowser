@@ -145,7 +145,8 @@ const htmlHelper = (function() {
                 </div>
             </div>
         `);
-        container.find("button").click(() => {
+        const submitButton = container.find("button");
+        submitButton.click(() => {
             const textarea = container.find("textarea");
             const body = textarea.val();
             textarea.val("");
@@ -153,7 +154,15 @@ const htmlHelper = (function() {
         });
         container.keyup(e => e.stopPropagation());
         container.keydown(e => e.stopPropagation());
-        container.keypress(e => e.stopPropagation()); // TODO: Esc to unfocus
+        container.keypress(e => {
+            e.stopPropagation()
+            if ((e.code === "Enter" || e.code === "NumpadEnter" && !e.shiftKey) {
+                submitButton.click();
+            }
+            else if (e.code === "Escape") {
+                $("#main_content").focus();
+            }
+        );
         return container;
     }
 
