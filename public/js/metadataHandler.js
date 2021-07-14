@@ -15,19 +15,37 @@ const metadataHandler = (function() {
         }
     }
 
+    /**
+     * Submit a comment that should be added to the global comments of
+     * the current session.
+     * @param {string} commentText The text of the comment being submitted.
+     */
     function sendCommentToServer(commentText) {
         collabClient.addComment(commentText);
     }
 
+    /**
+     * Tell the server that a comment should be deleted.
+     * @param {number} id The id of the comment to be removed.
+     */
     function sendCommentRemovalToServer(id) {
         collabClient.removeComment(id);
     }
 
+    /**
+     * Receive a comment from the server and display it in the global
+     * comment section.
+     * @param {Object} comment The new comment to be added.
+     */
     function handleCommentFromServer(comment) {
         _comments.push(comment);
         _updateCommentSection();
     }
 
+    /**
+     * Receive a comment removal instruction from the server.
+     * @param {number} id The id of the comment to be removed.
+     */
     function handleCommentRemovalFromServer(id) {
         const commentIndex = _comments.findIndex(comment =>
             comment.id === id
@@ -41,13 +59,21 @@ const metadataHandler = (function() {
         }
     }
 
+    /**
+     * Set the function that should be called with the comment list
+     * whenever the comments are updated.
+     * @param {Function} updateFun The new update function.
+     */
     function setCommentUpdateFun(updateFun) {
         _updateFun = updateFun;
     }
 
+    /**
+     * Iterate some function over copies of all global comments.
+     * @param {Function} f The function to be called on all comments.
+     */
     function forEachComment(f) {
-        _comments.forEach(comment => f(comment));
-        // TODO
+        _comments.forEach(comment => f(Object.assign({}, comment)));
     }
 
     function clear() {

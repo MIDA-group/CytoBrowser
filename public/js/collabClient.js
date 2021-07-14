@@ -500,6 +500,10 @@ const collabClient = (function(){
         });
     }
 
+    /**
+     * Remove a comment from the current collaboration.
+     * @param {number} id The id of the comment to be removed.
+     */
     function removeComment(id) {
         send({
             type: "metadataAction",
