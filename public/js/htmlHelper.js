@@ -55,7 +55,7 @@ const htmlHelper = (function() {
     function _commentAlt(comment, removeFun) {
         const entry = $(`
             <li class="list-group-item">
-                <p>${comment.content}</p>
+                <p class="text-break">${comment.content}</p>
                 <div class="small d-flex justify-content-between">
                     <span class="text-muted">
                         Added by ${comment.author}
@@ -93,7 +93,7 @@ const htmlHelper = (function() {
     function _commentListAlt(removeFun) {
         const container = $(`
             <div class="card bg-secondary mb-2" style="height: 15vh; overflow-y: auto;">
-                <ul class="list-group list-group-flush">
+                <ul class="list-group list-group-flush position-absolute">
                 </ul>
             </div>
         `);
