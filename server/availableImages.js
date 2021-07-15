@@ -16,6 +16,9 @@ const fs = require("fs");
 // Directory where the data can be found
 let dataDir;
 
+// HttpDirectory where the data can be accessed
+const dataOutDir = "data"; // Must match Cytobrowser served directory
+
 // Time when the data was last altered
 let lastUpdate = 0;
 
@@ -76,6 +79,7 @@ function getThumbnails(dir, image) {
                 return;
             }
             const path = `${dataDir}/${fileDir}/${dir[idx]}`;
+            const outpath = `${dataOutDir}/${fileDir}/${dir[idx]}`;
             fs.readdir(path, (err, dir) => {
                 if (err) {
                     // TODO: Handle errors
@@ -84,7 +88,7 @@ function getThumbnails(dir, image) {
 
                 // Store suitable thumbnails
                 if (dir.length === 1) {
-                    thumbnails.overview = `${path}/${dir[0]}`.slice(1);
+                    thumbnails.overview = `${outpath}/${dir[0]}`;
                     thumbnails.detail = thumbnails.overview;
                 }
                 else if (dir.length > 1) {
@@ -99,7 +103,7 @@ function getThumbnails(dir, image) {
                     const row = rows.sort((a,b) => a - b)[Math.floor(rows.length / 2)];
                     const col = cols.sort((a,b) => a - b)[Math.floor(cols.length / 2)];
                     const choice = dir.find(file => RegExp(`${row}[^0-9]+${col}`).test(file));
-                    thumbnails.detail = `${path}/${choice}`.slice(1);
+                    thumbnails.detail = `${outpath}/${choice}`;
                 }
 
                 // Check if all thumbnails have been found

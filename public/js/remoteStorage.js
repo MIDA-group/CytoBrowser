@@ -46,7 +46,7 @@ const remoteStorage = (function() {
             filename += ".json";
         }
         const req = new XMLHttpRequest();
-        req.open("POST", `${window.location.origin}/api/storage`
+        req.open("POST", `${window.location.api}/storage`
         + `?filename="${filename}"&path="${path}"`
         + `&overwrite=${overwrite ? 1 : 0}`
         + `&reversion=${reversion ? 1 : 0}`);
@@ -94,7 +94,7 @@ const remoteStorage = (function() {
      * @returns {Promise<Object>} A promise that resolves with the loaded object.
      */
     function loadJSON(filepath){
-        return _httpGet(`${window.location.origin}/storage/${filepath}`);
+        return _httpGet(`${window.location.base}/storage/${filepath}`);
     }
 
     /**
@@ -104,7 +104,7 @@ const remoteStorage = (function() {
      */
     function files(){
         const fileSorter = (a, b) => a.type > b.type || a.name > b.name;
-        return _httpGet(`${window.location.origin}/api/storage`)
+        return _httpGet(`${window.location.api}/storage`)
         .then(data => {
             const files = data.files;
             function addBackTraversal(parentContent, entry) {
