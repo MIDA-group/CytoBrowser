@@ -86,7 +86,7 @@ const htmlHelper = (function() {
             </li>
         `);
         const removeBtn = entry.find("a");
-        removeBtn.click(() => removeFun(comment.id));
+        removeBtn.click(removeFun);
         return entry;
     }
 
@@ -367,8 +367,17 @@ const htmlHelper = (function() {
         const id = _annotationValueRow("Id", annotation.id);
         const author = _annotationValueRow("Created by", annotation.author);
         const classes = _annotationMclassOptions(annotation, updateFun);
-        container.append(id, author, classes);
-        buildCommentSection(container, annotation, updateFun);
+        const list = _commentList(annotation, updateFun);
+        const input = _commentInput(body => {
+            const comment = {
+                author: userInfo.getName(),
+                body: body
+            };
+            list.appendComment(comment);
+            annotation.comments.push(comment);
+            updateFun();
+        });
+        container.append(id, author, classes, list, input);
     }
 
     /**
