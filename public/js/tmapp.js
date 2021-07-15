@@ -97,8 +97,8 @@ const tmapp = (function() {
      */
     function _updateBrightnessContrast() {
         //const ctx=_viewer.drawer.context;
-        //Since I'm not 100% sure that Safari supports the above 
-        // https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/filter 
+        //Since I'm not 100% sure that Safari supports the above
+        // https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/filter
         //we use the css-style property instead
         const ctx=document.getElementById("ISS_viewer").querySelector('.openseadragon-canvas').style;
         if (_currState.contrast==0 && _currState.brightness==0) {
@@ -330,6 +330,9 @@ const tmapp = (function() {
             _updateBrightnessContrast();
             tmappUI.clearImageError();
             tmappUI.enableCollabCreation();
+            metadataHandler.updateMetadataValues({
+                resolution: viewer.world.getItemAt(0).getContentSize();
+            });
             callback && callback();
         });
 
@@ -599,7 +602,7 @@ const tmapp = (function() {
         setContrast(_currState.contrast+delta);
     }
 
-    
+
     /**
      * Get the name of the currently opened image.
      * @returns {string} The current image name.
