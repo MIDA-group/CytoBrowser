@@ -4,6 +4,7 @@
  */
 const metadataHandler = (function() {
     const _comments = [];
+    const _metadataValues = {};
     let _updateFun = null;
 
     function _updateCommentSection() {
@@ -13,6 +14,18 @@ const metadataHandler = (function() {
         else {
             _updateFun(_comments);
         }
+    }
+
+    function _metadataValuesAsReadable() {
+        const res = _metadataValues.resolution;
+        const nMarkers = _metadataValues.nMarkers;
+        const nRegions = _metadataValues.nRegions;
+        const readableValues = {
+            resolution: res ? `${res.x} &#215; ${res.y}` : "-",
+            nMarkers: nMarkers || nMarkers === 0 ? nMarkers : "-",
+            nRegions: nRegions || nRegions === 0 ? nRegions : "-"
+        };
+        return readableValues;
     }
 
     /**
@@ -76,9 +89,27 @@ const metadataHandler = (function() {
         _comments.forEach(comment => f(Object.assign({}, comment)));
     }
 
+    /**
+     * Update the metadata values and display them in the user interface.
+     * Values that are not specified will remain as they are.
+     * @param {Object} newValues New values for some or all of the
+     * metadata values.
+     */
+    function updateMetadataValues(newValues) {
+        Object.assign(_metadataValues, newValues);
+        const readableValues = _metadataValuesAsReadable();
+        $("#metadata_resolution").html(readableValues.resolution);
+        $("#metadata_nmarkers").html(readableValues.nMarkers);
+        $("#metadata_nregions").html(readableValues.nRegions);
+    }
+
+    /**
+     * Clear the currently set metadata.
+     **/
     function clear() {
         _comments.length = 0;
         _updateCommentSection();
+        // TODO: Clear metadata values
     }
 
     return {
@@ -88,6 +119,7 @@ const metadataHandler = (function() {
         handleCommentRemovalFromServer: handleCommentRemovalFromServer,
         setCommentUpdateFun: setCommentUpdateFun,
         forEachComment: forEachComment,
+        updateMetadataValues: updateMetadataValues,
         clear: clear
     };
 })();
