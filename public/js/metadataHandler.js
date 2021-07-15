@@ -28,6 +28,13 @@ const metadataHandler = (function() {
         return readableValues;
     }
 
+    function _updateDisplayedMetadataValues() {
+        const readableValues = _metadataValuesAsReadable();
+        $("#metadata_resolution").html(readableValues.resolution);
+        $("#metadata_nmarkers").html(readableValues.nMarkers);
+        $("#metadata_nregions").html(readableValues.nRegions);
+    }
+
     /**
      * Submit a comment that should be added to the global comments of
      * the current session.
@@ -97,10 +104,7 @@ const metadataHandler = (function() {
      */
     function updateMetadataValues(newValues) {
         Object.assign(_metadataValues, newValues);
-        const readableValues = _metadataValuesAsReadable();
-        $("#metadata_resolution").html(readableValues.resolution);
-        $("#metadata_nmarkers").html(readableValues.nMarkers);
-        $("#metadata_nregions").html(readableValues.nRegions);
+        _updateDisplayedMetadataValues();
     }
 
     /**
@@ -108,8 +112,11 @@ const metadataHandler = (function() {
      **/
     function clear() {
         _comments.length = 0;
+        Object.keys(_metadataValues).forEach(key =>
+            _metadataValues[key] = null
+        );
         _updateCommentSection();
-        // TODO: Clear metadata values
+        _updateDisplayedMetadataValues();
     }
 
     return {
