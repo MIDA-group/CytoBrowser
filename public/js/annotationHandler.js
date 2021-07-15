@@ -205,7 +205,7 @@ const annotationHandler = (function (){
         _annotations.push(addedAnnotation);
 
         // Update the annotation count
-        if (addedAnnotation.points === 1) {
+        if (addedAnnotation.points.length === 1) {
             _nMarkers++;
         }
         else {
@@ -287,7 +287,7 @@ const annotationHandler = (function (){
         }
 
         // Remove the annotation from the data
-        const removedAnnotation = annotations.splice(deletedIndex, 1);
+        const removedAnnotation = annotations.splice(deletedIndex, 1)[0];
 
         // Update the annotation count
         if (removedAnnotation.points.length === 1) {
