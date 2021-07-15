@@ -33,13 +33,19 @@ class Collaboration {
         this.nextColor = generateColor();
         this.image = image;
         this.ongoingLoad = new Promise(r => r()); // Dummy promise just in case
+        this.hasUnsavedChanges = false;
         this.loadState(false);
         this.log(`Initializing collaboration.`, console.info);
     }
 
     close() {
-        this.saveState().then(() => {
-            this.log("Closing collaboration.", console.info);
+        this.saveState().then(wasSaved => {
+            if (wasSaved) {
+                this.log("Closing collaboration.", console.info);
+            }
+            else {
+                this.log("Closing collaboration without saving.", console.info);
+            }
             delete collabs[this.id];
         });
     }
@@ -152,7 +158,6 @@ class Collaboration {
             // Members who aren't ready shouldn't do anything with annotations
             return;
         }
-        this.trySavingState();
         switch (msg.actionType) {
             case "add":
                 if (!this.isDuplicateAnnotation(msg.annotation)) {
@@ -180,6 +185,8 @@ class Collaboration {
                 this.log(`Tried to handle unknown annotation action: ${msg.actionType}`, console.warn);
                 this.forwardMessage(sender, msg);
         }
+        this.flagUnsavedChanges();
+        this.trySavingState();
     }
 
     handleMemberEvent(sender, member, msg) {
@@ -214,9 +221,12 @@ class Collaboration {
     }
 
     handleNameChange(sender, member, msg) {
-        this.name = msg.name;
-        this.saveState();
-        this.forwardMessage(sender, msg);
+        if (this.name !== msg.name) {
+            this.name = msg.name;
+            this.flagUnsavedChanges();
+            this.saveState();
+            this.forwardMessage(sender, msg);
+        }
     }
 
     stateSummary(sender) {
@@ -271,23 +281,31 @@ class Collaboration {
     }
 
     saveState() {
-        if (!this.image) {
-            return;
+        if (this.hasUnsavedChanges) {
+            const data = {
+                version: "1.0",
+                name: this.name,
+                image: this.image,
+                annotations: this.annotations
+            };
+            return autosave.saveAnnotations(this.id, this.image, data).then(() => {
+                this.notifyAutosave();
+                this.hasUnsavedChanges = false;
+                return true;
+            });
         }
+        else {
+            return Promise.resolve(false);
+        }
+    }
 
-        const data = {
-            version: "1.0",
-            name: this.name,
-            image: this.image,
-            annotations: this.annotations
-        };
-        return autosave.saveAnnotations(this.id, this.image, data).then(() => {
-            this.notifyAutosave();
-        });
+    flagUnsavedChanges() {
+        this.hasUnsavedChanges = true;
     }
 
     trySavingState() {
         if (!this.autosaveTimeout) {
+            this.saveState();
             this.autosaveTimeout = setTimeout(() => {
                 this.saveState();
                 this.autosaveTimeout = null;
