@@ -55,10 +55,10 @@ const htmlHelper = (function() {
     function _commentAlt(comment, removeFun) {
         const entry = $(`
             <li class="list-group-item">
-                <p class="text-break">${comment.content}</p>
+                <p class="text-break comment_body">${comment.content}</p>
                 <div class="small d-flex justify-content-between">
                     <span class="text-muted">
-                        Added by ${comment.author}
+                        Added by <span class="comment_author"></span>
                     </span>
                     <a href="#">
                         Remove
@@ -66,6 +66,8 @@ const htmlHelper = (function() {
                 </div>
             </li>
         `);
+        entry.find(".comment_body").text(comment.content);
+        entry.find(".comment_author").text(comment.author);
         const removeBtn = entry.find("a");
         removeBtn.click(() => removeFun(comment.id));
         return entry;
@@ -74,10 +76,10 @@ const htmlHelper = (function() {
     function _comment(comment, removeFun) {
         const entry = $(`
             <li class="list-group-item">
-                <p>${comment.body}</p>
+                <p class="text-break comment_body">${comment.body}</p>
                 <div class="small d-flex justify-content-between">
                     <span class="text-muted">
-                        Added by ${comment.author}
+                        Added by <span class="comment_author"></span>
                     </span>
                     <a href="#">
                         Remove
@@ -85,6 +87,8 @@ const htmlHelper = (function() {
                 </div>
             </li>
         `);
+        entry.find(".comment_body").text(comment.body);
+        entry.find(".comment_author").text(comment.author);
         const removeBtn = entry.find("a");
         removeBtn.click(removeFun);
         return entry;
