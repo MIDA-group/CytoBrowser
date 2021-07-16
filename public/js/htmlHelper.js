@@ -93,7 +93,7 @@ const htmlHelper = (function() {
     function _commentListAlt(removeFun) {
         const container = $(`
             <div class="card bg-secondary mb-2" style="height: 15vh; overflow-y: auto;">
-                <ul class="list-group list-group-flush position-absolute">
+                <ul class="list-group list-group-flush position-absolute w-100">
                 </ul>
             </div>
         `);
@@ -192,6 +192,18 @@ const htmlHelper = (function() {
             const body = textarea.val();
             textarea.val("");
             inputFun(body);
+        });
+        container.keypress(e => e.stopPropagation());
+        container.keyup(e => e.stopPropagation());
+        container.keydown(e => {
+            e.stopPropagation();
+            if ((e.code === "Enter" || e.code === "NumpadEnter") && !e.shiftKey) {
+                e.preventDefault();
+		submitButton.click();
+            }
+            else if (e.code === "Escape") {
+                container.parent().focus();
+            }
         });
         return container;
     }
