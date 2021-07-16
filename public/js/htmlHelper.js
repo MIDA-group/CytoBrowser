@@ -55,7 +55,7 @@ const htmlHelper = (function() {
     function _commentAlt(comment, removeFun) {
         const entry = $(`
             <li class="list-group-item">
-                <p class="text-break comment_body">${comment.content}</p>
+                <p class="text-break comment_body" style="white-space: pre-line"></p>
                 <div class="small d-flex justify-content-between">
                     <span class="text-muted">
                         Added by <span class="comment_author"></span>
@@ -76,7 +76,7 @@ const htmlHelper = (function() {
     function _comment(comment, removeFun) {
         const entry = $(`
             <li class="list-group-item">
-                <p class="text-break comment_body">${comment.body}</p>
+                <p class="text-break comment_body" style="white-space: pre-line"></p>
                 <div class="small d-flex justify-content-between">
                     <span class="text-muted">
                         Added by <span class="comment_author"></span>
