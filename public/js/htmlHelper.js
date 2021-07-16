@@ -187,7 +187,8 @@ const htmlHelper = (function() {
                 </div>
             </div>
         `);
-        container.find("button").click(() => {
+	 const submitButton = container.find("button");
+        submitButton.click(() => {
             const textarea = container.find("textarea");
             const body = textarea.val();
             textarea.val("");
@@ -202,7 +203,7 @@ const htmlHelper = (function() {
 		submitButton.click();
             }
             else if (e.code === "Escape") {
-                container.parent().focus();
+                container.parent().parent().focus();
             }
         });
         return container;
