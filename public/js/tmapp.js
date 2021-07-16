@@ -331,7 +331,7 @@ const tmapp = (function() {
             tmappUI.clearImageError();
             tmappUI.enableCollabCreation();
             metadataHandler.updateMetadataValues({
-                resolution: viewer.world.getItemAt(0).getContentSize();
+                resolution: viewer.world.getItemAt(0).getContentSize()
             });
             callback && callback();
         });

@@ -112,11 +112,8 @@ const metadataHandler = (function() {
      **/
     function clear() {
         _comments.length = 0;
-        Object.keys(_metadataValues).forEach(key =>
-            _metadataValues[key] = null
-        );
         _updateCommentSection();
-        _updateDisplayedMetadataValues();
+        // TODO: Metadata values should be cleared separately
     }
 
     return {
