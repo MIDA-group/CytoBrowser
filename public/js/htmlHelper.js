@@ -55,10 +55,10 @@ const htmlHelper = (function() {
     function _commentAlt(comment, removeFun) {
         const entry = $(`
             <li class="list-group-item">
-                <p class="text-break">${comment.content}</p>
+                <p class="text-break comment_body" style="white-space: pre-line"></p>
                 <div class="small d-flex justify-content-between">
                     <span class="text-muted">
-                        Added by ${comment.author}
+                        Added by <span class="comment_author"></span>
                     </span>
                     <a href="#">
                         Remove
@@ -66,6 +66,8 @@ const htmlHelper = (function() {
                 </div>
             </li>
         `);
+        entry.find(".comment_body").text(comment.content);
+        entry.find(".comment_author").text(comment.author);
         const removeBtn = entry.find("a");
         removeBtn.click(() => removeFun(comment.id));
         return entry;
@@ -74,10 +76,10 @@ const htmlHelper = (function() {
     function _comment(comment, removeFun) {
         const entry = $(`
             <li class="list-group-item">
-                <p>${comment.body}</p>
+                <p class="text-break comment_body" style="white-space: pre-line"></p>
                 <div class="small d-flex justify-content-between">
                     <span class="text-muted">
-                        Added by ${comment.author}
+                        Added by <span class="comment_author"></span>
                     </span>
                     <a href="#">
                         Remove
@@ -85,6 +87,8 @@ const htmlHelper = (function() {
                 </div>
             </li>
         `);
+        entry.find(".comment_body").text(comment.body);
+        entry.find(".comment_author").text(comment.author);
         const removeBtn = entry.find("a");
         removeBtn.click(removeFun);
         return entry;
@@ -93,7 +97,7 @@ const htmlHelper = (function() {
     function _commentListAlt(removeFun) {
         const container = $(`
             <div class="card bg-secondary mb-2" style="height: 15vh; overflow-y: auto;">
-                <ul class="list-group list-group-flush position-absolute">
+                <ul class="list-group list-group-flush position-absolute w-100">
                 </ul>
             </div>
         `);
@@ -187,11 +191,24 @@ const htmlHelper = (function() {
                 </div>
             </div>
         `);
-        container.find("button").click(() => {
+	 const submitButton = container.find("button");
+        submitButton.click(() => {
             const textarea = container.find("textarea");
             const body = textarea.val();
             textarea.val("");
             inputFun(body);
+        });
+        container.keypress(e => e.stopPropagation());
+        container.keyup(e => e.stopPropagation());
+        container.keydown(e => {
+            e.stopPropagation();
+            if ((e.code === "Enter" || e.code === "NumpadEnter") && !e.shiftKey) {
+                e.preventDefault();
+		submitButton.click();
+            }
+            else if (e.code === "Escape") {
+                container.parent().parent().focus();
+            }
         });
         return container;
     }
