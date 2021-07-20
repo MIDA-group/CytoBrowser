@@ -6,6 +6,7 @@
   "dependencies": {
     "express": "^4.17.1",
     "express-ws": "^4.0.0",
+    "fast-xml-parser": "^3.19.0",
     "minimist": "^1.2.5",
     "sanitize-filename": "^1.6.3"
   },
