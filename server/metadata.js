@@ -67,7 +67,8 @@ function main() {
     });
 }
 
-module.exports = function() {
+module.exports = function(dir) {
+    jsonDir = dir;
     return {
         getMetadataForImage: getMetadataForImage
     }
