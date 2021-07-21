@@ -4,8 +4,8 @@
  * different users of the CytoBrowser.
  */
 
-// Autosave module, initialized in export
-let autosave;
+// Modules initialized in export
+let autosave, metadata;
 
 // Object for storing all ongoing collaborations
 const collabs = {};
@@ -280,7 +280,8 @@ class Collaboration {
             image: this.image,
             members: Array.from(this.members.values()),
             annotations: this.annotations,
-            comments: this.comments
+            comments: this.comments,
+            metadata: metadata.getMetadataForImage(this.image)
         }
     }
 
@@ -476,8 +477,9 @@ function getAvailable(image) {
     return autosave.getSavedIds(image);
 }
 
-module.exports = function(dir) {
-    autosave = require("./autosave")(dir);
+module.exports = function(autosaveDir, metadataJsonDir) {
+    autosave = require("./autosave")(autosaveDir);
+    metadata = require("./metadata")(metadataJsonDir);
     return {
         getId: getId,
         joinCollab: joinCollab,
