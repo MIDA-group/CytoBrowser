@@ -692,8 +692,9 @@ const tmapp = (function() {
         if (_viewer) {
             _viewer.scalebar({
                 pixelsPerMeter: pixelsPerMeter,
-                type: "microscopy",
-                location: 3
+                type: OpenSeadragon.ScalebarType.MICROSCOPY,
+                location: OpenSeadragon.ScalebarLocation.BOTTOM_RIGHT,
+                backgroundColor: "rgba(255,255,255,0.5)"
             });
         }
         else {
