@@ -33,8 +33,8 @@ const metadataHandler = (function() {
         };
         // TODO: Long line
         const size = {
-            x: (_metadataValues.PhysicalSizeX && res.x * _metadataValues.PhysicalSizeX).toPrecision(4) + _metadataValues.PhysicalSizeXUnit,
-            y: (_metadataValues.PhysicalSizeY && res.y * _metadataValues.PhysicalSizeY).toPrecision(4) + _metadataValues.PhysicalSizeYUnit
+            x: Number((_metadataValues.PhysicalSizeX && res.x * _metadataValues.PhysicalSizeX).toPrecision(4)) + _metadataValues.PhysicalSizeXUnit,
+            y: Number((_metadataValues.PhysicalSizeY && res.y * _metadataValues.PhysicalSizeY).toPrecision(4)) + _metadataValues.PhysicalSizeYUnit
         };
         const date = _metadataValues.AcquisitionDate;
         const microscope = _metadataValues.MicroscopeModel;
