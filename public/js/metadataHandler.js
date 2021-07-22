@@ -5,6 +5,16 @@
 const metadataHandler = (function() {
     const _comments = [];
     const _metadataValues = {};
+    // Can come up with a more thorough way of doing this if needed
+    const _units = {
+        "nm": 10e9,
+        "µm": 10e-6,
+        "mm": 10e-3,
+        "m": 10e0,
+        "km": 10e3,
+        "Mm": 10e6,
+        "Gm": 10e9
+    };
     let _updateFun = null;
 
     function _updateCommentSection() {
@@ -58,6 +68,16 @@ const metadataHandler = (function() {
         $("#metadata_nchannels").html(readableValues.nChannels);
         $("#metadata_nmarkers").html(readableValues.nMarkers);
         $("#metadata_nregions").html(readableValues.nRegions);
+    }
+
+    function _updateScalebar() {
+        if (_metadataValues.PhysicalSizeX && _metadataValues.PhislcalSizeXUnit) {
+            const size = _metadataValues.PhysicalSizeX;
+            const scale = _units[_metadataValues.PhislcalSizeXUnit];
+            const metersPerPixel = size * scale;
+            const pixelsPerMeter = 1 / metersPerPixel;
+            tmapp.updateScalebar(pixelsPerMeter);
+        }
     }
 
     /**
@@ -130,6 +150,7 @@ const metadataHandler = (function() {
     function updateMetadataValues(newValues) {
         Object.assign(_metadataValues, newValues);
         _updateDisplayedMetadataValues();
+        _updateScalebar();
     }
 
     /**

@@ -683,6 +683,23 @@ const tmapp = (function() {
         _viewer.innerTracker.keyHandler(event);
     }
 
+    /**
+     * Update the scale of the scalebar.
+     * @param {number} pixelsPerMeter The number of pixels in one meter.
+     */
+    function updateScalebar(pixelsPerMeter) {
+        // Uses: https://github.com/usnistgov/OpenSeadragonScalebar
+        if (_viewer) {
+            _viewer.scalebar({
+                pixelsPerMeter: pixelsPerMeter,
+                type: "microscopy"
+            });
+        }
+        else {
+            throw new Error ("Tried to adjust scalebar without a viewer.");
+        }
+    }
+
     return {
         init: init,
         openImage: openImage,
@@ -705,6 +722,8 @@ const tmapp = (function() {
         disableControls: disableControls,
 
         keyHandler: keyHandler,
-        keyDownHandler: keyDownHandler
+        keyDownHandler: keyDownHandler,
+
+        updateScalebar: updateScalebar
     };
 })();
