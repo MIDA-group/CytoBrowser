@@ -17,11 +17,29 @@ const metadataHandler = (function() {
     }
 
     function _metadataValuesAsReadable() {
-        const res = _metadataValues.resolution;
+        const date = _metadataValues.AcquisitionDate;
+        const microscope = _metadataValues.MicroscopeModel;
+        const magnification = _metadataValues.NominalMagnification;
+        const size = {
+            x: _metadataValues.PhysicalSizeX + _metadataValues.PhysicalSizeXUnit,
+            y: _metadataValues.PhysicalSizeY + _metadataValues.PhysicalSizeYUnit
+        };
+        const sigbits = _metadataValues.SignificantBits;
+        const nChannels = _metadataValues.SizeC;
+        const res = {
+            x: _metadataValues.SizeX,
+            y: _metadataValues.SizeY,
+        };
         const nMarkers = _metadataValues.nMarkers;
         const nRegions = _metadataValues.nRegions;
         const readableValues = {
             resolution: res ? `${res.x} &#215; ${res.y}` : "-",
+            size: size ? `${size.x} &#215; ${size.y}` : "-",
+            date: date ? date : "-",
+            microscope: microscope ? microscope : "-",
+            magnification: magnification ? magnification : "-",
+            sigbits: `${sigbits} bits` : "-",
+            nChannels: nChannels : "-",
             nMarkers: nMarkers || nMarkers === 0 ? nMarkers : "-",
             nRegions: nRegions || nRegions === 0 ? nRegions : "-"
         };
@@ -31,6 +49,12 @@ const metadataHandler = (function() {
     function _updateDisplayedMetadataValues() {
         const readableValues = _metadataValuesAsReadable();
         $("#metadata_resolution").html(readableValues.resolution);
+        $("#metadata_size").html(readableValues.size);
+        $("#metadata_date").html(readableValues.date);
+        $("#metadata_microscope").html(readableValues.microscope);
+        $("#metadata_magnification").html(readableValues.magnification);
+        $("#metadata_sigbits").html(readableValues.sigbits);
+        $("#metadata_nchannels").html(readableValues.nChannels);
         $("#metadata_nmarkers").html(readableValues.nMarkers);
         $("#metadata_nregions").html(readableValues.nRegions);
     }
