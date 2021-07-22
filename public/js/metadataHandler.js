@@ -21,8 +21,8 @@ const metadataHandler = (function() {
         const microscope = _metadataValues.MicroscopeModel;
         const magnification = _metadataValues.NominalMagnification;
         const size = {
-            x: _metadataValues.PhysicalSizeX + _metadataValues.PhysicalSizeXUnit,
-            y: _metadataValues.PhysicalSizeY + _metadataValues.PhysicalSizeYUnit
+            x: _metadataValues.PhysicalSizeX.toPrecision(4) + _metadataValues.PhysicalSizeXUnit,
+            y: _metadataValues.PhysicalSizeY.toPrecision(4) + _metadataValues.PhysicalSizeYUnit
         };
         const sigbits = _metadataValues.SignificantBits;
         const nChannels = _metadataValues.SizeC;
@@ -37,9 +37,9 @@ const metadataHandler = (function() {
             size: size ? `${size.x} &#215; ${size.y}` : "-",
             date: date ? date : "-",
             microscope: microscope ? microscope : "-",
-            magnification: magnification ? magnification : "-",
-            sigbits: `${sigbits} bits` : "-",
-            nChannels: nChannels : "-",
+            magnification: magnification ? `${magnification}x` : "-",
+            sigbits: sigbits ? `${sigbits} bits` : "-",
+            nChannels: nChannels ? nChannels : "-",
             nMarkers: nMarkers || nMarkers === 0 ? nMarkers : "-",
             nRegions: nRegions || nRegions === 0 ? nRegions : "-"
         };
