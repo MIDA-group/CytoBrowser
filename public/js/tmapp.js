@@ -329,10 +329,6 @@ const tmapp = (function() {
             _updateRotation();
             _updateBrightnessContrast();
             tmappUI.clearImageError();
-            tmappUI.enableCollabCreation();
-            metadataHandler.updateMetadataValues({
-                resolution: viewer.world.getItemAt(0).getContentSize()
-            });
             callback && callback();
         });
 
