@@ -7,13 +7,13 @@ const metadataHandler = (function() {
     const _metadataValues = {};
     // Can come up with a more thorough way of doing this if needed
     const _units = {
-        "nm": 10e9,
-        "µm": 10e-6,
-        "mm": 10e-3,
-        "m": 10e0,
-        "km": 10e3,
-        "Mm": 10e6,
-        "Gm": 10e9
+        "nm": 1e-9,
+        "µm": 1e-6,
+        "mm": 1e-3,
+        "m": 1,
+        "km": 1e3,
+        "Mm": 1e6,
+        "Gm": 1e9
     };
     let _updateFun = null;
 
@@ -71,9 +71,9 @@ const metadataHandler = (function() {
     }
 
     function _updateScalebar() {
-        if (_metadataValues.PhysicalSizeX && _metadataValues.PhislcalSizeXUnit) {
+        if (_metadataValues.PhysicalSizeX && _metadataValues.PhysicalSizeXUnit) {
             const size = _metadataValues.PhysicalSizeX;
-            const scale = _units[_metadataValues.PhislcalSizeXUnit];
+            const scale = _units[_metadataValues.PhysicalSizeXUnit];
             const metersPerPixel = size * scale;
             const pixelsPerMeter = 1 / metersPerPixel;
             tmapp.updateScalebar(pixelsPerMeter);

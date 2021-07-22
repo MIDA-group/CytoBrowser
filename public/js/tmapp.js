@@ -692,7 +692,8 @@ const tmapp = (function() {
         if (_viewer) {
             _viewer.scalebar({
                 pixelsPerMeter: pixelsPerMeter,
-                type: "microscopy"
+                type: "microscopy",
+                location: 3
             });
         }
         else {
