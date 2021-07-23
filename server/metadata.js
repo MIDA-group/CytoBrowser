@@ -1,3 +1,12 @@
+/**
+ * @module metadata
+ * @desc Module for handling metadata on the server. This module both
+ * contains logic for the server's handling of metadata and for preparation
+ * of abridged JSON-formatted metadata from OME-XML files. This second
+ * functionality can be used by calling the module itself as the point
+ * of entry.
+ */
+
 const fs = require("fs");
 const parser = require("fast-xml-parser");
 
@@ -53,18 +62,25 @@ function getMetadataForImage(imageName) {
 }
 
 function main() {
-    const inputDir = process.argv[2];
-    const outputDir = process.argv[3];
-    const inputFilenames = fs.readdirSync(inputDir).filter(fn => fn.endsWith(".ome.xml"));
-    inputFilenames.forEach(fn => {
-        const path = `${inputDir}/${fn}`;
-        const outputFilename = `${fn.slice(0, -8)}.json`;
-        const outputPath = `${outputDir}/${outputFilename}`;
-        const xmlData = fs.readFileSync(path, "utf8");
-        const data = xmlToObject(xmlData);
-        const importantData = extractImportantMetadata(data);
-        fs.writeFileSync(outputPath, JSON.stringify(importantData, null, 4));
-    });
+    const argv = require("minimist")(process.argv.slice(2));
+    if (argv.h || argv.help || ) {
+        console.info("node metadata.js omexml-dir json-dir");
+        return;
+    }
+    else {
+        const inputDir = argv._[0];
+        const outputDir = argv._[1];
+        const inputFilenames = fs.readdirSync(inputDir).filter(fn => fn.endsWith(".ome.xml"));
+        inputFilenames.forEach(fn => {
+            const path = `${inputDir}/${fn}`;
+            const outputFilename = `${fn.slice(0, -8)}.json`;
+            const outputPath = `${outputDir}/${outputFilename}`;
+            const xmlData = fs.readFileSync(path, "utf8");
+            const data = xmlToObject(xmlData);
+            const importantData = extractImportantMetadata(data);
+            fs.writeFileSync(outputPath, JSON.stringify(importantData, null, 4));
+        });
+    }
 }
 
 module.exports = function(dir) {
