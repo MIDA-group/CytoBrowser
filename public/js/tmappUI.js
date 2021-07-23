@@ -85,10 +85,6 @@ const tmappUI = (function(){
     }
 
     function _initGlobalComments() {
-        // Make sure you can copy/paste things in the menu
-        $("#comments_collapse").keyup(e => e.ctrlKey && e.stopPropagation());
-        $("#comments_collapse").keydown(e => e.ctrlKey && e.stopPropagation());
-        $("#comments_collapse").keypress(e => e.ctrlKey && e.stopPropagation());
         const container = $("#global_comments");
         const inputFun = metadataHandler.sendCommentToServer;
         const removeFun = metadataHandler.sendCommentRemovalToServer;
@@ -198,6 +194,11 @@ const tmappUI = (function(){
         //1,2,... for class selection
         //z,x for focus up down
         $("#main_content").keydown(function(){
+            // Prevent the keyboard shortcuts from being used when the ctrl key is down
+            // This is just a simple way of letting people copy and paste, could be refined
+            if (event.ctrlKey) {
+                return;
+            }
             let caught=true; //Assume we use the key (setting to false in 'default')
             switch(event.keyCode) {
                 case 27: // esc
