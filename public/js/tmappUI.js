@@ -85,6 +85,10 @@ const tmappUI = (function(){
     }
 
     function _initGlobalComments() {
+        // Make sure you can copy/paste things in the menu
+        $("#comments_collapse").keyup(e => e.ctrlKey && e.stopPropagation());
+        $("#comments_collapse").keydown(e => e.ctrlKey && e.stopPropagation());
+        $("#comments_collapse").keypress(e => e.ctrlKey && e.stopPropagation());
         const container = $("#global_comments");
         const inputFun = metadataHandler.sendCommentToServer;
         const removeFun = metadataHandler.sendCommentRemovalToServer;
