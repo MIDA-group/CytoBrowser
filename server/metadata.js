@@ -63,8 +63,8 @@ function getMetadataForImage(imageName) {
 
 function main() {
     const argv = require("minimist")(process.argv.slice(2));
-    if (argv.h || argv.help || ) {
-        console.info("node metadata.js omexml-dir json-dir");
+    if (argv.h || argv.help || argv._.length !== 2) {
+        console.info("Usage: node metadata.js omexml-dir json-dir");
         return;
     }
     else {
