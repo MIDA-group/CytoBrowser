@@ -82,7 +82,7 @@
                         <button type="button" class="btn btn-block btn-primary collapsed" data-toggle="collapse" data-target="#visualization_collapse">
                             <div class="d-flex flex-row w-100"><div class="w-100">Visualization adjustments</div> <i class="collapse_rotate fa fa-chevron-down pull-right pt-1"></i></div>
                         </button>
-                        <div class="m-2">
+                        <div class="m-0 my-2">
                             <div class="collapse card" id="visualization_collapse">
                                 <div class="card-body">
                                     <h6 class="card-subtitle text-muted">Brightness</h6>
@@ -95,6 +95,18 @@
                                         -1 <input id="contrast_slider" type="text" data-slider-min="-1" data-slider-max="1" data-slider-step="0.1" data-slider-value="0"/> &nbsp;1
                                         <input id="contrast_reset" class="btn btn-secondary btn-sm p-0 px-1 m-0 mb-1 ml-3" type="reset" value="Reset">
                                     </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Collapse for global comments -->
+                        <button type="button" class="btn btn-block btn-primary collapsed" data-toggle="collapse" data-target="#comments_collapse">
+                            <div class="d-flex flex-row w-100"><div class="w-100">Comments</div> <i class="collapse_rotate fa fa-chevron-down pull-right pt-1"></i></div>
+                        </button>
+                        <div class="m-0 my-2">
+                            <div class="collapse card" id="comments_collapse">
+                                <div class="card-body p-2" id="global_comments">
+                                    <!-- Comments -->
                                 </div>
                             </div>
                         </div>
@@ -513,6 +525,7 @@
 <script src="classConfig.js"></script>
 <script src="js/utils/classUtils.js"></script>
 <script src="js/collabClient.js"></script>
+<script src="js/metadataHandler.js"></script>
 <script src="js/annotationHandler.js"></script>
 <script src="js/overlayHandler.js"></script>
 <script src="js/fileBrowserUI.js"></script>

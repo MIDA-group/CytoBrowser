@@ -27,6 +27,8 @@ class Collaboration {
         const date = new Date().toISOString().split("T")[0];
         this.members = new Map();
         this.annotations = [];
+        this.comments = [];
+        this.nextCommentId = 0;
         this.id = id;
         this.name = `Unnamed (Created on ${date})`;
         this.nextMemberId = 0;
@@ -135,6 +137,11 @@ class Collaboration {
                     this.handleAnnotationAction(sender, member, msg);
                 });
                 break;
+            case "metadataAction":
+                this.ongoingLoad.then(() => {
+                    this.handleMetadataAction(sender, member, msg);
+                });
+                break;
             case "memberEvent":
                 this.handleMemberEvent(sender, member, msg);
                 break;
@@ -189,6 +196,41 @@ class Collaboration {
         this.trySavingState();
     }
 
+    handleMetadataAction(sender, member, msg) {
+        if (!member.ready) {
+            return;
+        }
+
+        switch (msg.actionType) {
+            case "addComment":
+                const cleanContent = msg.content.trim();
+                if (cleanContent.length === 0) {
+                    return;
+                }
+                const comment = {
+                    id: this.nextCommentId++,
+                    author: member.name,
+                    time: Date.now(),
+                    content: cleanContent
+                };
+                this.comments.push(comment);
+                this.broadcastMessage({
+                    type: "metadataAction",
+                    actionType: "addComment",
+                    comment: comment
+                }, null, true);
+                break;
+            case "removeComment":
+                const commentIndex = this.comments.findIndex(comment =>
+                    comment.id === msg.id
+                );
+                this.comments.splice(commentIndex, 1);
+                this.broadcastMessage(msg, null, true);
+        }
+        this.flagUnsavedChanges();
+        this.trySavingState()
+    }
+
     handleMemberEvent(sender, member, msg) {
         this.forwardMessage(sender, msg);
         switch (msg.eventType) {
@@ -237,7 +279,8 @@ class Collaboration {
             requesterId: this.members.get(sender).id,
             image: this.image,
             members: Array.from(this.members.values()),
-            annotations: this.annotations
+            annotations: this.annotations,
+            comments: this.comments
         }
     }
 
@@ -262,15 +305,23 @@ class Collaboration {
         this.ongoingLoad = this.ongoingLoad.then(() => {
             return autosave.loadAnnotations(this.id, this.image);
         }).then(data => {
-            if (data.version === "1.0") {
+            if (data.version === "1.0" || data.version === "1.1") {
                 if (data.name) {
                     this.name = data.name;
                 }
                 this.annotations = data.annotations;
             }
+            if (data.version === "1.1") {
+                this.comments = data.comments;
+                if (this.comments.length > 0) {
+                    const commentIds = this.comments.map(comment => comment.id);
+                    this.nextCommentId = Math.max(...commentIds) + 1;
+                }
+            }
         }).catch(() => {
             this.log(`Couldn't load preexisting annotations for ${this.image}.`, console.info);
             this.annotations = [];
+            this.comments = [];
         }).finally(() => {
             const nameChangeMsg = {type: "nameChange", name: this.name};
             this.broadcastMessage(nameChangeMsg);
@@ -283,10 +334,11 @@ class Collaboration {
     saveState() {
         if (this.hasUnsavedChanges) {
             const data = {
-                version: "1.0",
+                version: "1.1",
                 name: this.name,
                 image: this.image,
-                annotations: this.annotations
+                annotations: this.annotations,
+                comments: this.comments
             };
             return autosave.saveAnnotations(this.id, this.image, data).then(() => {
                 this.notifyAutosave();

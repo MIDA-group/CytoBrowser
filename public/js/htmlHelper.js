@@ -52,13 +52,13 @@ const htmlHelper = (function() {
         return container;
     }
 
-    function _annotationComment(comment, removeFun) {
+    function _commentAlt(comment, removeFun) {
         const entry = $(`
             <li class="list-group-item">
-                <p>${comment.body}</p>
+                <p class="text-break comment_body" style="white-space: pre-line"></p>
                 <div class="small d-flex justify-content-between">
                     <span class="text-muted">
-                        Added by ${comment.author}
+                        Added by <span class="comment_author"></span>
                     </span>
                     <a href="#">
                         Remove
@@ -66,15 +66,65 @@ const htmlHelper = (function() {
                 </div>
             </li>
         `);
+        entry.find(".comment_body").text(comment.content);
+        entry.find(".comment_author").text(comment.author);
+        const removeBtn = entry.find("a");
+        removeBtn.click(() => removeFun(comment.id));
+        return entry;
+    }
+
+    function _comment(comment, removeFun) {
+        const entry = $(`
+            <li class="list-group-item">
+                <p class="text-break comment_body" style="white-space: pre-line"></p>
+                <div class="small d-flex justify-content-between">
+                    <span class="text-muted">
+                        Added by <span class="comment_author"></span>
+                    </span>
+                    <a href="#">
+                        Remove
+                    </a>
+                </div>
+            </li>
+        `);
+        entry.find(".comment_body").text(comment.body);
+        entry.find(".comment_author").text(comment.author);
         const removeBtn = entry.find("a");
         removeBtn.click(removeFun);
         return entry;
     }
 
-    function _annotationCommentList(annotation, updateFun) {
-        if (!annotation.comments)
-            annotation.comments = [];
-        const comments = annotation.comments;
+    function _commentListAlt(removeFun) {
+        const container = $(`
+            <div class="card bg-secondary mb-2" style="height: 15vh; overflow-y: auto;">
+                <ul class="list-group list-group-flush position-absolute w-100">
+                </ul>
+            </div>
+        `);
+        const list = container.find("ul");
+        let stuckToBottom = true;
+        container.scroll(() => {
+            const distToBottom = list.height() - (container.height() + container.scrollTop());
+            stuckToBottom = distToBottom < 20;
+        });
+        container.updateComments = comments => {
+            const shouldStickToBottom = stuckToBottom;
+            list.empty();
+            comments.forEach(comment => {
+                const entry = _commentAlt(comment, removeFun);
+                list.append(entry);
+            });
+            if (shouldStickToBottom) {
+                container.scrollTop(list.height() - container.height());
+            }
+        };
+        return container;
+    }
+
+    function _commentList(commentable, updateFun) {
+        if (!commentable.comments)
+            commentable.comments = [];
+        const comments = commentable.comments;
 
         const container = $(`
             <div class="card bg-secondary mb-2" style="height: 15vh; overflow-y: auto;">
@@ -82,8 +132,8 @@ const htmlHelper = (function() {
                 </ul>
             </div>
         `);
-        container.appendAnnotationComment = comment => {
-            const entry = _annotationComment(comment, event => {
+        container.appendComment = comment => {
+            const entry = _comment(comment, event => {
                 event.preventDefault();
                 const index = comments.indexOf(comment);
                 comments.splice(index, 1);
@@ -95,11 +145,11 @@ const htmlHelper = (function() {
             updateFun();
         };
         const list = container.find("ul");
-        comments.forEach(container.appendAnnotationComment);
+        comments.forEach(container.appendComment);
         return container;
     }
 
-    function _annotationCommentInput(inputFun) {
+    function _commentInputAlt(inputFun) {
         const container = $(`
             <div class="input-group">
                 <textarea class="form-control" rows="1" style="resize: none;"></textarea>
@@ -108,11 +158,57 @@ const htmlHelper = (function() {
                 </div>
             </div>
         `);
-        container.find("button").click(() => {
+        const submitButton = container.find("button");
+        submitButton.click(() => {
+            const textarea = container.find("textarea");
+            const body = textarea.val();
+	    if (body.length > 0) {
+                textarea.val("");
+                inputFun(body);
+            }
+        });
+        container.keypress(e => e.stopPropagation());
+        container.keyup(e => e.stopPropagation());
+        container.keydown(e => {
+            e.stopPropagation();
+            if ((e.code === "Enter" || e.code === "NumpadEnter") && !e.shiftKey) {
+                e.preventDefault();
+		submitButton.click();
+            }
+            else if (e.code === "Escape") {
+                $("#main_content").focus();
+            }
+        });
+        return container;
+    }
+
+    function _commentInput(inputFun) {
+        const container = $(`
+            <div class="input-group">
+                <textarea class="form-control" rows="1" style="resize: none;"></textarea>
+                <div class="input-group-append">
+                    <button type="button" class="btn btn-primary">Add comment</button>
+                </div>
+            </div>
+        `);
+	 const submitButton = container.find("button");
+        submitButton.click(() => {
             const textarea = container.find("textarea");
             const body = textarea.val();
             textarea.val("");
             inputFun(body);
+        });
+        container.keypress(e => e.stopPropagation());
+        container.keyup(e => e.stopPropagation());
+        container.keydown(e => {
+            e.stopPropagation();
+            if ((e.code === "Enter" || e.code === "NumpadEnter") && !e.shiftKey) {
+                e.preventDefault();
+		submitButton.click();
+            }
+            else if (e.code === "Escape") {
+                container.parent().parent().focus();
+            }
         });
         return container;
     }
@@ -230,6 +326,51 @@ const htmlHelper = (function() {
     }
 
     /**
+     * Fill a jquery selection with a comment section.
+     * @param {Object} container The selection that should contain the
+     * comment section.
+     * @param {Object} commentable The object that will store the
+     * comments. The comments will be added to an array in the `comments`
+     * field of the object, which will be created if no such field
+     * already exists.
+     * @param {Object} updateFun The function that should be run when
+     * pressing the save button in the menu.
+     */
+    function buildCommentSection(container, commentable, updateFun) {
+        const list = _commentList(commentable, updateFun);
+        const input = _commentInput(body => {
+            const comment = {
+                author: userInfo.getName(),
+                body: body
+            };
+            list.appendComment(comment);
+            commentable.comments.push(comment);
+            updateFun();
+        });
+        container.append(list, input);
+    }
+
+    /**
+     * Fill a jquery selection with a comment section.
+     * @param {Object} container The selection that should contain the
+     * comment section.
+     * @param {Function} inputFun The function to which the comment text
+     * should be passed when the submit button is pressed.
+     * @param {Function} removeFun The function to which the comment id
+     * should be passed when the remove button is pressed.
+     * @returns {Function} Function that is to be called with a list of
+     * comments whenever the comments are updated.
+     */
+    function buildCommentSectionAlt(container, inputFun, removeFun) {
+        // TODO: Change the other comment section to use this
+        const list = _commentListAlt(removeFun);
+        const updateFun = list.updateComments;
+        const input = _commentInputAlt(inputFun);
+        container.append(list, input);
+        return updateFun;
+    }
+
+    /**
      * Fill a jquery selection with the nodes for editing an annotation.
      * @param {Object} container The selection that should contain the
      * annotation editing menu.
@@ -243,13 +384,13 @@ const htmlHelper = (function() {
         const id = _annotationValueRow("Id", annotation.id);
         const author = _annotationValueRow("Created by", annotation.author);
         const classes = _annotationMclassOptions(annotation, updateFun);
-        const list = _annotationCommentList(annotation, updateFun);
-        const input = _annotationCommentInput(body => {
+        const list = _commentList(annotation, updateFun);
+        const input = _commentInput(body => {
             const comment = {
                 author: userInfo.getName(),
                 body: body
             };
-            list.appendAnnotationComment(comment);
+            list.appendComment(comment);
             annotation.comments.push(comment);
             updateFun();
         });
@@ -313,6 +454,8 @@ const htmlHelper = (function() {
     }
 
     return {
+        buildCommentSection: buildCommentSection,
+        buildCommentSectionAlt: buildCommentSectionAlt,
         buildAnnotationSettingsMenu: buildAnnotationSettingsMenu,
         buildClassSelectionButtons: buildClassSelectionButtons,
         buildCollaboratorList: buildCollaboratorList,

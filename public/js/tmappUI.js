@@ -84,6 +84,14 @@ const tmappUI = (function(){
         }
     }
 
+    function _initGlobalComments() {
+        const container = $("#global_comments");
+        const inputFun = metadataHandler.sendCommentToServer;
+        const removeFun = metadataHandler.sendCommentRemovalToServer;
+        const updateFun = htmlHelper.buildCommentSectionAlt(container, inputFun, removeFun);
+        metadataHandler.setCommentUpdateFun(updateFun);
+    }
+
     function _initClassSelectionButtons() {
         const initialMclass = classUtils.getClassFromID(0);
         annotationTool.setMclass(initialMclass.name);
@@ -281,6 +289,7 @@ const tmappUI = (function(){
      * and add any event handlers that are needed.
      */
     function initUI() {
+        _initGlobalComments();
         _initClassSelectionButtons();
         _initToolSelectionButtons();
         _initViewerEvents();

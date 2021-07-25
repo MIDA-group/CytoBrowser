@@ -32,6 +32,9 @@ const collabClient = (function(){
             case "annotationAction":
                 _handleAnnotationAction(msg);
                 break;
+            case "metadataAction":
+                _handleMetadataAction(msg);
+                break;
             case "memberEvent":
                 _handleMemberEvent(msg);
                 break;
@@ -71,6 +74,19 @@ const collabClient = (function(){
                 break;
             default:
                 console.warn(`Unknown annotation action type: ${msg.actionType}`);
+        }
+    }
+
+    function _handleMetadataAction(msg) {
+        switch(msg.actionType) {
+            case "addComment":
+                metadataHandler.handleCommentFromServer(msg.comment);
+                break;
+            case "removeComment":
+                metadataHandler.handleCommentRemovalFromServer(msg.id);
+                break;
+            default:
+                console.warn(`Unknown metadata action type: ${msg.actionType}`);
         }
     }
 
@@ -147,6 +163,7 @@ const collabClient = (function(){
                 _joinBatch.push(annotation);
             });
         }
+        metadataHandler.clear();
         annotationHandler.clear(false);
         msg.annotations.forEach(annotation => {
             annotationHandler.add(annotation, "image", false)
@@ -157,6 +174,9 @@ const collabClient = (function(){
             });
             _joinBatch = null;
         }
+        msg.comments.forEach(comment => {
+            metadataHandler.handleCommentFromServer(comment);
+        });
         _members = msg.members;
         _localMember = _members.find(member => member.id === msg.requesterId);
         _userId= _localMember.id;
@@ -469,6 +489,30 @@ const collabClient = (function(){
     }
 
     /**
+     * Add a comment to the current collaboration.
+     * @param {string} content The text content of the comment.
+     */
+    function addComment(content) {
+        send({
+            type: "metadataAction",
+            actionType: "addComment",
+            content: content
+        });
+    }
+
+    /**
+     * Remove a comment from the current collaboration.
+     * @param {number} id The id of the comment to be removed.
+     */
+    function removeComment(id) {
+        send({
+            type: "metadataAction",
+            actionType: "removeComment",
+            id: id
+        });
+    }
+
+    /**
      * Change the name of the local collaboration member.
      * @param {string} newName The new name to be assigned to the member.
      */
@@ -688,6 +732,8 @@ const collabClient = (function(){
         updateAnnotation: updateAnnotation,
         removeAnnotation: removeAnnotation,
         clearAnnotations: clearAnnotations,
+        addComment: addComment,
+        removeComment: removeComment,
         changeUsername: changeUsername,
         getDefaultName: getDefaultName,
         changeCollabName: changeCollabName,
