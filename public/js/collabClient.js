@@ -164,6 +164,7 @@ const collabClient = (function(){
             });
         }
         metadataHandler.clear();
+        globalDataHandler.clear();
         metadataHandler.updateMetadataValues(msg.metadata);
         annotationHandler.clear(false);
         msg.annotations.forEach(annotation => {

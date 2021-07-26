@@ -89,12 +89,6 @@ const metadataHandler = (function() {
     }
 
     return {
-        sendCommentToServer: sendCommentToServer,
-        sendCommentRemovalToServer: sendCommentRemovalToServer,
-        handleCommentFromServer: handleCommentFromServer,
-        handleCommentRemovalFromServer: handleCommentRemovalFromServer,
-        setCommentUpdateFun: setCommentUpdateFun,
-        forEachComment: forEachComment,
         updateMetadataValues: updateMetadataValues,
         clear: clear
     };
