@@ -55,9 +55,19 @@ function getMetadataForImage(imageName) {
     }
     else {
         const filename = `${adjustedImageName}.json`;
-        const data = JSON.parse(fs.readFileSync(`${jsonDir}/${filename}`));
-        metadataCache[adjustedImageName] = data;
-        return data;
+        try {
+            const data = JSON.parse(fs.readFileSync(`${jsonDir}/${filename}`));
+            metadataCache[adjustedImageName] = data;
+            return data;
+        }
+        catch (e) {
+            if (e.code === "ENOENT") {
+                return {};
+            }
+            else {
+                throw e;
+            }
+        }
     }
 }
 

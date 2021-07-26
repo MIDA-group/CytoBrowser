@@ -16,14 +16,21 @@ const metadataHandler = (function() {
     };
 
     function _metadataValuesAsReadable() {
-        const res = {
-            x: _metadataValues.SizeX,
-            y: _metadataValues.SizeY,
+        const res =
+            _metadataValues.SizeX &&
+            _metadataValues.SizeY &&
+            {
+                x: _metadataValues.SizeX,
+                y: _metadataValues.SizeY,
         };
-        // TODO: Long line
-        const size = {
-            x: Number((_metadataValues.PhysicalSizeX && res.x * _metadataValues.PhysicalSizeX).toPrecision(4)) + _metadataValues.PhysicalSizeXUnit,
-            y: Number((_metadataValues.PhysicalSizeY && res.y * _metadataValues.PhysicalSizeY).toPrecision(4)) + _metadataValues.PhysicalSizeYUnit
+        const size =
+            _metadataValues.PhysicalSizeX &&
+            _metadataValues.PhysicalSizeY &&
+            _metadataValues.PhysicalSizeXUnit &&
+            _metadataValues.PhysicalSizeYUnit &&
+            {
+                x: Number((res.x * _metadataValues.PhysicalSizeX).toPrecision(4)) + _metadataValues.PhysicalSizeXUnit,
+                y: Number((res.y * _metadataValues.PhysicalSizeY).toPrecision(4)) + _metadataValues.PhysicalSizeYUnit
         };
         const date = _metadataValues.AcquisitionDate;
         const microscope = _metadataValues.MicroscopeModel;
