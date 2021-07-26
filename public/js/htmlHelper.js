@@ -96,7 +96,7 @@ const htmlHelper = (function() {
 
     function _commentListAlt(removeFun) {
         const container = $(`
-            <div class="card bg-secondary mb-2" style="height: 15vh; overflow-y: auto;">
+            <div class="card bg-secondary mb-2" style="height: 15vh; overflow-y: auto; resize: vertical;">
                 <ul class="list-group list-group-flush position-absolute w-100">
                 </ul>
             </div>
@@ -152,7 +152,7 @@ const htmlHelper = (function() {
     function _commentInputAlt(inputFun) {
         const container = $(`
             <div class="input-group">
-                <textarea class="form-control" rows="1" style="resize: none;"></textarea>
+                <textarea class="form-control" rows="1" style="resize: vertical;"></textarea>
                 <div class="input-group-append">
                     <button type="button" class="btn btn-primary">Add comment</button>
                 </div>
