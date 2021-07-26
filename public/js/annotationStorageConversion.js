@@ -35,7 +35,7 @@ const annotationStorageConversion = (function() {
                 });
                 if (data.version === "1.1") {
                     data.comments.forEach(comment => {
-                        metadataHandler.handleCommentFromServer(comment);
+                        globalDataHandler.handleCommentFromServer(comment);
                     });
                 }
             }
@@ -55,7 +55,7 @@ const annotationStorageConversion = (function() {
                         label: "Replace existing annotations with loaded ones",
                         click: () => {
                             annotationHandler.clear();
-                            metadataHandler.clear();
+                            globalDataHandler.clear();
                             addAnnotations();
                         }
                     }
@@ -84,7 +84,7 @@ const annotationStorageConversion = (function() {
         annotationHandler.forEachAnnotation(annotation => {
             data.annotations.push(annotation)
         });
-        metadataHandler.forEachComment(comment => {
+        globalDataHandler.forEachComment(comment => {
             data.comments.push(comment)
         });
         return data;

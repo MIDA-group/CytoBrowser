@@ -86,10 +86,10 @@ const tmappUI = (function(){
 
     function _initGlobalComments() {
         const container = $("#global_comments");
-        const inputFun = metadataHandler.sendCommentToServer;
-        const removeFun = metadataHandler.sendCommentRemovalToServer;
+        const inputFun = globalDataHandler.sendCommentToServer;
+        const removeFun = globalDataHandler.sendCommentRemovalToServer;
         const updateFun = htmlHelper.buildCommentSectionAlt(container, inputFun, removeFun);
-        metadataHandler.setCommentUpdateFun(updateFun);
+        globalDataHandler.setCommentUpdateFun(updateFun);
     }
 
     function _initClassSelectionButtons() {
