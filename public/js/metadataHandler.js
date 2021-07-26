@@ -3,7 +3,7 @@
  * @namespace metadataHandler
  */
 const metadataHandler = (function() {
-    const _metadataValues = {};
+    let _metadataValues = {};
     // Can come up with a more thorough way of doing this if needed
     const _units = {
         "nm": 1e-9,
@@ -92,7 +92,9 @@ const metadataHandler = (function() {
      * Clear the currently set metadata.
      **/
     function clear() {
-        // TODO: Metadata values should be cleared separately
+        _metadataValues = {};
+        _updateDisplayedMetadataValues();
+        _updateScalebar();
     }
 
     return {

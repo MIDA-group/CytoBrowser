@@ -368,6 +368,7 @@ const tmapp = (function() {
 
     function _clearCurrentImage() {
         annotationHandler.clear(false);
+        metadataHandler.clear();
         _viewer && _viewer.destroy();
         $("#ISS_viewer").empty();
         coordinateHelper.clearImage();
