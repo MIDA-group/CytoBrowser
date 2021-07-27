@@ -88,8 +88,12 @@ const tmappUI = (function(){
         const container = $("#global_comments");
         const inputFun = globalDataHandler.sendCommentToServer;
         const removeFun = globalDataHandler.sendCommentRemovalToServer;
-        const updateFun = htmlHelper.buildCommentSectionAlt(container, inputFun, removeFun);
-        globalDataHandler.setCommentUpdateFun(updateFun);
+        const commentSection = htmlHelper.buildCommentSectionAlt(container, inputFun, removeFun);
+        const updateFun = (comments => {
+            const nUnseen = commentSection.updateComments(comments);
+            console.log("Unseen: ", nUnseen);
+        });
+        globalDataHandler.setCommentUpdateFun(commentSection.updateComments);
     }
 
     function _initClassSelectionButtons() {

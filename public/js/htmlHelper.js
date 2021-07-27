@@ -106,8 +106,9 @@ const htmlHelper = (function() {
         container.scroll(() => {
             const distToBottom = list.height() - (container.height() + container.scrollTop());
             stuckToBottom = distToBottom < 20;
+            // Call something here!
         });
-        container.updateComments = comments => {
+        container.updateComments = (comments => {
             const shouldStickToBottom = stuckToBottom;
             list.empty();
             comments.forEach(comment => {
@@ -117,7 +118,13 @@ const htmlHelper = (function() {
             if (shouldStickToBottom) {
                 container.scrollTop(list.height() - container.height());
             }
-        };
+        });
+        container.stickState = (state => {
+            if (state !== undefined) {
+                stuckToBottom = state;
+            }
+            return stuckToBottom;
+        });
         return container;
     }
 
@@ -358,16 +365,18 @@ const htmlHelper = (function() {
      * should be passed when the submit button is pressed.
      * @param {Function} removeFun The function to which the comment id
      * should be passed when the remove button is pressed.
-     * @returns {Function} Function that is to be called with a list of
-     * comments whenever the comments are updated.
+     * @returns {CommentSection} CommentSection object that can be used
+     * to interface with the comment section HTML.
      */
     function buildCommentSectionAlt(container, inputFun, removeFun) {
         // TODO: Change the other comment section to use this
         const list = _commentListAlt(removeFun);
         const updateFun = list.updateComments;
+        const stickFun = list.stickState;
         const input = _commentInputAlt(inputFun);
         container.append(list, input);
-        return updateFun;
+        const commentSection = new CommentSection(stickFun, updateFun);
+        return commentSection;
     }
 
     /**
