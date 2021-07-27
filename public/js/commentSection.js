@@ -53,12 +53,13 @@ class CommentSection {
      */
     updateComments(comments) {
         const ids = comments.map(comment => comment.id);
-        const addedIds = ids.filter(id => !(id in this.ids));
-        const removedIds = this.ids.filter(id => !(id in ids));
-        this.unseenIds = this.unseenIds.filter(id => !(id in removedIds));
+        const oldIds = this.ids;
+        const addedIds = ids.filter(id => !oldIds.includes(id));
+        const removedIds = oldIds.filter(id => !ids.includes(id));
+        this.unseenIds = this.unseenIds.filter(id => !removedIds.includes(id));
         this.unseenIds = this.unseenIds.concat(addedIds);
         this.ids = ids;
-        const nUnseen = _updateHtml(comments);
+        const nUnseen = this._updateHtml(comments);
         return nUnseen;
     }
 

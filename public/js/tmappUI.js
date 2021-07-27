@@ -93,7 +93,7 @@ const tmappUI = (function(){
             const nUnseen = commentSection.updateComments(comments);
             console.log("Unseen: ", nUnseen);
         });
-        globalDataHandler.setCommentUpdateFun(commentSection.updateComments);
+        globalDataHandler.setCommentUpdateFun(updateFun);
     }
 
     function _initClassSelectionButtons() {
