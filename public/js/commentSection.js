@@ -62,7 +62,7 @@ class CommentSection {
     allCommentsInView() {
         if (this.isVisible) {
             this.unseenIds.length = 0;
-            _triggerCallbacks();
+            this._triggerCallbacks();
         }
     }
 
@@ -89,6 +89,6 @@ class CommentSection {
      * for the unseen comments.
      */
     onChangeUnseen(f) {
-        unseenCallbacks.push(f);
+        this.unseenCallbacks.push(f);
     }
 }

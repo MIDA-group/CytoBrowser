@@ -89,8 +89,8 @@ const tmappUI = (function(){
         const inputFun = globalDataHandler.sendCommentToServer;
         const removeFun = globalDataHandler.sendCommentRemovalToServer;
         const commentSection = htmlHelper.buildCommentSectionAlt(container, inputFun, removeFun);
-        const updateFun = commentSection.updateComments;
-        updateFun.onChangeUnseen(unseenIds => {
+        const updateFun = comments => commentSection.updateComments(comments);
+        commentSection.onChangeUnseen(unseenIds => {
             // Change it!
             console.log(unseenIds);
         });

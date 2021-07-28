@@ -94,7 +94,7 @@ const htmlHelper = (function() {
         return entry;
     }
 
-    function _commentListAlt(removeFun) {
+    function _commentListAlt() {
         const container = $(`
             <div class="card bg-secondary mb-2" style="height: 15vh; overflow-y: auto; resize: vertical;">
                 <ul class="list-group list-group-flush position-absolute w-100">
@@ -105,7 +105,7 @@ const htmlHelper = (function() {
         return container;
     }
 
-    function _addFunctionalityToCommentList(list) {
+    function _addFunctionalityToCommentList(list, removeFun) {
         let stuckToBottom = true;
         const updateComments = (comments => {
             const shouldStickToBottom = stuckToBottom;
@@ -377,8 +377,8 @@ const htmlHelper = (function() {
      */
     function buildCommentSectionAlt(container, inputFun, removeFun) {
         // TODO: Change the other comment section to use this
-        const list = _commentListAlt(removeFun);
-        const commentSection = _addFunctionalityToCommentList(list);
+        const list = _commentListAlt();
+        const commentSection = _addFunctionalityToCommentList(list, removeFun);
         const input = _commentInputAlt(inputFun);
         container.append(list, input);
         return commentSection;
