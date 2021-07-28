@@ -90,9 +90,19 @@ const tmappUI = (function(){
         const removeFun = globalDataHandler.sendCommentRemovalToServer;
         const commentSection = htmlHelper.buildCommentSectionAlt(container, inputFun, removeFun);
         const updateFun = comments => commentSection.updateComments(comments);
+        const originalTitle = document.title;
         commentSection.onChangeUnseen(unseenIds => {
-            // Change it!
-            console.log(unseenIds);
+            const nUnseen = unseenIds.length;
+            if (nUnseen > 0) {
+                $("#unseen_comments").text(nUnseen);
+                $("#unseen_comments").show();
+                const notificationTitle = `(${nUnseen}) ${originalTitle}`;
+                document.title = notificationTitle;
+            }
+            else {
+                $("#unseen_comments").hide();
+                document.title = originalTitle;
+            }
         });
         $("#comments_collapse").on("shown.bs.collapse", () => {
             commentSection.setVisibility(true);

@@ -101,7 +101,13 @@
 
                         <!-- Collapse for metadata and global comments and metadata -->
                         <button type="button" class="btn btn-block btn-primary collapsed" data-toggle="collapse" data-target="#comments_collapse">
-                            <div class="d-flex flex-row w-100"><div class="w-100">Global Data</div> <i class="collapse_rotate fa fa-chevron-down pull-right pt-1"></i></div>
+                            <div class="d-flex flex-row w-100">
+                                <div class="w-100">
+                                    <span class="badge bg-dark hide" id="unseen_comments" style="display: hidden;">0</span>
+                                    Global Data
+                                </div>
+                                <i class="collapse_rotate fa fa-chevron-down pull-right pt-1"></i>
+                            </div>
                         </button>
                         <div class="m-0 my-2">
                             <div class="collapse card" id="comments_collapse">
