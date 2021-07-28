@@ -128,19 +128,17 @@ const htmlHelper = (function() {
             return stuckToBottom;
         });
         const commentSection = new CommentSection(stickState, updateComments);
-        listContainer.scroll(() => {
+        const tryStickingToBottom = () => {
             const distToBottom = list.height() - (listContainer.height() + listContainer.scrollTop());
             stuckToBottom = distToBottom < 20;
             if (stuckToBottom) {
                 commentSection.allCommentsInView();
             }
-        });
-        const heightObserver = new MutationObserver(() => {
-
-        });
+        };
+        listContainer.scroll(tryStickingToBottom);
+        const heightObserver = new MutationObserver(tryStickingToBottom);
         heightObserver.observe(listContainer.get(0), {
             attributes: true,
-            childList: false,
             attributeFilter: ["style"]
         });
         return commentSection;
