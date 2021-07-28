@@ -119,7 +119,10 @@ const htmlHelper = (function() {
             }
         });
         const stickState = (state => {
-            if (state !== undefined) {
+            if (state === undefined) {
+                stuckToBottom = listContainer.height() > list.height();
+            }
+            else {
                 stuckToBottom = state || listContainer.height() > list.height();
             }
             return stuckToBottom;
