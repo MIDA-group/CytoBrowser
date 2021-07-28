@@ -11,6 +11,7 @@ class CommentSection {
         this.isVisible = false;
         this.ids = [];
         this.unseenIds = [];
+        this.unseenCallbacks = [];
         this.stickStateFun = stickStateFun;
         this.updateFun = updateFun;
     }
@@ -33,7 +34,11 @@ class CommentSection {
             this.unseenIds.length = 0;
         }
         this.updateFun(comments);
-        return this.unseenIds.length;
+        this._triggerCallbacks();
+    }
+
+    _triggerCallbacks() {
+        this.unseenCallbacks.forEach(f => f(this.unseenIds));
     }
 
     /**
@@ -45,6 +50,20 @@ class CommentSection {
      */
     setVisibility(isVisible) {
         this.isVisible = isVisible;
+    }
+
+    /**
+     * Function to be called whenever all comments are in view, whether
+     * this is because the user has scrolled down to the bottom of the
+     * comment list or because the comment list is large enough to fit
+     * all comments without scrolling. If the visibility state is true
+     * when this function is called, this will mark all comments as seen.
+     */
+    allCommentsInView() {
+        if (this.isVisible) {
+            this.unseenIds.length = 0;
+            _triggerCallbacks();
+        }
     }
 
     /**
@@ -60,9 +79,16 @@ class CommentSection {
         this.unseenIds = this.unseenIds.concat(addedIds);
         this.ids = ids;
         const nUnseen = this._updateHtml(comments);
-        return nUnseen;
     }
 
-
-    // Function for showing number of new
+    /**
+     * Set a callback function to be called whenever the number of
+     * unseen comments changes. If the function is called multiple times,
+     * all functions will be called in the order in which they were added.
+     * @param {Function} f Function that is called with a list of ids
+     * for the unseen comments.
+     */
+    onChangeUnseen(f) {
+        unseenCallbacks.push(f);
+    }
 }

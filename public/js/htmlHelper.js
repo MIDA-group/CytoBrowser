@@ -102,13 +102,12 @@ const htmlHelper = (function() {
             </div>
         `);
         const list = container.find("ul");
+        return container;
+    }
+
+    function _addFunctionalityToCommentList(list) {
         let stuckToBottom = true;
-        container.scroll(() => {
-            const distToBottom = list.height() - (container.height() + container.scrollTop());
-            stuckToBottom = distToBottom < 20;
-            // Call something here!
-        });
-        container.updateComments = (comments => {
+        const updateComments = (comments => {
             const shouldStickToBottom = stuckToBottom;
             list.empty();
             comments.forEach(comment => {
@@ -116,16 +115,24 @@ const htmlHelper = (function() {
                 list.append(entry);
             });
             if (shouldStickToBottom) {
-                container.scrollTop(list.height() - container.height());
+                list.scrollTop(list.height() - list.height());
             }
         });
-        container.stickState = (state => {
+        const stickState = (state => {
             if (state !== undefined) {
                 stuckToBottom = state;
             }
             return stuckToBottom;
         });
-        return container;
+        const commentSection = new CommentSection(stickState, updateComments);
+        list.scroll(() => {
+            const distToBottom = list.height() - (list.height() + list.scrollTop());
+            stuckToBottom = distToBottom < 20;
+            if (stuckToBottom) {
+                commentSection.allCommentsInView();
+            }
+        });
+        return commentSection;
     }
 
     function _commentList(commentable, updateFun) {
@@ -371,11 +378,9 @@ const htmlHelper = (function() {
     function buildCommentSectionAlt(container, inputFun, removeFun) {
         // TODO: Change the other comment section to use this
         const list = _commentListAlt(removeFun);
-        const updateFun = list.updateComments;
-        const stickFun = list.stickState;
+        const commentSection = _addFunctionalityToCommentList(list);
         const input = _commentInputAlt(inputFun);
         container.append(list, input);
-        const commentSection = new CommentSection(stickFun, updateFun);
         return commentSection;
     }
 

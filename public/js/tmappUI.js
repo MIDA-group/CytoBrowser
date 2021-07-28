@@ -89,9 +89,16 @@ const tmappUI = (function(){
         const inputFun = globalDataHandler.sendCommentToServer;
         const removeFun = globalDataHandler.sendCommentRemovalToServer;
         const commentSection = htmlHelper.buildCommentSectionAlt(container, inputFun, removeFun);
-        const updateFun = (comments => {
-            const nUnseen = commentSection.updateComments(comments);
-            console.log("Unseen: ", nUnseen);
+        const updateFun = commentSection.updateComments;
+        updateFun.onChangeUnseen(unseenIds => {
+            // Change it!
+            console.log(unseenIds);
+        });
+        $("#comments_collapse").on("shown.bs.collapse", () => {
+            commentSection.setVisibility(true);
+        });
+        $("#comments_collapse").on("hidden.bs.collapse", () => {
+            commentSection.setVisibility(false);
         });
         globalDataHandler.setCommentUpdateFun(updateFun);
     }
