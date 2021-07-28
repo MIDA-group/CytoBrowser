@@ -26,14 +26,13 @@ class CommentSection {
      * see the new comments.
      */
     _updateHtml(comments) {
-        const isSticking = this.stickStateFun();
-        if (!this.isVisible && isSticking && this.unseenIds.length > 0) {
+        this.updateFun(comments);
+        if ((!this.isVisible || !this.stickStateFun()) && this.unseenIds.length > 0) {
             this.stickStateFun(false);
         }
-        else if (this.isVisible && isSticking) {
+        if (this.isVisible && this.stickStateFun()) {
             this.unseenIds.length = 0;
         }
-        this.updateFun(comments);
         this._triggerCallbacks();
     }
 
@@ -50,6 +49,10 @@ class CommentSection {
      */
     setVisibility(isVisible) {
         this.isVisible = isVisible;
+        if (isVisible && this.stickStateFun() && this.unseenIds.length > 0) {
+            this.unseenIds.length = 0;
+            this._triggerCallbacks();
+        }
     }
 
     /**

@@ -106,7 +106,7 @@ const htmlHelper = (function() {
 
     function _addFunctionalityToCommentList(listContainer, removeFun) {
         const list = listContainer.find("ul");
-	let stuckToBottom = true;
+        let stuckToBottom = true;
         const updateComments = (comments => {
             const shouldStickToBottom = stuckToBottom;
             list.empty();
@@ -120,7 +120,7 @@ const htmlHelper = (function() {
         });
         const stickState = (state => {
             if (state !== undefined) {
-                stuckToBottom = state;
+                stuckToBottom = state || listContainer.height() > list.height();
             }
             return stuckToBottom;
         });
@@ -131,6 +131,14 @@ const htmlHelper = (function() {
             if (stuckToBottom) {
                 commentSection.allCommentsInView();
             }
+        });
+        const heightObserver = new MutationObserver(() => {
+
+        });
+        heightObserver.observe(listContainer.get(0), {
+            attributes: true,
+            childList: false,
+            attributeFilter: ["style"]
         });
         return commentSection;
     }
