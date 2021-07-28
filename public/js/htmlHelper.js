@@ -106,7 +106,7 @@ const htmlHelper = (function() {
 
     function _addFunctionalityToCommentList(listContainer, removeFun) {
         const list = listContainer.find("ul");
-        let stuckToBottom = true;
+        let stuckToBottom = false;
         const updateComments = (comments => {
             const shouldStickToBottom = stuckToBottom;
             list.empty();
@@ -121,11 +121,12 @@ const htmlHelper = (function() {
         const stickState = (state => {
             const hasHeight = listContainer.height() !== 0 && list.height() !== 0;
             const fitsInContainer = listContainer.height() > list.height();
-            if (hasHeight && fitsInContainer) {
+            const atBottom = list.height() - (listContainer.height() + listContainer.scrollTop()) < 20;
+	    if (hasHeight && (fitsInContainer || atBottom)) {
                 stuckToBottom = true;
             }
             else if (state !== undefined) {
-                stuckToBottom = state || listContainer.height() > list.height();
+                stuckToBottom = state;
             }
             return stuckToBottom;
         });
