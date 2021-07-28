@@ -101,12 +101,12 @@ const htmlHelper = (function() {
                 </ul>
             </div>
         `);
-        const list = container.find("ul");
         return container;
     }
 
-    function _addFunctionalityToCommentList(list, removeFun) {
-        let stuckToBottom = true;
+    function _addFunctionalityToCommentList(listContainer, removeFun) {
+        const list = listContainer.find("ul");
+	let stuckToBottom = true;
         const updateComments = (comments => {
             const shouldStickToBottom = stuckToBottom;
             list.empty();
@@ -377,10 +377,10 @@ const htmlHelper = (function() {
      */
     function buildCommentSectionAlt(container, inputFun, removeFun) {
         // TODO: Change the other comment section to use this
-        const list = _commentListAlt();
-        const commentSection = _addFunctionalityToCommentList(list, removeFun);
+        const listContainer = _commentListAlt();
+        const commentSection = _addFunctionalityToCommentList(listContainer, removeFun);
         const input = _commentInputAlt(inputFun);
-        container.append(list, input);
+        container.append(listContainer, input);
         return commentSection;
     }
 
