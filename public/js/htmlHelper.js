@@ -115,7 +115,7 @@ const htmlHelper = (function() {
                 list.append(entry);
             });
             if (shouldStickToBottom) {
-                list.scrollTop(list.height() - list.height());
+                listContainer.scrollTop(list.height() - listContainer.height());
             }
         });
         const stickState = (state => {
@@ -125,8 +125,8 @@ const htmlHelper = (function() {
             return stuckToBottom;
         });
         const commentSection = new CommentSection(stickState, updateComments);
-        list.scroll(() => {
-            const distToBottom = list.height() - (list.height() + list.scrollTop());
+        listContainer.scroll(() => {
+            const distToBottom = list.height() - (listContainer.height() + listContainer.scrollTop());
             stuckToBottom = distToBottom < 20;
             if (stuckToBottom) {
                 commentSection.allCommentsInView();
