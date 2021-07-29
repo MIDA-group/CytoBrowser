@@ -20,10 +20,6 @@ class CommentSection {
      * Update the necessary HTML with a new list of comments.
      * @param {Array<Object>} comments The new comments to display in
      * the HTML.
-     * @returns {number} The total number of comments that the user
-     * has not yet seen, either because the comment section is not
-     * visible or because the user has scrolled up in the list and cannot
-     * see the new comments.
      */
     _updateHtml(comments) {
         this.updateFun(comments);
