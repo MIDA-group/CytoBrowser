@@ -104,10 +104,19 @@ const tmappUI = (function(){
                 document.title = originalTitle;
             }
         });
+        let commentsVisible = false;
         $("#comments_collapse").on("shown.bs.collapse", () => {
             commentSection.setVisibility(true);
+            commentsVisible = true;
         });
         $("#comments_collapse").on("hidden.bs.collapse", () => {
+            commentSection.setVisibility(false);
+            commentsVisible = false;
+        });
+        $(document).focus(() => {
+            commentSection.setVisibility(commentsVisible);
+        });
+        $(document).blur(() => {
             commentSection.setVisibility(false);
         });
         globalDataHandler.setCommentUpdateFun(updateFun);
