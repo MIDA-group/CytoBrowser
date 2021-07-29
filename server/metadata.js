@@ -12,6 +12,7 @@ const parser = require("fast-xml-parser");
 
 
 const metadataCache = {};
+const metadataExpirationTime = 60000; // Let the cache expire after 30s
 let jsonDir;
 
 function xmlToObject(xmlData) {
@@ -58,6 +59,10 @@ function getMetadataForImage(imageName) {
         try {
             const data = JSON.parse(fs.readFileSync(`${jsonDir}/${filename}`));
             metadataCache[adjustedImageName] = data;
+            setTimeout(() =>
+                delete metadataCache[adjustedImageName],
+                metadataExpirationTime
+            );
             return data;
         }
         catch (e) {
