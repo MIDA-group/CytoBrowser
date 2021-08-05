@@ -44,7 +44,7 @@
         const nLevels = tileSources.length;
 
         // Set an initial focus level if none has been set
-        if (initialZ !== "number" || initialZ < 0) {
+        if (typeof initialZ !== "number" || initialZ < 0) {
             console.warn("Invalid initial focus level, setting to 0.");
             initialZ = 0;
         }
@@ -99,7 +99,7 @@
         if (oldZ !== newZ) {
             // Rearrange the load order of the items
             const oldOrder = this._currentLoadOrder;
-            const newOrder = _getLoadOrder(n, newZ);
+            const newOrder = _getLoadOrder(nItems, newZ);
             const unorderedItems = new Array(nItems);
             oldOrder.forEach((z, i) => unorderedItems[z] = this.world._items[i]);
             this.world._items.length = 0;
@@ -111,6 +111,32 @@
 
             // Set the current order for the next focus level change
             this._currentLoadOrder = newOrder;
+            this._currentZ = newZ;
+        }
+    }
+
+    $.Viewer.prototype.incrementFocusLevel = function() {
+        const nItems = this.world._items.length;
+        const oldZ = this._currentZ;
+        if (oldZ < nItems - 1) {
+            const newZ = oldZ + 1;
+            this.setFocusLevel(newZ);
+            return newZ;
+        }
+        else {
+            return oldZ;
+        }
+    }
+
+    $.Viewer.prototype.decrementFocusLevel = function() {
+        const oldZ = this._currentZ;
+        if (oldZ > 0) {
+            const newZ = oldZ - 1;
+            this.setFocusLevel(newZ);
+            return newZ;
+        }
+        else {
+            return oldZ;
         }
     }
 })(OpenSeadragon);
