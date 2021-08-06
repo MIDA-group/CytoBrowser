@@ -88,7 +88,17 @@
         this._nFocusLevels = nLevels;
         this._currentZ = initialZ;
         this._zLevels = zLevels;
-        this.open(orderedTileSources); // TODO: Should raise event if any fail
+        orderedTileSources.forEach(tileSource => {
+            Object.assign(tileSource, {
+                success: () => {
+                    if (this.world.getItemCount() === nLevels) {
+                        this.raiseEvent("open");
+                    }
+                },
+                error: () => this.raiseEvent("open-failed")
+            });
+            this.addTiledImage(tileSource);
+        });
     }
 
     /**
