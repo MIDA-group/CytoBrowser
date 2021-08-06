@@ -35,7 +35,7 @@
     /**
      * TODO
      */
-    $.Viewer.prototype.openFocusLevels = function(tileSources, initialZ) {
+    $.Viewer.prototype.openFocusLevels = function(tileSources, initialZ, zLevels) {
         // TODO: What to do about OSD sequence mode?
 
         if (!Array.isArray(tileSources)) {
@@ -43,41 +43,52 @@
         }
         const nLevels = tileSources.length;
 
-        // Set an initial focus level if none has been set
-        if (typeof initialZ !== "number" || initialZ < 0) {
-            console.warn("Invalid initial focus level, setting to 0.");
-            initialZ = 0;
+        // Set the focus levels if none have been set
+        if (zLevels) {
+            if (!Array.isArray(zLevels)) {
+                throw new Error("The z levels should be an array.");
+            }
+            if (zLevels.length !== tileSources.length) {
+                throw new Error("The number of z levels should be the same as the number of tile sources.");
+            }
         }
-        else if (initialZ >= nLevels) {
-            console.warn("Invalid initial focus level, setting to max.");
-            initialZ = nLevels - 1;
+        else {
+            zLevels = Array.from({length: nLevels}, (x, i) => i);
+        }
+
+        // Set an initial focus level if none has been set
+        if (typeof initialZ !== "number" || !(initialZ in zLevels)) {
+            console.warn("Invalid initial focus level, setting to first.");
+            initialZ = zLevels[0];
         }
 
         // Set appropriate opacities for all tile sources
-        const tileSourcesWithOpacity = tileSources.map((tileSource, z) => {
+        const tileSourcesWithOpacity = tileSources.map((tileSource, i) => {
             if (typeof tileSource === "string") {
                 return {
                     tileSource: tileSource,
-                    opacity: z === initialZ ? 1 : 0
+                    opacity: zLevels[i] === initialZ ? 1 : 0
                 };
             }
             else if (typeof tileSource === "object") {
-                tileSource.opacity = z === initialZ ? 1 : 0;
+                tileSource.opacity = zLevels[i] === initialZ ? 1 : 0;
                 return tileSource;
             }
         });
 
         // Reorder the tile sources
-        const order = _getLoadOrder(nLevels, initialZ);
-        const orderedTileSources = order.map(z => {
-            return tileSourcesWithOpacity[z];
+        const initialZIndex = zLevels.findIndex(z => z === initialZ);
+        const order = _getLoadOrder(nLevels, initialZIndex);
+        const orderedTileSources = order.map(i => {
+            return tileSourcesWithOpacity[i];
         });
 
         this._hasFocusLevels = true;
         this._currentLoadOrder = order;
         this._nFocusLevels = nLevels;
         this._currentZ = initialZ;
-        this.open(orderedTileSources);
+        this._zLevels = zLevels;
+        this.open(orderedTileSources); // TODO: Should raise event if any fail
     }
 
     /**
@@ -86,28 +97,30 @@
     $.Viewer.prototype.setFocusLevel = function(z) {
         const oldZ = this._currentZ;
         const newZ = z;
-        const nItems = this.world._items.length;
+        const oldZIndex = this._zLevels.findIndex(z => oldZ === z);
+        const newZIndex = this._zLevels.findIndex(z => newZ === z);
+        const nItems = this._nFocusLevels;
 
         if (!this._hasFocusLevels) {
             throw new Error("Cannot set focus level if tiles were not initialized as focus levels.");
         }
 
-        if (z < 0 || z >= nItems) {
+        if (newZIndex < 0 || newZIndex >= nItems) {
             throw new Error("Cannot set a focus level outside the range of focus levels.");
         }
 
         if (oldZ !== newZ) {
             // Rearrange the load order of the items
             const oldOrder = this._currentLoadOrder;
-            const newOrder = _getLoadOrder(nItems, newZ);
+            const newOrder = _getLoadOrder(nItems, newZIndex);
             const unorderedItems = new Array(nItems);
             oldOrder.forEach((z, i) => unorderedItems[z] = this.world._items[i]);
             this.world._items.length = 0;
             newOrder.forEach(z => this.world._items.push(unorderedItems[z]));
 
             // Adjust the opacities
-            unorderedItems[newZ].setOpacity(1);
-            unorderedItems[oldZ].setOpacity(0);
+            unorderedItems[newZIndex].setOpacity(1);
+            unorderedItems[oldZIndex].setOpacity(0);
 
             // Set the current order for the next focus level change
             this._currentLoadOrder = newOrder;
@@ -115,11 +128,13 @@
         }
     }
 
-    $.Viewer.prototype.incrementFocusLevel = function() {
-        const nItems = this.world._items.length;
+    $.Viewer.prototype.incrementFocus = function() {
+        const nItems = this._nFocusLevels;
         const oldZ = this._currentZ;
-        if (oldZ < nItems - 1) {
-            const newZ = oldZ + 1;
+        const oldZIndex = this._zLevels.findIndex(z => oldZ === z);
+        if (oldZIndex < nItems - 1) {
+            const newZIndex = oldZIndex + 1;
+            const newZ = this._zLevels[newZIndex];
             this.setFocusLevel(newZ);
             return newZ;
         }
@@ -128,10 +143,12 @@
         }
     }
 
-    $.Viewer.prototype.decrementFocusLevel = function() {
+    $.Viewer.prototype.decrementFocus = function() {
         const oldZ = this._currentZ;
-        if (oldZ > 0) {
-            const newZ = oldZ - 1;
+        const oldZIndex = this._zLevels.findIndex(z => oldZ === z);
+        if (oldZIndex > 0) {
+            const newZIndex = oldZIndex - 1;
+            const newZ = this._zLevels[newZIndex];
             this.setFocusLevel(newZ);
             return newZ;
         }
