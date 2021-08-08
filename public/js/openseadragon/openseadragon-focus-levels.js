@@ -1,3 +1,12 @@
+/**
+ * Small plugin used for handling the focus adjustment in OpenSeadragon.
+ * Moved to here in order to keep the other code a bit simpler, and could
+ * potentially also be used in other projects that require focus adjustment
+ * in OSD. The plugin extends the Viewer class by adding the function
+ * openFocusLevels(), which sets an array of images up as focus levels
+ * that can be swapped between using setFocusLevel(), decrementFocus(),
+ * and incrementFocus().
+ */
 (function($) {
     "use strict";
 
@@ -33,10 +42,22 @@
     }
 
     /**
-     * TODO
+     * Open a series of images that together form a stack of the same
+     * subject at different focus levels. This function prepares the
+     * images in such a way that the focus level can be changed, with
+     * this being implemented through a change in opacity.
+     * @param {Array<>} tileSources An array of tile sources for the
+     * images that represent the different focus levels of the subject.
+     * @param {number} [initialZ] The z level that should be set as the
+     * initial focus level in the OSD viewer. If not set, it will
+     * automatically be set to the first z level.
+     * @param {Array<number>} [zLevels] The z levels that the array of
+     * tile sources correspond to, which are used as values when setting
+     * the focus later on. If not set, it will automatically be set to
+     * represent the indices of the tile sources.
      */
     $.Viewer.prototype.openFocusLevels = function(tileSources, initialZ, zLevels) {
-        // TODO: What to do about OSD sequence mode?
+        // TODO: Not used in CyBr, but what to do about OSD sequence mode?
 
         if (!Array.isArray(tileSources)) {
             tileSources = [tileSources];
@@ -102,7 +123,11 @@
     }
 
     /**
-     * TODO
+     * Set the focus level of the of the OSD viewer, assuming the images
+     * were opened using openFocusLevels().
+     * @param {number} z The new focus level. The value used should
+     * correspond to the value specified in the zLevels argument of
+     * openFocusLevels().
      */
     $.Viewer.prototype.setFocusLevel = function(z) {
         const oldZ = this._currentZ;
@@ -138,6 +163,10 @@
         }
     }
 
+    /**
+     * Increment the focus level of the viewer if possible.
+     * @returns {number} The new focus level.
+     */
     $.Viewer.prototype.incrementFocus = function() {
         const nItems = this._nFocusLevels;
         const oldZ = this._currentZ;
@@ -153,6 +182,10 @@
         }
     }
 
+    /**
+     * Decrement the focus level of the viewer if possible.
+     * @returns {number} The new focus level.
+     */
     $.Viewer.prototype.decrementFocus = function() {
         const oldZ = this._currentZ;
         const oldZIndex = this._zLevels.findIndex(z => oldZ === z);
