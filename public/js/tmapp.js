@@ -173,7 +173,7 @@ const tmapp = (function() {
         // Get the full image names based on the data from the server
         const imageName = _currentImage.name;
         const zLevels = _currentImage.zLevels;
-        const imageStack = zLevels.map(z => {
+        const imageStack = zLevels.map(zLevel => {
             return `${_imageDir}${imageName}_z${zLevel}.dzi`;
         });
         return imageStack;
@@ -184,8 +184,8 @@ const tmapp = (function() {
         const offset = Math.floor(imageStack.length / 2);
         const zLevels = Array.from({length: imageStack.length}, (x, i) => i - offset);
         console.info(`Opening: ${imageStack}`);
-        this._viewer.openFocusLevels(imageStack, 0, zLevels);
-        _currState.z = z;
+        _viewer.openFocusLevels(imageStack, initialZ, zLevels);
+        _currState.z = initialZ;
     }
 
     /**
