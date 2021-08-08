@@ -62,11 +62,8 @@ const tmapp = (function() {
         const count = _viewer.world.getItemCount();
         const max = Math.floor(count / 2);
         const min = -max;
-        z = Math.min(Math.max(z,min),max);
-        for (let i = min; i <= max; i++) {
-            let idx = i + Math.floor(_currentImage.zLevels.length / 2);
-            _viewer.world.getItemAt(idx).setOpacity(z == i);
-        }
+        z = Math.min(Math.max(z, min), max);
+        _viewer.setFocusLevel(z);
         _currState.z = z;
         _updateFocus();
     }
@@ -175,36 +172,19 @@ const tmapp = (function() {
     function _expandImageName() {
         // Get the full image names based on the data from the server
         const imageName = _currentImage.name;
-        const imageStack = [];
-        _currentImage.zLevels.forEach(zLevel => {
-            imageStack.push(`${_imageDir}${imageName}_z${zLevel}.dzi`);
+        const zLevels = _currentImage.zLevels;
+        const imageStack = zLevels.map(z => {
+            return `${_imageDir}${imageName}_z${zLevel}.dzi`;
         });
         return imageStack;
     }
 
-    function _loadImages(imageStack, zIndex) {
-        if (!zIndex) {
-            zIndex = Math.floor(imageStack.length / 2);
-        }
-
+    function _openImages(imageStack) {
+        const initialZ = 0;
+        const offset = Math.floor(imageStack.length / 2);
+        const zLevels = Array.from({length: imageStack.length}, (x, i) => i - offset);
         console.info(`Opening: ${imageStack}`);
-        imageStack.forEach((image, i) => {
-            _viewer.addTiledImage({
-                tileSource: image,
-                opacity: i == zIndex,
-                index: i++,
-                success: () => {
-                    if (_viewer.world.getItemCount() === imageStack.length) {
-                        _viewer.raiseEvent("open");
-                    }
-                },
-                error: () => {
-                    _viewer.raiseEvent("open-failed");
-                },
-            });
-        });
-
-        const z = zIndex - Math.floor(_currentImage.zLevels.length / 2);
+        this._viewer.openFocusLevels(imageStack, 0, zLevels);
         _currState.z = z;
     }
 
@@ -346,20 +326,20 @@ const tmapp = (function() {
 
     /**
      * Initialize an instance of OpenSeadragon. This involves getting
-     * a full stack of images based on the image name, loading the
+     * a full stack of image names based on the original name, loading the
      * images from the server, and initializing the overlay.
      * @param {Function} callback Function to call once the images have
      * been successfully loaded.
      */
     function _initOSD(callback) {
-        const imageStack = _expandImageName(_currentImage.name);
-
         //init OSD viewer
         _viewer = OpenSeadragon(_optionsOSD);
         _addHandlers(_viewer, callback);
 
         //open the DZI xml file pointing to the tiles
-        _loadImages(imageStack);
+        const imageName = _currentImage.name;
+        const imageStack = _expandImageName(imageName);
+        _openImages(imageStack);
 
         //Create svgOverlay(); so that anything like D3, or any canvas library can act upon. https://d3js.org/
         const overlay =  _viewer.svgOverlay();
