@@ -205,6 +205,9 @@
     $.TiledImage.prototype.draw = function() {
         const viewer = this.viewer;
         if (viewer._hasFocusLevels) {
+            if (this._awaitingDrawCall) {
+                return;
+            }
             const index = viewer.world.getIndexOfItem(this);
             if (index === 0) {
                 this._unalteredDraw();
@@ -215,7 +218,9 @@
                     this._unalteredDraw();
                 }
                 else {
+                    this._awaitingDrawCall = true;
                     previousTile.addOnceHandler("fully-loaded-change", e => {
+                        this._awaitingDrawCall = false;
                         this.draw();
                     });
                 }
