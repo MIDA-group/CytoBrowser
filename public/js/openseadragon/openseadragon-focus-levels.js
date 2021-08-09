@@ -199,4 +199,30 @@
             return oldZ;
         }
     }
+
+    // Wrapper of the draw function to force current focus level first
+    $.TiledImage.prototype._unalteredDraw = $.TiledImage.prototype.draw;
+    $.TiledImage.prototype.draw = function() {
+        const viewer = this.viewer;
+        if (viewer._hasFocusLevels) {
+            const index = viewer.world.getIndexOfItem(this);
+            if (index === 0) {
+                this._unalteredDraw();
+            }
+            else {
+                const previousTile = viewer.world.getItemAt(index - 1);
+                if (previousTile.getFullyLoaded()) {
+                    this._unalteredDraw();
+                }
+                else {
+                    previousTile.addOnceHandler("fully-loaded-change", e => {
+                        this.draw();
+                    });
+                }
+            }
+        }
+        else {
+            this._unalteredDraw();
+        }
+    }
 })(OpenSeadragon);
