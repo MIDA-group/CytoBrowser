@@ -160,6 +160,16 @@
             // Set the current order for the next focus level change
             this._currentLoadOrder = newOrder;
             this._currentZ = newZ;
+
+            // Make sure everything gets drawn properly
+            for (let i = 0; i < nItems; i++) {
+                const item = this.world.getItemAt(i);
+                const fullyLoaded = item.getFullyLoaded();
+                item.raiseEvent("fully-loaded-change", {
+                    fullyLoaded: fullyLoaded,
+                    eventSource: item
+                });
+            }
         }
     }
 
