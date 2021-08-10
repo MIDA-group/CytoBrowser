@@ -46,7 +46,7 @@
      * subject at different focus levels. This function prepares the
      * images in such a way that the focus level can be changed, with
      * this being implemented through a change in opacity.
-     * @param {Array<>} tileSources An array of tile sources for the
+     * @param {Array} tileSources An array of tile sources for the
      * images that represent the different focus levels of the subject.
      * @param {number} [initialZ] The z level that should be set as the
      * initial focus level in the OSD viewer. If not set, it will
