@@ -41,6 +41,15 @@
         return order;
     }
 
+    function _alterLoadOrder(arr, oldOrder, newOrder) {
+        const oldOrder = this._currentLoadOrder;
+        const newOrder = _getLoadOrder(nItems, newZIndex);
+        const unorderedItems = new Array(nItems);
+        oldOrder.forEach((z, i) => unorderedItems[z] = arr[i]);
+        arr.length = 0;
+        newOrder.forEach(z => arr.push(unorderedItems[z]));
+    }
+
     /**
      * Open a series of images that together form a stack of the same
      * subject at different focus levels. This function prepares the
@@ -120,6 +129,32 @@
             });
             this.addTiledImage(tileSource);
         });
+
+        // Code necessary to fix bug in OSD navigator
+        // Can be fixed in the OSD source, the following can be removed if it is
+        if (this.navigator) {
+            const waitForNavigator = function() {
+                let nNavigatorItems = this.navigator.world.getItemCount();
+                if (nNavigatorItems < nItems) {
+                    this.navigator.world.addOnceHandler("add-item", waitForNavigator);
+                }
+                else {
+                    for (let i = 0; i < nItems; i++) {
+                        const item = this.world.getItemAt(i);
+                        const navItem = this.navigator.world.getItemAt(i);
+                        if (navItem.getFullyLoaded()) {
+                            navItem.setOpacity(item.getOpacity());
+                        }
+                        else {
+                            navItem.addOnceHandler("fully-loaded-change", e => {
+                                navItem.setOpacity(item.getOpacity());
+                            });
+                        }
+                    }
+                }
+            }
+            waitForNavigator();
+        }
     }
 
     /**
@@ -149,9 +184,10 @@
             const oldOrder = this._currentLoadOrder;
             const newOrder = _getLoadOrder(nItems, newZIndex);
             const unorderedItems = new Array(nItems);
-            oldOrder.forEach((z, i) => unorderedItems[z] = this.world._items[i]);
-            this.world._items.length = 0;
-            newOrder.forEach(z => this.world._items.push(unorderedItems[z]));
+            _alterLoadOrder(this.world._items, oldOrder, newOrder);
+            if (this.navigator) {
+                _alterLoadOrder(this.navigator.world._items, oldOrder, newOrder);
+            }
 
             // Adjust the opacities
             unorderedItems[newZIndex].setOpacity(1);
