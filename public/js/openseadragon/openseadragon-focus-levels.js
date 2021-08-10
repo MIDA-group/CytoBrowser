@@ -220,12 +220,12 @@
             }
             const index = viewer.world.getIndexOfItem(this);
             if (index === 0) {
-                this._unalteredDraw();
+                return this._unalteredDraw();
             }
             else {
                 const previousTile = viewer.world.getItemAt(index - 1);
                 if (previousTile.getFullyLoaded()) {
-                    this._unalteredDraw();
+                    return this._unalteredDraw();
                 }
                 else {
                     this._awaitingDrawCall = true;
@@ -237,7 +237,7 @@
             }
         }
         else {
-            this._unalteredDraw();
+            return this._unalteredDraw();
         }
     }
 
@@ -254,9 +254,11 @@
                 this._matchOpacity(item, original);
                 this._matchCompositeOperation(item, original);
             };
+            options.success = newSuccess;
+            return $.Viewer.prototype._unalteredAddTiledImage(this, [options]);
         }
         else {
-            this._unalteredAddTiledImage(options);
+            return this._unalteredAddTiledImage(options);
         }
     }
 })(OpenSeadragon);
