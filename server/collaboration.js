@@ -4,8 +4,10 @@
  * different users of the CytoBrowser.
  */
 
-// Autosave module, initialized in export
-let autosave;
+const sanitize = require("sanitize-filename");
+
+// Modules initialized in export
+let autosave, metadata;
 
 // Object for storing all ongoing collaborations
 const collabs = {};
@@ -280,7 +282,8 @@ class Collaboration {
             image: this.image,
             members: Array.from(this.members.values()),
             annotations: this.annotations,
-            comments: this.comments
+            comments: this.comments,
+            metadata: metadata.getMetadataForImage(this.image)
         }
     }
 
@@ -427,7 +430,8 @@ function getId() {
  * has an effect if the collaboration has not been created yet.
  */
 function joinCollab(ws, name, userId, id, image) {
-    const collab = getCollab(id, image);
+    const cleanImage = sanitize(image);
+    const collab = getCollab(id, cleanImage);
     collab.addMember(ws, name, userId);
 }
 
@@ -473,11 +477,13 @@ function handleMessage(ws, id, msg) {
  * image ids and their names.
  */
 function getAvailable(image) {
-    return autosave.getSavedIds(image);
+    const cleanImage = sanitize(image);
+    return autosave.getSavedIds(cleanImage);
 }
 
-module.exports = function(dir) {
-    autosave = require("./autosave")(dir);
+module.exports = function(autosaveDir, metadataJsonDir) {
+    autosave = require("./autosave")(autosaveDir);
+    metadata = require("./metadata")(metadataJsonDir);
     return {
         getId: getId,
         joinCollab: joinCollab,

@@ -97,8 +97,8 @@ const tmapp = (function() {
      */
     function _updateBrightnessContrast() {
         //const ctx=_viewer.drawer.context;
-        //Since I'm not 100% sure that Safari supports the above 
-        // https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/filter 
+        //Since I'm not 100% sure that Safari supports the above
+        // https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/filter
         //we use the css-style property instead
         const ctx=document.getElementById("ISS_viewer").querySelector('.openseadragon-canvas').style;
         if (_currState.contrast==0 && _currState.brightness==0) {
@@ -329,7 +329,6 @@ const tmapp = (function() {
             _updateRotation();
             _updateBrightnessContrast();
             tmappUI.clearImageError();
-            tmappUI.enableCollabCreation();
             callback && callback();
         });
 
@@ -369,6 +368,7 @@ const tmapp = (function() {
 
     function _clearCurrentImage() {
         annotationHandler.clear(false);
+        metadataHandler.clear();
         _viewer && _viewer.destroy();
         $("#ISS_viewer").empty();
         coordinateHelper.clearImage();
@@ -599,7 +599,7 @@ const tmapp = (function() {
         setContrast(_currState.contrast+delta);
     }
 
-    
+
     /**
      * Get the name of the currently opened image.
      * @returns {string} The current image name.
@@ -684,6 +684,26 @@ const tmapp = (function() {
         _viewer.innerTracker.keyHandler(event);
     }
 
+    /**
+     * Update the scale of the scalebar.
+     * @param {number} pixelsPerMeter The number of pixels in one meter.
+     */
+    function updateScalebar(pixelsPerMeter) {
+        // Uses: https://github.com/usnistgov/OpenSeadragonScalebar
+        if (_viewer) {
+            _viewer.scalebar({
+                pixelsPerMeter: pixelsPerMeter,
+                type: OpenSeadragon.ScalebarType.MICROSCOPY,
+                location: OpenSeadragon.ScalebarLocation.BOTTOM_RIGHT,
+                backgroundColor: "rgba(255,255,255,0.5)",
+                stayInsideImage: false // Necessary for rotation to work
+            });
+        }
+        else {
+            throw new Error ("Tried to adjust scalebar without a viewer.");
+        }
+    }
+
     return {
         init: init,
         openImage: openImage,
@@ -706,6 +726,8 @@ const tmapp = (function() {
         disableControls: disableControls,
 
         keyHandler: keyHandler,
-        keyDownHandler: keyDownHandler
+        keyDownHandler: keyDownHandler,
+
+        updateScalebar: updateScalebar
     };
 })();

@@ -35,6 +35,16 @@ const annotationHandler = (function (){
      * @typedef {string} CoordSystem
      */
     const _annotations = [];
+    let _nMarkers = 0;
+    let _nRegions = 0;
+
+    function _updateMetadata() {
+        metadataHandler.updateMetadataValues({
+            nMarkers: _nMarkers,
+            nRegions: _nRegions
+        });
+    }
+
     function _generateId() {
         const order = Math.ceil(Math.log10((1 + _annotations.length) * 100));
         const multiplier = Math.pow(10, order);
@@ -194,6 +204,15 @@ const annotationHandler = (function (){
         // Store a data representation of the annotation
         _annotations.push(addedAnnotation);
 
+        // Update the annotation count
+        if (addedAnnotation.points.length === 1) {
+            _nMarkers++;
+        }
+        else {
+            _nRegions++;
+        }
+        _updateMetadata();
+
         // Send the update to collaborators
         transmit && collabClient.addAnnotation(addedAnnotation);
 
@@ -268,7 +287,16 @@ const annotationHandler = (function (){
         }
 
         // Remove the annotation from the data
-        annotations.splice(deletedIndex, 1);
+        const removedAnnotation = annotations.splice(deletedIndex, 1)[0];
+
+        // Update the annotation count
+        if (removedAnnotation.points.length === 1) {
+            _nMarkers--;
+        }
+        else {
+            _nRegions--;
+        }
+        _updateMetadata();
 
         // Send the update to collaborators
         transmit && collabClient.removeAnnotation(id);

@@ -4,11 +4,13 @@ const hostname = argv._[0] || "localhost";
 const port = argv._[1] || 0;
 const storageDir = argv.storage || argv.s || "./storage";
 const collabDir = argv.collab || argv.c || "./collab_storage";
+const metadataDir = argv.metadata || argv.m || "./metadata/json";
 const dataDir = argv.data || argv.d || "./data";
 if (argv.h || argv.help) {
     console.info(`Usage: node cytobrowser.js hostname port ` +
     `[-s storage path = "./storage"] ` +
     `[-c collab storage path = "./collab_storage"] ` +
+    `[-m image json metadata path = "./metadata/json"] ` +
     `[-d image data path = "./data"]`);
     return;
 }
@@ -17,7 +19,7 @@ if (argv.h || argv.help) {
 const fs = require("fs");
 const express = require("express");
 const availableImages = require("./server/availableImages")(dataDir);
-const collaboration = require("./server/collaboration")(collabDir);
+const collaboration = require("./server/collaboration")(collabDir, metadataDir);
 const serverStorage = require("./server/serverStorage")(storageDir);
 
 // Initialize the server

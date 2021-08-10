@@ -80,10 +80,10 @@ const collabClient = (function(){
     function _handleMetadataAction(msg) {
         switch(msg.actionType) {
             case "addComment":
-                metadataHandler.handleCommentFromServer(msg.comment);
+                globalDataHandler.handleCommentFromServer(msg.comment);
                 break;
             case "removeComment":
-                metadataHandler.handleCommentRemovalFromServer(msg.id);
+                globalDataHandler.handleCommentRemovalFromServer(msg.id);
                 break;
             default:
                 console.warn(`Unknown metadata action type: ${msg.actionType}`);
@@ -164,6 +164,8 @@ const collabClient = (function(){
             });
         }
         metadataHandler.clear();
+        globalDataHandler.clear();
+        metadataHandler.updateMetadataValues(msg.metadata);
         annotationHandler.clear(false);
         msg.annotations.forEach(annotation => {
             annotationHandler.add(annotation, "image", false)
@@ -175,7 +177,7 @@ const collabClient = (function(){
             _joinBatch = null;
         }
         msg.comments.forEach(comment => {
-            metadataHandler.handleCommentFromServer(comment);
+            globalDataHandler.handleCommentFromServer(comment);
         });
         _members = msg.members;
         _localMember = _members.find(member => member.id === msg.requesterId);
