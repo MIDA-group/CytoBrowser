@@ -255,7 +255,7 @@
                 this._matchCompositeOperation(item, original);
             };
             options.success = newSuccess;
-            return $.Viewer.prototype._unalteredAddTiledImage(this, [options]);
+            return $.Viewer.prototype._unalteredAddTiledImage.apply(this, [options]);
         }
         else {
             return this._unalteredAddTiledImage(options);
