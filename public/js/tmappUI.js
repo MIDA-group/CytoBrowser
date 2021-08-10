@@ -88,7 +88,37 @@ const tmappUI = (function(){
         const container = $("#global_comments");
         const inputFun = globalDataHandler.sendCommentToServer;
         const removeFun = globalDataHandler.sendCommentRemovalToServer;
-        const updateFun = htmlHelper.buildCommentSectionAlt(container, inputFun, removeFun);
+        const commentSection = htmlHelper.buildCommentSectionAlt(container, inputFun, removeFun);
+        const updateFun = comments => commentSection.updateComments(comments);
+        const originalTitle = document.title;
+        commentSection.onChangeUnseen(unseenIds => {
+            const nUnseen = unseenIds.length;
+            if (nUnseen > 0) {
+                $("#unseen_comments").text(nUnseen);
+                $("#unseen_comments").show();
+                const notificationTitle = `(${nUnseen}) ${originalTitle}`;
+                document.title = notificationTitle;
+            }
+            else {
+                $("#unseen_comments").hide();
+                document.title = originalTitle;
+            }
+        });
+        let commentsVisible = false;
+        $("#comments_collapse").on("shown.bs.collapse", () => {
+            commentSection.setVisibility(true);
+            commentsVisible = true;
+        });
+        $("#comments_collapse").on("hidden.bs.collapse", () => {
+            commentSection.setVisibility(false);
+            commentsVisible = false;
+        });
+        $(document).focus(() => {
+            commentSection.setVisibility(commentsVisible);
+        });
+        $(document).blur(() => {
+            commentSection.setVisibility(false);
+        });
         globalDataHandler.setCommentUpdateFun(updateFun);
     }
 

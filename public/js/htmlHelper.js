@@ -94,20 +94,20 @@ const htmlHelper = (function() {
         return entry;
     }
 
-    function _commentListAlt(removeFun) {
+    function _commentListAlt() {
         const container = $(`
             <div class="card bg-secondary mb-2" style="height: 15vh; overflow-y: auto; resize: vertical;">
                 <ul class="list-group list-group-flush position-absolute w-100">
                 </ul>
             </div>
         `);
-        const list = container.find("ul");
-        let stuckToBottom = true;
-        container.scroll(() => {
-            const distToBottom = list.height() - (container.height() + container.scrollTop());
-            stuckToBottom = distToBottom < 20;
-        });
-        container.updateComments = comments => {
+        return container;
+    }
+
+    function _addFunctionalityToCommentList(listContainer, removeFun) {
+        const list = listContainer.find("ul");
+        let stuckToBottom = false;
+        const updateComments = (comments => {
             const shouldStickToBottom = stuckToBottom;
             list.empty();
             comments.forEach(comment => {
@@ -115,10 +115,36 @@ const htmlHelper = (function() {
                 list.append(entry);
             });
             if (shouldStickToBottom) {
-                container.scrollTop(list.height() - container.height());
+                listContainer.scrollTop(list.height() - listContainer.height());
+            }
+        });
+        const stickState = (state => {
+            const hasHeight = listContainer.height() !== 0 && list.height() !== 0;
+            const fitsInContainer = listContainer.height() > list.height();
+            const atBottom = list.height() - (listContainer.height() + listContainer.scrollTop()) < 20;
+            if (hasHeight && (fitsInContainer || atBottom)) {
+                stuckToBottom = true;
+            }
+            else if (state !== undefined) {
+                stuckToBottom = state;
+            }
+            return stuckToBottom;
+        });
+        const commentSection = new CommentSection(stickState, updateComments);
+        const tryStickingToBottom = () => {
+            const distToBottom = list.height() - (listContainer.height() + listContainer.scrollTop());
+            stuckToBottom = distToBottom < 20;
+            if (stuckToBottom) {
+                commentSection.allCommentsInView();
             }
         };
-        return container;
+        listContainer.scroll(tryStickingToBottom);
+        const heightObserver = new MutationObserver(tryStickingToBottom);
+        heightObserver.observe(listContainer.get(0), {
+            attributes: true,
+            attributeFilter: ["style"]
+        });
+        return commentSection;
     }
 
     function _commentList(commentable, updateFun) {
@@ -358,16 +384,16 @@ const htmlHelper = (function() {
      * should be passed when the submit button is pressed.
      * @param {Function} removeFun The function to which the comment id
      * should be passed when the remove button is pressed.
-     * @returns {Function} Function that is to be called with a list of
-     * comments whenever the comments are updated.
+     * @returns {CommentSection} CommentSection object that can be used
+     * to interface with the comment section HTML.
      */
     function buildCommentSectionAlt(container, inputFun, removeFun) {
         // TODO: Change the other comment section to use this
-        const list = _commentListAlt(removeFun);
-        const updateFun = list.updateComments;
+        const listContainer = _commentListAlt();
+        const commentSection = _addFunctionalityToCommentList(listContainer, removeFun);
         const input = _commentInputAlt(inputFun);
-        container.append(list, input);
-        return updateFun;
+        container.append(listContainer, input);
+        return commentSection;
     }
 
     /**
