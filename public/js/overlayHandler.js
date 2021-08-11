@@ -45,7 +45,7 @@ const overlayHandler = (function (){
         const names = transforms.map(transform => transform.match(/.+(?=\()/g)[0]);
         transforms.forEach(transform => {
             const name = transform.match(/.+(?=\()/g);
-            const values = transform.match(/(?<=\(.*)[^\s,]+(?=.*\))/g);
+            const values = transform.match(/[-+]?[0-9]*\.?[0-9]+/g);
             transObj[name] = values;
         });
 
