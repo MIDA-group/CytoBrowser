@@ -153,10 +153,11 @@ const overlayHandler = (function (){
     function _toggleRegionEditControls(d, node) {
         const selection = d3.select(node);
         if (selection.attr("data-being-edited")) {
-            selection.select("region-edit-handles").remove();
+            selection.attr("data-being-edited", null).select(".region-edit-handles").remove();
         }
         else {
-            selection.append("g")
+            selection.attr("data-being-edited", true)
+                .append("g")
                 .attr("class", "region-edit-handles")
                 .call(group => {
                     d.points.forEach(point => {
