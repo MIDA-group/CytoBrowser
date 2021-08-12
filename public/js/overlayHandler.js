@@ -150,6 +150,26 @@ const overlayHandler = (function (){
             .attr("transform", _transformFunction({rotate: -_rotation}));
     }
 
+    function _displayRegionEditControls(d, node) {
+        // TODO: Add controls that can be dragged around
+        d3.select(node)
+            .append("g")
+            .attr("class", "region-edit-handles")
+            .call(group => {
+                d.points.forEach(point => {
+                    group.append("path")
+                        .attr("d", d3.symbol().size(500).type(d3.symbolCircle))
+                        .attr("transform", d => {
+                            const viewport = coordinateHelper.imageToViewport(point);
+                            const coords = coordinateHelper.viewportToOverlay(viewport);
+                            return coords;
+                        })
+                        .style("fill", "black")
+                        .style("cursor", "move")
+                });
+            });
+    }
+
     /**
      * Add mouse events that should be shared between all annotations,
      * both markers and regions. These include handlers for dragging an
@@ -261,10 +281,15 @@ const overlayHandler = (function (){
                 .attr("fill-opacity", 0.2);
         }
 
+        function beginEditing() {
+            _displayRegionEditControls(d, node);
+        }
+
         new OpenSeadragon.MouseTracker({
             element: node,
             enterHandler: highlight,
-            exitHandler: unHighlight
+            exitHandler: unHighlight,
+            dblClickHandler: beginEditing
         }).setTracking(true);
     }
 
@@ -364,11 +389,20 @@ const overlayHandler = (function (){
     }
 
     function _updateRegion(update) {
-        update.select("path")
-            .attr("d", _getRegionPath)
-            .transition("changeColor").duration(500)
-            .attr("stroke", _getAnnotationColor)
-            .attr("fill", _getAnnotationColor);
+        update.call(update =>
+                update.selectChild("path")
+                    .attr("d", _getRegionPath)
+                    .transition("changeColor").duration(500)
+                    .attr("stroke", _getAnnotationColor)
+                    .attr("fill", _getAnnotationColor)
+            )
+            .call(update =>
+                update.selectAll(".region-edit-handles path")
+                    .each(function(d, i) {
+                        // TODO
+                        console.log(d);
+                    });
+            );
     }
 
     function _exitRegion(exit) {
