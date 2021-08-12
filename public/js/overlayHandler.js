@@ -168,7 +168,7 @@ const overlayHandler = (function (){
                                 const coords = coordinateHelper.viewportToOverlay(viewport);
                                 return `translate(${coords.x}, ${coords.y})`;
                             })
-                            .style("fill", "black")
+                            .style("fill", _getAnnotationColor)
                             .style("cursor", "move")
                             .call(path => {
                                 new OpenSeadragon.MouseTracker({
@@ -287,7 +287,7 @@ const overlayHandler = (function (){
 
         function highlight() {
             d3.select(node)
-                .selectAll("path")
+                .selectAll(".region-area")
                 .transition("highlight").duration(200)
                 .attr("stroke", _getAnnotationColor)
                 .attr("fill", _getAnnotationColor)
@@ -296,7 +296,7 @@ const overlayHandler = (function (){
 
         function unHighlight() {
             d3.select(node)
-                .selectAll("path")
+                .selectAll(".region-area")
                 .transition("highlight").duration(200)
                 .attr("stroke", _getAnnotationColor)
                 .attr("fill", _getAnnotationColor)
@@ -431,6 +431,8 @@ const overlayHandler = (function (){
                                 return `translate(${coords.x}, ${coords.y})`;
                             });
                     })
+                    .transition("changeColor").duration(500)
+                    .attr("fill", _getAnnotationColor)
             );
     }
 
