@@ -166,6 +166,22 @@ const overlayHandler = (function (){
                         })
                         .style("fill", "black")
                         .style("cursor", "move")
+                        .call(path => {
+                            new OpenSeadragon.MouseTracker({
+                                dragHandler: function(event) {
+                                    const reference = coordinateHelper.webToImage({x: 0, y: 0});
+                                    const delta = coordinateHelper.webToImage(event.delta);
+                                    point.x += delta.x - reference.x;
+                                    point.y += delta.y - reference.y;
+                                    annotationHandler.update(d.id, d, "image");
+                                    const viewportCoords = coordinateHelper.pageToViewport({
+                                        x: event.originalEvent.pageX,
+                                        y: event.originalEvent.pageY
+                                    });
+                                    tmapp.setCursorStatus(viewportCoords);
+                                }
+                            }).setTracking(true);
+                        });
                 });
             });
     }
@@ -387,12 +403,15 @@ const overlayHandler = (function (){
                     .attr("class", "region-area")
             )
             .attr("opacity", 1)
-            .each(function(d) {_addRegionMouseEvents(d, this);});
+            .each(function(d) {
+                const area = d3.select(this).select(".region-area");
+                _addRegionMouseEvents(d, area);
+            });
     }
 
     function _updateRegion(update) {
         update.call(update =>
-                update.selectChild(".region-area")
+                update.select(".region-area")
                     .attr("d", _getRegionPath)
                     .transition("changeColor").duration(500)
                     .attr("stroke", _getAnnotationColor)
