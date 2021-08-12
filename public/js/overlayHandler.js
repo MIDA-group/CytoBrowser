@@ -162,7 +162,7 @@ const overlayHandler = (function (){
                         .attr("transform", d => {
                             const viewport = coordinateHelper.imageToViewport(point);
                             const coords = coordinateHelper.viewportToOverlay(viewport);
-                            return coords;
+                            return `translate(${coords.x}, ${coords.y})`;
                         })
                         .style("fill", "black")
                         .style("cursor", "move")
@@ -376,6 +376,7 @@ const overlayHandler = (function (){
 
     function _enterRegion(enter) {
         enter.append("g")
+            .attr("class", "region")
             .call(group =>
                 group.append("path")
                     .attr("d", _getRegionPath)
@@ -383,6 +384,7 @@ const overlayHandler = (function (){
                     .attr("stroke-width", _regionStrokeWidth())
                     .attr("fill", _getAnnotationColor)
                     .attr("fill-opacity", 0.2)
+                    .attr("class", "region-area")
             )
             .attr("opacity", 1)
             .each(function(d) {_addRegionMouseEvents(d, this);});
@@ -390,7 +392,7 @@ const overlayHandler = (function (){
 
     function _updateRegion(update) {
         update.call(update =>
-                update.selectChild("path")
+                update.selectChild(".region-area")
                     .attr("d", _getRegionPath)
                     .transition("changeColor").duration(500)
                     .attr("stroke", _getAnnotationColor)
@@ -399,9 +401,14 @@ const overlayHandler = (function (){
             .call(update =>
                 update.selectAll(".region-edit-handles path")
                     .each(function(d, i) {
-                        // TODO
-                        console.log(d);
-                    });
+                        const point = d.points[i];
+                        d3.select(this)
+                            .attr("transform", d => {
+                                const viewport = coordinateHelper.imageToViewport(point);
+                                const coords = coordinateHelper.viewportToOverlay(viewport);
+                                return `translate(${coords.x}, ${coords.y})`;
+                            });
+                    })
             );
     }
 
@@ -510,7 +517,7 @@ const overlayHandler = (function (){
                 _updateMarker,
                 _exitMarker
             );
-        _regionOverlay.selectAll("g")
+        _regionOverlay.selectAll(".region")
             .data(regions, d => d.id)
             .join(
                 _enterRegion,
