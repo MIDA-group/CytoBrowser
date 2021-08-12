@@ -150,40 +150,45 @@ const overlayHandler = (function (){
             .attr("transform", _transformFunction({rotate: -_rotation}));
     }
 
-    function _displayRegionEditControls(d, node) {
-        // TODO: Add controls that can be dragged around
-        d3.select(node)
-            .append("g")
-            .attr("class", "region-edit-handles")
-            .call(group => {
-                d.points.forEach(point => {
-                    group.append("path")
-                        .attr("d", d3.symbol().size(500).type(d3.symbolCircle))
-                        .attr("transform", d => {
-                            const viewport = coordinateHelper.imageToViewport(point);
-                            const coords = coordinateHelper.viewportToOverlay(viewport);
-                            return `translate(${coords.x}, ${coords.y})`;
-                        })
-                        .style("fill", "black")
-                        .style("cursor", "move")
-                        .call(path => {
-                            new OpenSeadragon.MouseTracker({
-                                dragHandler: function(event) {
-                                    const reference = coordinateHelper.webToImage({x: 0, y: 0});
-                                    const delta = coordinateHelper.webToImage(event.delta);
-                                    point.x += delta.x - reference.x;
-                                    point.y += delta.y - reference.y;
-                                    annotationHandler.update(d.id, d, "image");
-                                    const viewportCoords = coordinateHelper.pageToViewport({
-                                        x: event.originalEvent.pageX,
-                                        y: event.originalEvent.pageY
-                                    });
-                                    tmapp.setCursorStatus(viewportCoords);
-                                }
-                            }).setTracking(true);
-                        });
+    function _toggleRegionEditControls(d, node) {
+        const selection = d3.select(node);
+        if (selection.attr("data-being-edited")) {
+            selection.select("region-edit-handles").remove();
+        }
+        else {
+            selection.append("g")
+                .attr("class", "region-edit-handles")
+                .call(group => {
+                    d.points.forEach(point => {
+                        group.append("path")
+                            .attr("d", d3.symbol().size(500).type(d3.symbolCircle))
+                            .attr("transform", d => {
+                                const viewport = coordinateHelper.imageToViewport(point);
+                                const coords = coordinateHelper.viewportToOverlay(viewport);
+                                return `translate(${coords.x}, ${coords.y})`;
+                            })
+                            .style("fill", "black")
+                            .style("cursor", "move")
+                            .call(path => {
+                                new OpenSeadragon.MouseTracker({
+                                    element: path.node(),
+                                    dragHandler: function(event) {
+                                        const reference = coordinateHelper.webToImage({x: 0, y: 0});
+                                        const delta = coordinateHelper.webToImage(event.delta);
+                                        point.x += delta.x - reference.x;
+                                        point.y += delta.y - reference.y;
+                                        annotationHandler.update(d.id, d, "image");
+                                        const viewportCoords = coordinateHelper.pageToViewport({
+                                            x: event.originalEvent.pageX,
+                                            y: event.originalEvent.pageY
+                                        });
+                                        tmapp.setCursorStatus(viewportCoords);
+                                    }
+                                }).setTracking(true);
+                            });
+                    });
                 });
-            });
+        }
     }
 
     /**
@@ -298,7 +303,7 @@ const overlayHandler = (function (){
         }
 
         function beginEditing() {
-            _displayRegionEditControls(d, node);
+            _toggleRegionEditControls(d, node);
         }
 
         new OpenSeadragon.MouseTracker({
@@ -403,10 +408,7 @@ const overlayHandler = (function (){
                     .attr("class", "region-area")
             )
             .attr("opacity", 1)
-            .each(function(d) {
-                const area = d3.select(this).select(".region-area");
-                _addRegionMouseEvents(d, area);
-            });
+            .each(function(d) {_addRegionMouseEvents(d, this);});
     }
 
     function _updateRegion(update) {
