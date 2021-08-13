@@ -450,6 +450,7 @@ const overlayHandler = (function (){
                                 return {translate: [coords.x, coords.y]};
                             }));
                     })
+                    .select("path")
                     .transition("changeColor").duration(500)
                     .style("fill", _getAnnotationColor)
             );
