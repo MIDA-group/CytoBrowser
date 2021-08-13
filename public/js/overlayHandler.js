@@ -161,7 +161,14 @@ const overlayHandler = (function (){
     function _toggleRegionEditControls(d, node) {
         const selection = d3.select(node);
         if (selection.attr("data-being-edited")) {
-            selection.attr("data-being-edited", null).select(".region-edit-handles").remove();
+            selection.selectAll("g path")
+                .transition("appear").duration(250)
+                .attr("transform", "scale(0)")
+                .on("end", () =>
+                    selection.attr("data-being-edited", null)
+                        .select(".region-edit-handles")
+                        .remove()
+                );
         }
         else {
             selection.attr("data-being-edited", true)
