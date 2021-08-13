@@ -432,7 +432,7 @@ const overlayHandler = (function (){
                             });
                     })
                     .transition("changeColor").duration(500)
-                    .attr("fill", _getAnnotationColor)
+                    .style("fill", _getAnnotationColor)
             );
     }
 
