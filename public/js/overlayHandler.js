@@ -433,10 +433,10 @@ const overlayHandler = (function (){
                     .each(function(d, i) {
                         const point = d.points[i];
                         d3.select(this)
-                            .attr("transform", d => {
+                            .attr("transform", _transformFunction(function(d) {
                                 const viewport = coordinateHelper.imageToViewport(point);
                                 const coords = coordinateHelper.viewportToOverlay(viewport);
-                                return _transformFunction({translate: [coords.x, coords.y]});
+                                return {translate: [coords.x, coords.y]};
                             });
                     })
                     .transition("changeColor").duration(500)
