@@ -437,7 +437,7 @@ const overlayHandler = (function (){
                                 const viewport = coordinateHelper.imageToViewport(point);
                                 const coords = coordinateHelper.viewportToOverlay(viewport);
                                 return {translate: [coords.x, coords.y]};
-                            });
+                            }));
                     })
                     .transition("changeColor").duration(500)
                     .style("fill", _getAnnotationColor)
