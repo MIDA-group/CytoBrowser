@@ -161,7 +161,7 @@ const overlayHandler = (function (){
     function _toggleRegionEditControls(d, node) {
         const selection = d3.select(node);
         if (selection.attr("data-being-edited")) {
-            selection.selectAll("g path")
+            selection.selectAll(".region-edit-handles g path")
                 .transition("appear").duration(250)
                 .attr("transform", "scale(0)")
                 .on("end", () =>
