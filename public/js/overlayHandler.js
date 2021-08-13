@@ -107,6 +107,10 @@ const overlayHandler = (function (){
         return 2 * _scale;
     }
 
+    function _regionHandleSize() {
+        return _scale;
+    }
+
     function _getRegionPath(d) {
         const stops = d.points.map(point => {
             const viewport = coordinateHelper.imageToViewport(point);
@@ -138,8 +142,12 @@ const overlayHandler = (function (){
 
     function _resizeRegions() {
         _regionOverlay.selectAll("g")
-            .select("path")
-            .attr("stroke-width", _regionStrokeWidth());
+            .call(group =>
+                group.select(".region-area")
+                    .attr("stroke-width", _regionStrokeWidth())
+            )
+            .selectAll(".region-edit-handles path")
+            .attr("transform", _transformFunction({scale: _regionHandleSize()}));
         _pendingRegionOverlay.selectAll("path")
             .attr("stroke-width", _regionStrokeWidth())
             .attr("stroke-dasharray", _regionStrokeWidth());
@@ -166,7 +174,7 @@ const overlayHandler = (function (){
                             .attr("transform", d => {
                                 const viewport = coordinateHelper.imageToViewport(point);
                                 const coords = coordinateHelper.viewportToOverlay(viewport);
-                                return `translate(${coords.x}, ${coords.y})`;
+                                return `translate(${coords.x}, ${coords.y}), scale(${_regionHandleSize()})`;
                             })
                             .style("fill", _getAnnotationColor)
                             .style("cursor", "move")
