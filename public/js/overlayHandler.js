@@ -146,7 +146,7 @@ const overlayHandler = (function (){
                 group.select(".region-area")
                     .attr("stroke-width", _regionStrokeWidth())
             )
-            .selectAll(".region-edit-handles path")
+            .selectAll(".region-edit-handles g")
             .attr("transform", _transformFunction({scale: _regionHandleSize()}));
         _pendingRegionOverlay.selectAll("path")
             .attr("stroke-width", _regionStrokeWidth())
@@ -169,15 +169,19 @@ const overlayHandler = (function (){
                 .attr("class", "region-edit-handles")
                 .call(group => {
                     d.points.forEach(point => {
-                        group.append("path")
-                            .attr("d", d3.symbol().size(500).type(d3.symbolCircle))
+                        group.append("g")
                             .attr("transform", d => {
                                 const viewport = coordinateHelper.imageToViewport(point);
                                 const coords = coordinateHelper.viewportToOverlay(viewport);
                                 return `translate(${coords.x}, ${coords.y}), scale(${_regionHandleSize()})`;
                             })
+                            .append("path")
+                            .attr("d", d3.symbol().size(500).type(d3.symbolCircle))
+                            .attr("transform", "scale(0)")
                             .style("fill", _getAnnotationColor)
                             .style("cursor", "move")
+                            .transition("appear").duration(250)
+                            .attr("transform", "scale(1)")
                             .call(path => {
                                 new OpenSeadragon.MouseTracker({
                                     element: path.node(),
@@ -429,7 +433,7 @@ const overlayHandler = (function (){
                     .attr("fill", _getAnnotationColor)
             )
             .call(update =>
-                update.selectAll(".region-edit-handles path")
+                update.selectAll(".region-edit-handles g")
                     .each(function(d, i) {
                         const point = d.points[i];
                         d3.select(this)
