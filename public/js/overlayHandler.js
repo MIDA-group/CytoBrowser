@@ -108,7 +108,7 @@ const overlayHandler = (function (){
     }
 
     function _regionHandleSize() {
-        return _scale;
+        return 0.5 * _scale;
     }
 
     function _getRegionPath(d) {
@@ -436,7 +436,7 @@ const overlayHandler = (function (){
                             .attr("transform", d => {
                                 const viewport = coordinateHelper.imageToViewport(point);
                                 const coords = coordinateHelper.viewportToOverlay(viewport);
-                                return `translate(${coords.x}, ${coords.y})`;
+                                return _transformFunction({translate: [coords.x, coords.y]});
                             });
                     })
                     .transition("changeColor").duration(500)
