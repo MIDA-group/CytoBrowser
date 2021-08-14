@@ -192,6 +192,12 @@ const overlayHandler = (function (){
                             .call(path => {
                                 new OpenSeadragon.MouseTracker({
                                     element: path.node(),
+                                    pressHandler: function(event) {
+                                        tmapp.setCursorStatus({held: true});
+                                    },
+                                    releaseHandler: function(event) {
+                                        tmapp.setCursorStatus({held: false});
+                                    },
                                     dragHandler: function(event) {
                                         const reference = coordinateHelper.webToImage({x: 0, y: 0});
                                         const delta = coordinateHelper.webToImage(event.delta);
