@@ -6,6 +6,22 @@ const globalDataHandler = (function() {
    const _comments = [];
    let _updateFun = null;
 
+   function _shortenInt(x) {
+       if (x < 1000) {
+           return x;
+       }
+       else if (x < 1_000_000) {
+           return Math.floor(x / 1000) + "k";
+       }
+       else if (x < 1_000_000_000) {
+           return Math.floor(x / 1_000_000) +  "M";
+       }
+       else {
+           console.warn("Tried to shorten a very large integer, not accounted for");
+           return x;
+       }
+   }
+
    function _updateCommentSection() {
        if (!_updateFun) {
            console.warn("Could not handle comment as there is no update function set.");
@@ -29,7 +45,7 @@ const globalDataHandler = (function() {
        $("#global_data_nregions").text(nRegions);
        classUtils.forEachClass(c => {
            const id = `#class_counter_${c.name}`;
-           $(id).text(classCounts[c.name]);
+           $(id).text(_shortenInt(classCounts[c.name]));
        });
    }
 
