@@ -28,7 +28,7 @@ const globalDataHandler = (function() {
        $("#global_data_nmarkers").text(nMarkers);
        $("#global_data_nregions").text(nRegions);
        classUtils.forEachClass(c => {
-           const id = `#class_name_${c.name}`;
+           const id = `#class_counter_${c.name}`;
            $(id).text(classCounts[c.name]);
        });
    }
