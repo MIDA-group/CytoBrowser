@@ -16,6 +16,24 @@ const globalDataHandler = (function() {
    }
 
    /**
+    * Update all displayed information about the number of annotations.
+    * @param {number} nMarkers The number of markers.
+    * @param {number} nRegions The number of regions.
+    * @param {Object} classCounts The number of annotations for each class.
+    * The object contains key-value pairs where the keys are the class
+    * names and the values are the number of annotation for the corresponding
+    * class.
+    */
+   function updateAnnotationCounts(nMarkers, nRegions, classCounts) {
+       $("#global_data_nmarkers").text(nMarkers);
+       $("#global_data_nregions").text(nRegions);
+       classUtils.forEachClass(c => {
+           const id = `#class_name_${c.name}`;
+           $(id).text(classCounts[c.name]);
+       });
+   }
+
+   /**
     * Submit a comment that should be added to the global comments of
     * the current session.
     * @param {string} commentText The text of the comment being submitted.
@@ -85,6 +103,7 @@ const globalDataHandler = (function() {
    }
 
    return {
+       updateAnnotationCounts: updateAnnotationCounts,
        sendCommentToServer: sendCommentToServer,
        sendCommentRemovalToServer: sendCommentRemovalToServer,
        handleCommentFromServer: handleCommentFromServer,

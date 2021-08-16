@@ -247,7 +247,7 @@ const htmlHelper = (function() {
         const button = $(`
             <label id="class_${mclass.name}" class="btn btn-dark px-0 px-md-1 px-lg-2" title="${mclass.description}">
                 <input type="radio" name="class_options" autocomplete="off">${mclass.name}</input>
-                <span class="badge badge-dark mt-1 d-block" id="class_counter_${mclass.name}">0</span>
+                <span class="badge badge-light mt-1 d-block" id="class_counter_${mclass.name}">0</span>
             </label>
         `);
         if (active)
