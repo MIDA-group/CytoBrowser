@@ -12,7 +12,9 @@ const htmlHelper = (function() {
 
     function _annotationDeleteButton(id, closeFun) {
         const delButton = $(`
-                <button>Delete</button>
+                <div class="row mt-2">
+                    <a class="card-link" href="javascript:void(0);">Delete annotation</a>
+                </div>
             `);
         delButton.click(() => {
             closeFun();
@@ -421,7 +423,6 @@ const htmlHelper = (function() {
      */
     function buildAnnotationSettingsMenu(container, annotation, closeFun, saveFun) {
         const updateFun = saveFun;
-        const del = _annotationDeleteButton(annotation.id, closeFun);
         const id = _annotationValueRow("Id", annotation.id);
         const author = _annotationValueRow("Created by", annotation.author);
         const classes = _annotationMclassOptions(annotation, updateFun);
@@ -435,7 +436,8 @@ const htmlHelper = (function() {
             annotation.comments.push(comment);
             updateFun();
         });
-        container.append(del, id, author, classes, list, input);
+        const del = _annotationDeleteButton(annotation.id, closeFun);
+        container.append(id, author, classes, list, input, del);
     }
 
     /**
