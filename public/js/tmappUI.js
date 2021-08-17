@@ -59,7 +59,7 @@ const tmappUI = (function(){
         const menu = $("#context_menu");
         const body = menu.find(".card-body");
         body.empty();
-        buildFun(body);
+        buildFun(body, _closeContextMenu);
 
         const maxBottom = menu.height() + location.y;
         const maxRight = menu.width() + location.x;
@@ -403,8 +403,8 @@ const tmappUI = (function(){
             throw new Error("Invalid annotation id.");
         }
 
-        _openContextMenu("Edit annotation", location, menuBody => {
-            htmlHelper.buildAnnotationSettingsMenu(menuBody, annotation, () => {
+        _openContextMenu("Edit annotation", location, (menuBody, closeFun) => {
+            htmlHelper.buildAnnotationSettingsMenu(menuBody, annotation, closeFun, () => {
                 annotationHandler.update(id, annotation, "image");
             });
         });
