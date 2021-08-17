@@ -301,7 +301,7 @@ const annotationHandler = (function (){
         else {
             _nRegions--;
         }
-        _classCounts[addedAnnotation.mclass]--;
+        _classCounts[removedAnnotation.mclass]--;
         _updateAnnotationCounts();
 
         // Send the update to collaborators
