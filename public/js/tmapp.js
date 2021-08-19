@@ -491,16 +491,32 @@ const tmapp = (function() {
      * @param {number} state.zoom The zoom in the viewport.
      */
     function moveTo({x, y, z, rotation, zoom}) {
-        if (!_viewer)
+        const capValue = (val, min, max) => Math.max(Math.min(val, max), min);
+        if (!_viewer) {
             throw new Error("Tried to move viewport without a viewer.");
-        if (zoom !== undefined)
-            _viewer.viewport.zoomTo(Math.min(zoom, _viewer.viewport.getMaxZoom()), true);
-        if (x !== undefined && y !== undefined)
-            _viewer.viewport.panTo(new OpenSeadragon.Point(x, y), true);
-        if (rotation !== undefined)
+        }
+        if (zoom !== undefined) {
+            const min = _viewer.viewport.getMinZoom();
+            const max = _viewer.viewport.getMaxZoom();
+            const boundZoom = capValue(zoom, min, max);
+            _viewer.viewport.zoomTo(boundZoom, true);
+        }
+        if (x !== undefined && y !== undefined) {
+            const bounds = _viewer.world.getItemAt(0).getBounds();
+            const min = 0;
+            const maxX = bounds.width;
+            const maxY = bounds.height;
+            const boundX = capValue(x, min, maxX);
+            const boundY = capValue(y, min, maxY);
+            const point = new OpenSeadragon.Point(boundX, boundY);
+            _viewer.viewport.panTo(point, true);
+        }
+        if (rotation !== undefined) {
             _viewer.viewport.setRotation(rotation);
-        if (z !== undefined)
+        }
+        if (z !== undefined) {
             _setFocusLevel(z);
+        }
     }
 
     /**
