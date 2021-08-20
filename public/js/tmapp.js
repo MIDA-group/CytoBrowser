@@ -509,12 +509,12 @@ const tmapp = (function() {
             let maxX = imageBounds.width - viewportBounds.width / 2;
             let maxY = imageBounds.height - viewportBounds.height / 2;
             if (minX > maxX) {
-                minX = 0;
-                maxX = 0;
+                minX = imageBounds.width / 2;
+                maxX = imageBounds.width / 2;
             }
             if (minY > maxY) {
-                minY = 0;
-                maxY = 0;
+                minY = imageBounds.height / 2;
+                maxY = imageBounds.height / 2;
             }
             const boundX = capValue(x, minX, maxX);
             const boundY = capValue(y, minY, maxY);
