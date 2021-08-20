@@ -502,12 +502,22 @@ const tmapp = (function() {
             _viewer.viewport.zoomTo(boundZoom, true);
         }
         if (x !== undefined && y !== undefined) {
-            const bounds = _viewer.world.getItemAt(0).getBounds();
-            const min = 0;
-            const maxX = bounds.width;
-            const maxY = bounds.height;
-            const boundX = capValue(x, min, maxX);
-            const boundY = capValue(y, min, maxY);
+            const imageBounds = _viewer.world.getItemAt(0).getBounds();
+            const viewportBounds = _viewer.viewport.getBounds();
+            let minX = viewportBounds.width / 2;
+            let minY = viewportBounds.height / 2;
+            let maxX = imageBounds.width - viewportBounds.width / 2;
+            let maxY = imageBounds.height - viewportBounds.height / 2;
+            if (minX > maxX) {
+                minX = 0;
+                maxX = 0;
+            }
+            if (minY > maxY) {
+                minY = 0;
+                maxY = 0;
+            }
+            const boundX = capValue(x, minX, maxX);
+            const boundY = capValue(y, minY, maxY);
             const point = new OpenSeadragon.Point(boundX, boundY);
             _viewer.viewport.panTo(point, true);
         }
