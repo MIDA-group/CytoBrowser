@@ -136,6 +136,37 @@ const coordinateHelper = (function() {
     }
 
     /**
+     * Check whether or not a point is inside the image.
+     * @param {Object} point A point in viewport coordinates.
+     * @returns {boolean} Whether or not the point is inside the image.
+     */
+    function pointIsInsideViewport({x, y}) {
+        if (!_activeImage) {
+            throw new Error("Can't check insideness without setting an image first.");
+        }
+        const bounds = _activeImage.getBounds();
+        return x > 0 && y > 0 && x < bounds.width && y < bounds.height;
+    }
+
+    /**
+     * Check whether or not a point is inside the image.
+     * @param {Object} point A point in web coordinates.
+     * @returns {boolean} Whether or not the point is inside the image.
+     */
+    function pointIsInsideWeb({x, y}) {
+        return pointIsInsideViewport(webToViewport({x, y}));
+    }
+
+    /**
+     * Check whether or not a point is inside the image.
+     * @param {Object} point A point in image coordinates.
+     * @returns {boolean} Whether or not the point is inside the image.
+     */
+    function pointIsInsideImage({x, y}) {
+        return pointIsInsideViewport(imageToViewport({x, y}));
+    }
+
+    /**
      * Set the coordinate helper to work with a given image. Due to
      * inaccuracies in coordinates when working with multiple images
      * in OpenSeadragon, this should be called with a specific image
@@ -168,6 +199,9 @@ const coordinateHelper = (function() {
         viewportToOverlay: viewportToOverlay,
         pageToViewport: pageToViewport,
         getMinDimension: getMinDimension,
+        pointIsInsideViewport: pointIsInsideViewport,
+        pointIsInsideWeb: pointIsInsideWeb,
+        pointIsInsideImage: pointIsInsideImage,
         setImage: setImage,
         clearImage: clearImage
     };

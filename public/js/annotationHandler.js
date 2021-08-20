@@ -166,9 +166,13 @@ const annotationHandler = (function (){
         // Store the coordinates in all systems and set the image coordinates
         const coords = addedAnnotation.points.map(point =>
             _getCoordSystems(point, coordSystem)
-        )
+        );
         if (coordSystem !== "image")
             addedAnnotation.points = coords.map(coord => coord.image);
+        if (!addedAnnotation.points.every(coordinateHelper.pointIsInsideImage)) {
+            console.warn("Cannot add an annotation with points outside the image.");
+            return;
+        }
 
         // Check if an identical annotation already exists, remove old one if it does
         let replacedAnnotation = _findDuplicateAnnotation(addedAnnotation);
@@ -236,10 +240,13 @@ const annotationHandler = (function (){
         // Make sure the data is stored in the image coordinate system
         const coords = updatedAnnotation.points.map(point =>
             _getCoordSystems(point, coordSystem)
-        )
+        );
         if (coordSystem !== "image")
             updatedAnnotation.points = coords.map(coord => coord.image);
-
+        if (!updatedAnnotation.points.every(coordinateHelper.pointIsInsideImage)) {
+            console.warn("Cannot add an annotation with points outside the image.");
+            return;
+        }
         // Check if the annotation being updated exists first
         if (updatedAnnotation === undefined) {
             throw new Error("Tried to update an annotation that doesn't exist.");
