@@ -244,7 +244,7 @@ const annotationHandler = (function (){
         if (coordSystem !== "image")
             updatedAnnotation.points = coords.map(coord => coord.image);
         if (!updatedAnnotation.points.every(coordinateHelper.pointIsInsideImage)) {
-            console.warn("Cannot add an annotation with points outside the image.");
+            console.warn("Cannot move an annotation outside the image.");
             return;
         }
         // Check if the annotation being updated exists first
