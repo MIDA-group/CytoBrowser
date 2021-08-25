@@ -87,11 +87,6 @@ const tmappUI = (function(){
     function _initAnnotationList() {
         const list = new AnnotationList("#annotation-list", "id", [
             {
-                name: "ID",
-                key: "id",
-                sortable: false
-            },
-            {
                 name: "x",
                 key: "x",
                 selectFun: d => Math.round(d.centroid.x),
@@ -131,7 +126,7 @@ const tmappUI = (function(){
             {
                 name: "# Comments",
                 key: "nComments",
-                selectFun: d => d.comments.length,
+                selectFun: d => (d.comments && d.comments.length) || 0,
                 sortable: true
             },
             {
