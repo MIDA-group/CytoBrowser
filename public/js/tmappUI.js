@@ -84,6 +84,36 @@ const tmappUI = (function(){
         }
     }
 
+    function _initAnnotationList() {
+        const list = new AnnotationList("#test-table", "id", [
+            {
+                name: "ID",
+                key: "id",
+                sortable: false
+            },
+            {
+                name: "x",
+                key: "x",
+                selectFun: d => d.centroid.x,
+                sortable: true
+            },
+            {
+                name: "y",
+                key: "y",
+                selectFun: d => d.centroid.y,
+                sortable: true
+            },
+            {
+                name: "z",
+                key: "z",
+                selectFun: d => d.z,
+                sortable: true
+            },
+        ]);
+
+        annotationVisuals.setAnnotationList(list);
+    }
+
     function _initGlobalComments() {
         const container = $("#global_comments");
         const inputFun = globalDataHandler.sendCommentToServer;
@@ -324,6 +354,7 @@ const tmappUI = (function(){
      * and add any event handlers that are needed.
      */
     function initUI() {
+        _initAnnotationList();
         _initGlobalComments();
         _initClassSelectionButtons();
         _initToolSelectionButtons();

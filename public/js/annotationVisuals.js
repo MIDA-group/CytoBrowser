@@ -5,37 +5,17 @@
 const annotationVisuals = (function() {
     "use strict";
 
-    const _tableId = "tmcptablebody";
+    let _annotationList = null;
 
     /**
-     * Fill a cell of the annotation list with information about the
-     * annotation's position, class, type and how many comments it has.
-     * @param {d3.selection} annotationCell The d3 selection of the
-     * cell being filled.
+     * Set the annotation list object that should be used to disply
+     * information about the annotations. This should be set before
+     * update is called.
+     * @param {AnnotationList} annotationList The list to use.
      */
-    function _annotationContent(annotationCell) {
-        annotationCell.text(d =>
-            `(x: ${Math.round(d.centroid.x)}, y: ${Math.round(d.centroid.y)}, z: ${Math.round(d.z)})`)
-            .call(cell =>
-                cell.append("span")
-                    .attr("class", "badge text-white ml-4")
-                    .style("background-color", d =>
-                        classUtils.classColor(d.mclass))
-                    .text(d => d.mclass)
-            )
-            .call(cell =>
-                cell.filter(d => d.points.length > 1)
-                    .append("span")
-                    .attr("class", "badge bg-dark text-white ml-4")
-                    .text("Region")
-            )
-            .call(cell =>
-                cell.filter(d => d.comments && d.comments.length)
-                    .append("span")
-                    .attr("class", "badge bg-dark text-white ml-4")
-                    .text(d => `${d.comments.length} comment${d.comments.length > 1 ? "s" : ""}`)
-            )
-    }
+     function setAnnotationList(annotationList) {
+         _annotationList = annotationList;
+     }
 
     /**
      * Update the current visuals for the annotations.
@@ -44,36 +24,12 @@ const annotationVisuals = (function() {
     function update(annotations){
         // Update the annotations in the overlay
     	overlayHandler.updateAnnotations(annotations);
-
-        // Update the annotation list
-        const table = d3.select(`#${_tableId}`);
-        table.selectAll("tr")
-            .data(annotations, d => d.id)
-            .join(
-                enter => {
-                    const row = enter.insert("tr", ":first-child");
-                    row.append("td")
-                        .attr("class", "align-middle")
-                        .text(d => d.id);
-                    row.append("td")
-                        .attr("class", "align-middle")
-                        .call(_annotationContent);
-                    row.append("td")
-                        .attr("class", "align-middle")
-                        .append("button")
-                            .attr("class", "btn btn-sm btn-link")
-                            .attr("type", "button")
-                            .text("Move to center")
-                            .on("click", d => tmapp.moveToAnnotation(d.id));
-                },
-                update => {
-                    const cells = update.selectAll("td");
-                    const idCell = cells.filter((d, i) => i === 0);
-                    const annotationCell = cells.filter((d, i) => i === 1);
-                    idCell.text(d => d.id);
-                    annotationCell.call(_annotationContent);
-                }
-            );
+        if (_annotationList) {
+            annotationList.updateData(annotations);
+        }
+        else {
+            console.warn("No annotation list has been set.");
+        }
     }
 
     /**
@@ -92,6 +48,7 @@ const annotationVisuals = (function() {
 
     return {
         update: update,
+        setAnnotationList: setAnnotationList,
         clear: clear
     };
 })();
