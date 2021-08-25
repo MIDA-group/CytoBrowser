@@ -110,11 +110,25 @@ const tmappUI = (function(){
                 sortable: true
             },
             {
+                name: "Class",
+                key: "mclass",
+                displayFun: (elem, d) => {
+                    const color = classUtils.classColor(d.mclass);
+                    const badge = $("<span></span>");
+                    badge.text(d.mclass);
+                    badge.addClass("badge text-white ml-4");
+                    badge.css("background-color", color);
+                    $(elem).html(badge);
+                },
+                sortable: true
+            },
+            {
                 name: "",
                 key: "moveToButton",
-                displayFun: (d, elem) => {
-                    const button = $(elem).html(`<button>Goto</button>`);
+                displayFun: (elem, d) => {
+                    const button = $("<button>View</button>");
                     button.click(() => tmapp.moveToAnnotation(d.id));
+                    $(elem).html(button);
                 },
                 sortable: false
             }
