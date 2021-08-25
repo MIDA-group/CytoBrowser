@@ -68,7 +68,7 @@ class AnnotationList {
                     .join("td")
                     .each(function(f) {
                         if (f.displayFun) {
-                            d3.select(this).html(f.displayFun(d));
+                            f.displayFun(this, d);
                         }
                         else {
                             d3.select(this).text(d[f.key]);

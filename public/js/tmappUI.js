@@ -109,6 +109,15 @@ const tmappUI = (function(){
                 selectFun: d => d.z,
                 sortable: true
             },
+            {
+                name: "",
+                key: "moveToButton",
+                displayFun: (d, elem) => {
+                    const button = $(elem).html(`<button>Goto</button>`);
+                    button.click(() => tmapp.moveToAnnotation(d.id));
+                },
+                sortable: false
+            }
         ]);
 
         annotationVisuals.setAnnotationList(list);
