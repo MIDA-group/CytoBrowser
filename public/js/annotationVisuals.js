@@ -25,7 +25,7 @@ const annotationVisuals = (function() {
         // Update the annotations in the overlay
     	overlayHandler.updateAnnotations(annotations);
         if (_annotationList) {
-            annotationList.updateData(annotations);
+            _annotationList.updateData(annotations);
         }
         else {
             console.warn("No annotation list has been set.");
