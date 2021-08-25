@@ -123,6 +123,18 @@ const tmappUI = (function(){
                 sortable: true
             },
             {
+                name: "Region",
+                key: "isARegion",
+                selectFun: d => d.points.length > 1 ? "Yes" : "No",
+                sortable: true
+            },
+            {
+                name: "# Comments",
+                key: "nComments",
+                selectFun: d => d.comments.length,
+                sortable: true
+            },
+            {
                 name: "",
                 key: "moveToButton",
                 displayFun: (elem, d) => {
