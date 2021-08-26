@@ -40,7 +40,7 @@ const htmlHelper = (function() {
             annotationHandler.remove(id);
         });
         bookmarkCol.find("a").click(() => {
-            console.log("This doesn't do anything yet.");
+            annotationHandler.bookmark(id);
         });
         row.append(delCol, bookmarkCol);
         return row;

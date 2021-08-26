@@ -290,6 +290,29 @@ const annotationHandler = (function (){
     }
 
     /**
+     * Set the bookmark state of a given annotation.
+     * @param {number} id The id of the annotation to set the bookmark state of.
+     * @param {boolean} [state] The bookmark state to set the annotation
+     * to. If left undefined, the bookmark state will be changed to whichever
+     * value it does not currently have.
+     */
+    function setBookmarked(id, state) {
+        const annotation = getAnnotationById(id);
+        if (annotation) {
+            if (state === undefined) {
+                annotation.bookmarked = !annotation.bookmarked;
+            }
+            else {
+                annotation.bookmarked = state;
+            }
+            update(id, annotation, "image");
+        }
+        else {
+            throw new Error("Tried to bookmark an annotation that doesn't exist.");
+        }
+    }
+
+    /**
      * Remove an annotation from the data.
      * @param {number} id The id of the annotation to be removed.
      * @param {boolean} [transmit=true] Any collaborators should also be
