@@ -111,7 +111,7 @@ const tmappUI = (function(){
                     const color = classUtils.classColor(d.mclass);
                     const badge = $("<span></span>");
                     badge.text(d.mclass);
-                    badge.addClass("badge text-white ml-4");
+                    badge.addClass("badge text-white");
                     badge.css("background-color", color);
                     $(elem).html(badge);
                 },
