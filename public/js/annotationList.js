@@ -11,11 +11,16 @@ class AnnotationList {
     }
 
     _createHeaderRowAndBody() {
+        const colGroup = this.table.append("colgroup");
         const row = this.table
             .append("thead")
             .append("tr")
             .attr("class", "header-row");
         this.fields.forEach(field => {
+            const col = colGroup.append("col");
+            if (field.minWidth) {
+                col.style("min-width", field.minWidth);
+            }
             if (field.sortable) {
                 row.append("th")
                     .on("click", () => this._progressSort(field.key))
@@ -23,7 +28,7 @@ class AnnotationList {
                     .style("user-select", "none")
                     .text(field.name)
                     .append("span")
-                    .attr("class", "sort-indicator float-right")
+                    .attr("class", "sort-indicator ml-1")
                     .style("width", "1em")
                     .attr("data-key", field.key);
             }

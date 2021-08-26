@@ -89,24 +89,28 @@ const tmappUI = (function(){
             {
                 name: "x",
                 key: "x",
+                minWidth: "5em",
                 selectFun: d => Math.round(d.centroid.x),
                 sortable: true
             },
             {
                 name: "y",
                 key: "y",
+                minWidth: "5em",
                 selectFun: d => Math.round(d.centroid.y),
                 sortable: true
             },
             {
                 name: "z",
                 key: "z",
+                minWidth: "4em",
                 selectFun: d => d.z,
                 sortable: true
             },
             {
                 name: "Class",
                 key: "mclass",
+                minWidth: "6em",
                 displayFun: (elem, d) => {
                     const color = classUtils.classColor(d.mclass);
                     const badge = $("<span></span>");
@@ -120,18 +124,21 @@ const tmappUI = (function(){
             {
                 name: "Region",
                 key: "isARegion",
+                minWidth: "6.5em",
                 selectFun: d => d.points.length > 1 ? "Yes" : "No",
                 sortable: true
             },
             {
                 name: "# Comments",
                 key: "nComments",
+                minWidth: "8em",
                 selectFun: d => (d.comments && d.comments.length) || 0,
                 sortable: true
             },
             {
                 name: "",
                 key: "moveToButton",
+                minWidth: "5em",
                 displayFun: (elem, d) => {
                     const button = $("<button>View</button>");
                     button.click(() => tmapp.moveToAnnotation(d.id));
