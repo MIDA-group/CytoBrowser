@@ -89,9 +89,9 @@ const tmappUI = (function(){
             {
                 name: "Marked",
                 key: "bookmarked",
-                minWidth: "5em",
+                minWidth: "6.5em",
                 displayFun: (elem, d) => {
-                    $(elem).html(d.isARegion ? "&check;" : "&#10007;");
+                    $(elem).html(d.bookmarked ? "&check;" : "&#10007;");
                 },
                 sortable: true
             },
