@@ -141,7 +141,7 @@ const tmappUI = (function(){
                 minWidth: "5em",
                 displayFun: (elem, d) => {
                     const button = $("<button>View</button>");
-                    button.addClass("btn btn-link btn-sm");
+                    button.addClass("btn btn-dark btn-sm");
                     button.click(() => tmapp.moveToAnnotation(d.id));
                     $(elem).html(button);
                 },
