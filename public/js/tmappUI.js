@@ -109,12 +109,14 @@ const tmappUI = (function(){
             },
             {
                 name: "Class",
-                key: "mclass",
+                key: "mclassId",
+                selectFun: d => classUtils.getIDFromName(d.mclass),
                 minWidth: "6em",
                 displayFun: (elem, d) => {
-                    const color = classUtils.classColor(d.mclass);
+                    const color = classUtils.classColor(d.mclassId);
+                    const name = classUtils.getClassFromID(d.mclassId).name;
                     const badge = $("<span></span>");
-                    badge.text(d.mclass);
+                    badge.text(name);
                     badge.addClass("badge text-white");
                     badge.css("background-color", color);
                     $(elem).html(badge);
