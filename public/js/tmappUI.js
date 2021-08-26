@@ -127,7 +127,10 @@ const tmappUI = (function(){
                 name: "Region",
                 key: "isARegion",
                 minWidth: "6.5em",
-                selectFun: d => d.points.length > 1 ? "Yes" : "No",
+                selectFun: d => d.points.length > 1,
+                displayFun: (elem, d) => {
+                    $(elem).html(d.isARegion ? "&check;" : "&#10008;");
+                },
                 sortable: true
             },
             {
