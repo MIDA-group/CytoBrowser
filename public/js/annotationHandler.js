@@ -22,6 +22,8 @@ const annotationHandler = (function (){
      * @property {string} mclass Class name of the annotation.
      * @property {Object} centroid The centroid of the annotated point
      * or region.
+     * @property {boolean} [bookmarked] Whether or not the annotation has
+     * been bookmarked.
      * @property {Array} [comments] Comments associated with the annotation.
      * @property {string} [author] The name of the person who originally
      * placed the annotation.
@@ -195,6 +197,10 @@ const annotationHandler = (function (){
                 addedAnnotation.id = _generateId();
             }
         }
+
+        // Set the bookmark field of the annotation
+        if (addedAnnotation.bookmarked === undefined)
+            addedAnnotation.bookmarked = false;
 
         // Set the centroid of the annotation
         if (!addedAnnotation.centroid)

@@ -87,6 +87,15 @@ const tmappUI = (function(){
     function _initAnnotationList() {
         const list = new AnnotationList("#annotation-list", "id", [
             {
+                name: "Marked",
+                key: "bookmarked",
+                minWidth: "5em",
+                displayFun: (elem, d) => {
+                    $(elem).html(d.isARegion ? "&check;" : "&#10007;");
+                },
+                sortable: true
+            },
+            {
                 name: "x",
                 key: "x",
                 minWidth: "5em",
@@ -129,7 +138,7 @@ const tmappUI = (function(){
                 minWidth: "6.5em",
                 selectFun: d => d.points.length > 1,
                 displayFun: (elem, d) => {
-                    $(elem).html(d.isARegion ? "&check;" : "&#10008;");
+                    $(elem).html(d.isARegion ? "&check;" : "&#10007;");
                 },
                 sortable: true
             },
