@@ -129,7 +129,7 @@ const tmappUI = (function(){
                 sortable: true
             },
             {
-                name: "# Comments",
+                name: "Comments",
                 key: "nComments",
                 minWidth: "8em",
                 selectFun: d => (d.comments && d.comments.length) || 0,
@@ -141,6 +141,7 @@ const tmappUI = (function(){
                 minWidth: "5em",
                 displayFun: (elem, d) => {
                     const button = $("<button>View</button>");
+                    button.addClass("btn btn-link btn-sm");
                     button.click(() => tmapp.moveToAnnotation(d.id));
                     $(elem).html(button);
                 },

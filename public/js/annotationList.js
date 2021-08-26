@@ -71,6 +71,7 @@ class AnnotationList {
                     .selectAll("td")
                     .data(fields)
                     .join("td")
+                    .style("vertical-align", "middle")
                     .each(function(f) {
                         if (f.displayFun) {
                             f.displayFun(this, d);
