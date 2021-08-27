@@ -175,7 +175,7 @@ const overlayHandler = (function (){
                 .append("g")
                 .attr("class", "region-edit-handles")
                 .call(group => {
-                    d.points.forEach(point => {
+                    d.points.forEach((point, i) => {
                         group.append("g")
                             .attr("transform", d => {
                                 const viewport = coordinateHelper.imageToViewport(point);
@@ -199,11 +199,14 @@ const overlayHandler = (function (){
                                         tmapp.setCursorStatus({held: false});
                                     },
                                     dragHandler: function(event) {
+                                        // Use a clone of the annotation to make sure the edit is permitted
+                                        const dClone = annotationHandler.getAnnotationById(d.id);
+                                        const pointClone = dClone.points[i];
                                         const reference = coordinateHelper.webToImage({x: 0, y: 0});
                                         const delta = coordinateHelper.webToImage(event.delta);
-                                        point.x += delta.x - reference.x;
-                                        point.y += delta.y - reference.y;
-                                        annotationHandler.update(d.id, d, "image");
+                                        pointClone.x += delta.x - reference.x;
+                                        pointClone.y += delta.y - reference.y;
+                                        annotationHandler.update(d.id, dClone, "image");
                                         const viewportCoords = coordinateHelper.pageToViewport({
                                             x: event.originalEvent.pageX,
                                             y: event.originalEvent.pageY
@@ -240,13 +243,15 @@ const overlayHandler = (function (){
                 tmapp.setCursorStatus({held: false});
             },
             dragHandler: function(event) {
+                // Use a clone of the annotation to make sure the edit is permitted
+                const clone = annotationHandler.getAnnotationById(d.id);
                 const reference = coordinateHelper.webToImage({x: 0, y: 0});
                 const delta = coordinateHelper.webToImage(event.delta);
-                d.points.forEach(point => {
+                clone.points.forEach(point => {
                     point.x += delta.x - reference.x;
                     point.y += delta.y - reference.y;
                 });
-                annotationHandler.update(d.id, d, "image");
+                annotationHandler.update(d.id, clone, "image");
                 const viewportCoords = coordinateHelper.pageToViewport({
                     x: event.originalEvent.pageX,
                     y: event.originalEvent.pageY

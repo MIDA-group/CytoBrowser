@@ -60,17 +60,20 @@ const annotationHandler = (function (){
         // But this explicit clone was over 10 times faster when tested
         // Make sure to remember to update it if fields are changed
         const clone = {
-            points: annotation.points.map(point => {
-                return {x: point.x, y: point.y}
+            points: annotation.points && annotation.points.map(point => {
+                return {
+                    x: point.x,
+                    y: point.y
+                };
             }),
             z: annotation.z,
             mclass: annotation.mclass,
-            centroid: {x: annotation.centroid.x, y: annotation.centroid.y},
-            comments: annotation.comments.map(comment => {
+            centroid: annotation.centroid && {x: annotation.centroid.x, y: annotation.centroid.y},
+            comments: annotation.comments && annotation.comments.map(comment => {
                 return {
                     author: comment.author,
                     body: comment.body
-                }
+                };
             }),
             author: annotation.author,
             id: annotation.id,
@@ -122,8 +125,7 @@ const annotationHandler = (function (){
     }
 
     function _updateVisuals() {
-        const annotationsClone = _annotations.map(_cloneAnnotation);
-        annotationVisuals.update(annotationsClone);
+        annotationVisuals.update(_annotations);
     }
 
     /**
