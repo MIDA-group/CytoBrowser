@@ -56,14 +56,26 @@ const annotationHandler = (function (){
     }
 
     function _cloneAnnotation(annotation) {
-        // Note: This implementation copies values and makes
-        // shallow clones of arrays, will not clone other
-        // referenced objects
-        const clone = Object.assign({}, annotation);
-        Object.entries(clone).forEach(([key, value]) => {
-            if (value && value.constructor === Array)
-                clone[key] = [...value];
-        });
+        // A deep clone could also be done with jQuery.extend(true, {}, annotation)
+        // But this explicit clone was over 10 times faster when tested
+        // Make sure to remember to update it if fields are changed
+        const clone = {
+            points: annotation.points.map(point => {
+                return {x: point.x, y: point.y}
+            }),
+            z: annotation.z,
+            mclass: annotation.mclass,
+            centroid: {x: annotation.centroid.x, y: annotation.centroid.y},
+            comments: annotation.comments.map(comment => {
+                return {
+                    author: comment.author,
+                    body: comment.body
+                }
+            }),
+            author: annotation.author,
+            id: annotation.id,
+            originalId: annotation.originalId
+        };
         return clone;
     }
 
@@ -107,6 +119,11 @@ const annotationHandler = (function (){
             && existingAnnotation.mclass === annotation.mclass
             && _pointsAreDuplicate(annotation.points, existingAnnotation.points)
         );
+    }
+
+    function _updateVisuals() {
+        const annotationsClone = _annotations.map(_cloneAnnotation);
+        annotationVisuals.update(annotationsClone);
     }
 
     /**
@@ -221,7 +238,7 @@ const annotationHandler = (function (){
         transmit && collabClient.addAnnotation(addedAnnotation);
 
         // Add a graphical representation of the annotation
-        annotationVisuals.update(_annotations);
+        _updateVisuals();
     }
 
     /**
@@ -243,10 +260,13 @@ const annotationHandler = (function (){
         );
         if (coordSystem !== "image")
             updatedAnnotation.points = coords.map(coord => coord.image);
-        if (!updatedAnnotation.points.every(coordinateHelper.pointIsInsideImage)) {
+
+        // Keep the annotation inside the image
+        if (annotation.points && !annotation.points.every(coordinateHelper.pointIsInsideImage)) {
             console.warn("Cannot move an annotation outside the image.");
             return;
         }
+
         // Check if the annotation being updated exists first
         if (updatedAnnotation === undefined) {
             throw new Error("Tried to update an annotation that doesn't exist.");
@@ -263,9 +283,11 @@ const annotationHandler = (function (){
         }
 
         // Update annotation count
-        _classCounts[updatedAnnotation.mclass]--;
-        _classCounts[annotation.mclass]++;
-        _updateAnnotationCounts();
+        if (annotation.mclass !== undefined) {
+            _classCounts[updatedAnnotation.mclass]--;
+            _classCounts[annotation.mclass]++;
+            _updateAnnotationCounts();
+        }
 
         // Copy over the updated properties
         Object.assign(updatedAnnotation, annotation);
@@ -280,7 +302,7 @@ const annotationHandler = (function (){
         transmit && collabClient.updateAnnotation(id, updatedAnnotation);
 
         // Update the annotation in the graphics
-        annotationVisuals.update(_annotations);
+        _updateVisuals();
     }
 
     /**
@@ -315,7 +337,7 @@ const annotationHandler = (function (){
         transmit && collabClient.removeAnnotation(id);
 
         // Remove the annotation from the graphics
-        annotationVisuals.update(_annotations);
+        _updateVisuals();
     }
 
     /**
