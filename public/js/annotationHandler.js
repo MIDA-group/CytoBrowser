@@ -426,6 +426,7 @@ const annotationHandler = (function (){
     return {
         add: add,
         update: update,
+        setBookmarked: setBookmarked,
         remove: remove,
         clear: clear,
         forEachAnnotation: forEachAnnotation,
