@@ -29,18 +29,31 @@ const htmlHelper = (function() {
                 <div class="col-6">
                     <a class="card-link" href="javascript:void(0);">
                         <svg class="mr-1" style="fill: currentColor;height: 1.3em;width: 1.3em;vertical-align: text-bottom" viewBox="0 0 23 23">
-                            <path d="M 6 2 V 21 L 12 15 L 18 21 V 2 z"></path>
+                            <path></path>
                         </svg>
                         Bookmark
                     </a>
                 </div>
             `);
+        function setBookmarkPath() {
+            const annotation = annotationHandler.getAnnotationById(id);
+            const isBookmarked = annotation.bookmarked;
+            const path = bookmarkCol.find("svg path");
+            if (isBookmarked) {
+                path.attr("d", "M 6 2 V 21 L 12 15 L 18 21 V 2 z");
+            }
+            else {
+                path.attr("d", "M 6 2 V 21 L 12 15 L 18 21 V 2 z M 8 4 H 16 V 16 L 12 12 L 8 16 z");
+            }
+        }
+        setBookmarkPath();
         delCol.find("a").click(() => {
             closeFun();
             annotationHandler.remove(id);
         });
         bookmarkCol.find("a").click(() => {
             annotationHandler.setBookmarked(id);
+            setBookmarkPath();
         });
         row.append(delCol, bookmarkCol);
         return row;

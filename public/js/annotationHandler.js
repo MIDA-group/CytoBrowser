@@ -319,6 +319,7 @@ const annotationHandler = (function (){
      * @param {boolean} [state] The bookmark state to set the annotation
      * to. If left undefined, the bookmark state will be changed to whichever
      * value it does not currently have.
+     * @returns {boolean} Whether or not the annotation is now bookmarked.
      */
     function setBookmarked(id, state) {
         const annotation = getAnnotationById(id);
@@ -330,6 +331,7 @@ const annotationHandler = (function (){
                 annotation.bookmarked = state;
             }
             update(id, annotation, "image");
+            return annotation.bookmarked;
         }
         else {
             throw new Error("Tried to bookmark an annotation that doesn't exist.");
