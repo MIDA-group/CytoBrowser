@@ -28,6 +28,9 @@ const annotationHandler = (function (){
      * @property {string} [author] The name of the person who originally
      * placed the annotation.
      * @property {number} [id] Hard-coded ID of the annotation.
+     * @property {number} [originalId] Original ID of annotation, that
+     * may have had to be changed if the annotation was added when the
+     * id was already in use.
      */
     /**
      * Representation of the OpenSeadragon coordinate system used to
@@ -71,6 +74,7 @@ const annotationHandler = (function (){
             z: annotation.z,
             mclass: annotation.mclass,
             centroid: annotation.centroid && {x: annotation.centroid.x, y: annotation.centroid.y},
+            bookmarked: annotation.bookmarked,
             comments: annotation.comments && annotation.comments.map(comment => {
                 return {
                     author: comment.author,
