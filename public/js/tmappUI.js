@@ -84,6 +84,91 @@ const tmappUI = (function(){
         }
     }
 
+    function _initAnnotationList() {
+        const list = new AnnotationList("#annotation-list", "#rtoolbar", "id", [
+            {
+                name: "x",
+                key: "x",
+                minWidth: "5em",
+                selectFun: d => Math.round(d.centroid.x),
+                sortable: true
+            },
+            {
+                name: "y",
+                key: "y",
+                minWidth: "5em",
+                selectFun: d => Math.round(d.centroid.y),
+                sortable: true
+            },
+            {
+                name: "z",
+                key: "z",
+                minWidth: "4em",
+                selectFun: d => d.z,
+                sortable: true
+            },
+            {
+                name: "Class",
+                key: "mclassId",
+                selectFun: d => classUtils.getIDFromName(d.mclass),
+                minWidth: "6em",
+                displayFun: (elem, d) => {
+                    const color = classUtils.classColor(d.mclassId);
+                    const name = classUtils.getClassFromID(d.mclassId).name;
+                    const badge = $("<span></span>");
+                    badge.text(name);
+                    badge.addClass("badge text-white");
+                    badge.css("background-color", color);
+                    $(elem).html(badge);
+                },
+                sortable: true
+            },
+            {
+                name: "B",
+                key: "bookmarked",
+                title: "Annotation has been bookmarked",
+                minWidth: "3em",
+                displayFun: (elem, d) => {
+                    $(elem).html(d.bookmarked ? "&check;" : "&#10007;");
+                },
+                sortable: true
+            },
+            {
+                name: "R",
+                key: "isARegion",
+                title: "Annotation is a region",
+                minWidth: "3em",
+                selectFun: d => d.points.length > 1,
+                displayFun: (elem, d) => {
+                    $(elem).html(d.isARegion ? "&check;" : "&#10007;");
+                },
+                sortable: true
+            },
+            {
+                name: "C",
+                key: "nComments",
+                title: "Number of comments",
+                minWidth: "3em",
+                selectFun: d => (d.comments && d.comments.length) || 0,
+                sortable: true
+            },
+            {
+                name: "",
+                key: "moveToButton",
+                minWidth: "5em",
+                displayFun: (elem, d) => {
+                    const button = $("<button>View</button>");
+                    button.addClass("btn btn-dark btn-sm");
+                    button.click(() => tmapp.moveToAnnotation(d.id));
+                    $(elem).html(button);
+                },
+                sortable: false
+            }
+        ]);
+
+        annotationVisuals.setAnnotationList(list);
+    }
+
     function _initGlobalComments() {
         const container = $("#global_comments");
         const inputFun = globalDataHandler.sendCommentToServer;
@@ -324,6 +409,7 @@ const tmappUI = (function(){
      * and add any event handlers that are needed.
      */
     function initUI() {
+        _initAnnotationList();
         _initGlobalComments();
         _initClassSelectionButtons();
         _initToolSelectionButtons();

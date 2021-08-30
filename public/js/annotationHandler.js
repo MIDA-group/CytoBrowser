@@ -22,10 +22,15 @@ const annotationHandler = (function (){
      * @property {string} mclass Class name of the annotation.
      * @property {Object} centroid The centroid of the annotated point
      * or region.
+     * @property {boolean} [bookmarked] Whether or not the annotation has
+     * been bookmarked.
      * @property {Array} [comments] Comments associated with the annotation.
      * @property {string} [author] The name of the person who originally
      * placed the annotation.
      * @property {number} [id] Hard-coded ID of the annotation.
+     * @property {number} [originalId] Original ID of annotation, that
+     * may have had to be changed if the annotation was added when the
+     * id was already in use.
      */
     /**
      * Representation of the OpenSeadragon coordinate system used to
@@ -69,6 +74,7 @@ const annotationHandler = (function (){
             z: annotation.z,
             mclass: annotation.mclass,
             centroid: annotation.centroid && {x: annotation.centroid.x, y: annotation.centroid.y},
+            bookmarked: annotation.bookmarked,
             comments: annotation.comments && annotation.comments.map(comment => {
                 return {
                     author: comment.author,
@@ -215,6 +221,10 @@ const annotationHandler = (function (){
             }
         }
 
+        // Set the bookmark field of the annotation
+        if (addedAnnotation.bookmarked === undefined)
+            addedAnnotation.bookmarked = false;
+
         // Set the centroid of the annotation
         if (!addedAnnotation.centroid)
             addedAnnotation.centroid = _getCentroid(addedAnnotation.points);
@@ -308,6 +318,31 @@ const annotationHandler = (function (){
     }
 
     /**
+     * Set the bookmark state of a given annotation.
+     * @param {number} id The id of the annotation to set the bookmark state of.
+     * @param {boolean} [state] The bookmark state to set the annotation
+     * to. If left undefined, the bookmark state will be changed to whichever
+     * value it does not currently have.
+     * @returns {boolean} Whether or not the annotation is now bookmarked.
+     */
+    function setBookmarked(id, state) {
+        const annotation = getAnnotationById(id);
+        if (annotation) {
+            if (state === undefined) {
+                annotation.bookmarked = !annotation.bookmarked;
+            }
+            else {
+                annotation.bookmarked = state;
+            }
+            update(id, annotation, "image");
+            return annotation.bookmarked;
+        }
+        else {
+            throw new Error("Tried to bookmark an annotation that doesn't exist.");
+        }
+    }
+
+    /**
      * Remove an annotation from the data.
      * @param {number} id The id of the annotation to be removed.
      * @param {boolean} [transmit=true] Any collaborators should also be
@@ -397,6 +432,7 @@ const annotationHandler = (function (){
     return {
         add: add,
         update: update,
+        setBookmarked: setBookmarked,
         remove: remove,
         clear: clear,
         forEachAnnotation: forEachAnnotation,
