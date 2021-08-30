@@ -6,6 +6,22 @@ const annotationVisuals = (function() {
     "use strict";
 
     let _annotationList = null;
+    let _unfilteredAnnotations = [];
+    let _filter = filters.getFilterFromQuery("");
+
+    function _filterAndUpdate() {
+        const annotations = _unfilteredAnnotations.filter(annotation => {
+            const filterableAnnotation = filters.preprocessDatumBeforeFiltering(annotation);
+            return _filter.evaluate(filterableAnnotation);
+        });
+        overlayHandler.updateAnnotations(annotations);
+        if (_annotationList) {
+            _annotationList.updateData(annotations);
+        }
+        else {
+            console.warn("No annotation list has been set.");
+        }
+    }
 
     /**
      * Set the annotation list object that should be used to disply
@@ -13,23 +29,24 @@ const annotationVisuals = (function() {
      * update is called.
      * @param {AnnotationList} annotationList The list to use.
      */
-     function setAnnotationList(annotationList) {
-         _annotationList = annotationList;
-     }
+    function setAnnotationList(annotationList) {
+        _annotationList = annotationList;
+    }
+
+    // TODO: Document
+    function setFilterQuery(query) {
+        const filter = filters.getFilterFromQuery(query);
+        _filter = filter;
+        _filterAndUpdate();
+    }
 
     /**
      * Update the current visuals for the annotations.
      * @param {Array} annotations All currently placed annotations.
      */
     function update(annotations){
-        // Update the annotations in the overlay
-    	overlayHandler.updateAnnotations(annotations);
-        if (_annotationList) {
-            _annotationList.updateData(annotations);
-        }
-        else {
-            console.warn("No annotation list has been set.");
-        }
+        _unfilteredAnnotations = annotations;
+        _filterAndUpdate();
     }
 
     /**
@@ -49,6 +66,7 @@ const annotationVisuals = (function() {
     return {
         update: update,
         setAnnotationList: setAnnotationList,
+        setFilterQuery: setFilterQuery,
         clear: clear
     };
 })();
