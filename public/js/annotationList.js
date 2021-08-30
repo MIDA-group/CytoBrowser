@@ -1,5 +1,5 @@
 class AnnotationList {
-    "using strict";
+    "use strict";
 
     /**
      * Object that contains information about a single field in the
@@ -35,22 +35,22 @@ class AnnotationList {
      * be used for the columns in the list.
      */
     constructor(table, scroller, idKey, fields) {
-        this.fields = fields;
-        this.data = [];
-        this.idKey = idKey;
-        this.table = d3.select(table);
-        this.scroller = scroller;
+        this._fields = fields;
+        this._data = [];
+        this._idKey = idKey;
+        this._table = d3.select(table);
+        this._scroller = scroller;
         this._createHeaderRowAndBody();
         this.unsetSorted();
     }
 
     _createHeaderRowAndBody() {
-        const colGroup = this.table.append("colgroup");
-        const row = this.table
+        const colGroup = this._table.append("colgroup");
+        const row = this._table
             .append("thead")
             .append("tr")
             .attr("class", "header-row");
-        this.fields.forEach(field => {
+        this._fields.forEach(field => {
             const col = colGroup.append("col");
             if (field.minWidth) {
                 col.style("min-width", field.minWidth);
@@ -73,14 +73,14 @@ class AnnotationList {
             }
 
         });
-        this.table.append("tbody");
+        this._table.append("tbody");
     }
 
     _setData(rawData) {
-        this.data = rawData.map(datum => {
+        this._data = rawData.map(datum => {
             const adjustedDatum = {};
-            adjustedDatum[this.idKey] = datum[this.idKey];
-            this.fields.forEach(field => {
+            adjustedDatum[this._idKey] = datum[this._idKey];
+            this._fields.forEach(field => {
                 if (field.selectFun) {
                     adjustedDatum[field.key] = field.selectFun(datum);
                 }
@@ -93,13 +93,13 @@ class AnnotationList {
     }
 
     _displayData() {
-        const fields = this.fields;
-        this.table.select("tbody")
+        const fields = this._fields;
+        this._table.select("tbody")
             .selectAll(".data-row")
-            .data(this.data, d => d[this.idKey])
+            .data(this._data, d => d[this._idKey])
             .join("tr")
             .attr("class", "data-row")
-            .attr("data-annotation-id", d => d[this.idKey])
+            .attr("data-annotation-id", d => d[this._idKey])
             .order((a, b) => a.a < b.a)
             .each(function(d) {
                 d3.select(this)
@@ -120,20 +120,20 @@ class AnnotationList {
 
     _reorderData() {
         let sortIcon;
-        if (this.sortDirection === "ascending") {
+        if (this._sortDirection === "ascending") {
             sortIcon = "&#x2193;";
-            this.table.selectAll(".data-row")
-                .data(this.data, d => d[this.idKey])
-                .sort((a, b) => a[this.sortKey] > b[this.sortKey]);
+            this._table.selectAll(".data-row")
+                .data(this._data, d => d[this._idKey])
+                .sort((a, b) => a[this._sortKey] > b[this._sortKey]);
         }
-        else if (this.sortDirection === "descending") {
+        else if (this._sortDirection === "descending") {
             sortIcon = "&#x2191;";
-            this.table.selectAll(".data-row")
-                .data(this.data, d => d[this.idKey])
-                .sort((a, b) => a[this.sortKey] < b[this.sortKey]);
+            this._table.selectAll(".data-row")
+                .data(this._data, d => d[this._idKey])
+                .sort((a, b) => a[this._sortKey] < b[this._sortKey]);
         }
-        const sortKey = this.sortKey;
-        this.table.select(".header-row")
+        const sortKey = this._sortKey;
+        this._table.select(".header-row")
             .selectAll(".sort-indicator")
             .html(function() {
                 const key = d3.select(this).attr("data-key");
@@ -142,11 +142,11 @@ class AnnotationList {
     }
 
     _progressSort(key) {
-        if (this.sortKey === key) {
-            if (this.sortDirection === "ascending") {
+        if (this._sortKey === key) {
+            if (this._sortDirection === "ascending") {
                 this.setDescending(key);
             }
-            else if (this.sortDirection === "descending") {
+            else if (this._sortDirection === "descending") {
                 this.unsetSorted();
             }
         }
@@ -166,8 +166,8 @@ class AnnotationList {
      * @param {string} key The key to sort the list based on.
      */
     setAscending(key) {
-        this.sortKey = key;
-        this.sortDirection = "ascending";
+        this._sortKey = key;
+        this._sortDirection = "ascending";
         this._reorderData();
     }
 
@@ -176,8 +176,8 @@ class AnnotationList {
      * @param {string} key The key to sort the list based on.
      */
     setDescending(key) {
-        this.sortKey = key;
-        this.sortDirection = "descending";
+        this._sortKey = key;
+        this._sortDirection = "descending";
         this._reorderData();
     }
 
@@ -185,7 +185,7 @@ class AnnotationList {
      * Reset the list to its default order.
      */
     unsetSorted() {
-        this.setAscending(this.idKey);
+        this.setAscending(this._idKey);
     }
 
     /**
@@ -193,8 +193,8 @@ class AnnotationList {
      * @param {number} id The id of the given item.
      */
     goToRow(id) {
-        const scroller = $(this.scroller);
-        const row = $(`tr[data-annotation-id=${id}]`).get(0);
+        const scroller = $(this._scroller);
+        const row = $(`tr[data-annotation-id=${id}]`);
         const headerOffset = scroller.offset().top;
         const currentScroll = scroller.scrollTop();
         const rowOffset = row.offset().top;
