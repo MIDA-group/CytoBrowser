@@ -27,43 +27,43 @@ const filters = (function () {
         switch (token) {
             case "AND":
             case "and":
-            return tokenTypes.and;
+                return tokenTypes.and;
             case "OR":
             case "or":
-            return tokenTypes.or;
+                return tokenTypes.or;
             case "NOT":
             case "not":
-            return tokenTypes.not;
+                return tokenTypes.not;
             case "=":
             case "IS":
             case "is":
-            return tokenTypes.eq;
+                return tokenTypes.eq;
             case ">":
-            return tokenTypes.gt;
+                return tokenTypes.gt;
             case "<":
-            return tokenTypes.lt;
+                return tokenTypes.lt;
             case "(":
             case "[":
-            return tokenTypes.leftP;
+                return tokenTypes.leftP;
             case ")":
             case "]":
-            return tokenTypes.rightP;
+                return tokenTypes.rightP;
             default:
-            if (boolValueExp.test(token)) {
-                return tokenTypes.boolValue;
-            }
-            else if (keyExp.test(token)) {
-                return tokenTypes.key;
-            }
-            else if (stringValueExp.test(token)) {
-                return tokenTypes.stringValue;
-            }
-            else if (numberValueExp.test(token)) {
-                return tokenTypes.numberValue;
-            }
-            else {
-                // Raise some error
-            }
+                if (boolValueExp.test(token)) {
+                    return tokenTypes.boolValue;
+                }
+                else if (keyExp.test(token)) {
+                    return tokenTypes.key;
+                }
+                else if (stringValueExp.test(token)) {
+                    return tokenTypes.stringValue;
+                }
+                else if (numberValueExp.test(token)) {
+                    return tokenTypes.numberValue;
+                }
+                else {
+                    throw new Error(`Unexpected token: '${token}'`);
+                }
         }
     }
 
@@ -116,7 +116,6 @@ const filters = (function () {
         }
 
         evaluate(input) {
-            console.log(input, this.key, this.value);
             return input[this.key] === this.value;
         }
     }
@@ -148,37 +147,37 @@ const filters = (function () {
     function getPrimitiveFilterConstructor(token) {
         switch (token.type) {
             case tokenTypes.eq:
-            return EqualityFilter;
+                return EqualityFilter;
             case tokenTypes.gt:
-            return GreaterThanFilter;
+                return GreaterThanFilter;
             case tokenTypes.lt:
-            return LessThanFilter;
+                return LessThanFilter;
             default:
-            throw new Error(`Expected '=', '>' or '<', got '${token.value}'`);
+                throw new Error(`Expected '=', '>' or '<', got '${token.value}'`);
         }
     }
 
     function getCombinedFilterConstructor(token) {
         switch (token.type) {
             case tokenTypes.and:
-            return IntersectionFilter;
+                return IntersectionFilter;
             case tokenTypes.or:
-            return UnionFilter;
+                return UnionFilter;
             default:
-            throw new Error(`Expected 'AND' or 'OR', got '${token.value}'`);
+                throw new Error(`Expected 'AND' or 'OR', got '${token.value}'`);
         }
     }
 
     function getPrimitiveValue(token) {
         switch (token.type) {
             case tokenTypes.boolValue:
-            return token.value === "true";
+                return token.value === "true";
             case tokenTypes.stringValue:
-            return token.value.slice(1, -1);
+                return token.value.slice(1, -1);
             case tokenTypes.numberValue:
-            return Number(token.value);
+                return Number(token.value);
             default:
-            throw new Error(`Expected a string or a number, got '${token.value}'`);
+                throw new Error(`Expected a string or a number, got '${token.value}'`);
         }
     }
 
