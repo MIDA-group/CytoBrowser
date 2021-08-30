@@ -37,12 +37,11 @@ const annotationHandler = (function (){
     const _annotations = [];
     let _nMarkers = 0;
     let _nRegions = 0;
+    let _classCounts = {};
+    classUtils.forEachClass(c => _classCounts[c.name] = 0);
 
-    function _updateMetadata() {
-        metadataHandler.updateMetadataValues({
-            nMarkers: _nMarkers,
-            nRegions: _nRegions
-        });
+    function _updateAnnotationCounts() {
+        globalDataHandler.updateAnnotationCounts(_nMarkers, _nRegions, _classCounts);
     }
 
     function _generateId() {
@@ -211,7 +210,8 @@ const annotationHandler = (function (){
         else {
             _nRegions++;
         }
-        _updateMetadata();
+        _classCounts[addedAnnotation.mclass]++;
+        _updateAnnotationCounts();
 
         // Send the update to collaborators
         transmit && collabClient.addAnnotation(addedAnnotation);
@@ -255,6 +255,11 @@ const annotationHandler = (function (){
             }
         }
 
+        // Update annotation count
+        _classCounts[updatedAnnotation.mclass]--;
+        _classCounts[annotation.mclass]++;
+        _updateAnnotationCounts();
+
         // Copy over the updated properties
         Object.assign(updatedAnnotation, annotation);
 
@@ -296,7 +301,8 @@ const annotationHandler = (function (){
         else {
             _nRegions--;
         }
-        _updateMetadata();
+        _classCounts[removedAnnotation.mclass]--;
+        _updateAnnotationCounts();
 
         // Send the update to collaborators
         transmit && collabClient.removeAnnotation(id);

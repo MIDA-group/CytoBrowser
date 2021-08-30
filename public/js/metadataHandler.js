@@ -37,8 +37,6 @@ const metadataHandler = (function() {
         const magnification = _metadataValues.NominalMagnification;
         const sigbits = _metadataValues.SignificantBits;
         const nChannels = _metadataValues.SizeC;
-        const nMarkers = _metadataValues.nMarkers;
-        const nRegions = _metadataValues.nRegions;
         const readableValues = {
             resolution: res ? `${res.x} &#215; ${res.y}` : "-",
             size: size ? `${size.x} &#215; ${size.y}` : "-",
@@ -46,9 +44,7 @@ const metadataHandler = (function() {
             microscope: microscope ? microscope : "-",
             magnification: magnification ? `${magnification}x` : "-",
             sigbits: sigbits ? `${sigbits} bits` : "-",
-            nChannels: nChannels ? nChannels : "-",
-            nMarkers: nMarkers || nMarkers === 0 ? nMarkers : "-",
-            nRegions: nRegions || nRegions === 0 ? nRegions : "-"
+            nChannels: nChannels ? nChannels : "-"
         };
         return readableValues;
     }
@@ -62,8 +58,6 @@ const metadataHandler = (function() {
         $("#metadata_magnification").html(readableValues.magnification);
         $("#metadata_sigbits").html(readableValues.sigbits);
         $("#metadata_nchannels").html(readableValues.nChannels);
-        $("#metadata_nmarkers").html(readableValues.nMarkers);
-        $("#metadata_nregions").html(readableValues.nRegions);
     }
 
     function _updateScalebar() {

@@ -6,6 +6,22 @@ const globalDataHandler = (function() {
    const _comments = [];
    let _updateFun = null;
 
+   function _shortenInt(x) {
+       if (x < 1000) {
+           return x;
+       }
+       else if (x < 1_000_000) {
+           return Math.floor(x / 1000) + "k";
+       }
+       else if (x < 1_000_000_000) {
+           return Math.floor(x / 1_000_000) +  "M";
+       }
+       else {
+           console.warn("Tried to shorten a very large integer, not accounted for");
+           return x;
+       }
+   }
+
    function _updateCommentSection() {
        if (!_updateFun) {
            console.warn("Could not handle comment as there is no update function set.");
@@ -13,6 +29,24 @@ const globalDataHandler = (function() {
        else {
            _updateFun(_comments);
        }
+   }
+
+   /**
+    * Update all displayed information about the number of annotations.
+    * @param {number} nMarkers The number of markers.
+    * @param {number} nRegions The number of regions.
+    * @param {Object} classCounts The number of annotations for each class.
+    * The object contains key-value pairs where the keys are the class
+    * names and the values are the number of annotation for the corresponding
+    * class.
+    */
+   function updateAnnotationCounts(nMarkers, nRegions, classCounts) {
+       $("#global_data_nmarkers").text(nMarkers);
+       $("#global_data_nregions").text(nRegions);
+       classUtils.forEachClass(c => {
+           const id = `#class_counter_${c.name}`;
+           $(id).text(_shortenInt(classCounts[c.name]));
+       });
    }
 
    /**
@@ -85,6 +119,7 @@ const globalDataHandler = (function() {
    }
 
    return {
+       updateAnnotationCounts: updateAnnotationCounts,
        sendCommentToServer: sendCommentToServer,
        sendCommentRemovalToServer: sendCommentRemovalToServer,
        handleCommentFromServer: handleCommentFromServer,
