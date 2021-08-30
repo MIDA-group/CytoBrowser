@@ -1,4 +1,4 @@
-const annotationFilters = (function () {
+const filters = (function () {
     "use strict";
 
 
@@ -184,15 +184,20 @@ const annotationFilters = (function () {
 
     function tokenizeQuery(query) {
         const rawTokens = query.match(tokenExp);
-        const tokenInfo = rawTokens.map(rawToken => {
-            const value = rawToken.trim();
-            const type = getTokenType(value);
-            return {
-                value: value,
-                type: type
-            };
-        });
-        return tokenInfo;
+        if (rawTokens) {
+            const tokenInfo = rawTokens.map(rawToken => {
+                const value = rawToken.trim();
+                const type = getTokenType(value);
+                return {
+                    value: value,
+                    type: type
+                };
+            });
+            return tokenInfo;
+        }
+        else {
+            return [];
+        }
     }
 
     function parsePrimitiveSubfilter(key, tokens) {
