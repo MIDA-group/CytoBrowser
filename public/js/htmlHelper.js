@@ -10,6 +10,26 @@ const htmlHelper = (function() {
           ('0' + Math.min(255, Math.max(0, Math.round(parseInt(color, 16) * scale))).toString(16)).substr(-2));
     }
 
+    function _annotationDeleteButton(id, closeFun) {
+        const delButton = $(`
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <a class="card-link" href="javascript:void(0);">
+                            <svg class="mr-1" style="fill: currentColor;height: 1.3em;width: 1.3em;vertical-align: text-bottom" viewBox="0 0 23 23">
+                                <path d="M 3 9 H 20 V 6 Q 20 5 19 5 H 4 Q 3 5 3 6 z M 4 10 H 19 V 20 Q 19 22 17 22 H 6 Q 4 22 4 20 z M 7 5 V 4.5 Q 7 2 9.5 2 H 13.5 Q 16 2 16 4.5 V 5 H 14 V 4.5 Q 14 4 13.5 4 H 9.5 Q 9 4 9 4.5 V 5 z"></path>
+                            </svg>
+                            Delete annotation
+                        </a>
+                    </div>
+                </div>
+            `);
+        delButton.click(() => {
+            closeFun();
+            annotationHandler.remove(id);
+        });
+        return delButton;
+    }
+
     function _annotationValueRow(label, value) {
         return $(`
             <div class="form-group row">
@@ -403,10 +423,12 @@ const htmlHelper = (function() {
      * annotation editing menu.
      * @param {annotationHandler.AnnotationPoint} annotation The annotation
      * that should be editable through the created menu.
+     * @param {Function} closeFun A function that can be called to close
+     * the annotation menu.
      * @param {Function} saveFun The function that should be run when
      * pressing the save button in the menu.
      */
-    function buildAnnotationSettingsMenu(container, annotation, saveFun) {
+    function buildAnnotationSettingsMenu(container, annotation, closeFun, saveFun) {
         const updateFun = saveFun;
         const id = _annotationValueRow("Id", annotation.id);
         const author = _annotationValueRow("Created by", annotation.author);
@@ -421,7 +443,8 @@ const htmlHelper = (function() {
             annotation.comments.push(comment);
             updateFun();
         });
-        container.append(id, author, classes, list, input);
+        const del = _annotationDeleteButton(annotation.id, closeFun);
+        container.append(id, author, classes, list, input, del);
     }
 
     /**
