@@ -87,8 +87,9 @@ const tmappUI = (function(){
     function _initAnnotationList() {
         const list = new AnnotationList("#annotation-list", "#rtoolbar", "id", [
             {
-                name: "Marked",
+                name: "B",
                 key: "bookmarked",
+                title: "Annotation has been bookmarked",
                 minWidth: "6.5em",
                 displayFun: (elem, d) => {
                     $(elem).html(d.bookmarked ? "&check;" : "&#10007;");
@@ -133,9 +134,10 @@ const tmappUI = (function(){
                 sortable: true
             },
             {
-                name: "Region",
+                name: "R",
                 key: "isARegion",
-                minWidth: "6.5em",
+                title: "Annotation is a region",
+                minWidth: "3em",
                 selectFun: d => d.points.length > 1,
                 displayFun: (elem, d) => {
                     $(elem).html(d.isARegion ? "&check;" : "&#10007;");
@@ -143,9 +145,10 @@ const tmappUI = (function(){
                 sortable: true
             },
             {
-                name: "Comments",
+                name: "C",
                 key: "nComments",
-                minWidth: "8em",
+                title: "Number of comments",
+                minWidth: "3em",
                 selectFun: d => (d.comments && d.comments.length) || 0,
                 sortable: true
             },

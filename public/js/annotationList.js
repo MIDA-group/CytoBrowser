@@ -10,6 +10,8 @@ class AnnotationList {
      * top of the column for the field.
      * @property {string} key The key that should be used to access
      * data from this field.
+     * @property {string} [title] The text that should be displayed when
+     * hovering over the name of this field.
      * @property {Function} [selectFun] The function that should be called
      * to create the data for this field from raw data. If undefined,
      * the data will be acquired by accessing the raw data using the
@@ -61,6 +63,7 @@ class AnnotationList {
                     .style("cursor", "pointer")
                     .style("user-select", "none")
                     .attr("class", "p-1")
+                    .attr("title", field.title ? field.title : field.name)
                     .text(field.name)
                     .append("span")
                     .attr("class", "sort-indicator ml-1")
