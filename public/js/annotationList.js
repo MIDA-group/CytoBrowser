@@ -60,6 +60,7 @@ class AnnotationList {
                     .on("click", () => this._progressSort(field.key))
                     .style("cursor", "pointer")
                     .style("user-select", "none")
+                    .attr("class", "p-1")
                     .text(field.name)
                     .append("span")
                     .attr("class", "sort-indicator ml-1")
@@ -106,6 +107,7 @@ class AnnotationList {
                     .selectAll("td")
                     .data(fields)
                     .join("td")
+                    .attr("class", "p-1")
                     .style("vertical-align", "middle")
                     .each(function(f) {
                         if (f.displayFun) {
