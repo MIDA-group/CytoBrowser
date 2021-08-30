@@ -85,7 +85,7 @@ const tmappUI = (function(){
     }
 
     function _initAnnotationList() {
-        const list = new AnnotationList("#annotation-list", "id", [
+        const list = new AnnotationList("#annotation-list", "#rtoolbar", "id", [
             {
                 name: "Marked",
                 key: "bookmarked",

@@ -1,11 +1,45 @@
 class AnnotationList {
     "using strict";
 
-    constructor(table, idKey, fields) {
+    /**
+     * Object that contains information about a single field in the
+     * annotation list. Each field corresponds to a single key-value
+     * pair in the processed data, as well as a single column in the list.
+     * @typedef {Object} AnnotationListField
+     * @property {string} name The name that should be displayed at the
+     * top of the column for the field.
+     * @property {string} key The key that should be used to access
+     * data from this field.
+     * @property {Function} [selectFun] The function that should be called
+     * to create the data for this field from raw data. If undefined,
+     * the data will be acquired by accessing the raw data using the
+     * field's key.
+     * @property {Function} [displayFun] Function that should be used to
+     * display the data for this field. The function should take two
+     * arguments, the first being a DOM element where the data should
+     * be displayed and the second being a datum.
+     * @property {boolean} [sortable] Whether or not the data in this
+     * field can be used to sort the annotations. Defaults to false.
+     * @property {string} [minWidth] The minimum width of the column for
+     * this field.
+     */
+
+    /**
+     * @param table Any value that can be selected by d3 to access a
+     * table element in which the annotations should be listed.
+     * @param scroller Any value that can be selected by jQuery to access
+     * the element to which the scrollbar of the list belongs.
+     * @param {string} idKey The key that should be used to uniquely
+     * identify each data item. Is also used for the default sorting.
+     * @param {Array<AnnotationListField>} fields The fields that should
+     * be used for the columns in the list.
+     */
+    constructor(table, scroller, idKey, fields) {
         this.fields = fields;
         this.data = [];
         this.idKey = idKey;
         this.table = d3.select(table);
+        this.scroller = scroller;
         this._createHeaderRowAndBody();
         this.unsetSorted();
     }
@@ -65,6 +99,7 @@ class AnnotationList {
             .data(this.data, d => d[this.idKey])
             .join("tr")
             .attr("class", "data-row")
+            .attr("data-annotation-id", d => d[this.idKey])
             .order((a, b) => a.a < b.a)
             .each(function(d) {
                 d3.select(this)
@@ -158,6 +193,11 @@ class AnnotationList {
      * @param {number} id The id of the given item.
      */
     goToRow(id) {
-        throw new Error("Moving to row not yet implemented.");
+        const scroller = $(this.scroller);
+        const row = $(`tr[data-annotation-id=${id}]`).get(0);
+        const headerOffset = scroller.offset().top;
+        const currentScroll = scroller.scrollTop();
+        const rowOffset = row.offset().top;
+        scroller.scrollTop(currentScroll + rowOffset - headerOffset);
     }
 }
