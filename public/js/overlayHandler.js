@@ -107,6 +107,10 @@ const overlayHandler = (function (){
         return 2 * _scale;
     }
 
+    function _regionHandleSize() {
+        return 0.5 * _scale;
+    }
+
     function _getRegionPath(d) {
         const stops = d.points.map(point => {
             const viewport = coordinateHelper.imageToViewport(point);
@@ -138,8 +142,12 @@ const overlayHandler = (function (){
 
     function _resizeRegions() {
         _regionOverlay.selectAll("g")
-            .select("path")
-            .attr("stroke-width", _regionStrokeWidth());
+            .call(group =>
+                group.select(".region-area")
+                    .attr("stroke-width", _regionStrokeWidth())
+            )
+            .selectAll(".region-edit-handles g")
+            .attr("transform", _transformFunction({scale: _regionHandleSize()}));
         _pendingRegionOverlay.selectAll("path")
             .attr("stroke-width", _regionStrokeWidth())
             .attr("stroke-dasharray", _regionStrokeWidth());
@@ -148,6 +156,65 @@ const overlayHandler = (function (){
     function _rotateMarkers() {
         _markerOverlay.selectAll("g")
             .attr("transform", _transformFunction({rotate: -_rotation}));
+    }
+
+    function _toggleRegionEditControls(d, node) {
+        const selection = d3.select(node);
+        if (selection.attr("data-being-edited")) {
+            selection.selectAll(".region-edit-handles g path")
+                .transition("appear").duration(250)
+                .attr("transform", "scale(0)")
+                .on("end", () =>
+                    selection.attr("data-being-edited", null)
+                        .select(".region-edit-handles")
+                        .remove()
+                );
+        }
+        else {
+            selection.attr("data-being-edited", true)
+                .append("g")
+                .attr("class", "region-edit-handles")
+                .call(group => {
+                    d.points.forEach(point => {
+                        group.append("g")
+                            .attr("transform", d => {
+                                const viewport = coordinateHelper.imageToViewport(point);
+                                const coords = coordinateHelper.viewportToOverlay(viewport);
+                                return `translate(${coords.x}, ${coords.y}), scale(${_regionHandleSize()})`;
+                            })
+                            .append("path")
+                            .attr("d", d3.symbol().size(500).type(d3.symbolCircle))
+                            .attr("transform", "scale(0)")
+                            .style("fill", _getAnnotationColor)
+                            .style("cursor", "move")
+                            .transition("appear").duration(250)
+                            .attr("transform", "scale(1)")
+                            .call(path => {
+                                new OpenSeadragon.MouseTracker({
+                                    element: path.node(),
+                                    pressHandler: function(event) {
+                                        tmapp.setCursorStatus({held: true});
+                                    },
+                                    releaseHandler: function(event) {
+                                        tmapp.setCursorStatus({held: false});
+                                    },
+                                    dragHandler: function(event) {
+                                        const reference = coordinateHelper.webToImage({x: 0, y: 0});
+                                        const delta = coordinateHelper.webToImage(event.delta);
+                                        point.x += delta.x - reference.x;
+                                        point.y += delta.y - reference.y;
+                                        annotationHandler.update(d.id, d, "image");
+                                        const viewportCoords = coordinateHelper.pageToViewport({
+                                            x: event.originalEvent.pageX,
+                                            y: event.originalEvent.pageY
+                                        });
+                                        tmapp.setCursorStatus(viewportCoords);
+                                    }
+                                }).setTracking(true);
+                            });
+                    });
+                });
+        }
     }
 
     /**
@@ -245,7 +312,7 @@ const overlayHandler = (function (){
 
         function highlight() {
             d3.select(node)
-                .selectAll("path")
+                .selectAll(".region-area")
                 .transition("highlight").duration(200)
                 .attr("stroke", _getAnnotationColor)
                 .attr("fill", _getAnnotationColor)
@@ -254,17 +321,22 @@ const overlayHandler = (function (){
 
         function unHighlight() {
             d3.select(node)
-                .selectAll("path")
+                .selectAll(".region-area")
                 .transition("highlight").duration(200)
                 .attr("stroke", _getAnnotationColor)
                 .attr("fill", _getAnnotationColor)
                 .attr("fill-opacity", 0.2);
         }
 
+        function beginEditing() {
+            _toggleRegionEditControls(d, node);
+        }
+
         new OpenSeadragon.MouseTracker({
             element: node,
             enterHandler: highlight,
-            exitHandler: unHighlight
+            exitHandler: unHighlight,
+            dblClickHandler: beginEditing
         }).setTracking(true);
     }
 
@@ -351,6 +423,7 @@ const overlayHandler = (function (){
 
     function _enterRegion(enter) {
         enter.append("g")
+            .attr("class", "region")
             .call(group =>
                 group.append("path")
                     .attr("d", _getRegionPath)
@@ -358,17 +431,35 @@ const overlayHandler = (function (){
                     .attr("stroke-width", _regionStrokeWidth())
                     .attr("fill", _getAnnotationColor)
                     .attr("fill-opacity", 0.2)
+                    .attr("class", "region-area")
             )
             .attr("opacity", 1)
             .each(function(d) {_addRegionMouseEvents(d, this);});
     }
 
     function _updateRegion(update) {
-        update.select("path")
-            .attr("d", _getRegionPath)
-            .transition("changeColor").duration(500)
-            .attr("stroke", _getAnnotationColor)
-            .attr("fill", _getAnnotationColor);
+        update.call(update =>
+                update.select(".region-area")
+                    .attr("d", _getRegionPath)
+                    .transition("changeColor").duration(500)
+                    .attr("stroke", _getAnnotationColor)
+                    .attr("fill", _getAnnotationColor)
+            )
+            .call(update =>
+                update.selectAll(".region-edit-handles g")
+                    .each(function(d, i) {
+                        const point = d.points[i];
+                        d3.select(this)
+                            .attr("transform", _transformFunction(function(d) {
+                                const viewport = coordinateHelper.imageToViewport(point);
+                                const coords = coordinateHelper.viewportToOverlay(viewport);
+                                return {translate: [coords.x, coords.y]};
+                            }));
+                    })
+                    .select("path")
+                    .transition("changeColor").duration(500)
+                    .style("fill", _getAnnotationColor)
+            );
     }
 
     function _exitRegion(exit) {
@@ -476,7 +567,7 @@ const overlayHandler = (function (){
                 _updateMarker,
                 _exitMarker
             );
-        _regionOverlay.selectAll("g")
+        _regionOverlay.selectAll(".region")
             .data(regions, d => d.id)
             .join(
                 _enterRegion,
