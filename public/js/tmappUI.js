@@ -87,16 +87,6 @@ const tmappUI = (function(){
     function _initAnnotationList() {
         const list = new AnnotationList("#annotation-list", "#rtoolbar", "id", [
             {
-                name: "B",
-                key: "bookmarked",
-                title: "Annotation has been bookmarked",
-                minWidth: "6.5em",
-                displayFun: (elem, d) => {
-                    $(elem).html(d.bookmarked ? "&check;" : "&#10007;");
-                },
-                sortable: true
-            },
-            {
                 name: "x",
                 key: "x",
                 minWidth: "5em",
@@ -130,6 +120,16 @@ const tmappUI = (function(){
                     badge.addClass("badge text-white");
                     badge.css("background-color", color);
                     $(elem).html(badge);
+                },
+                sortable: true
+            },
+            {
+                name: "B",
+                key: "bookmarked",
+                title: "Annotation has been bookmarked",
+                minWidth: "3em",
+                displayFun: (elem, d) => {
+                    $(elem).html(d.bookmarked ? "&check;" : "&#10007;");
                 },
                 sortable: true
             },
