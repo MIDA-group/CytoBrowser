@@ -52,6 +52,9 @@ const annotationVisuals = (function() {
         }
         _filterAndUpdate();
         _filterIsTrivial = query.length === 0;
+        if (_filterIsTrivial) {
+            tmappUI.clearFilterInfo();
+        }
     }
 
     /**
