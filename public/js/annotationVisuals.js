@@ -8,18 +8,24 @@ const annotationVisuals = (function() {
     let _annotationList = null;
     let _unfilteredAnnotations = [];
     let _filter = filters.getFilterFromQuery("");
+    let _filterIsTrivial = true;
 
     function _filterAndUpdate() {
         const annotations = _unfilteredAnnotations.filter(annotation => {
             const filterableAnnotation = filters.preprocessDatumBeforeFiltering(annotation);
             return _filter.evaluate(filterableAnnotation);
         });
-        overlayHandler.updateAnnotations(annotations);
-        if (_annotationList) {
-            _annotationList.updateData(annotations);
-        }
-        else {
-            console.warn("No annotation list has been set.");
+        if (overlayHandler) {
+            overlayHandler.updateAnnotations(annotations);
+            if (_annotationList) {
+                _annotationList.updateData(annotations);
+            }
+            else {
+                console.warn("No annotation list has been set.");
+            }
+            if (!_filterIsTrivial) {
+                tmappUI.setFilterInfo(_unfilteredAnnotations.length, annotations.length);
+            }
         }
     }
 
@@ -35,9 +41,17 @@ const annotationVisuals = (function() {
 
     // TODO: Document
     function setFilterQuery(query) {
-        const filter = filters.getFilterFromQuery(query);
-        _filter = filter;
+        try {
+            const filter = filters.getFilterFromQuery(query);
+            _filter = filter;
+        }
+        catch (e) {
+            const error = e.message;
+            tmappUI.setFilterError(error);
+            return;
+        }
         _filterAndUpdate();
+        _filterIsTrivial = query.length === 0;
     }
 
     /**
