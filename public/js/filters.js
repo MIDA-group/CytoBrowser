@@ -312,6 +312,8 @@ const filters = (function () {
             author: annotation.author,
             comments: annotation.comments ? annotation.comments.length : 0,
             bookmarked: annotation.bookmarked,
+            region: annotation.points.length > 1,
+            marker: annotation.points.length === 1,
             x: annotation.centroid.x,
             y: annotation.centroid.y,
             z: annotation.z,
