@@ -165,6 +165,9 @@ const filters = (function () {
     }
 
     function getPrimitiveFilterConstructor(token) {
+        if (!token) {
+            throw new Error("Expected '=', '>' or '<'");
+        }
         switch (token.type) {
             case tokenTypes.eq:
                 return EqualityFilter;
