@@ -283,7 +283,7 @@ const tmappUI = (function(){
         let keyUpTimeout = null;
         const keyUpTime = 3000;
         const input = $("#filter-query-input");
-        function updateQuery(query) {
+        function updateQuery() {
             const query = input.val();
             try {
                 annotationVisuals.setFilterQuery(query);
