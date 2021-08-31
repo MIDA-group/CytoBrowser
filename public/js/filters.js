@@ -116,7 +116,7 @@ const filters = (function () {
         }
 
         evaluate(input) {
-            return input[this.key] === this.value;
+            return input[this.key] === this.value.evaluate(input);
         }
     }
 
@@ -128,7 +128,7 @@ const filters = (function () {
         }
 
         evaluate(input) {
-            return input[this.key] > this.value;
+            return input[this.key] > this.value.evaluate(input);
         }
     }
 
@@ -140,7 +140,27 @@ const filters = (function () {
         }
 
         evaluate(input) {
-            return input[this.key] < this.value;
+            return input[this.key] < this.value.evaluate(input);
+        }
+    }
+
+    const FilterValue {
+        constructor(value) {
+            this.value = value;
+        }
+
+        evaluate(input) {
+            return this.value;
+        }
+    }
+
+    const FilterKeyValue {
+        constructor(value) {
+            super(value);
+        }
+
+        evaluate(input) {
+            return input[this.value];
         }
     }
 
@@ -171,13 +191,15 @@ const filters = (function () {
     function getPrimitiveValue(token) {
         switch (token.type) {
             case tokenTypes.boolValue:
-                return token.value === "true";
+                return new FilterValue(token.value === "true");
             case tokenTypes.stringValue:
-                return token.value.slice(1, -1);
+                return new FilterValue(token.value.slice(1, -1));
             case tokenTypes.numberValue:
-                return Number(token.value);
+                return new FilterValue(Number(token.value));
+            case tokenTypes.key:
+                return new FilterKeyValue(token.value);
             default:
-                throw new Error(`Expected a string or a number, got '${token.value}'`);
+                throw new Error(`Expected a string, a boolean, a number, or a key, got '${token.value}'`);
         }
     }
 
