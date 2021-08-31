@@ -262,11 +262,11 @@ const filters = (function () {
     }
 
     function parseFilter(tokens) {
-        if (tokens.length === 0) {
-            return new Filter(); // Trivial, all-passing filter
-        }
         const token = tokens.shift();
-        if (token.type === tokenTypes.not) {
+        if (!token) {
+            throw new Error("Expected key, '(', or 'NOT'");
+        }
+        else if (token.type === tokenTypes.not) {
             const negatedFilter = parseFilter(tokens);
             return new NegationFilter(negatedFilter);
         }
@@ -283,13 +283,19 @@ const filters = (function () {
 
     function getFilterFromQuery(query) {
         const tokens = tokenizeQuery(query);
-        const filter = parseFilter(tokens);
         if (tokens.length === 0) {
-            return filter;
+            return new Filter(); // Trivial, all-passing filter
         }
         else {
-            const unexpectedToken = tokens.shift();
-            throw new Error(`Unexpected '${unexpectedToken.value}'`);
+            const filter = parseFilter(tokens);
+            if (tokens.length === 0) {
+                return filter;
+            }
+            else {
+                const unexpectedToken = tokens.shift();
+                throw new Error(`Unexpected '${unexpectedToken.value}'`);
+
+            }
         }
     }
 
