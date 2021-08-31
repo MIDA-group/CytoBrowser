@@ -37,7 +37,12 @@ const annotationVisuals = (function() {
         _annotationList = annotationList;
     }
 
-    // TODO: Document
+    /**
+     * Set the query that should be used to filter annotations in the
+     * visuals.
+     * @param {string} query The filter query to be used. Should have
+     * the same format as in filters.getFilterFromQuery().
+     */
     function setFilterQuery(query) {
         try {
             const filter = filters.getFilterFromQuery(query);

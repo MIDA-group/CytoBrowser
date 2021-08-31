@@ -1,8 +1,13 @@
+/**
+ * Parsing and instantiation of filters that can be used to alter which
+ * annotations are shown. Includes functionality for preprocessing an
+ * annotation into a filterable object.
+ * @namespace filters
+ */
 const filters = (function () {
     "use strict";
 
-
-    const tokenTypes = {
+    const _tokenTypes = {
         and: Symbol("Intersection"),
         or: Symbol("Union"),
         not: Symbol("Negation"),
@@ -17,49 +22,49 @@ const filters = (function () {
         rightP: Symbol("Right parenthesis")
     };
 
-    const tokenExp = /\s*(("[^"]*")|('[^']*')|([a-zA-Z]+)|(-?\d+(\.\d+)?)|[^\s\da-zA-Z])\s*/g;
-    const keyExp = /^[a-zA-Z]+\S*$/;
-    const boolValueExp = /^(false)|(true)$/;
-    const stringValueExp = /^(("[^"]*")|('[^']*'))$/;
-    const numberValueExp = /^-?\d+(\.\d+)?$/;
+    const _tokenExp = /\s*(("[^"]*")|('[^']*')|([a-zA-Z]+)|(-?\d+(\.\d+)?)|[^\s\da-zA-Z])\s*/g;
+    const _keyExp = /^[a-zA-Z]+\S*$/;
+    const _boolValueExp = /^(false)|(true)$/;
+    const _stringValueExp = /^(("[^"]*")|('[^']*'))$/;
+    const _numberValueExp = /^-?\d+(\.\d+)?$/;
 
-    function getTokenType(token) {
+    function _getTokenType(token) {
         switch (token) {
             case "AND":
             case "and":
-                return tokenTypes.and;
+                return _tokenTypes.and;
             case "OR":
             case "or":
-                return tokenTypes.or;
+                return _tokenTypes.or;
             case "NOT":
             case "not":
-                return tokenTypes.not;
+                return _tokenTypes.not;
             case "=":
             case "IS":
             case "is":
-                return tokenTypes.eq;
+                return _tokenTypes.eq;
             case ">":
-                return tokenTypes.gt;
+                return _tokenTypes.gt;
             case "<":
-                return tokenTypes.lt;
+                return _tokenTypes.lt;
             case "(":
             case "[":
-                return tokenTypes.leftP;
+                return _tokenTypes.leftP;
             case ")":
             case "]":
-                return tokenTypes.rightP;
+                return _tokenTypes.rightP;
             default:
-                if (boolValueExp.test(token)) {
-                    return tokenTypes.boolValue;
+                if (_boolValueExp.test(token)) {
+                    return _tokenTypes.boolValue;
                 }
-                else if (keyExp.test(token)) {
-                    return tokenTypes.key;
+                else if (_keyExp.test(token)) {
+                    return _tokenTypes.key;
                 }
-                else if (stringValueExp.test(token)) {
-                    return tokenTypes.stringValue;
+                else if (_stringValueExp.test(token)) {
+                    return _tokenTypes.stringValue;
                 }
-                else if (numberValueExp.test(token)) {
-                    return tokenTypes.numberValue;
+                else if (_numberValueExp.test(token)) {
+                    return _tokenTypes.numberValue;
                 }
                 else {
                     throw new Error(`Unexpected token: '${token}'`);
@@ -68,6 +73,11 @@ const filters = (function () {
     }
 
     class Filter {
+        /**
+         * Check whether or not an object passes the filter.
+         * @param {Object} input A filterable object.
+         * @returns {boolean} Whether or not the input passes.
+         */
         evaluate(input) {
             return true;
         }
@@ -164,57 +174,57 @@ const filters = (function () {
         }
     }
 
-    function getPrimitiveFilterConstructor(token) {
+    function _getPrimitiveFilterConstructor(token) {
         if (!token) {
             throw new Error("Expected '=', '>' or '<'");
         }
         switch (token.type) {
-            case tokenTypes.eq:
+            case _tokenTypes.eq:
                 return EqualityFilter;
-            case tokenTypes.gt:
+            case _tokenTypes.gt:
                 return GreaterThanFilter;
-            case tokenTypes.lt:
+            case _tokenTypes.lt:
                 return LessThanFilter;
             default:
                 throw new Error(`Expected '=', '>' or '<', got '${token.value}'`);
         }
     }
 
-    function getCombinedFilterConstructor(token) {
+    function _getCombinedFilterConstructor(token) {
         switch (token.type) {
-            case tokenTypes.and:
+            case _tokenTypes.and:
                 return IntersectionFilter;
-            case tokenTypes.or:
+            case _tokenTypes.or:
                 return UnionFilter;
             default:
                 throw new Error(`Expected 'AND' or 'OR', got '${token.value}'`);
         }
     }
 
-    function getPrimitiveValue(token) {
+    function _getPrimitiveValue(token) {
         if (!token) {
             throw new Error("Expected a value or a key");
         }
         switch (token.type) {
-            case tokenTypes.boolValue:
+            case _tokenTypes.boolValue:
                 return new FilterValue(token.value === "true");
-            case tokenTypes.stringValue:
+            case _tokenTypes.stringValue:
                 return new FilterValue(token.value.slice(1, -1));
-            case tokenTypes.numberValue:
+            case _tokenTypes.numberValue:
                 return new FilterValue(Number(token.value));
-            case tokenTypes.key:
+            case _tokenTypes.key:
                 return new FilterKeyValue(token.value);
             default:
                 throw new Error(`Expected a value or a key, got '${token.value}'`);
         }
     }
 
-    function tokenizeQuery(query) {
-        const rawTokens = query.match(tokenExp);
+    function _tokenizeQuery(query) {
+        const rawTokens = query.match(_tokenExp);
         if (rawTokens) {
             const tokenInfo = rawTokens.map(rawToken => {
                 const value = rawToken.trim();
-                const type = getTokenType(value);
+                const type = _getTokenType(value);
                 return {
                     value: value,
                     type: type
@@ -227,39 +237,39 @@ const filters = (function () {
         }
     }
 
-    function parsePrimitiveSubfilter(key, tokens) {
+    function _parsePrimitiveSubfilter(key, tokens) {
         const operationToken = tokens.shift();
-        const filterConstructor = getPrimitiveFilterConstructor(operationToken);
+        const filterConstructor = _getPrimitiveFilterConstructor(operationToken);
         const rhsToken = tokens.shift();
-        const rhsValue = getPrimitiveValue(rhsToken);
+        const rhsValue = _getPrimitiveValue(rhsToken);
         const filter = new filterConstructor(key, rhsValue);
-        if (tokens.length === 0 || tokens[0].type === tokenTypes.rightP) {
+        if (tokens.length === 0 || tokens[0].type === _tokenTypes.rightP) {
             return filter;
         }
         else {
-            return parseCombinedSubfilter(filter, tokens);
+            return _parseCombinedSubfilter(filter, tokens);
         }
     }
 
-    function parseCombinedSubfilter(filter, tokens) {
+    function _parseCombinedSubfilter(filter, tokens) {
         const operationToken = tokens.shift();
-        const filterConstructor = getCombinedFilterConstructor(operationToken);
-        const rhs = parseFilter(tokens);
+        const filterConstructor = _getCombinedFilterConstructor(operationToken);
+        const rhs = _parseFilter(tokens);
         return new filterConstructor(filter, rhs);
     }
 
-    function parseParenthesizedSubfilter(tokens) {
-        const filter = parseFilter(tokens);
+    function _parseParenthesizedSubfilter(tokens) {
+        const filter = _parseFilter(tokens);
         const rightParenthesis = tokens.shift();
         if (!rightParenthesis) {
             throw new Error("Expected ')'");
         }
-        else if (rightParenthesis.type === tokenTypes.rightP) {
+        else if (rightParenthesis.type === _tokenTypes.rightP) {
             if (tokens.length === 0) {
                 return filter;
             }
             else {
-                return parseCombinedSubfilter(filter, tokens);
+                return _parseCombinedSubfilter(filter, tokens);
             }
         }
         else {
@@ -267,40 +277,67 @@ const filters = (function () {
         }
     }
 
-    function parseFilter(tokens) {
+    function _parseFilter(tokens) {
         const token = tokens.shift();
         if (!token) {
             throw new Error("Expected key, '(', or 'NOT'");
         }
-        else if (token.type === tokenTypes.not) {
-            const negatedFilter = parseFilter(tokens);
+        else if (token.type === _tokenTypes.not) {
+            const negatedFilter = _parseFilter(tokens);
             return new NegationFilter(negatedFilter);
         }
-        else if (token.type === tokenTypes.leftP) {
-            return parseParenthesizedSubfilter(tokens);
+        else if (token.type === _tokenTypes.leftP) {
+            return _parseParenthesizedSubfilter(tokens);
         }
-        else if (token.type === tokenTypes.key) {
-            return parsePrimitiveSubfilter(token.value, tokens);
+        else if (token.type === _tokenTypes.key) {
+            return _parsePrimitiveSubfilter(token.value, tokens);
         }
         else {
             throw new Error(`Expected key, '(', or 'NOT', got '${token.value}'`);
         }
     }
 
+    /**
+     * Parse a filter query and return a Filter object that can be used
+     * to check whether or not an object that hass been processed
+     * with preprocessDatumBeforeFiltering() passes conditions
+     * specified in the query. The query is formatted in BNF as follows:
+     *
+     * <query> ::= <filter>
+     * <filter> ::= <negation><filter>|<primitive>|<combination>|<left><filter><right>
+     * <negation> ::= "not"|"NOT"
+     * <left> ::= "("|"["
+     * <right> ::= ")"|"]"
+     * <combination> ::= <filter><combop><filter>
+     * <primitive> ::= <key><primop><value>
+     * <combop> ::= <union>|<intersection>
+     * <union> ::= "AND"|"and"
+     * <intersection> ::= "OR"|"or"
+     * <primop> ::= <equality>|<gt>|<lt>
+     * <equality> ::= "IS"|"is"|"="
+     * <gt> ::= ">"
+     * <lt> ::= "<"
+     * <value> ::= <key>|"true"|"false"|<string>|<integer>|<float>
+     *
+     * <key> corresponds to any sequence of alphanumeric characters that
+     * start with a letter, and <string> corresponds to any sequence
+     * of characters surrounded by "" or ''.
+     * @param {string} query The filter query to parse.
+     * @returns {Filter} The filter object.
+     */
     function getFilterFromQuery(query) {
-        const tokens = tokenizeQuery(query);
+        const tokens = _tokenizeQuery(query);
         if (tokens.length === 0) {
             return new Filter(); // Trivial, all-passing filter
         }
         else {
-            const filter = parseFilter(tokens);
+            const filter = _parseFilter(tokens);
             if (tokens.length === 0) {
                 return filter;
             }
             else {
                 const unexpectedToken = tokens.shift();
                 throw new Error(`Unexpected '${unexpectedToken.value}'`);
-
             }
         }
     }
