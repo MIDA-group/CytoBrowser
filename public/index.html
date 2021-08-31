@@ -532,7 +532,6 @@
             </button>
           </div>
           <div class="modal-body p-4">
-              <h5>Session</h5>
               <p>
                   A filter can be used to specify which annotations
                   are shown in the viewport and annotation list. Filters
@@ -596,9 +595,9 @@
                     can be specified:
                 </p>
                 <ul>
-                    <li><code>NOT author &equals; "Bob"</code> &#8211; Annotations made by people other than Bob.</li>
                     <li><code>class &equals; "HSIL"</code> &#8211; Annotations belonging to the HSIL class.</li>
                     <li><code>x &gt; 50000</code> &#8211; Annotations with an x position greater than 50000.</li>
+                    <li><code>NOT author &equals; "Bob"</code> &#8211; Annotations made by people other than Bob.</li>
                     <li><code>author &equals; "Bob" AND bookmarked &equals; true</code> &#8211; Bookmarked annotations made by Bob.</li>
                     <li><code>bookmarked &equals; true OR comments &gt; 0</code> &#8211; Annotations that have either been bookmarked or commented on.</li>
                     <li><code>bookmarked &equals; true AND (class &equals; "Other" OR comments &gt; 0)</code> &#8211; Bookmarked annotations that either have the class "Other" or have been commented on.</li>
