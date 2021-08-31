@@ -223,7 +223,10 @@ const filters = (function () {
     function parseParenthesizedSubfilter(tokens) {
         const filter = parseFilter(tokens);
         const rightParenthesis = tokens.shift();
-        if (rightParenthesis && rightParenthesis.type === tokenTypes.rightP) {
+        if (!rightParenthesis) {
+            throw new Error("Expected ')'");
+        }
+        else if (rightParenthesis.type === tokenTypes.rightP) {
             if (tokens.length === 0) {
                 return filter;
             }
