@@ -144,7 +144,7 @@ const filters = (function () {
         }
     }
 
-    const FilterValue {
+    class FilterValue {
         constructor(value) {
             this.value = value;
         }
@@ -154,7 +154,7 @@ const filters = (function () {
         }
     }
 
-    const FilterKeyValue {
+    class FilterKeyValue {
         constructor(value) {
             super(value);
         }
