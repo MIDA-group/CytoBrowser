@@ -228,7 +228,7 @@
                     </div>
 
                     <!-- Import/Export -->
-                    <div class="card-body px-2">
+                    <div class="card-body px-2 pb-0">
                         <div class="row pb-1 pt-2">
                             <div class="col-3">
                                 <input class="d-none" type="file" id="data_files_import" onclick="this.value=null;" name="files[]">
@@ -239,6 +239,24 @@
                             </div>
                             <div class="col-6 d-flex align-items-center">
                                 <button type="button" class="btn btn-dark btn-block" data-toggle="modal" data-target="#server_storage">Server storage</btton>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Annotation filter -->
+                    <div class="card-body px-2">
+                        <div class="row">
+                            <div class="col">
+                                <div class="input-group">
+                                    <input id="filter-query-input" type="text" class="form-control" placeholder="Filter annotations">
+                                    <div class="input-group-append">
+                                        <button class="btn btn-info" data-toggle="modal" data-target="#filter-usage" style="border-top-right-radius: 0.25rem;border-bottom-right-radius: 0.25rem;">Help</button>
+                                    </div>
+                                    <div id="filter-query-error" class="invalid-feedback">
+                                    </div>
+                                    <div id="filter-query-info" class="valid-feedback">
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -503,6 +521,93 @@
       </div>
     </div> <!-- End of instructions -->
 
+    <!-- Filter instructions -->
+    <div class="modal fade" id="filter-usage" tabindex="-1" role="dialog">
+      <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Filtering annotations</h5>
+            <button type="button" class="close" data-dismiss="modal">
+              <span>&times;</span>
+            </button>
+          </div>
+          <div class="modal-body p-4">
+              <p>
+                  A filter can be used to specify which annotations
+                  are shown in the viewport and annotation list. Filters
+                  can be specified through a combination of keys, values,
+                  comparisons, and combinations.
+              </p>
+              <h5>Keys</h5>
+                <p>
+                    Keys specify the properties of the annotations that
+                    should be considered when filtering the annotations.
+                    The available keys are:
+                </p>
+                <ul>
+                    <li><code>class</code> &#8211; The class the annotation belongs to.</li>
+                    <li><code>author</code> &#8211; The name of the user who created the annotation.</li>
+                    <li><code>comments</code> &#8211; The number of comments an annotation has.</li>
+                    <li><code>bookmarked</code> &#8211; Whether or not an annotation is bookmarked.</li>
+                    <li><code>region</code> &#8211; Whether or not an annotation is a region.</li>
+                    <li><code>marker</code> &#8211; Whether or not an annotation is a marker.</li>
+                    <li><code>x</code> &#8211; The x position of the annotation's centroid.</li>
+                    <li><code>y</code> &#8211; The y position of the annotation's centroid.</li>
+                    <li><code>z</code> &#8211; The z position of the annotation.</li>
+                </ul>
+              <h5>Values</h5>
+                <p>
+                    Values specify what the annotation properties should
+                    be compared to in the filter. A value can be a boolean,
+                    in which case it is specified as <code>true</code> or
+                    <code>false</code>, a string, in which case a quotation
+                    mark should be placed on either side of the value, or
+                    a number, which can be either an integer or a real number.
+                    In addition, the value can be specified as a key, in
+                    which case two properties of the annotation are compared
+                    to each other.
+                </p>
+              <h5>Comparisons</h5>
+                <p>
+                    Comparisons specify the relationships between keys
+                    and values that should be fulfilled for an annotation
+                    to pass a filter. The available comparisons are:
+                </p>
+                <ul>
+                    <li><code>[key] &equals; [value]</code> &#8211; A key is exactly equal to a given value.</li>
+                    <li><code>[key] &gt; [value]</code> &#8211; A key is greater than a given value.</li>
+                    <li><code>[key] &lt; [value]</code> &#8211; A key is less than a given value.</li>
+                </ul>
+              <h5>Combinations</h5>
+                <p>
+                    Combinations are used to combine or modify smaller
+                    parts of the filter.  The available combinations are:
+                </p>
+                <ul>
+                    <li><code>[subfilter] AND [subfilter]</code> &#8211; Both subfilters must pass.</li>
+                    <li><code>[subfilter] OR [subfilter]</code> &#8211; One of the subfilters must pass.</li>
+                    <li><code>NOT [subfilter]</code> &#8211; The result of the subfilter is negated.</li>
+                    <li><code>([subfilter])</code> &#8211; The subfilter is evaluated in isolation.</li>
+                </ul>
+              <h5>Examples</h5>
+                <p>
+                    The following examples show some of the filters that
+                    can be specified:
+                </p>
+                <ul>
+                    <li><code>class &equals; "HSIL"</code> &#8211; Annotations belonging to the HSIL class.</li>
+                    <li><code>x &gt; 50000</code> &#8211; Annotations with an x position greater than 50000.</li>
+                    <li><code>NOT author &equals; "Bob"</code> &#8211; Annotations made by people other than Bob.</li>
+                    <li><code>author &equals; "Bob" AND bookmarked &equals; true</code> &#8211; Bookmarked annotations made by Bob.</li>
+                    <li><code>bookmarked &equals; true OR comments &gt; 0</code> &#8211; Annotations that have either been bookmarked or commented on.</li>
+                    <li><code>bookmarked &equals; true AND (class &equals; "Other" OR comments &gt; 0)</code> &#8211; Bookmarked annotations that either have the class "Other" or have been commented on.</li>
+                    <li><code>x &gt; y</code> &#8211; Annotations where the x position is greater than the y position.</li>
+                </ul>
+          </div>
+        </div>
+      </div>
+  </div> <!-- End of filter instructions -->
+
     <!-- Collaboration menu -->
     <div class="modal fade" id="collaboration_menu" tabindex="-1" role="dialog">
       <div class="modal-dialog" role="document">
@@ -588,6 +693,7 @@
 <script src="js/fileBrowserUI.js"></script>
 <script src="js/tmappUI.js"></script>
 <script src="js/tmapp.js"></script>
+<script src="js/filters.js"></script>
 <script src="js/annotationVisuals.js"></script>
 <script src="js/annotationStorageConversion.js"></script>
 <script src="js/coordinateHelper.js"></script>

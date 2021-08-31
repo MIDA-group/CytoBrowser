@@ -279,6 +279,30 @@ const tmappUI = (function(){
         });
     }
 
+    function _initAnnotationFiltering() {
+        let keyUpTimeout = null;
+        const keyUpTime = 3000;
+        const input = $("#filter-query-input");
+        const initialQuery = input.val();
+        annotationVisuals.setFilterQueryWithoutUpdating(initialQuery);
+        function updateQuery() {
+            const query = input.val();
+            annotationVisuals.setFilterQuery(query);
+        }
+        input.keypress(e => e.stopPropagation());
+        input.keyup(e => {
+            e.stopPropagation();
+            clearTimeout(keyUpTimeout);
+            keyUpTimeout = setTimeout(updateQuery, keyUpTime);
+        });
+        input.keydown(e => {
+            e.stopPropagation();
+            if (e.code === "Escape" || e.code === "Enter" || e.code === "NumpadEnter") {
+                updateQuery();
+            }
+        });
+    }
+
     function _initFocusButtonEvents() {
         $("#focus_next").click(tmapp.incrementFocus);
         $("#focus_prev").click(tmapp.decrementFocus);
@@ -417,6 +441,7 @@ const tmappUI = (function(){
         _initContextMenu();
         _initDocumentFocusFunctionality();
         _initStorageButtonEvents();
+        _initAnnotationFiltering();
         _initFocusButtonEvents();
         _initVisualizationSliders();
         _initKeyboardShortcuts();
@@ -673,6 +698,40 @@ const tmappUI = (function(){
         $("#last_autosave").text(time || time === 0 ? txt : "");
     }
 
+    /**
+     * Indicate that there has been an error in parsing a filter query.
+     * @param {string} error The error message to display.
+     */
+    function setFilterError(error) {
+        const input = $("#filter-query-input");
+        input.addClass("is-invalid");
+        input.removeClass("is-valid");
+        $("#filter-query-error").text(error);
+    }
+
+    /**
+     * Show information about what has been filtered out.
+     * @param {number} total The total number of annotations.
+     * @param {number} remaining The number of annotations that
+     * passed through the filter.
+     */
+    function setFilterInfo(total, remaining) {
+        const input = $("#filter-query-input");
+        const info = `Showing ${remaining} out of ${total} annotations`;
+        input.removeClass("is-invalid");
+        input.addClass("is-valid");
+        $("#filter-query-info").text(info);
+    }
+
+    /**
+     * Clear information text from filter.
+     */
+    function clearFilterInfo() {
+        const input = $("#filter-query-input");
+        input.removeClass("is-invalid");
+        input.removeClass("is-valid");
+    }
+
     let _urlTimeout,
         _urlCache;
     /**
@@ -716,6 +775,9 @@ const tmappUI = (function(){
         setImageZoom: setImageZoom,
         setImageRotation: setImageRotation,
         setLastAutosave: setLastAutosave,
+        setFilterError: setFilterError,
+        setFilterInfo: setFilterInfo,
+        clearFilterInfo: clearFilterInfo,
         setURL: setURL,
         inFocus: inFocus
     };

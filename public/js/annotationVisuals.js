@@ -6,6 +6,41 @@ const annotationVisuals = (function() {
     "use strict";
 
     let _annotationList = null;
+    let _unfilteredAnnotations = [];
+    let _filter = filters.getFilterFromQuery("");
+    let _filterIsTrivial = true;
+    let _lastQueryWasValid = true;
+
+    function _filterAndUpdate() {
+        const annotations = _unfilteredAnnotations.filter(annotation => {
+            const filterableAnnotation = filters.preprocessDatumBeforeFiltering(annotation);
+            return _filter.evaluate(filterableAnnotation);
+        });
+        overlayHandler.updateAnnotations(annotations);
+        if (_annotationList) {
+            _annotationList.updateData(annotations);
+        }
+        else {
+            console.warn("No annotation list has been set.");
+        }
+        if (!_filterIsTrivial && _lastQueryWasValid) {
+            tmappUI.setFilterInfo(_unfilteredAnnotations.length, annotations.length);
+        }
+    }
+
+    function _setFilter(query) {
+        try {
+            const filter = filters.getFilterFromQuery(query);
+            _filter = filter;
+            _filterIsTrivial = query.length === 0;
+            _lastQueryWasValid = true;
+        }
+        catch (e) {
+            const error = e.message;
+            tmappUI.setFilterError(error);
+            _lastQueryWasValid = false;
+        }
+    }
 
     /**
      * Set the annotation list object that should be used to disply
@@ -13,23 +48,42 @@ const annotationVisuals = (function() {
      * update is called.
      * @param {AnnotationList} annotationList The list to use.
      */
-     function setAnnotationList(annotationList) {
-         _annotationList = annotationList;
-     }
+    function setAnnotationList(annotationList) {
+        _annotationList = annotationList;
+    }
+
+    /**
+     * Set the query that should be used to filter annotations in the
+     * visuals.
+     * @param {string} query The filter query to be used. Should have
+     * the same format as in filters.getFilterFromQuery().
+     */
+    function setFilterQuery(query) {
+        _setFilter(query);
+        _filterAndUpdate();
+        if (_filterIsTrivial && _lastQueryWasValid) {
+            tmappUI.clearFilterInfo();
+        }
+    }
+
+    /**
+     * Set the filter query without attempting to update the visuals.
+     * This can be called when the visuals are being initialized to
+     * avoid trying to draw on an overlay that doesn't exist.
+     * @param {string} query The filter query to be used. Should have
+     * the same format as in filters.getFilterFromQuery().
+     */
+    function setFilterQueryWithoutUpdating(query) {
+        _setFilter(query);
+    }
 
     /**
      * Update the current visuals for the annotations.
      * @param {Array} annotations All currently placed annotations.
      */
     function update(annotations){
-        // Update the annotations in the overlay
-    	overlayHandler.updateAnnotations(annotations);
-        if (_annotationList) {
-            _annotationList.updateData(annotations);
-        }
-        else {
-            console.warn("No annotation list has been set.");
-        }
+        _unfilteredAnnotations = annotations;
+        _filterAndUpdate();
     }
 
     /**
@@ -49,6 +103,8 @@ const annotationVisuals = (function() {
     return {
         update: update,
         setAnnotationList: setAnnotationList,
+        setFilterQuery: setFilterQuery,
+        setFilterQueryWithoutUpdating: setFilterQueryWithoutUpdating,
         clear: clear
     };
 })();

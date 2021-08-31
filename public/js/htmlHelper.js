@@ -248,7 +248,7 @@ const htmlHelper = (function() {
             e.stopPropagation();
             if ((e.code === "Enter" || e.code === "NumpadEnter") && !e.shiftKey) {
                 e.preventDefault();
-		submitButton.click();
+                submitButton.click();
             }
             else if (e.code === "Escape") {
                 $("#main_content").focus();
