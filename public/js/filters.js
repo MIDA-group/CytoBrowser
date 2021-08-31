@@ -17,7 +17,7 @@ const filters = (function () {
         rightP: Symbol("Right parenthesis")
     };
 
-    const tokenExp = /\s*(("[^"]*")|('[^']*')|([a-zA-Z]+)|(-?\d+(\.\d+)?)|=|>|<|\(|\)|\[|\])\s*/g;
+    const tokenExp = /\s*(("[^"]*")|('[^']*')|([a-zA-Z]+)|(-?\d+(\.\d+)?)|[^\s\da-zA-Z])\s*/g;
     const keyExp = /^[a-zA-Z]+\S*$/;
     const boolValueExp = /^(false)|(true)$/;
     const stringValueExp = /^(("[^"]*")|('[^']*'))$/;
