@@ -223,14 +223,15 @@ const filters = (function () {
     function parseParenthesizedSubfilter(tokens) {
         const filter = parseFilter(tokens);
         const rightParenthesis = tokens.shift();
-        if (rightParenthesis.type === tokenTypes.rightP) {
+        if (rightParenthesis && rightParenthesis.type === tokenTypes.rightP) {
             if (tokens.length === 0) {
                 return filter;
             }
             else {
                 return parseCombinedSubfilter(filter, tokens);
             }
-        } else {
+        }
+        else {
             throw new Error(`Expected ')', got '${rightParenthesis.value}'`);
         }
     }

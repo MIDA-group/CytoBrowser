@@ -303,6 +303,7 @@ const tmappUI = (function(){
                 $("#filter-query-error").text(error);
             }
         }
+        updateQuery();
         input.keypress(e => e.stopPropagation());
         input.keyup(e => {
             e.stopPropagation();
