@@ -154,7 +154,7 @@ const filters = (function () {
         }
     }
 
-    class FilterKeyValue {
+    class FilterKeyValue extends FilterValue {
         constructor(value) {
             super(value);
         }
