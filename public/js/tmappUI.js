@@ -284,7 +284,7 @@ const tmappUI = (function(){
         const keyUpTime = 3000;
         const input = $("#filter-query-input");
         const initialQuery = input.val();
-        tmappUI.setFilterQueryWithoutUpdating(initialQuery);
+        annotationVisuals.setFilterQueryWithoutUpdating(initialQuery);
         function updateQuery() {
             const query = input.val();
             annotationVisuals.setFilterQuery(query);

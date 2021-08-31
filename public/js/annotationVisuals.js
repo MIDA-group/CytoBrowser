@@ -9,6 +9,7 @@ const annotationVisuals = (function() {
     let _unfilteredAnnotations = [];
     let _filter = filters.getFilterFromQuery("");
     let _filterIsTrivial = true;
+    let _lastQueryWasValid = true;
 
     function _filterAndUpdate() {
         const annotations = _unfilteredAnnotations.filter(annotation => {
@@ -22,7 +23,7 @@ const annotationVisuals = (function() {
         else {
             console.warn("No annotation list has been set.");
         }
-        if (!_filterIsTrivial) {
+        if (!_filterIsTrivial && _lastQueryWasValid) {
             tmappUI.setFilterInfo(_unfilteredAnnotations.length, annotations.length);
         }
     }
@@ -31,13 +32,14 @@ const annotationVisuals = (function() {
         try {
             const filter = filters.getFilterFromQuery(query);
             _filter = filter;
+            _filterIsTrivial = query.length === 0;
+            _lastQueryWasValid = true;
         }
         catch (e) {
             const error = e.message;
             tmappUI.setFilterError(error);
-            return;
+            _lastQueryWasValid = false;
         }
-        _filterIsTrivial = query.length === 0;
     }
 
     /**
@@ -59,7 +61,7 @@ const annotationVisuals = (function() {
     function setFilterQuery(query) {
         _setFilter(query);
         _filterAndUpdate();
-        if (_filterIsTrivial) {
+        if (_filterIsTrivial && _lastQueryWasValid) {
             tmappUI.clearFilterInfo();
         }
     }
@@ -73,9 +75,6 @@ const annotationVisuals = (function() {
      */
     function setFilterQueryWithoutUpdating(query) {
         _setFilter(query);
-        if (_filterIsTrivial) {
-            tmappUI.clearFilterInfo();
-        }
     }
 
     /**
