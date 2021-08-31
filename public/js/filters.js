@@ -193,7 +193,7 @@ const filters = (function () {
 
     function getPrimitiveValue(token) {
         if (!token) {
-            throw new Error("Expected a string, a boolean, a number, or a key");
+            throw new Error("Expected a value or a key");
         }
         switch (token.type) {
             case tokenTypes.boolValue:
@@ -205,7 +205,7 @@ const filters = (function () {
             case tokenTypes.key:
                 return new FilterKeyValue(token.value);
             default:
-                throw new Error(`Expected a string, a boolean, a number, or a key, got '${token.value}'`);
+                throw new Error(`Expected a value or a key, got '${token.value}'`);
         }
     }
 
