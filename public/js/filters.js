@@ -189,6 +189,9 @@ const filters = (function () {
     }
 
     function getPrimitiveValue(token) {
+        if (!token) {
+            throw new Error("Expected a string, a boolean, a number, or a key");
+        }
         switch (token.type) {
             case tokenTypes.boolValue:
                 return new FilterValue(token.value === "true");
