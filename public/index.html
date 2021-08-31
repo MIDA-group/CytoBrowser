@@ -248,9 +248,13 @@
                         <div class="row">
                             <div class="col">
                                 <div class="input-group">
-                                    <input type="text" class="form-control" placeholder="Filter annotations">
+                                    <input id="filter-query-input" type="text" class="form-control" placeholder="Filter annotations">
                                     <div class="input-group-append">
-                                        <button class="btn btn-secondary">?</button>
+                                        <button class="btn btn-info">Help</button>
+                                    </div>
+                                    <div id="filter-query-error" class="invalid-feedback">
+                                    </div>
+                                    <div id="filter-query-info" class="valid-feedback">
                                     </div>
                                 </div>
                             </div>

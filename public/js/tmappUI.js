@@ -279,6 +279,38 @@ const tmappUI = (function(){
         });
     }
 
+    function _initAnnotationFiltering() {
+        function updateQuery(query) {
+            try {
+                annotationVisuals.setFilterQuery(query);
+                // TODO: Show success
+            }
+            catch (except) {
+                const error = except.message;
+                $("#filter-query-error").text(error);
+            }
+        }
+        let keyUpTimeout = null;
+        const keyUpTime = 3000;
+        const input = $("#filter-query-input");
+        input.keypress(e => e.stopPropagation());
+        input.keyup(e => {
+            e.stopPropagation();
+            clearTimeout(keyUpTimeout);
+            keyUpTimeout = setTimeout(() => {
+                const query = input.val();
+                updateQuery(query);
+            }, keyUpTime);
+        });
+        input.keydown(e => {
+            e.stopPropagation();
+            if (e.code === "Escape" || e.code === "Enter" || e.code === "NumpadEnter") {
+                const query = input.val();
+                updateQuery(query);
+            }
+        });
+    }
+
     function _initFocusButtonEvents() {
         $("#focus_next").click(tmapp.incrementFocus);
         $("#focus_prev").click(tmapp.decrementFocus);
@@ -417,6 +449,7 @@ const tmappUI = (function(){
         _initContextMenu();
         _initDocumentFocusFunctionality();
         _initStorageButtonEvents();
+        _initAnnotationFiltering();
         _initFocusButtonEvents();
         _initVisualizationSliders();
         _initKeyboardShortcuts();
