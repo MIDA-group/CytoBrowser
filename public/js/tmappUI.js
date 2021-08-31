@@ -280,33 +280,39 @@ const tmappUI = (function(){
     }
 
     function _initAnnotationFiltering() {
-        function updateQuery(query) {
-            try {
-                annotationVisuals.setFilterQuery(query);
-                // TODO: Show success
-            }
-            catch (except) {
-                const error = except.message;
-                $("#filter-query-error").text(error);
-            }
-        }
         let keyUpTimeout = null;
         const keyUpTime = 3000;
         const input = $("#filter-query-input");
+        function updateQuery(query) {
+            const query = input.val();
+            try {
+                annotationVisuals.setFilterQuery(query);
+                if (query.length > 0) {
+                    input.removeClass("is-invalid");
+                    input.addClass("is-valid");
+                }
+                else {
+                    input.removeClass("is-invalid");
+                    input.removeClass("is-valid");
+                }
+            }
+            catch (except) {
+                const error = except.message;
+                input.addClass("is-invalid");
+                input.removeClass("is-valid");
+                $("#filter-query-error").text(error);
+            }
+        }
         input.keypress(e => e.stopPropagation());
         input.keyup(e => {
             e.stopPropagation();
             clearTimeout(keyUpTimeout);
-            keyUpTimeout = setTimeout(() => {
-                const query = input.val();
-                updateQuery(query);
-            }, keyUpTime);
+            keyUpTimeout = setTimeout(updateQuery, keyUpTime);
         });
         input.keydown(e => {
             e.stopPropagation();
             if (e.code === "Escape" || e.code === "Enter" || e.code === "NumpadEnter") {
-                const query = input.val();
-                updateQuery(query);
+                updateQuery();
             }
         });
     }
