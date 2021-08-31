@@ -15,17 +15,15 @@ const annotationVisuals = (function() {
             const filterableAnnotation = filters.preprocessDatumBeforeFiltering(annotation);
             return _filter.evaluate(filterableAnnotation);
         });
-        if (overlayHandler) {
-            overlayHandler.updateAnnotations(annotations);
-            if (_annotationList) {
-                _annotationList.updateData(annotations);
-            }
-            else {
-                console.warn("No annotation list has been set.");
-            }
-            if (!_filterIsTrivial) {
-                tmappUI.setFilterInfo(_unfilteredAnnotations.length, annotations.length);
-            }
+        overlayHandler.updateAnnotations(annotations);
+        if (_annotationList) {
+            _annotationList.updateData(annotations);
+        }
+        else {
+            console.warn("No annotation list has been set.");
+        }
+        if (!_filterIsTrivial) {
+            tmappUI.setFilterInfo(_unfilteredAnnotations.length, annotations.length);
         }
     }
 
@@ -50,8 +48,8 @@ const annotationVisuals = (function() {
             tmappUI.setFilterError(error);
             return;
         }
-        _filterAndUpdate();
         _filterIsTrivial = query.length === 0;
+        _filterAndUpdate();
         if (_filterIsTrivial) {
             tmappUI.clearFilterInfo();
         }
