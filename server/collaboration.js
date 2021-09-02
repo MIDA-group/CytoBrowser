@@ -321,6 +321,9 @@ class Collaboration {
                 this.annotations = data.annotations;
             }
             if (data.version === "1.1") {
+                this.author = data.author;
+                this.createdOn = data.createdOn;
+                this.updatedOn = data.updatedOn;
                 this.comments = data.comments;
                 if (this.comments.length > 0) {
                     const commentIds = this.comments.map(comment => comment.id);
