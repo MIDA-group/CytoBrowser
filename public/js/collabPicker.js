@@ -3,6 +3,8 @@
  * @namespace collabPicker
  */
 const collabPicker = (function() {
+    "use strict";
+
     let _lastShownImage = null;
     let _collabList = null;
     let _availableCollabs = [];
@@ -29,15 +31,26 @@ const collabPicker = (function() {
         return loadPromise;
     }
 
-    function clear() {
+    function _updateCollabList() {
+        if (_collabList) {
+            _collabList.updateData(_availableCollabs);
+        }
+        else {
+            throw new Error("Tried to refresh collab picker before initialization.");
+        }
+    }
 
+    function clear() {
+        _availableCollabs = [];
+        _updateCollabList();
     }
 
     function refresh(image) {
         _lastShownImage = image;
         $("#collab-image-path").text(image);
         _retrieveCollabInfo(image).then(collabData => {
-
+            _availableCollabs = collabData;
+            _updateCollabList();
         });
     }
 
@@ -50,9 +63,32 @@ const collabPicker = (function() {
     }
 
     function init() {
-        // Set up the table
         _collabList = new AnnotationList("#collab-list", "#collab-list-container", "id", [
-            {}
+            {
+                name: "Name",
+                key: "name",
+                sortable: true
+            },
+            {
+                name: "Created by",
+                key: "author",
+                sortable: true
+            },
+            {
+                name: "Updated",
+                key: "updatedOn",
+                sortable: true
+            },
+            {
+                name: "# Annotations",
+                key: "nAnnotations",
+                sortable: true
+            },
+            {
+                name: "# Users",
+                key: "nUsers",
+                sortable: true
+            }
         ]);
     }
 
