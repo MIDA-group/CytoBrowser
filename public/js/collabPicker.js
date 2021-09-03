@@ -147,6 +147,7 @@ const collabPicker = (function() {
             tmapp.openImage(_lastShownImage, () => {
                 collabClient.createCollab();
                 _imageCallback && _imageCallback();
+                $("#collab-picker").modal("hide");
                 if (name) {
                     // Set the name!
                 }
@@ -157,6 +158,7 @@ const collabPicker = (function() {
             tmapp.openImage(_lastShownImage, () => {
                 collabClient.connect(_currentSelection);
                 _imageCallback && _imageCallback();
+                $("#collab-picker").modal("hide");
             });
         });
     }
