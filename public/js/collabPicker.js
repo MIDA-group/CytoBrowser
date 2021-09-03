@@ -55,11 +55,22 @@ const collabPicker = (function() {
     }
 
     function open(image, forceChoice, imageCallback) {
+        const activeModal = $(".modal.show");
+        activeModal.modal("hide");
         if (image === _lastShownImage) {
             clear();
         }
         refresh(image);
-        $("#collab-picker").modal() // Open
+        $("#collab-picker").data("bs.modal", null);
+        if (forceChoice) {
+            $("#collab-exit-button").hide();
+            $("#collab-picker").modal({backdrop: "static", keyboard: false});
+        }
+        else {
+            $("#collab-exit_button").show();
+            $("#collab-picker").modal();
+        }
+        $("#collab-picker").one("hide.bs.modal", () => activeModal.modal("show"));
     }
 
     function init() {
@@ -90,6 +101,15 @@ const collabPicker = (function() {
                 sortable: true
             }
         ]);
+        $("#collab-close-button").click(() => {
+            $("#collab-picker").modal("hide");
+        });
+        $("#collab-create").click(() => {
+            const name = $("#collab-new-name").val();
+            // Create a new collab TODO
+        });
+        $("#collab-list-refresh").click(() => refresh(_lastShownImage));
+        $("#collab-open"); // TODO
     }
 
     return {
