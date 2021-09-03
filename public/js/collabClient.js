@@ -11,7 +11,8 @@ const collabClient = (function(){
         _localMember,
         _followedMember,
         _desiredMember,
-        _userId;
+        _userId,
+        _onCreated;
 
     const _idleTime = 20 * 60 * 1000; // 20 minutes
     const _keepaliveTime = 30 * 1000; // sending ping every 30s
@@ -186,6 +187,10 @@ const collabClient = (function(){
         _memberUpdate();
         tmappUI.setCollabName(msg.name);
         tmapp.updateCollabStatus();
+        if (_onCreated) {
+            _onCreated();
+            _onCreated = null;
+        }
     }
 
     function _requestSummary() {
@@ -223,6 +228,7 @@ const collabClient = (function(){
         _localMember = null;
         _ws = null;
         _collabId  = null;
+        _onCreated = null;
         overlayHandler.updateMembers([]);
         tmappUI.clearCollaborators();
         tmapp.clearCollab();
@@ -303,9 +309,12 @@ const collabClient = (function(){
      * @param {string} name The name used to identify the participant.
      * @param {boolean} include Whether or not already-placed annotations
      * should be included in the collaborative workspace.
+     * @param {Function} onCreated Function to call when the collaboration
+     * has been successfully created and fully connected to the server.
      */
-    function createCollab(name=getDefaultName(), include=false) {
+    function createCollab(name=getDefaultName(), include=false, onCreated=null) {
         // Get a new code for a collab first
+        _onCreated = onCreated;
         const idReq = new XMLHttpRequest();
         idReq.open("GET", window.location.api + "/collaboration/id", true)
         idReq.send();

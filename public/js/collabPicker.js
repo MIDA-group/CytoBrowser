@@ -48,13 +48,18 @@ const collabPicker = (function() {
 
     function _createCollab() {
         const name = $("#collab-new-name").val();
+        $("#collab-new-name").val("");
         tmapp.openImage(_lastShownImage, () => {
-            collabClient.createCollab();
+            if (name) {
+                collabClient.createCollab(undefined, undefined, () => {
+                    collabClient.changeCollabName(name);
+                });
+            }
+            else {
+                collabClient.createCollab();
+            }
             _imageCallback && _imageCallback();
             $("#collab-picker").modal("hide");
-            if (name) {
-                // Set the name!
-            }
         });
     }
 
