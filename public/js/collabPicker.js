@@ -46,6 +46,26 @@ const collabPicker = (function() {
         $("#collab-open").prop("disabled", true);
     }
 
+    function _createCollab() {
+        const name = $("#collab-new-name").val();
+        tmapp.openImage(_lastShownImage, () => {
+            collabClient.createCollab();
+            _imageCallback && _imageCallback();
+            $("#collab-picker").modal("hide");
+            if (name) {
+                // Set the name!
+            }
+        });
+    }
+
+    function _openCollab() {
+        tmapp.openImage(_lastShownImage, () => {
+            collabClient.connect(_currentSelection);
+            _imageCallback && _imageCallback();
+            $("#collab-picker").modal("hide");
+        });
+    }
+
     function _updateCollabList() {
         if (_collabList) {
             _collabList.updateData(_availableCollabs);
@@ -76,6 +96,11 @@ const collabPicker = (function() {
         else {
             _selectActive(d.id);
         }
+    }
+
+    function _handleCollabDoubleClick(d) {
+        _handleCollabClick(d);
+        _openCollab();
     }
 
     function clear() {
@@ -141,26 +166,10 @@ const collabPicker = (function() {
                 key: "nUsers",
                 sortable: true
             }
-        ], _handleCollabClick);
-        $("#collab-create").click(() => {
-            const name = $("#collab-new-name").val();
-            tmapp.openImage(_lastShownImage, () => {
-                collabClient.createCollab();
-                _imageCallback && _imageCallback();
-                $("#collab-picker").modal("hide");
-                if (name) {
-                    // Set the name!
-                }
-            });
-        });
+        ], _handleCollabClick, _handleCollabDoubleClick);
+        $("#collab-create").click(_createCollab);
         $("#collab-list-refresh").click(() => refresh(_lastShownImage));
-        $("#collab-open").click(() => {
-            tmapp.openImage(_lastShownImage, () => {
-                collabClient.connect(_currentSelection);
-                _imageCallback && _imageCallback();
-                $("#collab-picker").modal("hide");
-            });
-        });
+        $("#collab-open").click(_openCollab);
     }
 
     return {

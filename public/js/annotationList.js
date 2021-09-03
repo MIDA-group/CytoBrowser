@@ -38,14 +38,18 @@ class AnnotationList {
      * @param {Function} [onClick] Function to be called when a row
      * in the list is clicked, passing the data on that row as an
      * argument. If omitted, nothing happens when a row is clicked.
+     * @param {Function} [onDoubleClick] Function to be called when a row
+     * in the list is double clicked, passing the data on that row as an
+     * argument. If omitted, nothing happens when a row is double clicked.
      */
-    constructor(table, scroller, idKey, fields, onClick=null) {
+    constructor(table, scroller, idKey, fields, onClick=null, onDoubleClick=null) {
         this._fields = fields;
         this._data = [];
         this._idKey = idKey;
         this._table = d3.select(table);
         this._scroller = scroller;
         this._onClick = onClick;
+        this._onDoubleClick = onDoubleClick;
         this._createHeaderRowAndBody();
         this.unsetSorted();
     }
@@ -111,10 +115,16 @@ class AnnotationList {
             .attr("data-annotation-id", d => d[this._idKey])
             .order((a, b) => a.a < b.a)
             .each(function(d) {
-                if (list._onClick) {
+                if (list._onClick || list._onDoubleClick) {
                     d3.select(this)
                         .style("cursor", "pointer")
-                        .on("click", () => list._onClick(d));
+                        .style("user-elect", "none");
+                    if (list._onClick) {
+                        d3.select(this).on("click", () => list._onClick(d));
+                    }
+                    if (list._onDoubleClick) {
+                        d3.select(this).on("dblclick", () => list._onDoubleClick(d));
+                    }
                 }
 
                 d3.select(this)
