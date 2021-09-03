@@ -114,7 +114,7 @@ class AnnotationList {
                 if (list._onClick) {
                     d3.select(this)
                         .style("cursor", "pointer")
-                        .on("click", () => list.onClick(d));
+                        .on("click", () => list._onClick(d));
                 }
 
                 d3.select(this)

@@ -43,11 +43,16 @@ const collabPicker = (function() {
     }
 
     function _handleCollabClick(d) {
-        if (_currentSelection) {
+        if (!_currentSelection) {
+            _currentSelection = d.id;
+            _collabList.highlightRow(d.id);
+        }
+        else if (d.id === _currentSelection) {
             _currentSelection = null;
             _collabList.unhighlightRow(d.id);
         }
         else {
+            _collabList.unhighlightRow(_currentSelection);
             _currentSelection = d.id;
             _collabList.highlightRow(d.id);
         }
