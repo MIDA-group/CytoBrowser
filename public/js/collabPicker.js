@@ -7,6 +7,8 @@ const collabPicker = (function() {
 
     let _lastShownImage = null;
     let _collabList = null;
+    let _imageCallback = null;
+    let _currentSelection = null;
     let _availableCollabs = [];
 
     function _retrieveCollabInfo(image) {
@@ -40,8 +42,21 @@ const collabPicker = (function() {
         }
     }
 
+    function _handleCollabClick(d) {
+        if (_currentSelection) {
+            _currentSelection = null;
+            _collabList.unhighlightRow(d.id);
+        }
+        else {
+            _currentSelection = d.id;
+            _collabList.highlightRow(d.id);
+        }
+    }
+
     function clear() {
         _availableCollabs = [];
+        _currentSelection = null;
+        _collabList.unhighlightAllRows();
         _updateCollabList();
     }
 
@@ -57,7 +72,9 @@ const collabPicker = (function() {
     function open(image, forceChoice, imageCallback) {
         const activeModal = $(".modal.show");
         activeModal.modal("hide");
-        if (image === _lastShownImage) {
+
+        _imageCallback = imageCallback;
+        if (image === _lastShownImage) { // TODO: Why did I put this here?
             clear();
         }
         refresh(image);
@@ -70,6 +87,7 @@ const collabPicker = (function() {
             $("#collab-close-button").show();
             $("#collab-picker").modal();
         }
+
         $("#collab-picker").one("hide.bs.modal", () => activeModal.modal("show"));
     }
 
@@ -100,7 +118,7 @@ const collabPicker = (function() {
                 key: "nUsers",
                 sortable: true
             }
-        ]);
+        ], _handleCollabClick);
         $("#collab-create").click(() => {
             const name = $("#collab-new-name").val();
             // Create a new collab TODO

@@ -35,13 +35,17 @@ class AnnotationList {
      * identify each data item. Is also used for the default sorting.
      * @param {Array<AnnotationListField>} fields The fields that should
      * be used for the columns in the list.
+     * @param {Function} [onClick] Function to be called when a row
+     * in the list is clicked, passing the data on that row as an
+     * argument. If omitted, nothing happens when a row is clicked.
      */
-    constructor(table, scroller, idKey, fields) {
+    constructor(table, scroller, idKey, fields, onClick=null) {
         this._fields = fields;
         this._data = [];
         this._idKey = idKey;
         this._table = d3.select(table);
         this._scroller = scroller;
+        this._onClick = onClick;
         this._createHeaderRowAndBody();
         this.unsetSorted();
     }
@@ -97,6 +101,7 @@ class AnnotationList {
     }
 
     _displayData() {
+        const list = this;
         const fields = this._fields;
         this._table.select("tbody")
             .selectAll(".data-row")
@@ -106,6 +111,12 @@ class AnnotationList {
             .attr("data-annotation-id", d => d[this._idKey])
             .order((a, b) => a.a < b.a)
             .each(function(d) {
+                if (list._onClick) {
+                    d3.select(this)
+                        .style("cursor", "pointer")
+                        .on("click", () => list.onClick(d));
+                }
+
                 d3.select(this)
                     .selectAll("td")
                     .data(fields)
@@ -204,5 +215,34 @@ class AnnotationList {
         const currentScroll = scroller.scrollTop();
         const rowOffset = row.offset().top;
         scroller.scrollTop(currentScroll + rowOffset - headerOffset);
+    }
+
+    /**
+     * Visually highlight a given row.
+     * @param id The id of the given item.
+     */
+    highlightRow(id) {
+        const row = $(`tr[data-annotation-id=${id}]`);
+        row.addClass("bg-primary");
+        row.addClass("text-white");
+    }
+
+    /**
+     * Unhighlight a given item.
+     * @param id The id of the given item.
+     */
+    unhighlightRow(id) {
+        const row = $(`tr[data-annotation-id=${id}]`);
+        row.removeClass("bg-primary");
+        row.removeClass("text-white");
+    }
+
+    /**
+     * Unhighlight all items.
+     */
+    unhighlightAllRows() {
+        this._data.forEach(datum => {
+            this.unhighlightRow(datum[this._idKey]);
+        });
     }
 }
