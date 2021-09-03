@@ -686,6 +686,8 @@ const collabClient = (function(){
      * into tmapp.openImage and behaves the same way.
      */
     function promptCollabSelection(image, forceChoice=false, imageCallback) {
+        collabPicker.open(image, forceChoice, imageCallback);
+        return;
         const collabReq = new XMLHttpRequest();
         const address = `${window.location.api}/collaboration/available?image=${image}`;
         collabReq.open("GET", address, true);

@@ -169,6 +169,10 @@ const tmappUI = (function(){
         annotationVisuals.setAnnotationList(list);
     }
 
+    function _initCollabPicker() {
+        collabPicker.init();
+    }
+
     function _initGlobalComments() {
         const container = $("#global_comments");
         const inputFun = globalDataHandler.sendCommentToServer;
@@ -434,6 +438,7 @@ const tmappUI = (function(){
      */
     function initUI() {
         _initAnnotationList();
+        _initCollabPicker();
         _initGlobalComments();
         _initClassSelectionButtons();
         _initToolSelectionButtons();

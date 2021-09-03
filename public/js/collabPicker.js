@@ -80,8 +80,6 @@ const collabPicker = (function() {
 
     function clear() {
         _availableCollabs = [];
-        _currentSelection = null;
-        _collabList.unhighlightAllRows();
         _updateCollabList();
     }
 
@@ -146,10 +144,21 @@ const collabPicker = (function() {
         ], _handleCollabClick);
         $("#collab-create").click(() => {
             const name = $("#collab-new-name").val();
-            // Create a new collab TODO
+            tmapp.openImage(_lastShownImage, () => {
+                collabClient.createCollab();
+                _imageCallback && _imageCallback();
+                if (name) {
+                    // Set the name!
+                }
+            });
         });
         $("#collab-list-refresh").click(() => refresh(_lastShownImage));
-        $("#collab-open"); // TODO
+        $("#collab-open").click(() => {
+            tmapp.openImage(_lastShownImage, () => {
+                collabClient.connect(_currentSelection);
+                _imageCallback && _imageCallback();
+            });
+        });
     }
 
     return {
