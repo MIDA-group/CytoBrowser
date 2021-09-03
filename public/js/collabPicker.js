@@ -33,9 +33,33 @@ const collabPicker = (function() {
         return loadPromise;
     }
 
+    function _selectActive(id) {
+        _collabList.unhighlightAllRows();
+        _collabList.highlightRow(id);
+        _currentSelection = id;
+        $("#collab-open").prop("disabled", false);
+    }
+
+    function _unselectActive() {
+        _collabList.unhighlightAllRows();
+        _currentSelection = null;
+        $("#collab-open").prop("disabled", true);
+    }
+
     function _updateCollabList() {
         if (_collabList) {
             _collabList.updateData(_availableCollabs);
+            if (_currentSelection) {
+                const selectionRemains = _availableCollabs.some(collab => {
+                    return collab.id === _currentSelection;
+                });
+                if (selectionRemains) {
+                    _selectActive(_currentSelection);
+                }
+                else {
+                    _unselectActive();
+                }
+            }
         }
         else {
             throw new Error("Tried to refresh collab picker before initialization.");
@@ -44,17 +68,13 @@ const collabPicker = (function() {
 
     function _handleCollabClick(d) {
         if (!_currentSelection) {
-            _currentSelection = d.id;
-            _collabList.highlightRow(d.id);
+            _selectActive(d.id);
         }
         else if (d.id === _currentSelection) {
-            _currentSelection = null;
-            _collabList.unhighlightRow(d.id);
+            _unselectActive();
         }
         else {
-            _collabList.unhighlightRow(_currentSelection);
-            _currentSelection = d.id;
-            _collabList.highlightRow(d.id);
+            _selectActive(d.id);
         }
     }
 
@@ -67,7 +87,7 @@ const collabPicker = (function() {
 
     function refresh(image) {
         _lastShownImage = image;
-        $("#collab-image-path").text(image);
+        $("#collab-image-path").text(image); // Why here?
         _retrieveCollabInfo(image).then(collabData => {
             _availableCollabs = collabData;
             _updateCollabList();
