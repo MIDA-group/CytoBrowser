@@ -118,7 +118,7 @@ class AnnotationList {
                 if (list._onClick || list._onDoubleClick) {
                     d3.select(this)
                         .style("cursor", "pointer")
-                        .style("user-elect", "none");
+                        .style("user-select", "none");
                     if (list._onClick) {
                         d3.select(this).on("click", () => list._onClick(d));
                     }
