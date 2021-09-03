@@ -63,11 +63,11 @@ const collabPicker = (function() {
         refresh(image);
         $("#collab-picker").data("bs.modal", null);
         if (forceChoice) {
-            $("#collab-exit-button").hide();
+            $("#collab-close-button").hide();
             $("#collab-picker").modal({backdrop: "static", keyboard: false});
         }
         else {
-            $("#collab-exit_button").show();
+            $("#collab-close-button").show();
             $("#collab-picker").modal();
         }
         $("#collab-picker").one("hide.bs.modal", () => activeModal.modal("show"));
@@ -101,9 +101,6 @@ const collabPicker = (function() {
                 sortable: true
             }
         ]);
-        $("#collab-close-button").click(() => {
-            $("#collab-picker").modal("hide");
-        });
         $("#collab-create").click(() => {
             const name = $("#collab-new-name").val();
             // Create a new collab TODO
