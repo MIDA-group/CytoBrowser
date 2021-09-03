@@ -685,56 +685,6 @@ const collabClient = (function(){
         });
     }
 
-    /**
-     * Prompt the user to either start a new collaboration or select an
-     * existing collaboration for a given image.
-     * @param {string} image The name of the image being collaborated on.
-     * @param {boolean} forceChoice The user cannot cancel the choice.
-     * @param {Function} imageCallback Function to be called when the
-     * image opened through the prompt has finished loading. Is passed
-     * into tmapp.openImage and behaves the same way.
-     */
-    function promptCollabSelection(image, forceChoice=false, imageCallback) {
-        collabPicker.open(image, forceChoice, imageCallback);
-        return;
-        const collabReq = new XMLHttpRequest();
-        const address = `${window.location.api}/collaboration/available?image=${image}`;
-        collabReq.open("GET", address, true);
-        collabReq.send(null);
-        collabReq.onreadystatechange = () => {
-            if (collabReq.readyState === 4 && collabReq.status === 200) {
-                const available = JSON.parse(collabReq.responseText).available;
-                const choices = available.map(entry => {
-                    const click = () => {
-                        tmapp.openImage(image, () => {
-                            connect(entry.id);
-                            imageCallback && imageCallback();
-                        });
-                    };
-                    return {
-                        label: entry.name,
-                        click: click
-                    };
-                });
-                choices.unshift({
-                    label: "Start new session",
-                    highlight: true,
-                    click: () => {
-                        tmapp.openImage(image, () => {
-                            createCollab();
-                            imageCallback && imageCallback();
-                        });
-                    }
-                });
-                tmappUI.choice("Choose a session", choices, null, forceChoice);
-            }
-            else if (collabReq.readyState === 4) {
-                tmappUI.displayImageError("servererror", 10000);
-            }
-        };
-    }
-
-
     return {
         createCollab: createCollab,
         connect: connect,
@@ -753,7 +703,6 @@ const collabClient = (function(){
         updatePosition: updatePosition,
         updateCursor: updateCursor,
         followView: followView,
-        stopFollowing: stopFollowing,
-        promptCollabSelection: promptCollabSelection
+        stopFollowing: stopFollowing
     };
 })();

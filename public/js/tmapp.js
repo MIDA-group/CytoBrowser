@@ -409,7 +409,7 @@ const tmapp = (function() {
                     }
                     else if (imageName) {
                         openImage(imageName, () => {
-                            collabClient.promptCollabSelection(imageName, true, () => {
+                            collabPicker.open(imageName, true, () => {
                                 if (initialState) {
                                     moveTo(initialState);
                                 }

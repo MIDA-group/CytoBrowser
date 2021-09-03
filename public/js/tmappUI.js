@@ -428,7 +428,7 @@ const tmappUI = (function(){
         });
         $("#change_session").click(function(event) {
             const image = tmapp.getImageName();
-            collabClient.promptCollabSelection(image);
+            collabPicker.open(image);
         });
     }
 

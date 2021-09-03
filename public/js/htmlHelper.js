@@ -383,7 +383,7 @@ const htmlHelper = (function() {
         anchor.click(event => {
             event.preventDefault();
             entry.closest(".modal").modal("hide");
-            collabClient.promptCollabSelection(image.name);
+            collabPicker.open(image.name);
         });
         anchor.hover(
             () => detail.addClass("show").removeClass("hide"),

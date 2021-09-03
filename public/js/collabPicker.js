@@ -122,7 +122,16 @@ const collabPicker = (function() {
         });
     }
 
-    function open(image, forceChoice, imageCallback) {
+    /**
+     * Prompt the user to either start a new collaboration or select an
+     * existing collaboration for a given image.
+     * @param {string} image The name of the image being collaborated on.
+     * @param {boolean} [forceChoice=false] The user cannot cancel the choice.
+     * @param {Function} [imageCallback] Function to be called when the
+     * image opened through the prompt has finished loading. Is passed
+     * into tmapp.openImage and behaves the same way.
+     */
+    function open(image, forceChoice=false, imageCallback=null) {
         const activeModal = $(".modal.show");
         activeModal.modal("hide");
 
