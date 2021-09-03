@@ -108,11 +108,20 @@ const collabPicker = (function() {
         _openCollab();
     }
 
+    /**
+     * Clear the currently displayed list of collaborations.
+     */
     function clear() {
         _availableCollabs = [];
         _updateCollabList();
     }
 
+    /**
+     * Refresh the list of collaborations currently shown in the
+     * collaboration picker using new data from the server.
+     * @param {string} image The name of the image for which to load
+     * new data.
+     */
     function refresh(image) {
         _lastShownImage = image;
         $("#collab-image-path").text(image); // Why here?
@@ -153,6 +162,10 @@ const collabPicker = (function() {
         $("#collab-picker").one("hide.bs.modal", () => activeModal.modal("show"));
     }
 
+    /**
+     * Initialize the collab picker. Should be called before any other
+     * functions in the module are called.
+     */
     function init() {
         _collabList = new AnnotationList("#collab-list", "#collab-list-container", "id", [
             {
