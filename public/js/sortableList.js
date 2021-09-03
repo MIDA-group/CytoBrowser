@@ -1,11 +1,11 @@
-class AnnotationList {
+class SortableList {
     "use strict";
 
     /**
      * Object that contains information about a single field in the
      * annotation list. Each field corresponds to a single key-value
      * pair in the processed data, as well as a single column in the list.
-     * @typedef {Object} AnnotationListField
+     * @typedef {Object} SortableListField
      * @property {string} name The name that should be displayed at the
      * top of the column for the field.
      * @property {string} key The key that should be used to access
@@ -33,7 +33,7 @@ class AnnotationList {
      * the element to which the scrollbar of the list belongs.
      * @param {string} idKey The key that should be used to uniquely
      * identify each data item. Is also used for the default sorting.
-     * @param {Array<AnnotationListField>} fields The fields that should
+     * @param {Array<SortableListField>} fields The fields that should
      * be used for the columns in the list.
      * @param {Function} [onClick] Function to be called when a row
      * in the list is clicked, passing the data on that row as an

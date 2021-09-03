@@ -46,7 +46,7 @@ const annotationVisuals = (function() {
      * Set the annotation list object that should be used to disply
      * information about the annotations. This should be set before
      * update is called.
-     * @param {AnnotationList} annotationList The list to use.
+     * @param {SortableList} annotationList The list to use.
      */
     function setAnnotationList(annotationList) {
         _annotationList = annotationList;

@@ -167,7 +167,7 @@ const collabPicker = (function() {
      * functions in the module are called.
      */
     function init() {
-        _collabList = new AnnotationList("#collab-list", "#collab-list-container", "id", [
+        _collabList = new SortableList("#collab-list", "#collab-list-container", "id", [
             {
                 name: "Name",
                 key: "name",
