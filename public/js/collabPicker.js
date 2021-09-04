@@ -41,27 +41,6 @@ const collabPicker = (function() {
     let _filterIsTrivial = true;
     let _availableCollabs = [];
 
-    function _retrieveCollabInfo(image) {
-        let resolveLoad, rejectLoad;
-        const loadPromise = new Promise((resolve, reject) => {
-            resolveLoad = resolve;
-            rejectLoad = reject;
-        });
-        const collabReq = new XMLHttpRequest();
-        const address = `${window.location.api}/collaboration/available?image=${image}`;
-        collabReq.open("GET", address, true);
-        collabReq.send(null);
-        collabReq.onreadystatechange = () => {
-            if (collabReq.readyState === 4 && collabReq.status === 200) {
-                const available = JSON.parse(collabReq.responseText).available;
-                resolveLoad(available);
-            }
-            else if (collabReq.readyState === 4) {
-                rejectLoad();
-            }
-        };
-        return loadPromise;
-    }
 
     function _setFilterError(error) {
         const input = $("#collab-filter-query-input");
@@ -103,6 +82,21 @@ const collabPicker = (function() {
         }
     }
 
+    function _filterCollabs(collabs) {
+        if (_activeFilter) {
+            const filteredCollabs = _availableCollabs.filter(collab => {
+                return _activeFilter.evaluate(collab);
+            });
+            if (_lastQueryWasValid && !_filterIsTrivial) {
+                _setFilterInfo(collabs.length, filteredCollabs.length);
+            }
+            return filteredCollabs;
+        }
+        else {
+            return collabs;
+        }
+    }
+
     function _initFilter() {
         // Repeated logic from annotation filter, might be worth refactoring
         let keyUpTimeout = null;
@@ -128,6 +122,28 @@ const collabPicker = (function() {
         });
     }
 
+    function _retrieveCollabInfo(image) {
+        let resolveLoad, rejectLoad;
+        const loadPromise = new Promise((resolve, reject) => {
+            resolveLoad = resolve;
+            rejectLoad = reject;
+        });
+        const collabReq = new XMLHttpRequest();
+        const address = `${window.location.api}/collaboration/available?image=${image}`;
+        collabReq.open("GET", address, true);
+        collabReq.send(null);
+        collabReq.onreadystatechange = () => {
+            if (collabReq.readyState === 4 && collabReq.status === 200) {
+                const available = JSON.parse(collabReq.responseText).available;
+                resolveLoad(available);
+            }
+            else if (collabReq.readyState === 4) {
+                rejectLoad();
+            }
+        };
+        return loadPromise;
+    }
+
     function _selectActive(id) {
         _collabList.unhighlightAllRows();
         _collabList.highlightRow(id);
@@ -139,6 +155,20 @@ const collabPicker = (function() {
         _collabList.unhighlightAllRows();
         _currentSelection = null;
         $("#collab-open").prop("disabled", true);
+    }
+
+    function _tryRetainingCurrentSelection(displayedCollabs) {
+        if (_currentSelection) {
+            const selectionRemains = displayedCollabs.some(collab => {
+                return collab.id === _currentSelection;
+            });
+            if (selectionRemains) {
+                _selectActive(_currentSelection);
+            }
+            else {
+                _unselectActive();
+            }
+        }
     }
 
     function _createCollab() {
@@ -167,35 +197,12 @@ const collabPicker = (function() {
     }
 
     function _updateCollabList() {
-        if (_collabList) {
-            let displayedCollabs;
-            if (_activeFilter) {
-                displayedCollabs = _availableCollabs.filter(collab => {
-                    return _activeFilter.evaluate(collab);
-                });
-                if (_lastQueryWasValid && !_filterIsTrivial) {
-                    _setFilterInfo(_availableCollabs.length, displayedCollabs.length);
-                }
-            }
-            else {
-                displayedCollabs = _availableCollabs;
-            }
-            _collabList.updateData(displayedCollabs);
-            if (_currentSelection) {
-                const selectionRemains = displayedCollabs.some(collab => {
-                    return collab.id === _currentSelection;
-                });
-                if (selectionRemains) {
-                    _selectActive(_currentSelection);
-                }
-                else {
-                    _unselectActive();
-                }
-            }
-        }
-        else {
+        if (!_collabList) {
             throw new Error("Tried to refresh collab picker before initialization.");
         }
+        const displayedCollabs = _filterCollabs(_availableCollabs);
+        _collabList.updateData(displayedCollabs);
+        _tryRetainingCurrentSelection(displayedCollabs);
     }
 
     function _handleCollabClick(d) {
@@ -252,7 +259,7 @@ const collabPicker = (function() {
         activeModal.modal("hide");
 
         _imageCallback = imageCallback;
-        if (image === _lastShownImage) { // TODO: Why did I put this here?
+        if (image !== _lastShownImage) {
             clear();
         }
         refresh(image);
