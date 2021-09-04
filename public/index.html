@@ -681,7 +681,16 @@
                     </div>
                     <div class="form-row pb-4">
                         <div class="col-12">
-                            <input id="collab-filter" type="text" class="form-control" placeholder="Filter sessions">
+                            <div class="input-group">
+                                <input id="collab-filter-query-input" type="text" class="form-control" placeholder="Filter annotations">
+                                <div class="input-group-append">
+                                    <button class="btn btn-info" data-toggle="modal" data-target="#filter-usage" style="border-top-right-radius: 0.25rem;border-bottom-right-radius: 0.25rem;">Help</button>
+                                </div>
+                                <div id="collab-filter-query-error" class="invalid-feedback">
+                                </div>
+                                <div id="collab-filter-query-info" class="valid-feedback">
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <p class="text-muted">Current image:&nbsp;&nbsp;&nbsp;<span id="collab-image-path">image_name</span></p>

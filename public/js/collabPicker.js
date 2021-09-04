@@ -5,10 +5,38 @@
 const collabPicker = (function() {
     "use strict";
 
+    const _tableFields = [
+        {
+            name: "Name",
+            key: "name",
+            sortable: true
+        },
+        {
+            name: "Created by",
+            key: "author",
+            sortable: true
+        },
+        {
+            name: "Updated",
+            key: "updatedOn",
+            sortable: true
+        },
+        {
+            name: "# Annotations",
+            key: "nAnnotations",
+            sortable: true
+        },
+        {
+            name: "# Users",
+            key: "nUsers",
+            sortable: true
+        }
+    ];
     let _lastShownImage = null;
     let _collabList = null;
     let _imageCallback = null;
     let _currentSelection = null;
+    let _activeFilter = null;
     let _availableCollabs = [];
 
     function _retrieveCollabInfo(image) {
@@ -31,6 +59,44 @@ const collabPicker = (function() {
             }
         };
         return loadPromise;
+    }
+
+    function _setFilterWithQuery(query) {
+        try {
+            _activeFilter = filters.getFilterFromQuery(query);
+            if (_lastShownImage) {
+                refresh(_lastShownImage);
+            }
+        }
+        catch (e) {
+            const error = e.message;
+            $("#collab-filter-error").text(error);
+        }
+    }
+
+    function _initFilter() {
+        // Repeated logic from annotation filter, might be worth refactoring
+        let keyUpTimeout = null;
+        const keyUpTime = 3000;
+        const input = $("#collab-filter-query-input");
+        const initialQuery = input.val();
+        _setFilterWithQuery(initialQuery);
+        function updateQuery() {
+            const query = input.val();
+            _setFilterWithQuery(query);
+        }
+        input.keypress(e => e.stopPropagation());
+        input.keyup(e => {
+            e.stopPropagation();
+            clearTimeout(keyUpTimeout);
+            keyUpTimeout = setTimeout(updateQuery, keyUpTime);
+        });
+        input.keydown(e => {
+            e.stopPropagation();
+            if (e.code === "Escape" || e.code === "Enter" || e.code === "NumpadEnter") {
+                updateQuery();
+            }
+        });
     }
 
     function _selectActive(id) {
@@ -73,9 +139,16 @@ const collabPicker = (function() {
 
     function _updateCollabList() {
         if (_collabList) {
-            _collabList.updateData(_availableCollabs);
+            let displayedCollabs;
+            if (_activeFilter) {
+                displayedCollabs = _availableCollabs.filter(_activeFilter.evaluate);
+            }
+            else {
+                displayedCollabs = _availableCollabs;
+            }
+            _collabList.updateData(displayedCollabs);
             if (_currentSelection) {
-                const selectionRemains = _availableCollabs.some(collab => {
+                const selectionRemains = displayedCollabs.some(collab => {
                     return collab.id === _currentSelection;
                 });
                 if (selectionRemains) {
@@ -167,36 +240,18 @@ const collabPicker = (function() {
      * functions in the module are called.
      */
     function init() {
-        _collabList = new SortableList("#collab-list", "#collab-list-container", "id", [
-            {
-                name: "Name",
-                key: "name",
-                sortable: true
-            },
-            {
-                name: "Created by",
-                key: "author",
-                sortable: true
-            },
-            {
-                name: "Updated",
-                key: "updatedOn",
-                sortable: true
-            },
-            {
-                name: "# Annotations",
-                key: "nAnnotations",
-                sortable: true
-            },
-            {
-                name: "# Users",
-                key: "nUsers",
-                sortable: true
-            }
-        ], _handleCollabClick, _handleCollabDoubleClick);
+        _collabList = new SortableList(
+            "#collab-list",
+            "#collab-list-container",
+            "id",
+            _tableFields,
+            _handleCollabClick,
+            _handleCollabDoubleClick
+        );
         $("#collab-create").click(_createCollab);
         $("#collab-list-refresh").click(() => refresh(_lastShownImage));
         $("#collab-open").click(_openCollab);
+        _initFilter();
     }
 
     return {
