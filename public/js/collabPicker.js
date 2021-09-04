@@ -141,7 +141,9 @@ const collabPicker = (function() {
         if (_collabList) {
             let displayedCollabs;
             if (_activeFilter) {
-                displayedCollabs = _availableCollabs.filter(_activeFilter.evaluate);
+                displayedCollabs = _availableCollabs.filter(collab => {
+                    return _activeFilter.evaluate(collab);
+                });
             }
             else {
                 displayedCollabs = _availableCollabs;
