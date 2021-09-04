@@ -83,18 +83,17 @@ const collabPicker = (function() {
     }
 
     function _filterCollabs(collabs) {
-        if (_activeFilter) {
-            const filteredCollabs = _availableCollabs.filter(collab => {
-                return _activeFilter.evaluate(collab);
-            });
-            if (_lastQueryWasValid && !_filterIsTrivial) {
-                _setFilterInfo(collabs.length, filteredCollabs.length);
-            }
-            return filteredCollabs;
-        }
-        else {
+        if (!_activeFilter) {
             return collabs;
         }
+        const filteredCollabs = _availableCollabs.filter(collab => {
+            const filterableCollab = filters.preprocessCollabBeforeFiltering(collab);
+            return _activeFilter.evaluate(filterableCollab);
+        });
+        if (_lastQueryWasValid && !_filterIsTrivial) {
+            _setFilterInfo(collabs.length, filteredCollabs.length);
+        }
+        return filteredCollabs;
     }
 
     function _initFilter() {

@@ -13,7 +13,7 @@ const annotationVisuals = (function() {
 
     function _filterAndUpdate() {
         const annotations = _unfilteredAnnotations.filter(annotation => {
-            const filterableAnnotation = filters.preprocessDatumBeforeFiltering(annotation);
+            const filterableAnnotation = filters.preprocessAnnotationBeforeFiltering(annotation);
             return _filter.evaluate(filterableAnnotation);
         });
         overlayHandler.updateAnnotations(annotations);

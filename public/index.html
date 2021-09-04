@@ -536,7 +536,8 @@
                   A filter can be used to specify which annotations
                   are shown in the viewport and annotation list. Filters
                   can be specified through a combination of keys, values,
-                  comparisons, and combinations.
+                  comparisons, and combinations. Filtering can also be
+                  used in the same way in the session picker.
               </p>
               <h5>Keys</h5>
                 <p>
@@ -554,6 +555,19 @@
                     <li><code>x</code> &#8211; The x position of the annotation's centroid.</li>
                     <li><code>y</code> &#8211; The y position of the annotation's centroid.</li>
                     <li><code>z</code> &#8211; The z position of the annotation.</li>
+                </ul>
+                <p>
+                    The session picker uses a different set of keys
+                    for filtering sessions. These keys are:
+                </p>
+                <ul>
+                    <li><code>name</code> &#8211; The name of the session.</li>
+                    <li><code>author</code> &#8211; The name of the user who created the session.</li>
+                    <li><code>created</code> &#8211; The time at which the session was created.</li>
+                    <li><code>updated</code> &#8211; The time of the last update in the session.</li>
+                    <li><code>annotations</code> &#8211; The number of annotations in the session.</li>
+                    <li><code>comments</code> &#8211; The number of comments in the session.</li>
+                    <li><code>users</code> &#8211; The current number of active users in the session.</li>
                 </ul>
               <h5>Values</h5>
                 <p>
