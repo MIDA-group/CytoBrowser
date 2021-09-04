@@ -99,7 +99,7 @@ const collabPicker = (function() {
         catch (e) {
             _lastQueryWasValid = false;
             const error = e.message;
-            _setFilterError();
+            _setFilterError(error);
         }
     }
 
