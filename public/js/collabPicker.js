@@ -37,6 +37,8 @@ const collabPicker = (function() {
     let _imageCallback = null;
     let _currentSelection = null;
     let _activeFilter = null;
+    let _lastQueryWasValid = true;
+    let _filterIsTrivial = true;
     let _availableCollabs = [];
 
     function _retrieveCollabInfo(image) {
@@ -61,16 +63,43 @@ const collabPicker = (function() {
         return loadPromise;
     }
 
+    function _setFilterError(error) {
+        const input = $("#collab-filter-query-input");
+        input.addClass("is-invalid");
+        input.removeClass("is-valid");
+        $("#collab-filter-query-error").text(error);
+    }
+
+    function _setFilterInfo(total, remaining) {
+        const input = $("#collab-filter-query-input");
+        const info = `Showing ${remaining} out of ${total} sessions`;
+        input.removeClass("is-invalid");
+        input.addClass("is-valid");
+        $("#collab-filter-query-info").text(info);
+    }
+
+    function _clearFilterInfo() {
+        const input = $("#collab-filter-query-input");
+        input.removeClass("is-invalid");
+        input.removeClass("is-valid");
+    }
+
     function _setFilterWithQuery(query) {
         try {
             _activeFilter = filters.getFilterFromQuery(query);
+            _filterIsTrivial = query.length === 0;
+            _lastQueryWasValid = true;
             if (_lastShownImage) {
                 refresh(_lastShownImage);
             }
+            if (_filterIsTrivial) {
+                _clearFilterInfo();
+            }
         }
         catch (e) {
+            _lastQueryWasValid = false;
             const error = e.message;
-            $("#collab-filter-error").text(error);
+            _setFilterError();
         }
     }
 
@@ -144,6 +173,9 @@ const collabPicker = (function() {
                 displayedCollabs = _availableCollabs.filter(collab => {
                     return _activeFilter.evaluate(collab);
                 });
+                if (_lastQueryWasValid && !_filterIsTrivial) {
+                    _setFilterInfo(_availableCollabs.length, displayedCollabs.length);
+                }
             }
             else {
                 displayedCollabs = _availableCollabs;
