@@ -18,10 +18,10 @@ const dateUtils = (function() {
         }
         const year = date.getFullYear();
         const month = date.getMonth() + 1;
-        const date = date.getDate();
+        const day = date.getDate();
         const hours = date.getHours();
         const minutes = date.getMinutes();
-        const readableDate = `${year}-${withZero(month)}-${withZero(date)} ${withZero(hours)}:${withZero(minutes)}`;
+        const readableDate = `${year}-${withZero(month)}-${withZero(day)} ${withZero(hours)}:${withZero(minutes)}`;
         return readableDate;
     }
 
