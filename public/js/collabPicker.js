@@ -19,7 +19,8 @@ const collabPicker = (function() {
         {
             name: "Updated",
             key: "updatedOn",
-            sortable: true
+            sortable: true,
+            selectFun: d => dateUtils.formatReadableDate(d.updatedOn)
         },
         {
             name: "# Annotations",

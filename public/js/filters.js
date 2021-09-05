@@ -373,8 +373,8 @@ const filters = (function () {
         return {
             name: collab.name,
             author: collab.author,
-            created: collab.createdOn,
-            updated: collab.updatedOn,
+            created: dateUtils.formatReadableDate(collab.createdOn),
+            updated: dateUtils.formatReadableDate(collab.updatedOn),
             annotations: collab.nAnnotations,
             comments: collab.nComments,
             users: collab.nUsers

@@ -25,7 +25,7 @@ function generateColor() {
 }
 
 function getCurrentTimeAsString() {
-    return new Date().toISOString().split("T")[0];
+    return new Date().toISOString();
 }
 
 class Collaboration {
