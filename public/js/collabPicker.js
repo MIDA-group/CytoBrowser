@@ -219,7 +219,9 @@ const collabPicker = (function() {
 
     function _handleCollabDoubleClick(d) {
         _handleCollabClick(d);
-        _openCollab();
+        if (_currentSelection) {
+            _openCollab();
+        }
     }
 
     /**
