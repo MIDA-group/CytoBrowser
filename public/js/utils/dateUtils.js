@@ -22,7 +22,12 @@ const dateUtils = (function() {
         const hours = date.getHours();
         const minutes = date.getMinutes();
         const readableDate = `${year}-${withZero(month)}-${withZero(day)} ${withZero(hours)}:${withZero(minutes)}`;
-        return readableDate;
+        if (isNaN(year)) {
+            return "Unknown";
+        }
+        else {
+            return readableDate;
+        }
     }
 
     return {
