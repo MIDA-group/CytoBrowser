@@ -85,7 +85,7 @@ const tmappUI = (function(){
     }
 
     function _initAnnotationList() {
-        const list = new AnnotationList("#annotation-list", "#rtoolbar", "id", [
+        const list = new SortableList("#annotation-list", "#rtoolbar", "id", [
             {
                 name: "x",
                 key: "x",
@@ -167,6 +167,10 @@ const tmappUI = (function(){
         ]);
 
         annotationVisuals.setAnnotationList(list);
+    }
+
+    function _initCollabPicker() {
+        collabPicker.init();
     }
 
     function _initGlobalComments() {
@@ -424,7 +428,7 @@ const tmappUI = (function(){
         });
         $("#change_session").click(function(event) {
             const image = tmapp.getImageName();
-            collabClient.promptCollabSelection(image);
+            collabPicker.open(image);
         });
     }
 
@@ -434,6 +438,7 @@ const tmappUI = (function(){
      */
     function initUI() {
         _initAnnotationList();
+        _initCollabPicker();
         _initGlobalComments();
         _initClassSelectionButtons();
         _initToolSelectionButtons();

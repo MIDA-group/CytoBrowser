@@ -63,7 +63,7 @@ function saveAnnotations(id, image, data) {
  * @returns {Promise<Array<Object>>} A promise that resolves with the
  * list of ids and their names.
  */
-function getSavedIds(image) {
+function getSavedCollabInfo(image) {
     const subDir = getSubDirName(image);
     const dir = `${autosaveDir}/${subDir}`;
     return fsPromises.readdir(dir).then(files => {
@@ -75,7 +75,12 @@ function getSavedIds(image) {
                 const id = file.match(idPattern)[0];
                 return {
                     id: id,
-                    name: data.name ? data.name : id
+                    name: data.name ? data.name : id,
+                    author: data.author,
+                    createdOn: data.createdOn,
+                    updatedOn: data.updatedOn,
+                    nAnnotations: data.nAnnotations,
+                    nComments: data.nComments
                 };
             });
         });
@@ -99,6 +104,6 @@ module.exports = function(dir) {
     return {
         loadAnnotations: loadAnnotations,
         saveAnnotations: saveAnnotations,
-        getSavedIds: getSavedIds
+        getSavedCollabInfo: getSavedCollabInfo
     };
 }

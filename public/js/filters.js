@@ -300,7 +300,7 @@ const filters = (function () {
     /**
      * Parse a filter query and return a Filter object that can be used
      * to check whether or not an object that hass been processed
-     * with preprocessDatumBeforeFiltering() passes conditions
+     * with one of the preprocessing functions passes conditions
      * specified in the query. The query is formatted in BNF as follows:
      *
      * <query> ::= <filter>
@@ -349,7 +349,7 @@ const filters = (function () {
      * processed.
      * @return {Object} The processed object.
      */
-    function preprocessDatumBeforeFiltering(annotation) {
+    function preprocessAnnotationBeforeFiltering(annotation) {
         return {
             class: annotation.mclass,
             author: annotation.author,
@@ -363,8 +363,27 @@ const filters = (function () {
         };
     }
 
+    /**
+     * Create an object that contains the filterable properties of a
+     * collaboration.
+     * @param {Object} collab The collab to be processed.
+     * @return {Object} The processed object.
+     */
+    function preprocessCollabBeforeFiltering(collab) {
+        return {
+            name: collab.name,
+            author: collab.author,
+            created: dateUtils.formatReadableDate(collab.createdOn),
+            updated: dateUtils.formatReadableDate(collab.updatedOn),
+            annotations: collab.nAnnotations,
+            comments: collab.nComments,
+            users: collab.nUsers
+        };
+    }
+
     return {
         getFilterFromQuery: getFilterFromQuery,
-        preprocessDatumBeforeFiltering: preprocessDatumBeforeFiltering
+        preprocessAnnotationBeforeFiltering: preprocessAnnotationBeforeFiltering,
+        preprocessCollabBeforeFiltering: preprocessCollabBeforeFiltering
     };
 })();

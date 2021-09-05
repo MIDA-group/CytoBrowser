@@ -24,15 +24,21 @@ function generateColor() {
     }
 }
 
+function getCurrentTimeAsString() {
+    return new Date().toISOString();
+}
+
 class Collaboration {
-    constructor(id, image) {
-        const date = new Date().toISOString().split("T")[0];
+    constructor(id, image, author) {
         this.members = new Map();
         this.annotations = [];
         this.comments = [];
         this.nextCommentId = 0;
         this.id = id;
-        this.name = `Unnamed (Created on ${date})`;
+        this.name = "Unnamed";
+        this.author = author;
+        this.createdOn = getCurrentTimeAsString();
+        this.updatedOn = getCurrentTimeAsString();
         this.nextMemberId = 0;
         this.nextColor = generateColor();
         this.image = image;
@@ -315,6 +321,9 @@ class Collaboration {
                 this.annotations = data.annotations;
             }
             if (data.version === "1.1") {
+                this.author = data.author;
+                this.createdOn = data.createdOn;
+                this.updatedOn = data.updatedOn;
                 this.comments = data.comments;
                 if (this.comments.length > 0) {
                     const commentIds = this.comments.map(comment => comment.id);
@@ -336,15 +345,23 @@ class Collaboration {
 
     saveState() {
         if (this.hasUnsavedChanges) {
+            const updateTime = getCurrentTimeAsString();
             const data = {
                 version: "1.1",
+                id: this.id,
                 name: this.name,
                 image: this.image,
+                author: this.author,
+                createdOn: this.createdOn,
+                updatedOn: updateTime,
+                nAnnotations: this.annotations.length,
+                nComments: this.comments.length,
                 annotations: this.annotations,
                 comments: this.comments
             };
             return autosave.saveAnnotations(this.id, this.image, data).then(() => {
                 this.notifyAutosave();
+                this.updatedOn = updateTime;
                 this.hasUnsavedChanges = false;
                 return true;
             });
@@ -396,9 +413,10 @@ class Collaboration {
  * @param {string} id The id of the collab.
  * @param {string} image The image that is being collaborated on. If the
  * collab already exists, this argument is ignored.
+ * @param {string} name Name of the user accessing the collab.
  */
-function getCollab(id, image) {
-    return collab = collabs[id] || (collabs[id] = new Collaboration(id, image));
+function getCollab(id, image, name) {
+    return collab = collabs[id] || (collabs[id] = new Collaboration(id, image, name));
 }
 
 /**
@@ -431,7 +449,7 @@ function getId() {
  */
 function joinCollab(ws, name, userId, id, image) {
     const cleanImage = sanitize(image);
-    const collab = getCollab(id, cleanImage);
+    const collab = getCollab(id, cleanImage, name);
     collab.addMember(ws, name, userId);
 }
 
@@ -478,7 +496,18 @@ function handleMessage(ws, id, msg) {
  */
 function getAvailable(image) {
     const cleanImage = sanitize(image);
-    return autosave.getSavedIds(cleanImage);
+    return autosave.getSavedCollabInfo(cleanImage).then(available => {
+        available.forEach(info => {
+            if (collabs[info.id]) {
+                const collab = collabs[info.id];
+                info.nUsers = collab.members.size;
+            }
+            else {
+                info.nUsers = 0;
+            }
+        });
+        return available;
+    });
 }
 
 module.exports = function(autosaveDir, metadataJsonDir) {

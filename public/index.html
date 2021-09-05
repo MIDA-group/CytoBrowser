@@ -536,7 +536,8 @@
                   A filter can be used to specify which annotations
                   are shown in the viewport and annotation list. Filters
                   can be specified through a combination of keys, values,
-                  comparisons, and combinations.
+                  comparisons, and combinations. Filtering can also be
+                  used in the same way in the session picker.
               </p>
               <h5>Keys</h5>
                 <p>
@@ -554,6 +555,19 @@
                     <li><code>x</code> &#8211; The x position of the annotation's centroid.</li>
                     <li><code>y</code> &#8211; The y position of the annotation's centroid.</li>
                     <li><code>z</code> &#8211; The z position of the annotation.</li>
+                </ul>
+                <p>
+                    The session picker uses a different set of keys
+                    for filtering sessions. These keys are:
+                </p>
+                <ul>
+                    <li><code>name</code> &#8211; The name of the session.</li>
+                    <li><code>author</code> &#8211; The name of the user who created the session.</li>
+                    <li><code>created</code> &#8211; The time at which the session was created.</li>
+                    <li><code>updated</code> &#8211; The time of the last update in the session.</li>
+                    <li><code>annotations</code> &#8211; The number of annotations in the session.</li>
+                    <li><code>comments</code> &#8211; The number of comments in the session.</li>
+                    <li><code>users</code> &#8211; The current number of active users in the session.</li>
                 </ul>
               <h5>Values</h5>
                 <p>
@@ -660,6 +674,52 @@
       </div>
     </div> <!-- End of image browser -->
 
+    <!-- Session picker -->
+    <div class="modal fade" id="collab-picker" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Open a new session</h5>
+                    <button id="collab-close-button" type="button" class="close" data-dismiss="modal">
+                        <span>×</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-row pb-4">
+                        <div class="col-8">
+                            <input id="collab-new-name" type="text" class="form-control" placeholder="Session name">
+                        </div>
+                        <div class="col-4">
+                            <button id="collab-create" class="btn btn-block btn-primary">Create a new session</button>
+                        </div>
+                    </div>
+                    <div class="form-row pb-4">
+                        <div class="col-12">
+                            <div class="input-group">
+                                <input id="collab-filter-query-input" type="text" class="form-control" placeholder="Filter sessions">
+                                <div id="collab-filter-query-error" class="invalid-feedback">
+                                </div>
+                                <div id="collab-filter-query-info" class="valid-feedback">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-muted">Current image:&nbsp;&nbsp;&nbsp;<span id="collab-image-path">image_name</span></p>
+                    <div id="collab-list-container" class="card bg-secondary" style="height: 40vh; overflow-y: auto;">
+                        <table id="collab-list" class="table table-striped table-hover text-center bg-white">
+                        </table>
+                    </div>
+                    <div class="form-row pt-4">
+                        <div class="col-12 d-flex justify-content-between">
+                            <button id="collab-list-refresh" class="btn btn-link">Refresh</button>
+                            <button id="collab-open" class="btn btn-primary" disabled="">Open</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div> <!-- End of session picker -->
+
     <!-- Context menu -->
     <div id="context_menu" class="card w-25 position-absolute fade" style="pointer-events: none; z-index: 500;" tabindex="-1">
         <div class="card-header">
@@ -685,7 +745,9 @@
 <script src="js/openseadragon/openseadragon-scalebar.js"></script>
 <script src="classConfig.js"></script>
 <script src="js/utils/classUtils.js"></script>
+<script src="js/utils/dateUtils.js"></script>
 <script src="js/collabClient.js"></script>
+<script src="js/collabPicker.js"></script>
 <script src="js/globalDataHandler.js"></script>
 <script src="js/metadataHandler.js"></script>
 <script src="js/annotationHandler.js"></script>
@@ -702,7 +764,7 @@
 <script src="js/userInfo.js"></script>
 <script src="js/cssHelper.js"></script>
 <script src="js/commentSection.js"></script>
-<script src="js/annotationList.js"></script>
+<script src="js/sortableList.js"></script>
 <script src="js/htmlHelper.js"></script>
 <script src="js/annotationTool.js"></script>
 

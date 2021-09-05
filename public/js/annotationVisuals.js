@@ -13,7 +13,7 @@ const annotationVisuals = (function() {
 
     function _filterAndUpdate() {
         const annotations = _unfilteredAnnotations.filter(annotation => {
-            const filterableAnnotation = filters.preprocessDatumBeforeFiltering(annotation);
+            const filterableAnnotation = filters.preprocessAnnotationBeforeFiltering(annotation);
             return _filter.evaluate(filterableAnnotation);
         });
         overlayHandler.updateAnnotations(annotations);
@@ -46,7 +46,7 @@ const annotationVisuals = (function() {
      * Set the annotation list object that should be used to disply
      * information about the annotations. This should be set before
      * update is called.
-     * @param {AnnotationList} annotationList The list to use.
+     * @param {SortableList} annotationList The list to use.
      */
     function setAnnotationList(annotationList) {
         _annotationList = annotationList;
