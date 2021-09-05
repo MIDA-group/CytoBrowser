@@ -78,6 +78,8 @@ const annotationStorageConversion = (function() {
         const data = {
             version: "1.1", // Version of the formatting
             image: tmapp.getImageName(),
+            author: userInfo.getName(),
+            updatedOn: new Date().toISOString(),
             annotations: [],
             comments: []
         };
@@ -87,6 +89,8 @@ const annotationStorageConversion = (function() {
         globalDataHandler.forEachComment(comment => {
             data.comments.push(comment)
         });
+        data.nAnnotations = data.annotations.length;
+        data.nComments = data.comments.length;
         return data;
     }
 
