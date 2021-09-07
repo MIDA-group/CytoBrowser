@@ -168,7 +168,7 @@ function readOlderVersion(path, versionId) {
  * @return {Promise<>} Promise that resolves when the file has been reverted.
  */
 function revertVersion(path, versionId) {
-    readOlderVersion(path, versionId)
+    return readOlderVersion(path, versionId)
         .then(data => writeWithHistory(path, data, true));
 }
 
