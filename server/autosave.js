@@ -107,12 +107,11 @@ function getAvailableVersions(id, image) {
 }
 
 // TODO: Docs
-function revertAndLoadAnnotations(id, image, versionId) {
+function revertAnnotations(id, image, versionId) {
     const subDir = getSubDirName(image);
     const filename = getFilename(id, image);
     const path = `${autosaveDir}/${subDir}/${filename}.json`;
-    return historyTracker.revertVersion(path, versionId)
-        .then(readLatestVersion);
+    return historyTracker.revertVersion(path, versionId);
 }
 
 module.exports = function(dir) {
@@ -126,6 +125,6 @@ module.exports = function(dir) {
         saveAnnotations: saveAnnotations,
         getSavedCollabInfo: getSavedCollabInfo,
         getAvailableVersions: getAvailableVersions,
-        revertAndLoadAnnotations: revertAndLoadAnnotations
+        revertAnnotations: revertAnnotations
     };
 }
