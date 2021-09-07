@@ -10,6 +10,7 @@
 const fs = require("fs");
 const fsPromises = fs.promises;
 const sanitize = require("sanitize-filename");
+const historyTracker = require("./historyTracker");
 
 const idPattern = /(?<=_)[^_]*(?=\.json$)/;
 let autosaveDir;
@@ -35,7 +36,7 @@ function loadAnnotations(id, image) {
     const subDir = getSubDirName(image);
     const filename = getFilename(id, image);
     const path = `${autosaveDir}/${subDir}/${filename}.json`;
-    return fsPromises.readFile(path).then(JSON.parse);
+    return historyTracker.readLatestVersion(path).then(JSON.parse);
 }
 
 /**
@@ -52,7 +53,7 @@ function saveAnnotations(id, image, data) {
     const path = `${autosaveDir}/${subDir}/${filename}.json`;
     const rawData = JSON.stringify(data);
     return fsPromises.mkdir(dir, {recursive: true}).then(() => {
-        return fsPromises.writeFile(path, rawData);
+        return historyTracker.writeWithHistory(path, rawData);
     });
 }
 
@@ -67,23 +68,25 @@ function getSavedCollabInfo(image) {
     const subDir = getSubDirName(image);
     const dir = `${autosaveDir}/${subDir}`;
     return fsPromises.readdir(dir).then(files => {
-        files.filter(file => idPattern.test(file));
+        files.filter(file => idPattern.test(file) && !historyTracker.isHistoryFilename(file));
         // Check the files and get their names
         const entries = files.map(file => {
             const path = `${dir}/${file}`;
-            return fsPromises.readFile(path).then(JSON.parse).then(data => {
-                const id = file.match(idPattern)[0];
-                return {
-                    id: id,
-                    name: data.name ? data.name : id,
-                    author: data.author,
-                    createdOn: data.createdOn,
-                    updatedOn: data.updatedOn,
-                    nAnnotations: data.nAnnotations,
-                    nComments: data.nComments
-                };
+            return fsPromises.readFile(path)
+                .then(JSON.parse)
+                .then(data => {
+                    const id = file.match(idPattern)[0];
+                    return {
+                        id: id,
+                        name: data.name ? data.name : id,
+                        author: data.author,
+                        createdOn: data.createdOn,
+                        updatedOn: data.updatedOn,
+                        nAnnotations: data.nAnnotations,
+                        nComments: data.nComments
+                    };
+                });
             });
-        });
         return Promise.all(entries);
     }).catch(err => {
         if (err.code === "ENOENT") {
@@ -95,6 +98,23 @@ function getSavedCollabInfo(image) {
     });
 }
 
+// TODO: Docs
+function getAvailableVersions(id, image) {
+    const subDir = getSubDirName(image);
+    const filename = getFilename(id, image);
+    const path = `${autosaveDir}/${subDir}/${filename}.json`;
+    return historyTracker.getAvailableVersions(path);
+}
+
+// TODO: Docs
+function revertAndLoadAnnotations(id, image, versionId) {
+    const subDir = getSubDirName(image);
+    const filename = getFilename(id, image);
+    const path = `${autosaveDir}/${subDir}/${filename}.json`;
+    return historyTracker.revertVersion(path, versionId)
+        .then(readLatestVersion);
+}
+
 module.exports = function(dir) {
     if (!dir) {
         throw new Error("No autosave directory specified!");
@@ -104,6 +124,8 @@ module.exports = function(dir) {
     return {
         loadAnnotations: loadAnnotations,
         saveAnnotations: saveAnnotations,
-        getSavedCollabInfo: getSavedCollabInfo
+        getSavedCollabInfo: getSavedCollabInfo,
+        getAvailableVersions: getAvailableVersions,
+        revertAndLoadAnnotations: revertAndLoadAnnotations
     };
 }

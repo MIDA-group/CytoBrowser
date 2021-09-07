@@ -183,10 +183,21 @@ function getAvailableVersions(path) {
         .then(history => getHistoryInfo(history));
 }
 
+/**
+ * Check whether or not a given path leads to a history file.
+ * @param {string} path The path to the file.
+ * @returns {boolean} Whether or not the file is marked as a history file.
+ */
+function isHistoryFilename(path) {
+    const filename = path.split("/").pop();
+    return filename.startsWith("__HISTORY__");
+}
+
 module.exports = {
     writeWithHistory: writeWithHistory,
     readLatestVersion: readLatestVersion,
     readOlderVersion: readOlderVersion,
     revertVersion: revertVersion,
-    getAvailableVersions: getAvailableVersions
+    getAvailableVersions: getAvailableVersions,
+    isHistoryFilename: isHistoryFilename
 };
