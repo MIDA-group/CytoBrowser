@@ -251,7 +251,7 @@ class Collaboration {
 
         switch (msg.actionType) {
             case "getVersions":
-                autosave.getAvailableVersions()
+                autosave.getAvailableVersions(this.id, this.image)
                     .then(versions => sender.send(JSON.stringify(versions)));
                 break;
             case "revert":
