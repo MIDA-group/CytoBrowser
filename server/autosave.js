@@ -51,7 +51,7 @@ function saveAnnotations(id, image, data) {
     const filename = getFilename(id, image);
     const dir = `${autosaveDir}/${subDir}`;
     const path = `${autosaveDir}/${subDir}/${filename}.json`;
-    const rawData = JSON.stringify(data);
+    const rawData = JSON.stringify(data, null, 1);
     return fsPromises.mkdir(dir, {recursive: true}).then(() => {
         return historyTracker.writeWithHistory(path, rawData);
     });
