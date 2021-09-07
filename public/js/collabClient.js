@@ -36,6 +36,9 @@ const collabClient = (function(){
             case "metadataAction":
                 _handleMetadataAction(msg);
                 break;
+            case "versionAction":
+                _handleVersionAction(msg);
+                break;
             case "memberEvent":
                 _handleMemberEvent(msg);
                 break;
@@ -88,6 +91,16 @@ const collabClient = (function(){
                 break;
             default:
                 console.warn(`Unknown metadata action type: ${msg.actionType}`);
+        }
+    }
+
+    function _handleVersionAction(msg) {
+        switch(msg.actionType) {
+            case "versionInfo":
+                console.log(msg.history);
+                break;
+            default:
+                console.warn(`Unknown version action type: ${msg.actionType}`);
         }
     }
 

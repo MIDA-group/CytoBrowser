@@ -252,7 +252,12 @@ class Collaboration {
         switch (msg.actionType) {
             case "getVersions":
                 autosave.getAvailableVersions(this.id, this.image)
-                    .then(versions => sender.send(JSON.stringify(versions)));
+                    .then(versions => sender.send({
+                        type: "versionAction",
+                        actionType: "versionInfo",
+                        history: JSON.stringify(versions)
+                    })
+                );
                 break;
             case "revert":
                 autosave.revertAnnotations(this.id, this.image, msg.versionId)
