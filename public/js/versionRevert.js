@@ -17,7 +17,6 @@ const versionRevert = (function() {
         `);
         if (_selection === version.id) {
             element.addClass("active");
-            $("#version-revert").prop("disabled", false);
         }
         let text = dateUtils.formatReadableDate(version.time);
         if (version.isRevert) {
@@ -28,6 +27,7 @@ const versionRevert = (function() {
             const wasSelected = _selection === version.id;
             _deselectVersion();
             if (!wasSelected) {
+                $("#version-revert").prop("disabled", false);
                 element.addClass("active");
                 _selection = version.id;
             }
@@ -41,7 +41,7 @@ const versionRevert = (function() {
      * version object includes the fields id, time, and isRevert.
      */
     function setVersions(versions) {
-        if (versions.some(version => version.id === _selection)) {
+        if (!versions.some(version => version.id === _selection)) {
             _deselectVersion();
         }
         const list = $("#version-list");
