@@ -2,12 +2,34 @@ const versionRevert = (function() {
     "use strict";
 
 
+    let _selection = null;
+
+    function _deselectVersion() {
+        $("#version-list a").removeClass("active");
+        _selection = null;
+    }
+
     function _createVersionElement(version) {
         const element = $(`
-            <a href="#" class="list-group-item list-group-item-action">
-                A second link item
+            <a href="javascript:void(0)" class="list-group-item list-group-item-action">
             </a>
         `);
+        if (_selection === version.id) {
+            element.addClass("active");
+        }
+        let text = dateUtils.formatReadableDate(version.time);
+        if (version.isRevert) {
+            text += "(Revert)";
+        }
+        element.text(text);
+        element.click(() => {
+            const wasSelected = _selection === version.id;
+            _deselectVersion();
+            if (wasSelected) {
+                element.addClass("active");
+                _selection = version.id;
+            }
+        });
     }
 
     /**
@@ -16,6 +38,9 @@ const versionRevert = (function() {
      * version object includes the fields id, time, and isRevert.
      */
     function setVersions(versions) {
+        if (versions.any(version => version.id === selection)) {
+            _deselectVersion();
+        }
         const list = $("#version-list");
         list.empty();
         versions.reverse().forEach(version => {
