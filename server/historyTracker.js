@@ -2,6 +2,8 @@ const fs = require("fs");
 const fsPromises = fs.promises;
 const diff = require("diff");
 
+const maxHistoryEntries = 50; // Set as negative to remove limit
+
 
 /**
  * A description of a single step in a file's history.
@@ -89,6 +91,9 @@ function extendHistory(history, data, path, historyPath, isRevert) {
             isRevert: isRevert
         };
         history.history.push(historyEntry);
+        if (maxHistoryEntries >= 0 && history.history.length > maxHistoryEntries) {
+            history.history = history.history.slice(history.history.length - maxHistoryEntries);
+        }
         history.nextId++;
         const historyData = JSON.stringify(history);
         return fsPromises.writeFile(historyPath, historyData);

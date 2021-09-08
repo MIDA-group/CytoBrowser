@@ -410,7 +410,7 @@ class Collaboration {
             this.autosaveTimeout = setTimeout(() => {
                 this.saveState();
                 this.autosaveTimeout = null;
-            }, 20000);
+            }, 120000);
         }
     }
 
