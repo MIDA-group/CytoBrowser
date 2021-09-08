@@ -703,7 +703,7 @@ const collabClient = (function(){
     function getVersions() {
         send({
             type: "versionAction",
-            eventType: "getVersions"
+            actionType: "getVersions"
         });
     }
 
