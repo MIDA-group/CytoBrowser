@@ -713,7 +713,7 @@ const collabClient = (function(){
     function revertVersion(versionId) {
         send({
             type: "versionAction",
-            eventType: "revert",
+            actionType: "revert",
             versionId: versionId
         });
     }

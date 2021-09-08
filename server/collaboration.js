@@ -264,7 +264,7 @@ class Collaboration {
                     .then(() => this.loadState(true));
                 break;
             default:
-                this.log(`Tried to handle unknown version action: ${msg.eventType}`, console.warn);
+                this.log(`Tried to handle unknown version action: ${msg.actionType}`, console.warn);
         }
     }
 
