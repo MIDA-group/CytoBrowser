@@ -173,6 +173,10 @@ const tmappUI = (function(){
         collabPicker.init();
     }
 
+    function _initVersionPicker() {
+        versionRevert.init();
+    }
+
     function _initGlobalComments() {
         const container = $("#global_comments");
         const inputFun = globalDataHandler.sendCommentToServer;
@@ -439,6 +443,7 @@ const tmappUI = (function(){
     function initUI() {
         _initAnnotationList();
         _initCollabPicker();
+        _initVersionPicker();
         _initGlobalComments();
         _initClassSelectionButtons();
         _initToolSelectionButtons();

@@ -244,6 +244,7 @@ const collabClient = (function(){
         overlayHandler.updateMembers([]);
         tmappUI.clearCollaborators();
         tmapp.clearCollab();
+        versionRevert.clear();
         _resolveOngoingDestruction && _resolveOngoingDestruction();
     }
 

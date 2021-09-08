@@ -6,6 +6,7 @@ const versionRevert = (function() {
 
     function _deselectVersion() {
         $("#version-list a").removeClass("active");
+        $("#version-revert").prop("disabled", true);
         _selection = null;
     }
 
@@ -16,6 +17,7 @@ const versionRevert = (function() {
         `);
         if (_selection === version.id) {
             element.addClass("active");
+            $("#version-revert").prop("disabled", false);
         }
         let text = dateUtils.formatReadableDate(version.time);
         if (version.isRevert) {
@@ -54,7 +56,6 @@ const versionRevert = (function() {
      * Get an updated list of available versions for the current collaboration.
      */
     function refresh() {
-        clear();
         collabClient.getVersions();
     }
 
@@ -65,9 +66,16 @@ const versionRevert = (function() {
         setVersions([]);
     }
 
+    function init() {
+        $("#version-picker").on("show.bs.modal", refresh);
+        $("#version-refresh").click(refresh);
+        $("#version-revert").click(() => collabClient.revertVersion(_selection));
+    }
+
     return {
         setVersions: setVersions,
         refresh: refresh,
-        clear: clear
+        clear: clear,
+        init: init
     };
 })();
