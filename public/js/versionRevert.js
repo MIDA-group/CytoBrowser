@@ -25,7 +25,7 @@ const versionRevert = (function() {
         element.click(() => {
             const wasSelected = _selection === version.id;
             _deselectVersion();
-            if (wasSelected) {
+            if (!wasSelected) {
                 element.addClass("active");
                 _selection = version.id;
             }
