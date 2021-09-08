@@ -69,7 +69,10 @@ const versionRevert = (function() {
     function init() {
         $("#version-picker").on("show.bs.modal", refresh);
         $("#version-refresh").click(refresh);
-        $("#version-revert").click(() => collabClient.revertVersion(_selection));
+        $("#version-revert").click(() => {
+            $("#version-picker").modal("hide");
+            collabClient.revertVersion(_selection);
+        });
     }
 
     return {
