@@ -100,7 +100,13 @@ function getSavedCollabInfo(image) {
     });
 }
 
-// TODO: Docs
+/**
+ * Get the available versions that can be reverted to for a given collaboration.
+ * @param {string} id The id of the collaboration.
+ * @param {string} image The name of the image.
+ * @returns {Promise<Array<historyTracker.HistoryEntryInfo>>} Info for
+ * each previous version for the given collaboration.
+ */
 function getAvailableVersions(id, image) {
     const subDir = getSubDirName(image);
     const filename = getFilename(id, image);
@@ -108,7 +114,14 @@ function getAvailableVersions(id, image) {
     return historyTracker.getAvailableVersions(path);
 }
 
-// TODO: Docs
+/**
+ * Revert the collaboration to a previous autosave.
+ * @param {string} id The id of the collaboration.
+ * @param {string} image The name of the image.
+ * @param {number} versionId The id of the version to revert to.
+ * @returns {Promise<>} A promise that resolves once the file has
+ * been reverted to the specified version.
+ */
 function revertAnnotations(id, image, versionId) {
     const subDir = getSubDirName(image);
     const filename = getFilename(id, image);
