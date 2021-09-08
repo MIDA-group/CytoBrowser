@@ -456,7 +456,6 @@ const tmappUI = (function(){
         _initVisualizationSliders();
         _initKeyboardShortcuts();
         _initCollaborationMenu();
-        fileBrowserUI.init();
     }
 
     /**

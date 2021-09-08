@@ -2,7 +2,7 @@
  * Deals with converting between annotation storage objects and placed annotation
  * data. Functions in this namespace can either be used to get the
  * currently placed annotations as a storage object, which can be used for
- * either local or remote storage in a JSON file, or to add annotations from
+ * local storage in a JSON file, or to add annotations from
  * an already existing annotation storage object.
  * @namespace annotationStorageConversion
  */
