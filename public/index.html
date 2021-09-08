@@ -720,6 +720,26 @@
         </div>
     </div> <!-- End of session picker -->
 
+    <!-- Version picker -->
+    <div class="modal fade" id="version-picker" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-sm" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Revert to an older version</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>×</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="card bg-secondary" style="height: 60vh; overflow-y: auto;">
+                        <ul id="version-list" class="list-group list-group-flush">
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div> <!-- End of version picker -->
+
     <!-- Context menu -->
     <div id="context_menu" class="card w-25 position-absolute fade" style="pointer-events: none; z-index: 500;" tabindex="-1">
         <div class="card-header">
@@ -746,6 +766,7 @@
 <script src="classConfig.js"></script>
 <script src="js/utils/classUtils.js"></script>
 <script src="js/utils/dateUtils.js"></script>
+<script src="js/versionRevert.js"></script>
 <script src="js/collabClient.js"></script>
 <script src="js/collabPicker.js"></script>
 <script src="js/globalDataHandler.js"></script>

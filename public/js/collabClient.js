@@ -97,7 +97,7 @@ const collabClient = (function(){
     function _handleVersionAction(msg) {
         switch(msg.actionType) {
             case "versionInfo":
-                console.log(msg.history);
+                versionRevert.setVersions(msg.history);
                 break;
             default:
                 console.warn(`Unknown version action type: ${msg.actionType}`);
@@ -697,6 +697,27 @@ const collabClient = (function(){
         });
     }
 
+    /**
+     * TODO
+     */
+    function getVersions() {
+        send({
+            type: "versionAction",
+            eventType: "getVersions"
+        });
+    }
+
+    /**
+     * TODO
+     */
+    function revertVersion(versionId) {
+        send({
+            type: "versionAction",
+            eventType: "revert",
+            versionId: versionId
+        });
+    }
+
     return {
         createCollab: createCollab,
         connect: connect,
@@ -715,6 +736,8 @@ const collabClient = (function(){
         updatePosition: updatePosition,
         updateCursor: updateCursor,
         followView: followView,
-        stopFollowing: stopFollowing
+        stopFollowing: stopFollowing,
+        getVersions: getVersions,
+        revertVersion: revertVersion
     };
 })();
