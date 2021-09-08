@@ -19,7 +19,7 @@ const versionRevert = (function() {
         }
         let text = dateUtils.formatReadableDate(version.time);
         if (version.isRevert) {
-            text += "(Revert)";
+            text += " (Revert)";
         }
         element.text(text);
         element.click(() => {
@@ -30,6 +30,7 @@ const versionRevert = (function() {
                 _selection = version.id;
             }
         });
+        return element;
     }
 
     /**
@@ -38,7 +39,7 @@ const versionRevert = (function() {
      * version object includes the fields id, time, and isRevert.
      */
     function setVersions(versions) {
-        if (versions.any(version => version.id === selection)) {
+        if (versions.some(version => version.id === _selection)) {
             _deselectVersion();
         }
         const list = $("#version-list");
