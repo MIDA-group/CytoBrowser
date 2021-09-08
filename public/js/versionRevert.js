@@ -2,6 +2,14 @@ const versionRevert = (function() {
     "use strict";
 
 
+    function _createVersionElement(version) {
+        const element = $(`
+            <a href="#" class="list-group-item list-group-item-action">
+                A second link item
+            </a>
+        `);
+    }
+
     /**
      * Set a list of available versions for the current collaboration.
      * @param {Array<Object>} versions The available versions. Each
@@ -10,8 +18,9 @@ const versionRevert = (function() {
     function setVersions(versions) {
         const list = $("#version-picker");
         list.empty();
-        versions.forEach(version => {
-            console.log(version);
+        versions.reverse().forEach(version => {
+            const element = _createVersionElement(version);
+            list.append(element);
         });
     }
 
