@@ -68,7 +68,9 @@ function getSavedCollabInfo(image) {
     const subDir = getSubDirName(image);
     const dir = `${autosaveDir}/${subDir}`;
     return fsPromises.readdir(dir).then(files => {
-        files.filter(file => idPattern.test(file) && !historyTracker.isHistoryFilename(file));
+        files = files.filter(file =>
+            idPattern.test(file) && !historyTracker.isHistoryFilename(file)
+        );
         // Check the files and get their names
         const entries = files.map(file => {
             const path = `${dir}/${file}`;
