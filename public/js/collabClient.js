@@ -290,11 +290,12 @@ const collabClient = (function(){
             tmapp.enableControls();
         }
         else {
-            const followChain = [_localMember.id];
-            let currentLink = _followedMember.id;
-            while (currentLink && !followChain.includes(currentLink)) {
-                const member = _members.find(member => member.id === currentLink);
-                currentLink = member.following;
+            const followChain = [];
+            let nextLink = _followedMember.id;
+            while (nextLink && !followChain.includes(nextLink)) {
+                followChain.push(nextLink);
+                const member = _members.find(member => member.id === nextLink);
+                nextLink = member.following;
             }
             if (followChain[followChain.length - 1] === _localMember.id) {
                 tmapp.enableControls();
