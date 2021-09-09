@@ -367,7 +367,7 @@ const htmlHelper = (function() {
                 </span>
             </a>
         `);
-        entry.find(".collaborator_list_name").text(`${member.name}${local? " (me)" : following ? " (following)" : ""}`);
+        entry.find(".collaborator-list-name").text(`${member.name}${local? " (me)" : following ? " (following)" : ""}`);
         const checkbox = entry.find("input");
         if (!active) {
             entry.addClass("disabled");
