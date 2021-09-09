@@ -181,13 +181,9 @@ const collabClient = (function(){
         globalDataHandler.clear();
         metadataHandler.updateMetadataValues(msg.metadata);
         annotationHandler.clear(false);
-        msg.annotations.forEach(annotation => {
-            annotationHandler.add(annotation, "image", false)
-        });
+        annotationHandler.add(msg.annotations, "image", false);
         if (_joinBatch) {
-            _joinBatch.forEach(annotation => {
-                annotationHandler.add(annotation, "image");
-            });
+            annotationHandler.add(_joinBatch, "image");
             _joinBatch = null;
         }
         msg.comments.forEach(comment => {
