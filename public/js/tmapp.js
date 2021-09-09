@@ -51,7 +51,7 @@ const tmapp = (function() {
             held: false,
             inside: false
         },
-        _disabledControls
+        _disabledControls,
         _availableZLevels;
 
 
