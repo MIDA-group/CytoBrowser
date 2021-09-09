@@ -117,9 +117,13 @@ const collabClient = (function(){
                 _memberUpdate()
                 break;
             case "update":
+                const followChange = member.following !== msg.member.following;
                 Object.assign(member, msg.member);
                 if (member === _followedMember) {
                     _followedMember.updated = true;
+                }
+                if (followChange) {
+                    _checkIfControlsShouldBeEnabled();
                 }
                 _memberUpdate(msg.hardUpdate);
                 break;
@@ -279,6 +283,26 @@ const collabClient = (function(){
 
     function _stopKeepalive() {
         clearTimeout(_keepaliveTimeout);
+    }
+
+    function _checkIfControlsShouldBeEnabled() {
+        if (!_followedMember) {
+            tmapp.enableControls();
+        }
+        else {
+            const followChain = [_localMember.id];
+            let currentLink = _followedMember.id;
+            while (currentLink && !followChain.includes(currentLink)) {
+                const member = _members.find(member => member.id === currentLink);
+                currentLink = member.following;
+            }
+            if (followChain[followChain.length - 1] === _localMember.id) {
+                tmapp.enableControls();
+            }
+            else {
+                tmapp.disableControls();
+            }
+        }
     }
 
     /**
@@ -668,7 +692,7 @@ const collabClient = (function(){
         _followedMember = member;
         _followedMember.followed = true;
         _followedMember.updated = true;
-        tmapp.disableControls();
+        _checkIfControlsShouldBeEnabled();
         _memberUpdate();
         _localMember.following = member.id;
         send({
@@ -687,7 +711,7 @@ const collabClient = (function(){
             _followedMember.followed = false;
             _followedMember = null;
         }
-        tmapp.enableControls();
+        _checkIfControlsShouldBeEnabled();
         _memberUpdate();
         _localMember.following = null;
         send({
