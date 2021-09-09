@@ -51,7 +51,8 @@ const tmapp = (function() {
             held: false,
             inside: false
         },
-        _disabledControls;
+        _disabledControls,
+        _availableZLevels;
 
 
     function _getFocusIndex() {
@@ -183,6 +184,7 @@ const tmapp = (function() {
         const initialZ = 0;
         const offset = Math.floor(imageStack.length / 2);
         const zLevels = Array.from({length: imageStack.length}, (x, i) => i - offset);
+        _availableZLevels = zLevels;
         console.info(`Opening: ${imageStack}`);
         _viewer.openFocusLevels(imageStack, initialZ, zLevels);
         _currState.z = initialZ;
@@ -334,6 +336,7 @@ const tmapp = (function() {
     function _initOSD(callback) {
         //init OSD viewer
         _viewer = OpenSeadragon(_optionsOSD);
+        _viewer.scalebar();
         _addHandlers(_viewer, callback);
 
         //open the DZI xml file pointing to the tiles
@@ -347,12 +350,16 @@ const tmapp = (function() {
     }
 
     function _clearCurrentImage() {
+        if (!_viewer) {
+            return;
+        }
         annotationHandler.clear(false);
         metadataHandler.clear();
         _viewer && _viewer.destroy();
         $("#ISS_viewer").empty();
         coordinateHelper.clearImage();
         _disabledControls = null;
+        _availableZLevels = null;
     }
 
     /**
@@ -592,6 +599,14 @@ const tmapp = (function() {
     }
 
     /**
+     * Get the available z levels for the current image.
+     * @returns {Array} An array of the available z levels.
+     */
+    function getZLevels() {
+        return _availableZLevels ? _availableZLevels : [];
+    }
+
+    /**
      * Change brightness level by delta.
      */
     function changeBrightness(delta) {
@@ -719,6 +734,7 @@ const tmapp = (function() {
         clearCollab: clearCollab,
         incrementFocus: incrementFocus,
         decrementFocus: decrementFocus,
+        getZLevels: getZLevels,
 
         setBrightness: setBrightness,
         setContrast: setContrast,

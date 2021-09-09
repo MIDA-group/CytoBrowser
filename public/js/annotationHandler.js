@@ -180,74 +180,80 @@ const annotationHandler = (function (){
 
     /**
      * Add a single annotation to the data.
-     * @param {Annotation} annotation A data representation of the annotation.
+     * @param {Annotation|Array<Annotation>} annotations A data representation of the annotation.
      * @param {CoordSystem} [coordSystem="web"] Coordinate system used by the annotation.
      * @param {boolean} [transmit=true] Any collaborators should also be
      * told to add the annotation.
      */
-    function add(annotation, coordSystem="web", transmit = true) {
-        const addedAnnotation = _cloneAnnotation(annotation);
-
-        // Store the coordinates in all systems and set the image coordinates
-        const coords = addedAnnotation.points.map(point =>
-            _getCoordSystems(point, coordSystem)
-        );
-        if (coordSystem !== "image")
-            addedAnnotation.points = coords.map(coord => coord.image);
-        if (!addedAnnotation.points.every(coordinateHelper.pointIsInsideImage)) {
-            console.warn("Cannot add an annotation with points outside the image.");
-            return;
+    function add(annotations, coordSystem="web", transmit = true) {
+        if (!Array.isArray(annotations)) {
+            annotations = [annotations];
         }
+        annotations.forEach(annotation => {
+            const addedAnnotation = _cloneAnnotation(annotation);
 
-        // Check if an identical annotation already exists, remove old one if it does
-        let replacedAnnotation = _findDuplicateAnnotation(addedAnnotation);
-        if (replacedAnnotation) {
-            console.warn("Adding an annotation with identical properties to an existing annotation, replacing.");
-            update(replacedAnnotation.id, addedAnnotation, coordSystem, false);
-            return;
-        }
+            // Store the coordinates in all systems and set the image coordinates
+            const coords = addedAnnotation.points.map(point =>
+                _getCoordSystems(point, coordSystem)
+            );
+            if (coordSystem !== "image")
+                addedAnnotation.points = coords.map(coord => coord.image);
+            if (!addedAnnotation.points.every(coordinateHelper.pointIsInsideImage)) {
+                console.warn("Cannot add an annotation with points outside the image.");
+                return;
+            }
 
-        // Make sure the annotation has an id
-        if (addedAnnotation.id === undefined) {
-            addedAnnotation.id = _generateId();
-        }
-        else {
-            // If the id has been specified, check if it's not taken
-            const existingAnnotation = getAnnotationById(addedAnnotation.id);
-            if (existingAnnotation !== undefined) {
-                console.info("Tried to assign an already-used id, reassigning.");
-                addedAnnotation.originalId === undefined && (addedAnnotation.originalId = addedAnnotation.id);
+            // Check if an identical annotation already exists, remove old one if it does
+            let replacedAnnotation = _findDuplicateAnnotation(addedAnnotation);
+            if (replacedAnnotation) {
+                console.warn("Adding an annotation with identical properties to an existing annotation, replacing.");
+                update(replacedAnnotation.id, addedAnnotation, coordSystem, false);
+                return;
+            }
+
+            // Make sure the annotation has an id
+            if (addedAnnotation.id === undefined) {
                 addedAnnotation.id = _generateId();
             }
-        }
+            else {
+                // If the id has been specified, check if it's not taken
+                const existingAnnotation = getAnnotationById(addedAnnotation.id);
+                if (existingAnnotation !== undefined) {
+                    console.info("Tried to assign an already-used id, reassigning.");
+                    addedAnnotation.originalId === undefined && (addedAnnotation.originalId = addedAnnotation.id);
+                    addedAnnotation.id = _generateId();
+                }
+            }
 
-        // Set the bookmark field of the annotation
-        if (addedAnnotation.bookmarked === undefined)
-            addedAnnotation.bookmarked = false;
+            // Set the bookmark field of the annotation
+            if (addedAnnotation.bookmarked === undefined)
+                addedAnnotation.bookmarked = false;
 
-        // Set the centroid of the annotation
-        if (!addedAnnotation.centroid)
-            addedAnnotation.centroid = _getCentroid(addedAnnotation.points);
+            // Set the centroid of the annotation
+            if (!addedAnnotation.centroid)
+                addedAnnotation.centroid = _getCentroid(addedAnnotation.points);
 
-        // Set the author of the annotation
-        if (!addedAnnotation.author)
-            addedAnnotation.author = userInfo.getName();
+            // Set the author of the annotation
+            if (!addedAnnotation.author)
+                addedAnnotation.author = userInfo.getName();
 
-        // Store a data representation of the annotation
-        _annotations.push(addedAnnotation);
+            // Store a data representation of the annotation
+            _annotations.push(addedAnnotation);
 
-        // Update the annotation count
-        if (addedAnnotation.points.length === 1) {
-            _nMarkers++;
-        }
-        else {
-            _nRegions++;
-        }
-        _classCounts[addedAnnotation.mclass]++;
+            // Update the annotation count
+            if (addedAnnotation.points.length === 1) {
+                _nMarkers++;
+            }
+            else {
+                _nRegions++;
+            }
+            _classCounts[addedAnnotation.mclass]++;
+
+            // Send the update to collaborators
+            transmit && collabClient.addAnnotation(addedAnnotation);
+        });
+
         _updateAnnotationCounts();
-
-        // Send the update to collaborators
-        transmit && collabClient.addAnnotation(addedAnnotation);
 
         // Add a graphical representation of the annotation
         _updateVisuals();
@@ -344,34 +350,40 @@ const annotationHandler = (function (){
 
     /**
      * Remove an annotation from the data.
-     * @param {number} id The id of the annotation to be removed.
+     * @param {number|Array<number>} ids The id of the annotation to be removed.
      * @param {boolean} [transmit=true] Any collaborators should also be
      * told to remove the annotation.
      */
-    function remove(id, transmit = true) {
-        const annotations = _annotations;
-        const deletedIndex = annotations.findIndex(annotation => annotation.id === id);
-
-        // Check if the annotation exists first
-        if (deletedIndex === -1) {
-            throw new Error("Tried to remove an annotation that doesn't exist");
+    function remove(ids, transmit = true) {
+        if (!Array.isArray(ids)) {
+            ids = [ids];
         }
+        ids.forEach(id => {
+            const annotations = _annotations;
+            const deletedIndex = annotations.findIndex(annotation => annotation.id === id);
 
-        // Remove the annotation from the data
-        const removedAnnotation = annotations.splice(deletedIndex, 1)[0];
+            // Check if the annotation exists first
+            if (deletedIndex === -1) {
+                throw new Error("Tried to remove an annotation that doesn't exist");
+            }
 
-        // Update the annotation count
-        if (removedAnnotation.points.length === 1) {
-            _nMarkers--;
-        }
-        else {
-            _nRegions--;
-        }
-        _classCounts[removedAnnotation.mclass]--;
+            // Remove the annotation from the data
+            const removedAnnotation = annotations.splice(deletedIndex, 1)[0];
+
+            // Update the annotation count
+            if (removedAnnotation.points.length === 1) {
+                _nMarkers--;
+            }
+            else {
+                _nRegions--;
+            }
+            _classCounts[removedAnnotation.mclass]--;
+
+            // Send the update to collaborators
+            transmit && collabClient.removeAnnotation(id);
+        });
+
         _updateAnnotationCounts();
-
-        // Send the update to collaborators
-        transmit && collabClient.removeAnnotation(id);
 
         // Remove the annotation from the graphics
         _updateVisuals();
@@ -385,7 +397,7 @@ const annotationHandler = (function (){
     function clear(transmit = true) {
         const annotations = _annotations;
         const ids = annotations.map(annotation => annotation.id);
-        ids.forEach(id => remove(id, false));
+        remove(ids, false);
 
         // Send the update to collaborators
         transmit && collabClient.clearAnnotations();

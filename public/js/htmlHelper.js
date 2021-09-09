@@ -60,16 +60,18 @@ const htmlHelper = (function() {
     }
 
     function _annotationValueRow(label, value) {
-        return $(`
+        const row = $(`
             <div class="form-group row">
                 <label class="col-4 col-form-label">
                     ${label}
                 </label>
                 <div class="col-8">
-                    <input type="text" readonly class="form-control" value="${value}">
+                    <input type="text" readonly class="form-control">
                 </div>
             </div>
         `);
+        row.find("input").attr("value", value);
+        return row;
     }
 
     function _annotationMclassOptions(annotation, updateFun) {
@@ -88,14 +90,46 @@ const htmlHelper = (function() {
         classUtils.forEachClass(mclass => {
             const selected = annotation.mclass === mclass.name;
             const option = $(`
-                <option value="${mclass.name}" ${selected ? "selected='selected'" : ""}>
-                    ${mclass.name}
+                <option ${selected ? "selected='selected'" : ""}>
                 </option>
             `);
+            option.attr("value", mclass.name);
+            option.text(mclass.name);
             select.append(option);
         });
         select.change(() => {
             annotation.mclass = select.val();
+            updateFun();
+        });
+        return container;
+    }
+
+    function _annotationFocus(annotation, updateFun) {
+        const container = $(`
+            <div class="form-group row">
+                <label class="col-4 col-form-label">
+                    z level
+                </label>
+                <div class="col-8">
+                    <select class="form-control">
+                    </select>
+                </div>
+            </div>
+        `);
+        const select = container.find("select");
+        const zLevels = tmapp.getZLevels();
+        zLevels.forEach(z => {
+            const selected = annotation.z === z;
+            const option = $(`
+                <option ${selected ? "selected='selected'" : ""}>
+                </option>
+            `);
+            option.attr("value", z);
+            option.text(z);
+            select.append(option);
+        });
+        select.change(() => {
+            annotation.z = Number(select.val());
             updateFun();
         });
         return container;
@@ -109,7 +143,7 @@ const htmlHelper = (function() {
                     <span class="text-muted">
                         Added by <span class="comment_author"></span>
                     </span>
-                    <a href="#">
+                    <a href="javascript:void(0)">
                         Remove
                     </a>
                 </div>
@@ -130,7 +164,7 @@ const htmlHelper = (function() {
                     <span class="text-muted">
                         Added by <span class="comment_author"></span>
                     </span>
-                    <a href="#">
+                    <a href="javascript:void(0)">
                         Remove
                     </a>
                 </div>
@@ -320,19 +354,20 @@ const htmlHelper = (function() {
     function _collaboratorListEntry(member, local, active, following) {
         const entry = $(`
             <a class="list-group-item list-group-item-action d-flex
-            justify-content-between align-items-center" href="#">
+            justify-content-between align-items-center" href="javascript:void(0)">
                 <span>
                     <span class="badge badge-pill" style="background-color: ${member.color};">
                         &nbsp;
                     </span>
                     &nbsp;&nbsp;&nbsp;
-                    ${member.name}${local? " (me)" : following ? " (following)" : ""}
+                    <span class="collaborator-list-name"></span>
                 </span>
                 <span>
                     <input type="checkbox">
                 </span>
             </a>
         `);
+        entry.find(".collaborator-list-name").text(`${member.name}${local? " (me)" : following ? " (following)" : ""}`);
         const checkbox = entry.find("input");
         if (!active) {
             entry.addClass("disabled");
@@ -462,6 +497,7 @@ const htmlHelper = (function() {
         const id = _annotationValueRow("Id", annotation.id);
         const author = _annotationValueRow("Created by", annotation.author);
         const classes = _annotationMclassOptions(annotation, updateFun);
+        const focus = _annotationFocus(annotation, updateFun);
         const list = _commentList(annotation, updateFun);
         const input = _commentInput(body => {
             const comment = {
@@ -473,7 +509,7 @@ const htmlHelper = (function() {
             updateFun();
         });
         const buttonRow = _annotationButtonRow(annotation.id, closeFun);
-        container.append(id, author, classes, list, input, buttonRow);
+        container.append(id, author, classes, focus, list, input, buttonRow);
     }
 
     /**

@@ -181,13 +181,9 @@ const collabClient = (function(){
         globalDataHandler.clear();
         metadataHandler.updateMetadataValues(msg.metadata);
         annotationHandler.clear(false);
-        msg.annotations.forEach(annotation => {
-            annotationHandler.add(annotation, "image", false)
-        });
+        annotationHandler.add(msg.annotations, "image", false);
         if (_joinBatch) {
-            _joinBatch.forEach(annotation => {
-                annotationHandler.add(annotation, "image");
-            });
+            annotationHandler.add(_joinBatch, "image");
             _joinBatch = null;
         }
         msg.comments.forEach(comment => {
@@ -699,7 +695,7 @@ const collabClient = (function(){
     }
 
     /**
-     * TODO
+     * Request a list of available versions for the current collaboration.
      */
     function getVersions() {
         send({
@@ -709,7 +705,9 @@ const collabClient = (function(){
     }
 
     /**
-     * TODO
+     * Tell the server to revert the current collaboration to a previous
+     * version.
+     * @param {number} versionId The id of the version to revert to.
      */
     function revertVersion(versionId) {
         send({

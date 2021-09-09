@@ -30,9 +30,7 @@ const annotationStorageConversion = (function() {
     function addAnnotationStorageData(data) {
         if (data.version === "1.0" || data.version === "1.1") {
             const addAnnotations = () => {
-                data.annotations.forEach(annotation => {
-                    annotationHandler.add(annotation, "image");
-                });
+                annotationHandler.add(data.annotations, "image");
                 if (data.version === "1.1") {
                     data.comments.forEach(comment => {
                         globalDataHandler.handleCommentFromServer(comment);
