@@ -101,6 +101,36 @@ const htmlHelper = (function() {
         return container;
     }
 
+    function _annotationFocus(annotation, updateFun) {
+        const container = $(`
+            <div class="form-group row">
+                <label class="col-4 col-form-label">
+                    z level
+                </label>
+                <div class="col-8">
+                    <select class="form-control">
+                    </select>
+                </div>
+            </div>
+        `);
+        const select = container.find("select");
+        const zLevels = tmapp.getZLevels();
+        zLevels.forEach(z => {
+            const selected = annotation.z === z;
+            const option = $(`
+                <option value="${z}" ${selected ? "selected='selected'" : ""}>
+                    ${z}
+                </option>
+            `);
+            select.append(option);
+        });
+        select.change(() => {
+            annotation.z = select.val();
+            updateFun();
+        });
+        return container;
+    }
+
     function _commentAlt(comment, removeFun) {
         const entry = $(`
             <li class="list-group-item">
@@ -462,6 +492,7 @@ const htmlHelper = (function() {
         const id = _annotationValueRow("Id", annotation.id);
         const author = _annotationValueRow("Created by", annotation.author);
         const classes = _annotationMclassOptions(annotation, updateFun);
+        const focus = _annotationFocus(annotation, updateFun);
         const list = _commentList(annotation, updateFun);
         const input = _commentInput(body => {
             const comment = {
@@ -473,7 +504,7 @@ const htmlHelper = (function() {
             updateFun();
         });
         const buttonRow = _annotationButtonRow(annotation.id, closeFun);
-        container.append(id, author, classes, list, input, buttonRow);
+        container.append(id, author, classes, focus, list, input, buttonRow);
     }
 
     /**
