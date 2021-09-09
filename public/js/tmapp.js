@@ -336,6 +336,7 @@ const tmapp = (function() {
     function _initOSD(callback) {
         //init OSD viewer
         _viewer = OpenSeadragon(_optionsOSD);
+        _viewer.scalebar();
         _addHandlers(_viewer, callback);
 
         //open the DZI xml file pointing to the tiles
