@@ -125,7 +125,7 @@ const htmlHelper = (function() {
             select.append(option);
         });
         select.change(() => {
-            annotation.z = select.val();
+            annotation.z = Number(select.val());
             updateFun();
         });
         return container;
