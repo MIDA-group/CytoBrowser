@@ -397,8 +397,8 @@ const annotationHandler = (function (){
     function clear(transmit = true) {
         const annotations = _annotations;
         const ids = annotations.map(annotation => annotation.id);
-        remove(id, false);
-        
+        remove(ids, false);
+
         // Send the update to collaborators
         transmit && collabClient.clearAnnotations();
 
