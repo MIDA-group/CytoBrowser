@@ -10,6 +10,7 @@
 const fs = require("fs");
 const fsPromises = fs.promises;
 const sanitize = require("sanitize-filename");
+const historyTracker = require("./historyTracker");
 
 const idPattern = /(?<=_)[^_]*(?=\.json$)/;
 let autosaveDir;
@@ -35,7 +36,7 @@ function loadAnnotations(id, image) {
     const subDir = getSubDirName(image);
     const filename = getFilename(id, image);
     const path = `${autosaveDir}/${subDir}/${filename}.json`;
-    return fsPromises.readFile(path).then(JSON.parse);
+    return historyTracker.readLatestVersion(path).then(JSON.parse);
 }
 
 /**
@@ -50,9 +51,9 @@ function saveAnnotations(id, image, data) {
     const filename = getFilename(id, image);
     const dir = `${autosaveDir}/${subDir}`;
     const path = `${autosaveDir}/${subDir}/${filename}.json`;
-    const rawData = JSON.stringify(data);
+    const rawData = JSON.stringify(data, null, 1);
     return fsPromises.mkdir(dir, {recursive: true}).then(() => {
-        return fsPromises.writeFile(path, rawData);
+        return historyTracker.writeWithHistory(path, rawData);
     });
 }
 
@@ -67,23 +68,27 @@ function getSavedCollabInfo(image) {
     const subDir = getSubDirName(image);
     const dir = `${autosaveDir}/${subDir}`;
     return fsPromises.readdir(dir).then(files => {
-        files.filter(file => idPattern.test(file));
+        files = files.filter(file =>
+            idPattern.test(file) && !historyTracker.isHistoryFilename(file)
+        );
         // Check the files and get their names
         const entries = files.map(file => {
             const path = `${dir}/${file}`;
-            return fsPromises.readFile(path).then(JSON.parse).then(data => {
-                const id = file.match(idPattern)[0];
-                return {
-                    id: id,
-                    name: data.name ? data.name : id,
-                    author: data.author,
-                    createdOn: data.createdOn,
-                    updatedOn: data.updatedOn,
-                    nAnnotations: data.nAnnotations,
-                    nComments: data.nComments
-                };
+            return fsPromises.readFile(path)
+                .then(JSON.parse)
+                .then(data => {
+                    const id = file.match(idPattern)[0];
+                    return {
+                        id: id,
+                        name: data.name ? data.name : id,
+                        author: data.author,
+                        createdOn: data.createdOn,
+                        updatedOn: data.updatedOn,
+                        nAnnotations: data.nAnnotations,
+                        nComments: data.nComments
+                    };
+                });
             });
-        });
         return Promise.all(entries);
     }).catch(err => {
         if (err.code === "ENOENT") {
@@ -95,6 +100,35 @@ function getSavedCollabInfo(image) {
     });
 }
 
+/**
+ * Get the available versions that can be reverted to for a given collaboration.
+ * @param {string} id The id of the collaboration.
+ * @param {string} image The name of the image.
+ * @returns {Promise<Array<historyTracker.HistoryEntryInfo>>} Info for
+ * each previous version for the given collaboration.
+ */
+function getAvailableVersions(id, image) {
+    const subDir = getSubDirName(image);
+    const filename = getFilename(id, image);
+    const path = `${autosaveDir}/${subDir}/${filename}.json`;
+    return historyTracker.getAvailableVersions(path);
+}
+
+/**
+ * Revert the collaboration to a previous autosave.
+ * @param {string} id The id of the collaboration.
+ * @param {string} image The name of the image.
+ * @param {number} versionId The id of the version to revert to.
+ * @returns {Promise<>} A promise that resolves once the file has
+ * been reverted to the specified version.
+ */
+function revertAnnotations(id, image, versionId) {
+    const subDir = getSubDirName(image);
+    const filename = getFilename(id, image);
+    const path = `${autosaveDir}/${subDir}/${filename}.json`;
+    return historyTracker.revertVersion(path, versionId);
+}
+
 module.exports = function(dir) {
     if (!dir) {
         throw new Error("No autosave directory specified!");
@@ -104,6 +138,8 @@ module.exports = function(dir) {
     return {
         loadAnnotations: loadAnnotations,
         saveAnnotations: saveAnnotations,
-        getSavedCollabInfo: getSavedCollabInfo
+        getSavedCollabInfo: getSavedCollabInfo,
+        getAvailableVersions: getAvailableVersions,
+        revertAnnotations: revertAnnotations
     };
 }

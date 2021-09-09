@@ -150,6 +150,11 @@ class Collaboration {
                     this.handleMetadataAction(sender, member, msg);
                 });
                 break;
+            case "versionAction":
+                this.ongoingLoad.then(() => {
+                    this.handleVersionAction(sender, member, msg);
+                });
+                break;
             case "memberEvent":
                 this.handleMemberEvent(sender, member, msg);
                 break;
@@ -237,6 +242,30 @@ class Collaboration {
         }
         this.flagUnsavedChanges();
         this.trySavingState()
+    }
+
+    handleVersionAction(sender, member, msg) {
+        if (!member.ready) {
+            return;
+        }
+
+        switch (msg.actionType) {
+            case "getVersions":
+                autosave.getAvailableVersions(this.id, this.image)
+                    .then(versions => sender.send(JSON.stringify({
+                        type: "versionAction",
+                        actionType: "versionInfo",
+                        history: versions
+                    }))
+                );
+                break;
+            case "revert":
+                autosave.revertAnnotations(this.id, this.image, msg.versionId)
+                    .then(() => this.loadState(true));
+                break;
+            default:
+                this.log(`Tried to handle unknown version action: ${msg.actionType}`, console.warn);
+        }
     }
 
     handleMemberEvent(sender, member, msg) {
@@ -381,7 +410,7 @@ class Collaboration {
             this.autosaveTimeout = setTimeout(() => {
                 this.saveState();
                 this.autosaveTimeout = null;
-            }, 20000);
+            }, 120000);
         }
     }
 

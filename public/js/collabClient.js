@@ -36,6 +36,9 @@ const collabClient = (function(){
             case "metadataAction":
                 _handleMetadataAction(msg);
                 break;
+            case "versionAction":
+                _handleVersionAction(msg);
+                break;
             case "memberEvent":
                 _handleMemberEvent(msg);
                 break;
@@ -88,6 +91,16 @@ const collabClient = (function(){
                 break;
             default:
                 console.warn(`Unknown metadata action type: ${msg.actionType}`);
+        }
+    }
+
+    function _handleVersionAction(msg) {
+        switch(msg.actionType) {
+            case "versionInfo":
+                versionRevert.setVersions(msg.history);
+                break;
+            default:
+                console.warn(`Unknown version action type: ${msg.actionType}`);
         }
     }
 
@@ -231,6 +244,7 @@ const collabClient = (function(){
         overlayHandler.updateMembers([]);
         tmappUI.clearCollaborators();
         tmapp.clearCollab();
+        versionRevert.clear();
         _resolveOngoingDestruction && _resolveOngoingDestruction();
     }
 
@@ -684,6 +698,27 @@ const collabClient = (function(){
         });
     }
 
+    /**
+     * TODO
+     */
+    function getVersions() {
+        send({
+            type: "versionAction",
+            actionType: "getVersions"
+        });
+    }
+
+    /**
+     * TODO
+     */
+    function revertVersion(versionId) {
+        send({
+            type: "versionAction",
+            actionType: "revert",
+            versionId: versionId
+        });
+    }
+
     return {
         createCollab: createCollab,
         connect: connect,
@@ -702,6 +737,8 @@ const collabClient = (function(){
         updatePosition: updatePosition,
         updateCursor: updateCursor,
         followView: followView,
-        stopFollowing: stopFollowing
+        stopFollowing: stopFollowing,
+        getVersions: getVersions,
+        revertVersion: revertVersion
     };
 })();
