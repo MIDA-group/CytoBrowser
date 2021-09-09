@@ -186,8 +186,8 @@ const annotationHandler = (function (){
      * told to add the annotation.
      */
     function add(annotations, coordSystem="web", transmit = true) {
-        if (!Array.isArray(annotation)) {
-            annotation = [annotation];
+        if (!Array.isArray(annotations)) {
+            annotations = [annotations];
         }
         annotations.forEach(annotation => {
             const addedAnnotation = _cloneAnnotation(annotation);
