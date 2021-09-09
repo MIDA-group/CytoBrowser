@@ -60,16 +60,18 @@ const htmlHelper = (function() {
     }
 
     function _annotationValueRow(label, value) {
-        return $(`
+        const row = $(`
             <div class="form-group row">
                 <label class="col-4 col-form-label">
                     ${label}
                 </label>
                 <div class="col-8">
-                    <input type="text" readonly class="form-control" value="${value}">
+                    <input type="text" readonly class="form-control">
                 </div>
             </div>
         `);
+        row.find("input").attr("value", value);
+        return row;
     }
 
     function _annotationMclassOptions(annotation, updateFun) {
@@ -88,10 +90,11 @@ const htmlHelper = (function() {
         classUtils.forEachClass(mclass => {
             const selected = annotation.mclass === mclass.name;
             const option = $(`
-                <option value="${mclass.name}" ${selected ? "selected='selected'" : ""}>
-                    ${mclass.name}
+                <option ${selected ? "selected='selected'" : ""}>
                 </option>
             `);
+            option.attr("value", mclass.name);
+            option.text(mclass.name);
             select.append(option);
         });
         select.change(() => {
@@ -118,10 +121,11 @@ const htmlHelper = (function() {
         zLevels.forEach(z => {
             const selected = annotation.z === z;
             const option = $(`
-                <option value="${z}" ${selected ? "selected='selected'" : ""}>
-                    ${z}
+                <option ${selected ? "selected='selected'" : ""}>
                 </option>
             `);
+            option.attr("value", z);
+            option.text(z);
             select.append(option);
         });
         select.change(() => {
@@ -356,13 +360,14 @@ const htmlHelper = (function() {
                         &nbsp;
                     </span>
                     &nbsp;&nbsp;&nbsp;
-                    ${member.name}${local? " (me)" : following ? " (following)" : ""}
+                    <span class="collaborator-list-name"></span>
                 </span>
                 <span>
                     <input type="checkbox">
                 </span>
             </a>
         `);
+        entry.find(".collaborator_list_name").text(`${member.name}${local? " (me)" : following ? " (following)" : ""}`);
         const checkbox = entry.find("input");
         if (!active) {
             entry.addClass("disabled");
