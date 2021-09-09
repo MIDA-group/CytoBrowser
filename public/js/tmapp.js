@@ -347,6 +347,9 @@ const tmapp = (function() {
     }
 
     function _clearCurrentImage() {
+        if (!_viewer) {
+            return;
+        }
         annotationHandler.clear(false);
         metadataHandler.clear();
         _viewer && _viewer.destroy();
