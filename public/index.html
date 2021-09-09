@@ -348,6 +348,10 @@
                     <span>Complete polygon region</span>
                 </p>
                 <p class="d-flex justify-content-between">
+                    <span><kbd>left mouse double click</kbd> <span class="small text-muted">(on region)</span></span>
+                    <span>Edit region vertices</span>
+                </p>
+                <p class="d-flex justify-content-between">
                     <span><kbd>right mouse click</kbd> <span class="small text-muted">(on annotation)</span></span>
                     <span>Edit annotation</span>
                 </p>
@@ -392,15 +396,22 @@
                   A collaboration session can be started from the <strong>Session
                   menu</strong>, which can be opened from the right side of the
                   page. You can either create a new session or join
-                  an existing one. You can also decide whether or not
-                  existing annotations you have placed should
-                  be added to the session workspace or if they
-                  should be removed. When collaborating, all participants
+                  an existing one. When collaborating, all participants
                   see the same annotations and can update them in real time.
                   By clicking on another collaborator's name in the session
                   menu, you can move your viewport to match theirs. By
                   ticking the checkbox next to their name, you can
                   automatically follow them.
+              </p>
+              <h5>Reverting sessions</h5>
+              <p>
+                  Changes made in a session are automatically stored on
+                  the server. These changes can be reverted by opening
+                  the <strong>Revert changes</strong> menu. This menu
+                  lists the most recent changes made and at what time
+                  they were made. By choosing one of these versions and
+                  clicking the button in the menu, all changes back to
+                  and including the selected version are reverted.
               </p>
               <h5>Loading images</h5>
               <p>
@@ -441,8 +452,9 @@
               <h6>Markers</h6>
               <p>
                   With the marker tool active, you can place markers in
-                  the viewport by clicking . In order to interact with a
-                  placed marker, the marker tool has to be active.
+                  the viewport by clicking with <kbd>left mouse button</kbd>.
+                  In order to interact with a placed marker, the marker
+                  tool has to be active.
               </p>
               <h6>Rectangles</h6>
               <p>
@@ -470,16 +482,9 @@
               <h5>Saving annotations</h5>
               <p>
                   Annotations can be saved to a file on the local machine by
-                  pressing the <strong>Download</strong> button. Markers
+                  pressing the <strong>Export</strong> button. Annotations
                   that have been saved can be loaded into the image by
-                  pressing the <strong>Import</strong> button. By pressing
-                  the <strong>Server storage</strong> button you can open
-                  a file browser for the directory on the server. If you
-                  save a file on the server under a name that's already
-                  used, you can choose to either overwrite the file or
-                  create a new version of it. When overwriting a file,
-                  you will only overwrite the latest version. When loading
-                  a file, you can select which version of the file to load.
+                  pressing the <strong>Import</strong> button.
               </p>
           </div>
         </div>
