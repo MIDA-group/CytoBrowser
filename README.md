@@ -9,7 +9,7 @@ A fork of [TissUUmaps](https://github.com/wahlby-lab/TissUUmaps) aimed at Cytolo
 2. Multi-user shared view with follow options, also when changing images and annotation layers
 3. URL encodes the current view and annotation layer; easy to bookmark views, copy and share
 4. Point and region annotations with class label and textual comments
-5. Server side storage of annotations; import/export of annotations in JSON format
+5. Automatic server side storage of annotations; import/export of annotations in JSON format
 
 
 #### Example
