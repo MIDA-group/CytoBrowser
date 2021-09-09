@@ -109,7 +109,7 @@ const htmlHelper = (function() {
                     <span class="text-muted">
                         Added by <span class="comment_author"></span>
                     </span>
-                    <a href="#">
+                    <a href="javascript:void(0)">
                         Remove
                     </a>
                 </div>
@@ -130,7 +130,7 @@ const htmlHelper = (function() {
                     <span class="text-muted">
                         Added by <span class="comment_author"></span>
                     </span>
-                    <a href="#">
+                    <a href="javascript:void(0)">
                         Remove
                     </a>
                 </div>
@@ -320,7 +320,7 @@ const htmlHelper = (function() {
     function _collaboratorListEntry(member, local, active, following) {
         const entry = $(`
             <a class="list-group-item list-group-item-action d-flex
-            justify-content-between align-items-center" href="#">
+            justify-content-between align-items-center" href="javascript:void(0)">
                 <span>
                     <span class="badge badge-pill" style="background-color: ${member.color};">
                         &nbsp;
