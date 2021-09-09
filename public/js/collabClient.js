@@ -11,6 +11,8 @@ const collabClient = (function(){
         _localMember,
         _followedMember,
         _desiredMember,
+        _followGroup,
+        _followGroupLog,
         _userId,
         _onCreated;
 
@@ -136,6 +138,10 @@ const collabClient = (function(){
                 _members.splice(memberIndex, 1);
                 if (member === _followedMember) {
                     _followedMember.removed = true;
+                }
+                const groupIndex = _followGroup.findIndex(member => member.id === msg.member.id);
+                if (groupIndex > -1) {
+                    _followGroup.splice(groupIndex, 1);
                 }
                 _memberUpdate();
                 break;
@@ -287,6 +293,7 @@ const collabClient = (function(){
 
     function _checkIfControlsShouldBeEnabled() {
         if (!_followedMember) {
+             _followGroup = [];
             tmapp.enableControls();
         }
         else {
@@ -298,9 +305,16 @@ const collabClient = (function(){
                 nextLink = member.following;
             }
             if (followChain[followChain.length - 1] === _localMember.id) {
+                followChain.pop();
+                _followGroup = followChain.map(id =>
+                    _members.find(member => member.id === id)
+                );
                 tmapp.enableControls();
             }
             else {
+                _followGroup = followChain.map(id =>
+                    _members.find(member => member.id === id)
+                );
                 tmapp.disableControls();
             }
         }
@@ -324,10 +338,13 @@ const collabClient = (function(){
         overlayHandler.updateMembers(_members.filter(member => member !== _localMember));
 
         if (_followedMember) {
-            if (_followedMember.updated) {
-                tmapp.moveTo(_followedMember.position);
-                _followedMember.updated = false;
-            }
+            _followGroup.forEach(member => {
+                if (member.updated) {
+                    tmapp.moveTo(member.position);
+                    _followGroupLog.append(member.position);
+                    member.updated = false;
+                }
+            });
             if (_followedMember.removed) {
                 stopFollowing();
             }
@@ -613,6 +630,20 @@ const collabClient = (function(){
      */
     function updatePosition(position) {
         if (_localMember) {
+            // Mechanism for preventing follow infinite loops
+            const logIndex = _followGroupLog.findIndex(entry => {
+                return (
+                    entry.x === position.x
+                    && entry.y === position.y
+                    && entry.z === position.z
+                    && entry.rotation === position.rotation
+                    && entry.zoom === position.zoom
+                );
+            });
+            if (loggedEntry > -1) {
+                _followGroupLog.splice(logIndex, 1);
+                return;
+            }
             _localMember.position = position;
             send({
                 type: "memberEvent",
