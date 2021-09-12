@@ -171,7 +171,7 @@ const tmappUI = (function(){
     function _initKeyboardShortcuts() {
         // Shortcuts for the pop-up context menu
         $("#context_menu").keydown(function(){
-            switch(event.keyCode) {
+            switch(event.key || event.keyCode) {
                 case 27: // esc
                     _closeContextMenu();
                     break;
@@ -187,7 +187,8 @@ const tmappUI = (function(){
         //z,x for focus up down
         $("#main_content").keydown(function(){
             let caught=true; //Assume we use the key (setting to false in 'default')
-            switch(event.keyCode) {
+            var key = event.key || event.keyCode; //keyCode deprecated
+            switch(key) {
                 case 27: // esc
                     annotationTool.reset();
                     break;
@@ -223,7 +224,7 @@ const tmappUI = (function(){
                     const digits = Array.from({length: 10}, (v, k) => String((k+1) % 10));
                     const chars = digits.map(digit => digit.charCodeAt());
                     chars.slice(0, classUtils.count()).forEach((char, index) => {
-                        if (event.which === char || event.which === char+48) {
+                        if (key === char || key === char+48) {
                             $("#class_" + classUtils.getClassFromID(index).name).click();
                             caught=true; //We did take it
                         }
