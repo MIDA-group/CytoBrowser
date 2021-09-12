@@ -383,7 +383,7 @@ const tmappUI = (function(){
                     const digits = Array.from({length: 10}, (v, k) => String((k+1) % 10));
                     const chars = digits.map(digit => digit.charCodeAt());
                     chars.slice(0, classUtils.count()).forEach((char, index) => {
-                        if (event.which === char) {
+                        if (event.which === char || event.which === char+48) {
                             $("#class_" + classUtils.getClassFromID(index).name).click();
                             caught=true; //We did take it
                         }
