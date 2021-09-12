@@ -60,12 +60,10 @@ const tmapp = (function() {
 
     function _setFocusLevel(z) {
         const count = _viewer.world.getItemCount();
-        const max = Math.floor(count / 2);
-        const min = -max;
-        z = Math.min(Math.max(z,min),max);
-        for (let i = min; i <= max; i++) {
-            let idx = i + Math.floor(_currentImage.zLevels.length / 2);
-            _viewer.world.getItemAt(idx).setOpacity(z == i);
+        const ofs = Math.floor(_currentImage.zLevels.length / 2);
+        z = Math.min(Math.max(z,-ofs),count-1-ofs);
+        for (let i = 0; i < count; ++i) {
+            _viewer.world.getItemAt(i).setOpacity(z+ofs == i);
         }
         _currState.z = z;
         _updateFocus();
