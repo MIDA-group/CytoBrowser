@@ -45,7 +45,7 @@ bftools/showinf -nocore -no-sas -nopix -omexml -omexml-only [filename].ndpi > [O
 Next, the **.ome.xml** files have to be converted to **.json** files structured in the way CytoBrowser expects them. If several **.ome.xml** have been created and stored in the same directory, this can be done with a single operation. From the CytoBrowser root directory, this is done with:
 
 ```bash
-server/metadata.js [OME-XML directory] [JSON directory]
+node server/metadata.js [OME-XML directory] [JSON directory]
 ```
 
 Note that the CytoBrowser server expects the filenames of the **.json** files to be the same as the **.dzi** files, only differing in file extension.
