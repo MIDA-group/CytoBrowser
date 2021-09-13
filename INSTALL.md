@@ -36,7 +36,7 @@ The user interface can then be accessed by opening a modern web browser and goin
 
 ## Preparing Metadata
 
-In order to display metadata for an image, the metadata first has to be extracted and preprocessed. This requires the use of [bftools](https://docs.openmicroscopy.org/bio-formats/5.7.1/users/comlinetools/index.html). First, the metadata has to be extracted from the original microscopy images as **.ome.xml** files. For **.ndpi** files, this can be done with:
+In order to display metadata for an image, the metadata first has to be extracted and preprocessed. This requires the use of [bftools](https://docs.openmicroscopy.org/bio-formats/latest/users/comlinetools/index.html). First, the metadata has to be extracted from the original microscopy images as **.ome.xml** files. For **.ndpi** files, this can be done with:
 
 ```bash
 bftools/showinf -nocore -no-sas -nopix -omexml -omexml-only [filename].ndpi > [OME-XML directory]/[filename].ome.xml
