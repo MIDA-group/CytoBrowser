@@ -28,8 +28,8 @@ function xmlToObject(xmlData) {
 function extractImportantMetadata(jsonData) {
     const imageData = jsonData["OME"]["Image"].find(im => im["@_ID"] === "Image:0");
     const importantMetadata = {
-        MicroscopeModel: jsonData["OME"]["Instrument"]["Microscope"]["@_Model"],
-        NominalMagnification: jsonData["OME"]["Instrument"]["Objective"]["@_NominalMagnification"],
+        MicroscopeModel: jsonData["OME"]["Instrument"] && jsonData["OME"]["Instrument"]["Microscope"]["@_Model"],
+        NominalMagnification: jsonData["OME"]["Instrument"] && jsonData["OME"]["Instrument"]["Objective"]["@_NominalMagnification"],
         AcquisitionDate: imageData["AcquisitionDate"],
         PhysicalSizeX: imageData["Pixels"]["@_PhysicalSizeX"],
         PhysicalSizeY: imageData["Pixels"]["@_PhysicalSizeY"],
@@ -55,9 +55,10 @@ function getMetadataForImage(imageName) {
         return metadataCache[adjustedImageName];
     }
     else {
-        const filename = `${adjustedImageName}.json`;
+        const filename = `${jsonDir}/${adjustedImageName}.json`;
         try {
-            const data = JSON.parse(fs.readFileSync(`${jsonDir}/${filename}`));
+            const data = JSON.parse(fs.readFileSync(filename));
+            console.log(`Loading metadata from ${filename}`);
             metadataCache[adjustedImageName] = data;
             setTimeout(() =>
                 delete metadataCache[adjustedImageName],
@@ -67,6 +68,7 @@ function getMetadataForImage(imageName) {
         }
         catch (e) {
             if (e.code === "ENOENT") {
+                console.log(`No metadata file: ${filename}`);
                 return {};
             }
             else {
