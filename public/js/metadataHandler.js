@@ -22,6 +22,7 @@ const metadataHandler = (function() {
             {
                 x: _metadataValues.SizeX,
                 y: _metadataValues.SizeY,
+                z: _metadataValues.SizeZ || "-"
         };
         const size =
             _metadataValues.PhysicalSizeX &&
@@ -29,8 +30,8 @@ const metadataHandler = (function() {
             _metadataValues.PhysicalSizeXUnit &&
             _metadataValues.PhysicalSizeYUnit &&
             {
-                x: Number((res.x * _metadataValues.PhysicalSizeX).toPrecision(4)) + _metadataValues.PhysicalSizeXUnit,
-                y: Number((res.y * _metadataValues.PhysicalSizeY).toPrecision(4)) + _metadataValues.PhysicalSizeYUnit
+                x: Number((res.x * _metadataValues.PhysicalSizeX).toPrecision(4)) + "&thinsp;" + _metadataValues.PhysicalSizeXUnit,
+                y: Number((res.y * _metadataValues.PhysicalSizeY).toPrecision(4)) + "&thinsp;" + _metadataValues.PhysicalSizeYUnit
         };
         const date = _metadataValues.AcquisitionDate;
         const microscope = _metadataValues.MicroscopeModel;
@@ -38,7 +39,7 @@ const metadataHandler = (function() {
         const sigbits = _metadataValues.SignificantBits;
         const nChannels = _metadataValues.SizeC;
         const readableValues = {
-            resolution: res ? `${res.x} &#215; ${res.y}` : "-",
+            resolution: res ? `${res.x} &#215; ${res.y} &#215; ${res.z}` : "-",
             size: size ? `${size.x} &#215; ${size.y}` : "-",
             date: date ? date : "-",
             microscope: microscope ? microscope : "-",
