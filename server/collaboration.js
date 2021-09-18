@@ -189,20 +189,35 @@ class Collaboration {
                 }
                 break;
             case "update":
-                Object.assign(this.annotations.find(annotation => annotation.id === msg.id), msg.annotation);
-                this.forwardMessage(sender, msg);
+                {
+                    const index = this.annotations.findIndex(annotation => annotation.id === msg.id);
+                    if (index >= 0) {
+                        Object.assign(this.annotations[index], msg.annotation);
+                    }
+                    else {
+                        this.log(`${member.name} tried to update nonexisting annotation with ID ${msg.id}`, console.warn);
+                    }             
+                    this.forwardMessage(sender, msg);
+                }
                 break;
             case "remove":
-                const index = this.annotations.findIndex(annotation => annotation.id === msg.id);
-                this.annotations.splice(index, 1);
-                this.forwardMessage(sender, msg);
+                {
+                    const index = this.annotations.findIndex(annotation => annotation.id === msg.id);
+                    if (index >=0) {
+                        this.annotations.splice(index, 1);
+                    }
+                    else {
+                        this.log(`${member.name} tried to remove nonexisting annotation with ID ${msg.id}`, console.warn);
+                    }
+                    this.forwardMessage(sender, msg);
+                }
                 break;
             case "clear":
                 this.annotations = [];
                 this.forwardMessage(sender, msg);
                 break;
             default:
-                this.log(`Tried to handle unknown annotation action: ${msg.actionType}`, console.warn);
+                this.log(`${member.name} tried to handle unknown annotation action: ${msg.actionType}`, console.warn);
                 this.forwardMessage(sender, msg);
         }
         this.flagUnsavedChanges();
