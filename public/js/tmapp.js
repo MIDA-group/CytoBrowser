@@ -146,20 +146,39 @@ const tmapp = (function() {
         _updateURLParams();
     }
 
-    function _updateURLParams() {
+    function makeURL({x, y, z, rotation, zoom}) {
         const url = new URL(window.location.href);
         const roundTo = (x, n) => Math.round(x * Math.pow(10, n)) / Math.pow(10, n);
         const params = url.searchParams;
         if (_currentImage) {
             params.set("image", _currentImage.name);
-            params.set("zoom", roundTo(_currState.zoom, 2));
-            params.set("x", roundTo(_currState.x, 5));
-            params.set("y", roundTo(_currState.y, 5));
-            params.set("z", _currState.z);
-            params.set("rotation", _currState.rotation);
+            params.set("zoom", roundTo(zoom, 2));
+            params.set("x", roundTo(x, 5));
+            params.set("y", roundTo(y, 5));
+            params.set("z", z);
+            params.set("rotation", rotation||0);
         }
         _collab ? params.set("collab", _collab) : params.delete("collab");
-        tmappUI.setURL("?" + params.toString());
+        return url;
+    }
+
+    function parseURL(url) {
+        // Get params from URL
+        const params = url.searchParams;
+        const imageName = params.get("image");
+        const collab = params.get("collab");
+        const state = {
+            zoom: params.get("zoom"),
+            x: params.get("x"),
+            y: params.get("y"),
+            z: params.get("z"),
+            rotation: params.get("rotation")
+        };
+        return {imageName, collab, state};
+    }
+
+    function _updateURLParams() {
+        tmappUI.setURL(makeURL(_currState));
     }
 
     function _updateCollabPosition() {
@@ -553,7 +572,21 @@ const tmapp = (function() {
         }
         const target = coordinateHelper.imageToViewport(annotation.centroid);
         moveTo({
-            zoom: 25,
+            zoom: 40,
+            x: target.x,
+            y: target.y,
+            z: annotation.z
+        });
+    }
+
+    function annotationURL(id) {
+        const annotation = annotationHandler.getAnnotationById(id);
+        if (annotation === undefined) {
+            throw new Error("Tried to move to an unused annotation id.");
+        }
+        const target = coordinateHelper.imageToViewport(annotation.centroid);
+        return makeURL({
+            zoom: 40,
             x: target.x,
             y: target.y,
             z: annotation.z
@@ -729,6 +762,9 @@ const tmapp = (function() {
         init: init,
         openImage: openImage,
         moveTo: moveTo,
+        makeURL: makeURL,
+        parseURL: parseURL,
+        annotationURL: annotationURL,
         moveToAnnotation: moveToAnnotation,
         setCollab: setCollab,
         clearCollab: clearCollab,

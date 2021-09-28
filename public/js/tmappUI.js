@@ -157,9 +157,10 @@ const tmappUI = (function(){
                 key: "moveToButton",
                 minWidth: "5em",
                 displayFun: (elem, d) => {
-                    const button = $("<button>View</button>");
-                    button.addClass("btn btn-dark btn-sm");
-                    button.click(() => tmapp.moveToAnnotation(d.id));
+                    const url = tmapp.annotationURL(d.id);
+                    const button = $(`<a href="${url}" role="button">Go to</a>`); //Real URL, can be bookmarked
+                    button.addClass("btn btn-outline-dark btn-sm");
+                    button.click((event) => {event.preventDefault(); tmapp.moveToAnnotation(d.id)}); //prevent slow HREF and move directly
                     $(elem).html(button);
                 },
                 sortable: false
@@ -741,20 +742,19 @@ const tmappUI = (function(){
         input.removeClass("is-valid");
     }
 
-    let _urlTimeout,
-        _urlCache;
+    let _urlTimeout;
     /**
-     * Push a new state to the URL if it's been long enough.
-     * @param {string} txt The new state to push.
+     * Push a new state to the URL if standing still long enough.
+     * @param {string} url The new state to push.
      */
-    function setURL(txt) {
-        _urlCache = txt;
+    function setURL(url) {
         if (_urlTimeout) {
             clearTimeout(_urlTimeout);
         }
         _urlTimeout = setTimeout(() => {
-            window.history.pushState(null, "", txt);
-        }, 1000);
+            window.history.pushState(null, "", url);
+            _urlTimeout = 0;
+        }, 100);
     }
 
     /**

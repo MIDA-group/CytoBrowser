@@ -795,19 +795,7 @@
     $(document).ready(() => {
         // Options when initializing tmapp
         const tmappOptions = {};
-
-        // Get search params from URL
-        const url = new URL(window.location.href);
-        const params = url.searchParams;
-        const imageName = params.get("image");
-        const collab = params.get("collab");
-        const initialState = {
-            zoom: params.get("zoom"),
-            x: params.get("x"),
-            y: params.get("y"),
-            z: params.get("z"),
-            rotation: params.get("rotation")
-        };
+        const {imageName, collab, state}=tmapp.parseURL(new URL(window.location.href));
 
         if (imageName !== null) {
             tmappOptions.imageName = imageName;
@@ -817,16 +805,16 @@
         }
 
         // Check if full state is present
-        const values = Object.values(initialState);
+        const values = Object.values(state);
         const stateDefined = values.every(value => value !== null);
 
         // Set the initial state if defined
         if (stateDefined) {
             // Convert to numbers first
-    	    for (const [key, value] of Object.entries(initialState)) {
-                    initialState[key] = Number(value);
+    	    for (const [key, value] of Object.entries(state)) {
+                    state[key] = Number(value);
     	    }
-            tmappOptions.initialState = initialState;
+            tmappOptions.initialState = state;
         }
 
         // Initialize tmapp
