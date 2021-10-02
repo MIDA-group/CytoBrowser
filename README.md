@@ -7,6 +7,9 @@ Or alternatively from Zenodo via [![DOI](https://zenodo.org/badge/DOI/10.5281/ze
 
 [Installation instructions](https://github.com/MIDA-group/CytoBrowser/blob/master/INSTALL.md)
 
+Rydell C and Lindblad J. "CytoBrowser: a browser-based collaborative annotation platform for whole slide images". 
+F1000Research 2021, 10:226 (https://doi.org/10.12688/f1000research.51916.1)
+
 ---
 
 <a href="media/CytoBrowser_example_view.jpg?raw=true"><img alt="Screenshot of CytoBrowser usage" title="Example view of CytoBrowser usage" align="left" width="52%" src="media/CytoBrowser_example_view.jpg"></a>
