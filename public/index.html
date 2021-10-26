@@ -791,6 +791,13 @@
     }
     window.addEventListener('resize', resizeNavbar);
 
+    // Handle browser history.back/forward()
+    window.onpopstate = function(event) {
+        $('.modal').modal('hide'); //close all modals
+        tmappUI.setOverwriteURL(true); //state already on history
+        tmapp.processURL(document.location);
+    };
+
     // Start our tmapp
     $(document).ready(() => {
         // Options when initializing tmapp

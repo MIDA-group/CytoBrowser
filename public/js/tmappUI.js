@@ -742,19 +742,40 @@ const tmappUI = (function(){
         input.removeClass("is-valid");
     }
 
-    let _urlTimeout;
+    let _urlTimeout=0;
+    let _overwriteURL=true; //High (from start and) for 1 second after setURL => replaceState instead of pushState
+    
     /**
-     * Push a new state to the URL if standing still long enough.
+     * If next setURL to overwrite previous history state or not
+     * @param {boolean} value setURL => value?replaceState:pushState
+     */
+    function setOverwriteURL(value) {
+        _overwriteURL=value;
+    }
+    
+    /**
+     * Update URL in browser
+     * Push to history if standing still long enough.
      * @param {string} url The new state to push.
      */
     function setURL(url) {
+        if (!history.state || history.state.page!=url.href) 
+        {
+            if (_overwriteURL) {
+                history.replaceState({ "page": url.href }, "", url.href);
+            }
+            else {
+                history.pushState({ "page": url.href }, "", url.href);
+            }
+            setOverwriteURL(true);
+        }
         if (_urlTimeout) {
             clearTimeout(_urlTimeout);
         }
         _urlTimeout = setTimeout(() => {
-            window.history.pushState(null, "", url);
+            setOverwriteURL(false);
             _urlTimeout = 0;
-        }, 100);
+        }, 1000); //1 second
     }
 
     /**
@@ -788,6 +809,7 @@ const tmappUI = (function(){
         setFilterInfo: setFilterInfo,
         clearFilterInfo: clearFilterInfo,
         setURL: setURL,
+        setOverwriteURL: setOverwriteURL,
         inFocus: inFocus
     };
 })();
