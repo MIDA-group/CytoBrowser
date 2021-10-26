@@ -163,6 +163,9 @@ const tmapp = (function() {
     }
 
     function parseURL(url) {
+        if (!(url instanceof URL)) {
+            url=new URL(url);
+        }
         // Get params from URL
         const params = url.searchParams;
         const imageName = params.get("image");
@@ -175,6 +178,38 @@ const tmapp = (function() {
             rotation: params.get("rotation")
         };
         return {imageName, collab, state};
+    }
+
+    function processURL(url) {
+        const {imageName, collab, state}=parseURL(url);
+        if (imageName && imageName!==_currentImage.name) {
+            if (collab) {
+                openImage(imageName, () => {
+                    collabClient.connect(collab);
+                    if (state) {
+                        moveTo(state);
+                    }
+                });
+            }
+            else if (imageName) {
+                openImage(imageName, () => {
+                    collabPicker.open(imageName, true, () => {
+                        if (state) {
+                            moveTo(state);
+                        }
+                    });
+                });
+            }            
+        }
+        else if (collab && collab!==_collab) {
+            collabClient.connect(collab);
+            if (state) {
+                moveTo(state);
+            }
+        }
+        else if (state && state!==_currState) {
+            moveTo(state);
+        }
     }
 
     function _updateURLParams() {
@@ -427,7 +462,7 @@ const tmapp = (function() {
                     }
                     else if (imageName && collab) {
                         openImage(imageName, () => {
-                            collabClient.connect(collab)
+                            collabClient.connect(collab);
                             if (initialState) {
                                 moveTo(initialState);
                             }
@@ -764,6 +799,7 @@ const tmapp = (function() {
         moveTo: moveTo,
         makeURL: makeURL,
         parseURL: parseURL,
+        processURL: processURL,
         annotationURL: annotationURL,
         moveToAnnotation: moveToAnnotation,
         setCollab: setCollab,
