@@ -129,8 +129,12 @@ const collabPicker = (function() {
             rejectLoad = reject;
         });
         const collabReq = new XMLHttpRequest();
-        const address = `${window.location.api}/collaboration/available?image=${image}`;
-        collabReq.open("GET", address, true);
+        collabReq.open("GET", window.location.api + "/collaboration/available?image=" + image, true);
+        // Turn off caching of response
+        collabReq.setRequestHeader("Cache-Control", "no-cache, no-store, must-revalidate, max-age=0"); // HTTP 1.1
+        collabReq.setRequestHeader("Pragma", "no-cache"); // HTTP 1.0
+        collabReq.setRequestHeader("Expires", "0"); // Proxies
+        
         collabReq.send(null);
         collabReq.onreadystatechange = () => {
             if (collabReq.readyState === 4 && collabReq.status === 200) {

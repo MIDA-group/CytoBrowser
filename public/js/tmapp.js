@@ -437,6 +437,11 @@ const tmapp = (function() {
         // Initiate a HTTP request and send it to the image info endpoint
         const imageReq = new XMLHttpRequest();
         imageReq.open("GET", window.location.api + "/images", true);
+        // Turn off caching of response
+        imageReq.setRequestHeader("Cache-Control", "no-cache, no-store, must-revalidate, max-age=0"); // HTTP 1.1
+        imageReq.setRequestHeader("Pragma", "no-cache"); // HTTP 1.0
+        imageReq.setRequestHeader("Expires", "0"); // Proxies
+
         imageReq.send(null);
 
         imageReq.onreadystatechange = function() {

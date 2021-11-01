@@ -326,11 +326,17 @@ const collabClient = (function(){
         _onCreated = onCreated;
         const idReq = new XMLHttpRequest();
         idReq.open("GET", window.location.api + "/collaboration/id", true)
+        // Turn off caching of response
+        idReq.setRequestHeader("Cache-Control", "no-cache, no-store, must-revalidate, max-age=0"); // HTTP 1.1
+        idReq.setRequestHeader("Pragma", "no-cache"); // HTTP 1.0
+        idReq.setRequestHeader("Expires", "0"); // Proxies
+
         idReq.send();
         idReq.onreadystatechange = function() {
             if (idReq.readyState === 4 && idReq.status === 200) {
                 const response = JSON.parse(idReq.responseText);
                 const id = response.id;
+                console.log(`Got ID: ${id}`);
                 connect(id, name, include);
             }
         };
