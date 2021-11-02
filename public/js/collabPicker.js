@@ -41,7 +41,7 @@ const collabPicker = (function() {
     let _lastQueryWasValid = true;
     let _filterIsTrivial = true;
     let _availableCollabs = [];
-
+    let _autostart = true;
 
     function _setFilterError(error) {
         const input = $("#collab-filter-query-input");
@@ -244,8 +244,8 @@ const collabPicker = (function() {
      */
     function refresh(image) {
         _lastShownImage = image;
-        $("#collab-image-path").text(image); // Why here?
-        _retrieveCollabInfo(image).then(collabData => {
+        $("#collab-image-path").text(image); // This is where we set _lastShownImage, so lets set the UI as well
+        return _retrieveCollabInfo(image).then(collabData => {
             _availableCollabs = collabData;
             _updateCollabList();
         });
@@ -256,30 +256,47 @@ const collabPicker = (function() {
      * existing collaboration for a given image.
      * @param {string} image The name of the image being collaborated on.
      * @param {boolean} [forceChoice=false] The user cannot cancel the choice.
+     * @param {boolean} [autostart=true] If no available sessions, then start new
      * @param {Function} [imageCallback] Function to be called when the
      * image opened through the prompt has finished loading. Is passed
      * into tmapp.openImage and behaves the same way.
      */
-    function open(image, forceChoice=false, imageCallback=null) {
-        const activeModal = $(".modal.show");
-        activeModal.modal("hide");
-
+    async function open(image, forceChoice=false, autostart=true, imageCallback=null) {
+        _autostart = autostart;
         _imageCallback = imageCallback;
+
         if (image !== _lastShownImage) {
             clear();
         }
-        refresh(image);
-        $("#collab-picker").data("bs.modal", null);
-        if (forceChoice) {
-            $("#collab-close-button").hide();
-            $("#collab-picker").modal({backdrop: "static", keyboard: false});
+        let _errorDisplayTimeout = null; //set to null if timed out
+        _errorDisplayTimeout = setTimeout(() => {tmappUI.displayImageError("waitingapi");_errorDisplayTimeout=null;},1000);
+        await refresh(image); //updates _availableCollabs
+        if (_errorDisplayTimeout) {
+            clearTimeout(_errorDisplayTimeout);
         }
         else {
-            $("#collab-close-button").show();
-            $("#collab-picker").modal();
+            tmappUI.clearImageError();
         }
 
-        $("#collab-picker").one("hide.bs.modal", () => activeModal.modal("show"));
+        if (_autostart && !_availableCollabs.length) { //no options, just create new
+            _createCollab();
+        }
+        else { //select Collab or create new
+            const activeModal = $(".modal.show");
+            activeModal.modal("hide");
+
+            $("#collab-picker").data("bs.modal", null);
+            if (forceChoice) {
+                $("#collab-close-button").hide();
+                $("#collab-picker").modal({backdrop: "static", keyboard: false});
+            }
+            else {
+                $("#collab-close-button").show();
+                $("#collab-picker").modal();
+            }
+
+            $("#collab-picker").one("hide.bs.modal", () => activeModal.modal("show"));
+        }
     }
 
     /**

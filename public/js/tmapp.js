@@ -193,7 +193,7 @@ const tmapp = (function() {
             }
             else if (imageName) {
                 openImage(imageName, () => {
-                    collabPicker.open(imageName, true, () => {
+                    collabPicker.open(imageName, true, true, () => {
                         if (state) {
                             moveTo(state);
                         }
@@ -475,7 +475,7 @@ const tmapp = (function() {
                     }
                     else if (imageName) {
                         openImage(imageName, () => {
-                            collabPicker.open(imageName, true, () => {
+                            collabPicker.open(imageName, true, true, () => {
                                 if (initialState) {
                                     moveTo(initialState);
                                 }

@@ -51,6 +51,10 @@ const tmappUI = (function(){
         loadingcollab: {
             message: "Connecting to the session, please wait.",
             type: "alert-info"
+        },
+        waitingapi: {
+            message: "Waiting for server response...",
+            type: "alert-info"
         }
     };
 
@@ -433,7 +437,7 @@ const tmappUI = (function(){
         });
         $("#change_session").click(function(event) {
             const image = tmapp.getImageName();
-            collabPicker.open(image);
+            collabPicker.open(image,false,false);
         });
     }
 
