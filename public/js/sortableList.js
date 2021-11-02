@@ -150,20 +150,20 @@ class SortableList {
             sortIcon = "&#x2193;";
             this._table.selectAll(".data-row")
                 .data(this._data, d => d[this._idKey])
-                .sort((a, b) => a[this._sortKey] > b[this._sortKey]);
+                .sort((a, b) => d3.ascending(b[this._sortKey],a[this._sortKey]));
         }
         else if (this._sortDirection === "descending") {
             sortIcon = "&#x2191;";
             this._table.selectAll(".data-row")
                 .data(this._data, d => d[this._idKey])
-                .sort((a, b) => a[this._sortKey] < b[this._sortKey]);
+                .sort((a, b) => d3.descending(b[this._sortKey],a[this._sortKey]));
         }
-        const sortKey = this._sortKey;
+        const sortKey = this._sortKey; //variable capture
         this._table.select(".header-row")
             .selectAll(".sort-indicator")
             .html(function() {
                 const key = d3.select(this).attr("data-key");
-                return key === sortKey ? sortIcon : "&#x21C5;";
+                return key === sortKey ? sortIcon : '<span class="text-muted">&#x2195;</span>';
             });
     }
 
