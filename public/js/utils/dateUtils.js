@@ -1,3 +1,8 @@
+//TODO: Allow user localized date format
+//const lang = navigator.language || navigator.languages[0];
+//const txt = `Saved at: ${time.toLocaleString(lang)}`;
+
+
 /**
  * Utility functions for working with date representations throughout
  * the code.
