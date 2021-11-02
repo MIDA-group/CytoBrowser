@@ -790,6 +790,7 @@ const tmapp = (function() {
                 type: OpenSeadragon.ScalebarType.MICROSCOPY,
                 location: OpenSeadragon.ScalebarLocation.BOTTOM_RIGHT,
                 backgroundColor: "rgba(255,255,255,0.5)",
+                barThickness: 4,
                 stayInsideImage: false // Necessary for rotation to work
             });
         }
