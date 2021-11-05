@@ -365,7 +365,7 @@ const overlayHandler = (function (){
                         rotate: 45,
                         scale: 1
                     }))
-                    .on("end", () =>
+                    .end().then(() =>
                         group.each(function(d) {
                             _addMarkerMouseEvents(d, this);
                         })
