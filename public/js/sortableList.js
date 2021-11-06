@@ -158,6 +158,11 @@ class SortableList {
                 .data(this._data, d => d[this._idKey])
                 .sort((a, b) => d3.descending(b[this._sortKey],a[this._sortKey]));
         }
+        else { //data order
+            this._table.selectAll(".data-row")
+                .data(this._data, d => d[this._idKey])
+                .order();
+        }
         const sortKey = this._sortKey; //variable capture
         this._table.select(".header-row")
             .selectAll(".sort-indicator")
@@ -211,7 +216,9 @@ class SortableList {
      * Reset the list to its default order.
      */
     unsetSorted() {
-        this.setAscending(this._idKey);
+        this._sortKey = null;
+        this._sortDirection = null;
+        this._reorderData();
     }
 
     /**

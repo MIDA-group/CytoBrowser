@@ -18,7 +18,7 @@ const annotationVisuals = (function() {
         });
         overlayHandler.updateAnnotations(annotations);
         if (_annotationList) {
-            _annotationList.updateData(annotations);
+            _annotationList.updateData(annotations.slice().reverse()); // No sort -> reverse order
         }
         else {
             console.warn("No annotation list has been set.");
