@@ -133,7 +133,7 @@ const tmappUI = (function(){
                 title: "Annotation has been bookmarked",
                 minWidth: "3em",
                 displayFun: (elem, d) => {
-                    $(elem).html(d.bookmarked ? "&check;" : "&#10007;");
+                    $(elem).html(d.bookmarked ? "&check;" : "-");
                 },
                 sortable: true
             },
@@ -144,7 +144,7 @@ const tmappUI = (function(){
                 minWidth: "3em",
                 selectFun: d => d.points.length > 1,
                 displayFun: (elem, d) => {
-                    $(elem).html(d.isARegion ? "&check;" : "&#10007;");
+                    $(elem).html(d.isARegion ? "&check;" : "-");
                 },
                 sortable: true
             },

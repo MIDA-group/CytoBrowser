@@ -595,6 +595,11 @@ const tmapp = (function() {
         }
     }
 
+    function _defaultZoom(annotation) {
+        const img_diag = _viewer.world.getItemAt(0).getContentSize().distanceTo(new OpenSeadragon.Point());
+        return Math.pow(0.5*img_diag/(600+annotation.diameter),0.9);
+    }
+
     /**
      * Move the viewport to look at a specific annotation.
      * @param {number} id The id of the annotation being moved to.
@@ -612,7 +617,7 @@ const tmapp = (function() {
         }
         const target = coordinateHelper.imageToViewport(annotation.centroid);
         moveTo({
-            zoom: 40,
+            zoom: _defaultZoom(annotation),
             x: target.x,
             y: target.y,
             z: annotation.z
@@ -626,7 +631,7 @@ const tmapp = (function() {
         }
         const target = coordinateHelper.imageToViewport(annotation.centroid);
         return makeURL({
-            zoom: 40,
+            zoom: _defaultZoom(annotation),
             x: target.x,
             y: target.y,
             z: annotation.z

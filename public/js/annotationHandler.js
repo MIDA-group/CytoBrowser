@@ -16,12 +16,13 @@ const annotationHandler = (function (){
      * same applies to the centroid of the annotation.
      * @typedef {Object} Annotation
      * @property {Array<Object>} points The x and y positions of each
-     * point in the annotation; a single point if annotation, multiple
+     * point in the annotation; a single point if marker, multiple
      * if region.
      * @property {number} z Z value when the annotation was placed.
      * @property {string} mclass Class name of the annotation.
      * @property {Object} centroid The centroid of the annotated point
      * or region.
+     * @property {Object} diameter The diameter of the annotation
      * @property {boolean} [bookmarked] Whether or not the annotation has
      * been bookmarked.
      * @property {Array} [comments] Comments associated with the annotation.
@@ -74,6 +75,7 @@ const annotationHandler = (function (){
             z: annotation.z,
             mclass: annotation.mclass,
             centroid: annotation.centroid && {x: annotation.centroid.x, y: annotation.centroid.y},
+            diameter: annotation.diameter,
             bookmarked: annotation.bookmarked,
             comments: annotation.comments && annotation.comments.map(comment => {
                 return {
@@ -109,6 +111,32 @@ const annotationHandler = (function (){
             cx /= (6 * area);
             cy /= (6 * area);
             return {x: cx, y: cy};
+        }
+    }
+
+    function _sqrDist(a,b) {
+        const x = a.x - b.x;
+        const y = a.y - b.y;  
+        return x*x + y*y;
+    }
+    //Approximate!
+    function _getDiameter(points) {
+        if (points.length === 1)
+            return 0;
+        else {
+            let changed;
+            let sqrDiam=0;
+            let newRef;
+            let ref=points[0];
+            do {
+                changed=false;
+                points.forEach(element => {
+                    let d=_sqrDist(ref,element);
+                    if (d>sqrDiam) {changed=true;sqrDiam=d;newRef=element;}
+                });
+                ref=newRef;
+            } while (changed);
+            return Math.sqrt(sqrDiam);
         }
     }
 
@@ -233,6 +261,10 @@ const annotationHandler = (function (){
             if (!addedAnnotation.centroid)
                 addedAnnotation.centroid = _getCentroid(addedAnnotation.points);
 
+            // Set the diameter of the annotation
+            if (!addedAnnotation.diameter)
+                addedAnnotation.diameter = _getDiameter(addedAnnotation.points);
+
             // Set the author of the annotation
             if (!addedAnnotation.author)
                 addedAnnotation.author = userInfo.getName();
@@ -312,6 +344,9 @@ const annotationHandler = (function (){
 
         // Set the centroid of the annotation
         updatedAnnotation.centroid = _getCentroid(updatedAnnotation.points);
+
+        // Set the diameter of the annotation
+        updatedAnnotation.diameter = _getDiameter(updatedAnnotation.points);
 
         // Store the annotation in data
         Object.assign(annotations[updatedIndex], updatedAnnotation);
