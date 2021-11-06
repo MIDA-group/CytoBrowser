@@ -7,9 +7,8 @@ const overlayHandler = (function (){
 
     const _markerSquareSize = 1/8,
         _markerCircleSize = 1/32,
-        _markerSquareStrokeWidth = 0.02,
+        _markerSquareStrokeWidth = 0.03,
         _markerCircleStrokeWidth = 0.01,
-        _scaleFloor = 0.25, // _scaleFloor * maxZoom = lowest zoom level where markers have a constant size on screen
         _markerText = true;
 
     let _cursorOverlay,
@@ -19,7 +18,6 @@ const overlayHandler = (function (){
         _activeAnnotationOverlayName,
         _previousCursors,
         _scale,
-        _maxScale,
         _rotation;
 
     /**
@@ -100,7 +98,7 @@ const overlayHandler = (function (){
     }
 
     function _markerSize() {
-        return 100 * Math.min(_scale, _maxScale);
+        return 10*Math.pow(_scale,0.5); //Scale markers with sqrt
     }
 
     function _regionStrokeWidth() {
@@ -615,7 +613,6 @@ const overlayHandler = (function (){
     function setOverlayScale(zoomLevel, maxZoom, wContainer, hContainer) {
         const windowSizeAdjustment = 1400 / wContainer;
         _scale = windowSizeAdjustment / zoomLevel;
-        _maxScale = windowSizeAdjustment / (_scaleFloor * maxZoom);
         _resizeMembers();
         _resizeMarkers();
         _resizeRegions();
