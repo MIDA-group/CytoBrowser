@@ -61,9 +61,8 @@ const tmapp = (function() {
 
     function _setFocusLevel(z) {
         const count = _viewer.world.getItemCount();
-        const max = Math.floor(count / 2);
-        const min = -max;
-        z = Math.min(Math.max(z, min), max);
+        const ofs = Math.floor(_currentImage.zLevels.length / 2);
+        z = Math.min(Math.max(z,-ofs),count-1-ofs);
         _viewer.setFocusLevel(z);
         _currState.z = z;
         _updateFocus();
