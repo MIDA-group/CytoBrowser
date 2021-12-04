@@ -156,7 +156,7 @@ const overlayHandler = (function (){
             .attr("transform", _transformFunction({rotate: -_rotation}));
     }
 
-    function _toggleRegionEditControls(d, node) {
+    function _removeRegionEditControls(d, node) {
         const selection = d3.select(node);
         if (selection.attr("data-being-edited")) {
             selection.selectAll(".region-edit-handles g path")
@@ -168,7 +168,11 @@ const overlayHandler = (function (){
                         .remove()
                 );
         }
-        else {
+    }
+
+    function _createRegionEditControls(d, node) {
+        const selection = d3.select(node);
+        if (!selection.attr("data-being-edited")) {
             selection.attr("data-being-edited", true)
                 .append("g")
                 .attr("class", "region-edit-handles")
@@ -331,15 +335,21 @@ const overlayHandler = (function (){
                 .attr("fill-opacity", 0.2);
         }
 
-        function beginEditing() {
-            _toggleRegionEditControls(d, node);
+        function toggleEditing() {
+            const selection = d3.select(node);
+            if (selection.attr("data-being-edited")) {
+                regionEditor.stopEditingRegionIfBeingEdited(d.id);
+            }
+            else {
+                regionEditor.startEditingRegion(d.id);
+            }
         }
 
         new OpenSeadragon.MouseTracker({
             element: node,
             enterHandler: highlight,
             exitHandler: unHighlight,
-            dblClickHandler: beginEditing
+            dblClickHandler: toggleEditing
         }).setTracking(true);
     }
 
@@ -605,6 +615,36 @@ const overlayHandler = (function (){
     }
 
     /**
+     * Enable the region editing tools for a specified region.
+     * @param {number} id The id of the annotation corresponding to
+     * the region.
+     */
+    function startRegionEdit(id) {
+        if (!_regionOverlay) {
+            return;
+        }
+        _regionOverlay.selectAll(".region")
+            .data(regions, d => d.id)
+            .filter(d => d.id === id)
+            .each(function(d) { _createRegionEditControls(d, this); });
+    }
+
+    /**
+     * Disable the region editing tools for a specified region.
+     * @param {number} id The id of the annotation corresponding to
+     * the region.
+     */
+    function stopRegionEdit(id) {
+        if (!_regionOverlay) {
+            return;
+        }
+        _regionOverlay.selectAll(".region")
+            .data(regions, d => d.id)
+            .filter(d => d.id === id)
+            .each(function(d) { _removeRegionEditControls(d, this); });
+    }
+
+    /**
      * Let the overlay handler know the current zoom level and maximum
      * zoom level of the viewer in order to properly scale elements.
      * @param {number} zoomLevel The current zoom level of the OSD viewport.
@@ -694,6 +734,8 @@ const overlayHandler = (function (){
         updateMembers: updateMembers,
         updateAnnotations: updateAnnotations,
         updatePendingRegion: updatePendingRegion,
+        startRegionEdit: startRegionEdit,
+        stopRegionEdit: stopRegionEdit,
         clearAnnotations: clearAnnotations,
         setOverlayScale: setOverlayScale,
         setOverlayRotation: setOverlayRotation,
