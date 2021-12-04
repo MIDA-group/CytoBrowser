@@ -421,6 +421,7 @@ const annotationHandler = (function (){
         _updateAnnotationCounts();
 
         // Remove the annotation from the graphics
+        regionEditor.stopEditingRegionIfBeingEdited(id);
         _updateVisuals();
     }
 

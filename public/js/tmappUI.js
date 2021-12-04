@@ -355,6 +355,7 @@ const tmappUI = (function(){
             switch(event.which) {
                 case 27: // esc
                     annotationTool.reset();
+                    regionEditor.stopEditingRegion();
                     break;
                 case 8: // backspace
                     annotationTool.revert();
