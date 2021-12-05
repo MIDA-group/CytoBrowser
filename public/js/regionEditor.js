@@ -47,7 +47,7 @@ const regionEditor = (function() {
     }
 
     return {
-        setCurrentlyEditedRegion,
+        startEditingRegion,
         stopEditingRegion,
         stopEditingRegionIfBeingEdited
     };
