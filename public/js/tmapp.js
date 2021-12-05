@@ -253,10 +253,11 @@ const tmapp = (function() {
     function _addMouseTracking(viewer) {
         // Handle quick and slow clicks
         function clickHandler(event) {
-            if (tmappUI.inFocus()) {
-                regionEditor.stopEditingRegion();
+            let regionWasBeingEdited = true;
+            if (tmappUI.inFocus() && event.quick) {
+                regionWasBeingEdited = regionEditor.stopEditingRegion();
             }
-            if(event.quick && !event.ctrlKey && tmappUI.inFocus()){
+            if(!regionWasBeingEdited && event.quick && !event.ctrlKey && tmappUI.inFocus()){
                 const coords = coordinateHelper.webToViewport(event.position);
                 const position = {
                     x: coords.x,
