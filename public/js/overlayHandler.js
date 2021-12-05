@@ -234,6 +234,7 @@ const overlayHandler = (function (){
         new OpenSeadragon.MouseTracker({
             element: node,
             clickHandler: function(event) {
+                regionEditor.stopEditingRegion();
                 if (event.originalEvent.ctrlKey) {
                     annotationHandler.remove(d.id);
                 }
@@ -624,7 +625,6 @@ const overlayHandler = (function (){
             return;
         }
         _regionOverlay.selectAll(".region")
-            .data(regions, d => d.id)
             .filter(d => d.id === id)
             .each(function(d) { _createRegionEditControls(d, this); });
     }
@@ -639,7 +639,6 @@ const overlayHandler = (function (){
             return;
         }
         _regionOverlay.selectAll(".region")
-            .data(regions, d => d.id)
             .filter(d => d.id === id)
             .each(function(d) { _removeRegionEditControls(d, this); });
     }
