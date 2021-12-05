@@ -247,6 +247,7 @@ const overlayHandler = (function (){
             },
             dragHandler: function(event) {
                 // Use a clone of the annotation to make sure the edit is permitted
+                regionEditor.stopEditingRegion();
                 const clone = annotationHandler.getAnnotationById(d.id);
                 const reference = coordinateHelper.webToImage({x: 0, y: 0});
                 const delta = coordinateHelper.webToImage(event.delta);

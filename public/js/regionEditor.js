@@ -27,11 +27,16 @@ const regionEditor = (function() {
     /**
      * Stop editing the region currently being edited and remove its
      * handles, if a region is currently being edited.
+     * @returns {boolean} Whether or not a region editing was stopped.
      */
     function stopEditingRegion() {
         if (_currentlyEditedRegionId !== null) {
             overlayHandler.stopRegionEdit(_currentlyEditedRegionId);
             _currentlyEditedRegionId = null;
+            return true;
+        }
+        else {
+            return false;
         }
     }
 
@@ -39,10 +44,14 @@ const regionEditor = (function() {
      * If a given region is currently being edited, stop editing it.
      * @param {number} id The id of the annotation corresponding to
      * the region.
+     * @returns {boolean} Whether or not a region editing was stopped.
      */
     function stopEditingRegionIfBeingEdited(id) {
         if (_currentlyEditedRegionId === id) {
-            stopEditingRegion();
+            return stopEditingRegion();
+        }
+        else {
+            return false;
         }
     }
 
