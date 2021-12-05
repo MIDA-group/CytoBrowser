@@ -416,12 +416,12 @@ const annotationHandler = (function (){
 
             // Send the update to collaborators
             transmit && collabClient.removeAnnotation(id);
+            regionEditor.stopEditingRegionIfBeingEdited(id);
         });
 
         _updateAnnotationCounts();
 
         // Remove the annotation from the graphics
-        regionEditor.stopEditingRegionIfBeingEdited(id);
         _updateVisuals();
     }
 
