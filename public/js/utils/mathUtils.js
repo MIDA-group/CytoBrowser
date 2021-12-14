@@ -45,6 +45,17 @@
              x: params.scale * result.x,
              y: params.scale * result.y
          };
+         // Due to rounding errors, it's possible for the start of the
+         // segment that follows the reference segment to be off from
+         // (1, 0) by a very small amount. To circumvent this, the
+         // value is rounded to some number of decimals that is large
+         // enough to not cause inaccuracy, but small enough to avoid
+         // the rounding errors. Could cause issues if you ever want
+         // to work with images wider than 10 billion pixels.
+         result = {
+             x: Number(result.x.toFixed(10)),
+             y: Number(result.y.toFixed(10))
+         }
          return result;
      }
 
