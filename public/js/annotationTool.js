@@ -154,6 +154,8 @@ const annotationTool = (function() {
             const last = _points.pop();
             if (last && last.x !== _nextPoint.x && last.y !== _nextPoint.y)
                 _points.push(last);
+            if (mathUtils.pathIntersectsSelf([..._points, _nextPoint], false))
+                return;
             _points.push(_nextPoint);
             _updatePending();
         }
@@ -161,7 +163,7 @@ const annotationTool = (function() {
         function complete(position) {
             _zLevel = position.z;
             _mclass = _activeMclass;
-            if (_points.length > 2) {
+            if (_points.length > 2 && !mathUtils.pathIntersectsSelf(_points)) {
                 const annotation = _getAnnotation(_points);
                 annotationHandler.add(annotation, "image");
                 reset();
