@@ -19,7 +19,7 @@
              y: seg[1].y - offset.y
          };
          const rotation = -Math.atan2(p.y, p.x);
-         const scale = 1 / Math.sqrt(p.x**2, p.y**2);
+         const scale = 1 / Math.sqrt(p.x**2 + p.y**2);
          return {
              offset,
              rotation,
