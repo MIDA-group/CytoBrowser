@@ -87,22 +87,22 @@ const annotationTool = (function() {
                 const annotation = _getAnnotation();
                 annotationHandler.add(annotation, "image");
                 reset();
-            } 
+            }
             else {
                 console.warn("Complete called with incomplete rectangle!");
             }
         }
 
         return {
-            click: addPoint,  
-            // Prevent starting a new rectangle by the two separate click events   
-            dblClick: function(position) { 
+            click: addPoint,
+            // Prevent starting a new rectangle by the two separate click events
+            dblClick: function(position) {
                 if (_clicks<2) { // only one click for this rect = new rect created from (half) dblClick-closing
                     console.info("Double-click close, reset to avoid creating new rectangle.");
                     reset();
                 }
-            }, 
-            complete: addPoint, 
+            },
+            complete: addPoint,
             update: function(position) {
                 if (_startPoint) {
                     _mclass = _activeMclass;
@@ -143,7 +143,7 @@ const annotationTool = (function() {
             _nextPoint = null;
             overlayHandler.updatePendingRegion(null);
         }
-        
+
         function addPoint(position) {
             _nextPoint = coordinateHelper.viewportToImage({
                 x: position.x,
@@ -152,7 +152,7 @@ const annotationTool = (function() {
             _zLevel = position.z;
             _mclass = _activeMclass;
             const last = _points.pop();
-            if (last && last.x !== _nextPoint.x && last.y !== _nextPoint.y)
+            if (last && (last.x !== _nextPoint.x || last.y !== _nextPoint.y))
                 _points.push(last);
             if (mathUtils.pathIntersectsSelf([..._points, _nextPoint], false))
                 return;
@@ -172,7 +172,7 @@ const annotationTool = (function() {
 
         return {
             click: addPoint,
-            dblClick: complete,    
+            dblClick: complete,
             complete: complete,
             update: function(position) {
                 if (_points.length) {
