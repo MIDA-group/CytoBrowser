@@ -85,7 +85,13 @@ app.ws("/collaboration/:id", (ws, req) => {
 
 // Begin listening on the specified interface
 const listener = app.listen(port, hostname, () => {
-    const address = listener.address().address;
+    let address = listener.address().address;
     const port = listener.address().port;
+
+    const family = listener.address().family; //IPv6
+    if (family === 'IPv6') {
+        address = `[${address}]`;
+    }
+
     console.info(`CytoBrowser server listening at http://${address}:${port}`);
 });
