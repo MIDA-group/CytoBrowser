@@ -4,7 +4,7 @@ const argv = require("minimist")(process.argv.slice(2), {
     alias: { b: 'open-browser' }
 });
 const hostname = argv._[0] || "localhost";
-const port = argv._[1] || 8080;
+const port = argv._[1] || 0; //zero = 'arbitrary unused port'
 const collabDir = argv.collab || argv.c || "./collab_storage";
 const metadataDir = argv.metadata || argv.m || "./metadata/json";
 const dataDir = argv.data || argv.d || "./data";
