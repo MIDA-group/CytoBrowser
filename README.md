@@ -3,8 +3,8 @@ CytoBrowser, a JavaScript and Node.js driven environment for fast and accessible
 
 <img alt="Screenshot of CytoBrowser usage" title="Example view of CytoBrowser usages" align="right" width="50%" src="../../blob/gh-pages/media/CytoBrowser_example_view.jpg">
 
-A fork of [TissUUmaps](https://github.com/wahlby-lab/TissUUmaps) aimed at Cytology
-
+Origintating as a fork[^1] of [TissUUmaps](https://github.com/wahlby-lab/TissUUmaps) aimed at Cytology
+[^1]: TissUUmaps originally had a strict "clientside only" policy, which was incompatible with the CytoBrowser collaborative aim.
 1. Handling z-stacks (focus stacks), ctrl-scroll on your mouse to focus
 2. Multi-user shared view with follow options, also when changing images and annotation layers
 3. URL encodes the current view and annotation layer; easy to bookmark views, copy and share
