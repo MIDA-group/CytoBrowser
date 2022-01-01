@@ -1,12 +1,15 @@
 // Handle command line arguments
-const argv = require("minimist")(process.argv.slice(2));
+const argv = require("minimist")(process.argv.slice(2), {
+    boolean: ['open-browser'],
+    alias: { b: 'open-browser' }
+});
 const hostname = argv._[0] || "localhost";
-const port = argv._[1] || 0;
+const port = argv._[1] || 8080;
 const collabDir = argv.collab || argv.c || "./collab_storage";
 const metadataDir = argv.metadata || argv.m || "./metadata/json";
 const dataDir = argv.data || argv.d || "./data";
 if (argv.h || argv.help) {
-    console.info(`Usage: node cytobrowser.js hostname port ` +
+    console.info(`Usage: node cytobrowser.js [--open-browser] hostname port ` +
     `[-c collab storage path = "./collab_storage"] ` +
     `[-m image json metadata path = "./metadata/json"] ` +
     `[-d image data path = "./data"]`);
@@ -18,6 +21,7 @@ const fs = require("fs");
 const express = require("express");
 const availableImages = require("./server/availableImages")(dataDir);
 const collaboration = require("./server/collaboration")(collabDir, metadataDir);
+const open = require("open");
 
 // Initialize the server
 const app = express();
@@ -94,4 +98,9 @@ const listener = app.listen(port, hostname, () => {
     }
 
     console.info(`CytoBrowser server listening at http://${address}:${port}`);
+    
+    // Opens the URL in the default browser.
+    if (argv['open-browser']) {
+        open(`http://${address}:${port}`);  
+    }
 });
