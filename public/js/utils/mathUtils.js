@@ -12,6 +12,7 @@
      // applying that transformation to the second segment, and checking
      // if any of its points are found in the normalized segment.
 
+     // Get the parameters needed to transform a given segment to [(0,0),(1,0)]
      function _getTransformParams(seg) {
          const offset = seg[0];
          const p = {
@@ -27,6 +28,8 @@
          };
      }
 
+     // Apply the transform parameters derived in _getTransformParams()
+     // to a given point.
      function _applyTransform(point, params) {
          // Apply translation
          let result = {
@@ -59,6 +62,9 @@
          return result;
      }
 
+     // Check if two line segments intersect, where the segments are arrays 
+     // with two objects that specify the x and y coordinates of the
+     // two bounding points of the segment.
      function _segsIntersect(a, b) {
          // Mathematically, segments are counted as open
          const transformParams = _getTransformParams(a);
