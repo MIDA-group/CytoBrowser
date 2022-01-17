@@ -317,6 +317,12 @@ const annotationHandler = (function (){
             return;
         }
 
+        // Don't edit a region to intersect itself
+        if (mathUtils.pathIntersectsSelf(annotation.points)) {
+            console.warn("Cannot make a region intersect itself.");
+            return;
+        }
+
         // Check if the annotation being updated exists first
         if (updatedAnnotation === undefined) {
             throw new Error("Tried to update an annotation that doesn't exist.");
