@@ -50,18 +50,17 @@ function extractImportantMetadata(jsonData) {
  * @returns {Object} Relevant metadata for the image.
  */
 function getMetadataForImage(imageName) {
-    const adjustedImageName = imageName.slice(0, -4);
-    if (metadataCache[adjustedImageName]) {
-        return metadataCache[adjustedImageName];
+    if (metadataCache[imageName]) {
+        return metadataCache[imageName];
     }
     else {
-        const filename = `${jsonDir}/${adjustedImageName}.json`;
+        const filename = `${jsonDir}/${imageName}.json`;
         try {
             const data = JSON.parse(fs.readFileSync(filename));
             console.log(`Loading metadata from ${filename}`);
-            metadataCache[adjustedImageName] = data;
+            metadataCache[imageName] = data;
             setTimeout(() =>
-                delete metadataCache[adjustedImageName],
+                delete metadataCache[imageName],
                 metadataExpirationTime
             );
             return data;
