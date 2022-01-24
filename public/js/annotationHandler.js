@@ -90,56 +90,6 @@ const annotationHandler = (function (){
         return clone;
     }
 
-    function _getCentroid(points) {
-        if (points.length === 1)
-            return points[0];
-        else {
-            // Wikipedia says this won't work with self-intersections
-            // https://en.wikipedia.org/wiki/Centroid#Of_a_polygon
-            const loop = [...points, points[0]];
-            let area = 0;
-            let cx = 0;
-            let cy = 0;
-            loop.reduce((a, b) => {
-                const areaTerm = (a.x * b.y) - (b.x * a.y);
-                area += areaTerm;
-                cx += (a.x + b.x) * areaTerm;
-                cy += (a.y + b.y) * areaTerm;
-                return b;
-            });
-            area /= 2;
-            cx /= (6 * area);
-            cy /= (6 * area);
-            return {x: cx, y: cy};
-        }
-    }
-
-    function _sqrDist(a,b) {
-        const x = a.x - b.x;
-        const y = a.y - b.y;  
-        return x*x + y*y;
-    }
-    //Approximate!
-    function _getDiameter(points) {
-        if (points.length === 1)
-            return 0;
-        else {
-            let changed;
-            let sqrDiam=0;
-            let newRef;
-            let ref=points[0];
-            do {
-                changed=false;
-                points.forEach(element => {
-                    let d=_sqrDist(ref,element);
-                    if (d>sqrDiam) {changed=true;sqrDiam=d;newRef=element;}
-                });
-                ref=newRef;
-            } while (changed);
-            return Math.sqrt(sqrDiam);
-        }
-    }
-
     function _pointsAreDuplicate(pointsA, pointsB) {
         if (pointsA.length !== pointsB.length)
             return false;
@@ -259,11 +209,11 @@ const annotationHandler = (function (){
 
             // Set the centroid of the annotation
             if (!addedAnnotation.centroid)
-                addedAnnotation.centroid = _getCentroid(addedAnnotation.points);
+                addedAnnotation.centroid = mathUtils.getCentroid(addedAnnotation.points);
 
             // Set the diameter of the annotation
             if (!addedAnnotation.diameter)
-                addedAnnotation.diameter = _getDiameter(addedAnnotation.points);
+                addedAnnotation.diameter = mathUtils.getDiameter(addedAnnotation.points);
 
             // Set the author of the annotation
             if (!addedAnnotation.author)
@@ -300,9 +250,22 @@ const annotationHandler = (function (){
      * told to update their annotation.
      */
     function update(id, annotation, coordSystem="web", transmit = true) {
-        const annotations = _annotations;
-        const updatedIndex = annotations.findIndex(annotation => annotation.id === id);
         const updatedAnnotation = getAnnotationById(id);
+        // Check if the annotation being updated exists first
+        if (updatedAnnotation === undefined) {
+            throw new Error("Tried to update an annotation that doesn't exist.");
+        }
+
+        // If the id is being changed, check if it's not taken
+        if (annotation.id !== undefined && annotation.id !== id) {
+            const existingAnnotation = getAnnotationById(annotation.id);
+            if (existingAnnotation !== undefined) {
+                console.info("Tried to assign an already-used id, keeping old id.");
+                annotation.originalId = annotation.id;
+                annotation.id = id;
+            }
+        }
+
 
         // Make sure the data is stored in the image coordinate system
         const coords = updatedAnnotation.points.map(point =>
@@ -323,23 +286,8 @@ const annotationHandler = (function (){
             return;
         }
 
-        // Check if the annotation being updated exists first
-        if (updatedAnnotation === undefined) {
-            throw new Error("Tried to update an annotation that doesn't exist.");
-        }
-
-        // If the id is being changed, check if it's not taken
-        if (annotation.id !== undefined && annotation.id !== id) {
-            const existingAnnotation = getAnnotationById(annotation.id);
-            if (existingAnnotation !== undefined) {
-                console.info("Tried to assign an already-used id, keeping old id.");
-                annotation.originalId = annotation.id;
-                annotation.id = id;
-            }
-        }
-
         // Update annotation count
-        if (annotation.mclass !== undefined) {
+        if (annotation.mclass !== undefined && annotation.mclass !== updatedAnnotation.mclass) {
             _classCounts[updatedAnnotation.mclass]--;
             _classCounts[annotation.mclass]++;
             _updateAnnotationCounts();
@@ -349,16 +297,19 @@ const annotationHandler = (function (){
         Object.assign(updatedAnnotation, annotation);
 
         // Set the centroid of the annotation
-        updatedAnnotation.centroid = _getCentroid(updatedAnnotation.points);
+        updatedAnnotation.centroid = mathUtils.getCentroid(updatedAnnotation.points);
 
         // Set the diameter of the annotation
-        updatedAnnotation.diameter = _getDiameter(updatedAnnotation.points);
+        updatedAnnotation.diameter = mathUtils.getDiameter(updatedAnnotation.points);
+
 
         // Store the annotation in data
-        Object.assign(annotations[updatedIndex], updatedAnnotation);
+        const updatedIndex = _annotations.findIndex(annotationx => annotationx.id === id);
+        Object.assign(_annotations[updatedIndex], updatedAnnotation);
 
         // Send the update to collaborators
         transmit && collabClient.updateAnnotation(id, updatedAnnotation);
+
 
         // Update the annotation in the graphics
         _updateVisuals();
@@ -484,13 +435,13 @@ const annotationHandler = (function (){
 
     // Return public members of the closure
     return {
-        add: add,
-        update: update,
-        setBookmarked: setBookmarked,
-        remove: remove,
-        clear: clear,
-        forEachAnnotation: forEachAnnotation,
-        getAnnotationById: getAnnotationById,
-        isEmpty: isEmpty
+        add,
+        update,
+        setBookmarked,
+        remove,
+        clear,
+        forEachAnnotation,
+        getAnnotationById,
+        isEmpty
     };
 })();

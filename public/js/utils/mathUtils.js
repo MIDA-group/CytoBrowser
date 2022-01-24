@@ -4,6 +4,7 @@
  * @namespace mathUtils
  */
  const mathUtils = (function() {
+    "use strict";
 
      // Functions below are used for checking of a polygon intersects
      // itself. This is done by iterating through each pair of line
@@ -111,7 +112,60 @@
          return !noIntersections;
      }
 
-     return {
-         pathIntersectsSelf
-     };
- })();
+     function getCentroid(points) {
+        if (points.length === 1)
+            return points[0];
+        else {
+            // Wikipedia says this won't work with self-intersections
+            // https://en.wikipedia.org/wiki/Centroid#Of_a_polygon
+            const loop = [...points, points[0]];
+            let area = 0;
+            let cx = 0;
+            let cy = 0;
+            loop.reduce((a, b) => {
+                const areaTerm = (a.x * b.y) - (b.x * a.y);
+                area += areaTerm;
+                cx += (a.x + b.x) * areaTerm;
+                cy += (a.y + b.y) * areaTerm;
+                return b;
+            });
+            area /= 2;
+            cx /= (6 * area);
+            cy /= (6 * area);
+            return {x: cx, y: cy};
+        }
+    }
+
+    function _sqrDist(a,b) {
+        const x = a.x - b.x;
+        const y = a.y - b.y;  
+        return x*x + y*y;
+    }
+
+    //Approximate!
+    function getDiameter(points) {
+        if (points.length === 1)
+            return 0;
+        else {
+            let changed;
+            let sqrDiam=0;
+            let newRef;
+            let ref=points[0];
+            do {
+                changed=false;
+                points.forEach(element => {
+                    let d=_sqrDist(ref,element);
+                    if (d>sqrDiam) {changed=true;sqrDiam=d;newRef=element;}
+                });
+                ref=newRef;
+            } while (changed);
+            return Math.sqrt(sqrDiam);
+        }
+    }
+
+    return {
+        pathIntersectsSelf,
+        getCentroid,
+        getDiameter
+    };
+})();
