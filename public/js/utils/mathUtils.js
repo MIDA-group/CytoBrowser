@@ -6,88 +6,38 @@
  const mathUtils = (function() {
     "use strict";
 
-     // Functions below are used for checking of a polygon intersects
-     // itself. This is done by iterating through each pair of line
-     // segments that makes up the polygon, finding the transformation
-     // that turns one of these segment into the segment from (0, 0) to (1, 0),
-     // applying that transformation to the second segment, and checking
-     // if any of its points are found in the normalized segment.
+    // Functions below are used for checking of a polygon intersects
+    // itself. This is done by iterating through each pair of line segments
+    // that makes up the polygon and checking if intersecting any other.
 
-     // Get the parameters needed to transform a given segment to [(0,0),(1,0)]
-     function _getTransformParams(seg) {
-         const offset = seg[0];
-         const p = {
-             x: seg[1].x - offset.x,
-             y: seg[1].y - offset.y
-         };
-         const rotation = -Math.atan2(p.y, p.x);
-         const scale = 1 / Math.sqrt(p.x**2 + p.y**2);
-         return {
-             offset,
-             rotation,
-             scale
-         };
-     }
-
-     // Apply the transform parameters derived in _getTransformParams()
-     // to a given point.
-     function _applyTransform(point, params) {
-         // Apply translation
-         let result = {
-             x: point.x - params.offset.x,
-             y: point.y - params.offset.y
-         };
-         // Apply rotation
-         const cos = Math.cos(params.rotation);
-         const sin = Math.sin(params.rotation);
-         result = {
-             x: cos * result.x - sin * result.y,
-             y: sin * result.x + cos * result.y
-         };
-         // Apply scale
-         result = {
-             x: params.scale * result.x,
-             y: params.scale * result.y
-         };
-         // Due to rounding errors, it's possible for the start of the
-         // segment that follows the reference segment to be off from
-         // (1, 0) by a very small amount. To circumvent this, the
-         // value is rounded to some number of decimals that is large
-         // enough to not cause inaccuracy, but small enough to avoid
-         // the rounding errors. Could cause issues if you ever want
-         // to work with images wider than 10 billion pixels.
-         result = {
-             x: Number(result.x.toFixed(10)),
-             y: Number(result.y.toFixed(10))
-         }
-         return result;
-     }
-
-     // Check if two line segments intersect, where the segments are arrays 
-     // with two objects that specify the x and y coordinates of the
-     // two bounding points of the segment.
-     function _segsIntersect(a, b) {
-         // Mathematically, segments are counted as open
-         const transformParams = _getTransformParams(a);
-         const seg = b.map(p => _applyTransform(p, transformParams));
-         const noXCrossing = seg[0].y > 0 && seg[1].y > 0 || seg[0].y < 0 && seg[1].y < 0;
-         const parallelToX = seg[0].y === seg[1].y;
-         const parallelToY = seg[0].x === seg[1].x;
-         if (noXCrossing) {
-             return false;
-         }
-         else if (parallelToX) {
-             return true;
-         }
-         else if (parallelToY) {
-             return seg[0].x > 0 && seg[0].x < 1;
-         }
-         else {
-             const dxdy =  (seg[1].x - seg[0].x) / (seg[1].y - seg[0].y);
-             const xOffset = seg[0].x - (dxdy * seg[0].y);
-             return xOffset > 0 && xOffset < 1;
-         }
-     }
+    /**
+     * Check whether two line segments intersect
+     */
+    // Modified from https://jsfiddle.net/ferrybig/eokwL9mp/  
+    // Via https://stackoverflow.com/questions/563198/how-do-you-detect-where-two-line-segments-intersect/1201356#1201356
+    function _segsIntersect(a, b) {
+        const h1 = _computeH(a[0],a[1],b[0],b[1]);
+        if (h1 < 0 || h1 > 1) return false;
+        const h2 = _computeH(b[0],b[1],a[0],a[1]);
+        return h2 >= 0 && h2 <= 1;
+    }
+    // Subroutine of _segsIntersect
+    function _computeH(a, b, c, d) {
+        // E = B-A = ( Bx-Ax, By-Ay )
+        const e = {x: b.x-a.x, y: b.y-a.y }
+        // F = D-C = ( Dx-Cx, Dy-Cy ) 
+        const f = {x: d.x-c.x, y: d.y-c.y }
+        // P = ( -Ey, Ex )
+        const p = {x: -e.y, y: e.x}
+        
+        // h = ( (A-C) * P ) / ( F * P )
+        const intersection = f.x*p.x+f.y*p.y;
+        if(intersection === 0) {
+            // Parallel lines
+            return NaN;
+        }
+        return ( (a.x - c.x) * p.x + (a.y - c.y) * p.y) / intersection;
+    }
 
      /**
       * Check whether or not a 2D path intersects itself.
@@ -106,8 +56,8 @@
                  {x: endpoints[i + 1].x, y: endpoints[i + 1].y}
              ];
          });
-         const noIntersections = segs.every((p1, i) => {
-             return segs.slice(i + 1).every(p2 => !_segsIntersect(p1, p2));
+         const noIntersections = segs.every((p1, i) => { //Don't check consecutive segment (shared vertex)
+            return segs.slice(i + 2, i+segs.length-closed).every(p2 => !_segsIntersect(p1, p2));
          });
          return !noIntersections;
      }
