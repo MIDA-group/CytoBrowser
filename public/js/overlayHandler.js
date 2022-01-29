@@ -192,10 +192,14 @@ const overlayHandler = (function (){
                             .transition("appear").duration(250)
                             .attr("transform", "scale(1)")
                             .call(path => {
+                                let mouse_offset; //offset (in webCoords) between mouse click and vertex
                                 new OpenSeadragon.MouseTracker({
                                     element: path.node(),
                                     pressHandler: function(event) {
                                         tmapp.setCursorStatus({held: true});
+                                        const mouse_pos = new OpenSeadragon.Point(event.originalEvent.offsetX,event.originalEvent.offsetY);
+                                        const vertex_pos = coordinateHelper.imageToWeb(annotationHandler.getAnnotationById(d.id).points[i]);
+                                        mouse_offset = mouse_pos.minus(vertex_pos);
                                     },
                                     releaseHandler: function(event) {
                                         tmapp.setCursorStatus({held: false});
@@ -204,10 +208,9 @@ const overlayHandler = (function (){
                                         // Use a clone of the annotation to make sure the edit is permitted
                                         const dClone = annotationHandler.getAnnotationById(d.id);
                                         const pointClone = dClone.points[i];
-                                        const reference = coordinateHelper.webToImage({x: 0, y: 0});
-                                        const delta = coordinateHelper.webToImage(event.delta);
-                                        pointClone.x += delta.x - reference.x;
-                                        pointClone.y += delta.y - reference.y;
+                                        const mouse_pos = new OpenSeadragon.Point(event.originalEvent.offsetX,event.originalEvent.offsetY);
+                                        const vertex_new_pos = coordinateHelper.webToImage(mouse_pos.minus(mouse_offset));
+                                        Object.assign(pointClone,vertex_new_pos);
                                         annotationHandler.update(d.id, dClone, "image");
                                         const viewportCoords = coordinateHelper.pageToViewport({
                                             x: event.originalEvent.pageX,
