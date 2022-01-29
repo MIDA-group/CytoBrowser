@@ -234,6 +234,7 @@ const overlayHandler = (function (){
      * @param {Object} node The node for the annotation.
      */
     function _addAnnotationMouseEvents(d, node) {
+        let mouse_offset; //offset (in webCoords) between mouse click and object
         new OpenSeadragon.MouseTracker({
             element: node,
             clickHandler: function(event) {
@@ -244,21 +245,30 @@ const overlayHandler = (function (){
             },
             pressHandler: function(event) {
                 tmapp.setCursorStatus({held: true});
+                const mouse_pos = new OpenSeadragon.Point(event.originalEvent.offsetX,event.originalEvent.offsetY);
+                const object_pos = coordinateHelper.imageToWeb(annotationHandler.getAnnotationById(d.id).centroid);
+                mouse_offset = mouse_pos.minus(object_pos);
             },
             releaseHandler: function(event) {
                 tmapp.setCursorStatus({held: false});
             },
             dragHandler: function(event) {
-                // Use a clone of the annotation to make sure the edit is permitted
                 regionEditor.stopEditingRegion();
-                const clone = annotationHandler.getAnnotationById(d.id);
-                const reference = coordinateHelper.webToImage({x: 0, y: 0});
-                const delta = coordinateHelper.webToImage(event.delta);
-                clone.points.forEach(point => {
-                    point.x += delta.x - reference.x;
-                    point.y += delta.y - reference.y;
+
+                const mouse_pos = new OpenSeadragon.Point(event.originalEvent.offsetX,event.originalEvent.offsetY);
+                const object_new_pos = coordinateHelper.webToImage(mouse_pos.minus(mouse_offset)); //imageCoords
+
+                // Use a clone of the annotation to make sure the edit is permitted
+                const dClone = annotationHandler.getAnnotationById(d.id);
+                const object_pos = dClone.centroid; //current pos imageCoords
+
+                const delta = object_new_pos.minus(object_pos);
+                dClone.points.forEach(point => {
+                    point.x += delta.x;
+                    point.y += delta.y;
                 });
-                annotationHandler.update(d.id, clone, "image");
+                annotationHandler.update(d.id, dClone, "image");
+
                 const viewportCoords = coordinateHelper.pageToViewport({
                     x: event.originalEvent.pageX,
                     y: event.originalEvent.pageY
