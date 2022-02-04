@@ -469,6 +469,7 @@ const tmappUI = (function(){
      * modal is currently opened, it will be closed and reopened
      * once the choice has been made or the choice modal has been closed.
      * @param {string} title The title to display in the modal.
+     * @param {string} html HTML text for a div before the list of choices.
      * @param {Array<Object>} choices An array of choices that can be
      * chosen from. Each choice should contain a label property and
      * a click property to properly display and handle their buttons.
@@ -478,20 +479,22 @@ const tmappUI = (function(){
      * @param {boolean} forceChoice Whether or not the choice has to be
      * made.
      */
-    function choice(title, choices, onCancel, forceChoice=false) {
+    function choice(title, html, choices, onCancel, forceChoice=false) {
         const activeModal = $(".modal.show");
         activeModal.modal("hide");
-
+        
         //https://stackoverflow.com/questions/34440464/bootstrap-modal-backdrop-static-not-working/
         $("#multiple_choice").data('bs.modal',null); // clear the BS modal data so that we can change settings
-
         $("#multiple_choice .modal-title").text(title);
+        $("#multiple_choice #modal_text").html(html);
         $("#multiple_choice #choice_list").empty();
+
         choices.forEach(choice => {
             const choiceButton = $(`<button class="btn btn-${choice.highlight ? "dark" : "primary"} btn-block">
                 ${choice.label}
             </button>`);
-            choiceButton.click(choice.click);
+            //To avoid problems with switching from modal to another, wait for hidden first
+            choiceButton.click(() => $("#multiple_choice").one('hidden.bs.modal', choice.click));
             choiceButton.click(() => $("#multiple_choice").modal("hide"));
             $("#choice_list").append(choiceButton);
         });

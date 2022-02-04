@@ -167,6 +167,7 @@ const annotationHandler = (function (){
         if (!Array.isArray(annotations)) {
             annotations = [annotations];
         }
+        console.log(`Adding ${annotations.length} annotations...`);
         annotations.forEach(annotation => {
             const addedAnnotation = _cloneAnnotation(annotation);
 
