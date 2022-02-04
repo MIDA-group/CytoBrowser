@@ -254,7 +254,7 @@ const collabClient = (function(){
             label: "Reconnect",
             click: _attemptReconnect
         }];
-        tmappUI.choice(title, choices, null, true);
+        tmappUI.choice(title, null, choices, null, true);
     }
 
     function _becomeIdle() {

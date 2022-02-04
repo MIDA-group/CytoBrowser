@@ -27,7 +27,7 @@ const annotationStorageConversion = (function() {
      * @param {Object} data The storage object containing annotation
      * information.
      */
-    function addAnnotationStorageData(data) {
+    function addAnnotationStorageData(data, ignoreMismatch=false) {
         if (data.version === "1.0" || data.version === "1.1") {
             const addAnnotations = () => {
                 annotationHandler.add(data.annotations, "image");
@@ -39,15 +39,23 @@ const annotationStorageConversion = (function() {
             }
 
             // Change to a collab on the right image if we're on the wrong one
-            if (data.image !== tmapp.getImageName()) {
-                alert(`The selected data does not belong to this image. ` +
-                    `Open a session on the image ${data.image} and try again.`);
-            }
+            if (!ignoreMismatch && data.image !== tmapp.getImageName()) {
+                tmappUI.choice("Warning: Selected data is for another image", 
+                    `<p>This image: <b><tt>${escapeHtml(tmapp.getImageName())}</tt></b>` +
+                    `<br>Data from: <b><tt>${escapeHtml(data.image)}</tt></b>` +
+                    `</p>Any annotations outside the image will be discarded.<p>`,
+                    [{
+                        label: "Import anyway!",
+                        click: () => { 
+                            addAnnotationStorageData(data, true); 
+                        }
+                    }]);
+                }
             else if (!annotationHandler.isEmpty()) {
-                tmappUI.choice("What should be done with the current annotations?", [
+                tmappUI.choice("What should be done with the current annotations?", null, [
                     {
                         label: "Add loaded annotations to existing ones",
-                        click: addAnnotations
+                        click: () => {addAnnotations();}
                     },
                     {
                         label: "Replace existing annotations with loaded ones",
