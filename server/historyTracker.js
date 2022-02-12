@@ -76,29 +76,24 @@ function getHistoryInfo(history) {
 
 
 /**
- * 
+ * Add a reverse diff to the history
  * @param {Object} history 
  * @param {string} newData canonical and stringified(null,1) 
- * @param {string} oldData canonical and stringified(null,1)
+ * @param {string} oldData canonical and stringified(null,1), may be null
  * @param {string} filename dummy
  * @param {boolean} isRevert 
  * @return {Object} updated history or null if no change
  */
 function extendHistory(history, newData, oldData, filename, isRevert) {
-    // console.log(`Ext_old: ${oldData}`);
-    // console.log(`Ext: data.length ${newData.length}, old.length ${oldData.length}`);
-
     console.time('diff1');
     if (oldData && newData.length == oldData.length) {
-        const diffen=diff.diffJson(JSON.parse(newData), JSON.parse(oldData));
-        if (diffen.length === 1) {
+        const equal=newData.valueOf() === oldData.valueOf();
+        if (equal) {
             console.timeEnd('diff1');
             console.log("Equal!")
-            // Don't save an identical version to history
-            return;
+            return false;
         }
         console.timeEnd('diff1');
-        console.log("Diffsize: ",diffen.length);
     } 
     else {
         console.timeEnd('diff1');
@@ -115,7 +110,8 @@ function extendHistory(history, newData, oldData, filename, isRevert) {
     console.time('diff2');
     const revertPatch = diff.createPatch(null, newData, oldData);
     console.timeEnd('diff2');
-    console.log(revertPatch);
+
+    //console.log(revertPatch);
     console.time('diff3');
     const historyEntry = {
         id: history.nextId,
@@ -126,14 +122,15 @@ function extendHistory(history, newData, oldData, filename, isRevert) {
     };
     history.history.push(historyEntry);
     console.timeEnd('diff3');
+
     console.time('diff4');
     if (maxHistoryEntries >= 0 && history.history.length > maxHistoryEntries) {
         history.history = history.history.slice(history.history.length - maxHistoryEntries);
     }
     history.nextId++;
-    const historyData = JSON.stringify(history);
     console.timeEnd('diff4');
-    return historyData;
+
+    return history;
 }
 
 /**
@@ -191,7 +188,7 @@ function writeWithHistory(path, data, isRevert=false) {
             }
             else {
                 return Promise.allSettled([
-                    fsPromises.writeFile(historyPath, historyData),
+                    fsPromises.writeFile(historyPath, JSON.stringify(historyData)),
                     fsPromises.writeFile(path, rawData)
                 ]);
             }
