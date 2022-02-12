@@ -42,9 +42,7 @@ const versionRevert = (function() {
      * version object includes the fields id, time, and isRevert.
      */
     function setVersions(versions) {
-        if (!versions.some(version => version.id === _selection)) {
-            _deselectVersion();
-        }
+        _deselectVersion();
         const list = $("#version-list");
         list.empty();
         versions.reverse().forEach(version => {
