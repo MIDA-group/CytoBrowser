@@ -85,20 +85,12 @@ function getHistoryInfo(history) {
  * @return {Object} updated history or null if no change
  */
 function extendHistory(history, newData, oldData, filename, isRevert) {
-    console.time('diff1');
     if (oldData && newData.length == oldData.length) {
         const equal=newData.valueOf() === oldData.valueOf();
-        if (equal) {
-            console.timeEnd('diff1');
-            console.log("Equal!")
+        if (equal) { // Typically from reverting twice to the same 
             return false;
         }
-        console.timeEnd('diff1');
     } 
-    else {
-        console.timeEnd('diff1');
-        console.log("Different len: ",newData.length,",",oldData && oldData.length);
-    }
 
     if (!oldData) { // Create zero annotation data
         let data=JSON.parse(newData);
@@ -107,12 +99,11 @@ function extendHistory(history, newData, oldData, filename, isRevert) {
         oldData = JSON.stringify(data, null, 1);
     }
 
-    console.time('diff2');
+    console.time('diff create patch');
     const revertPatch = diff.createPatch(null, newData, oldData);
-    console.timeEnd('diff2');
-
+    console.timeEnd('diff create patch');
     //console.log(revertPatch);
-    console.time('diff3');
+
     const historyEntry = {
         id: history.nextId,
         time: new Date().toISOString(),
@@ -121,14 +112,11 @@ function extendHistory(history, newData, oldData, filename, isRevert) {
         nAnnotations: oldData?JSON.parse(oldData).nAnnotations:0
     };
     history.history.push(historyEntry);
-    console.timeEnd('diff3');
 
-    console.time('diff4');
     if (maxHistoryEntries >= 0 && history.history.length > maxHistoryEntries) {
         history.history = history.history.slice(history.history.length - maxHistoryEntries);
     }
     history.nextId++;
-    console.timeEnd('diff4');
 
     return history;
 }
@@ -150,10 +138,12 @@ function getOlderVersionOfData(data, history, versionId) {
     let revertedData = data;
     const entries = history.history.slice(lastEntryIndex).reverse();
     console.log(`Initial size: ${revertedData.length}`);
+    console.time('diff apply patch');
     entries.forEach(entry => {
         revertedData = diff.applyPatch(revertedData, entry.patch);
         console.log(`Updated size: ${revertedData.length}`);
     });
+    console.timeEnd('diff apply patch');
     return revertedData;
 }
 
