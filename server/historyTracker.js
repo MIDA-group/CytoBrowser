@@ -24,6 +24,7 @@ const maxHistoryEntries = 50; // Set as negative to remove limit
  * @property {string} time The time at which the change was made.
  * @property {boolean} isRevert Whether or not this step in history
  * was a revert to an earlier step.
+ * @property {number} nAnnotations Number of annotations (reached after a revert).
  */
 
 /**
@@ -37,7 +38,6 @@ const maxHistoryEntries = 50; // Set as negative to remove limit
  * history entries.
  */
 
-
 function getHistoryPath(path) {
     const apart = path.split("/");
     const filename = apart.pop();
@@ -46,9 +46,14 @@ function getHistoryPath(path) {
     const together = apart.join("/");
     return together;
 }
+// function getHistoryPath(str) {
+//     const apart = path.parse(str);
+//     return path.join(apart.dir,"__HISTORY__"+apart.base);
+// }
 
 function getExistingHistory(historyPath) {
-    return fsPromises.readFile(historyPath, "utf8").then(JSON.parse);
+    return fsPromises.readFile(historyPath, "utf8")
+        .then(JSON.parse);
 }
 
 function beginNewHistory() {
@@ -59,8 +64,7 @@ function beginNewHistory() {
     });
 }
 
-function getHistory(path) {
-    const historyPath = getHistoryPath(path);
+function getHistory(historyPath) {
     return fsPromises.access(historyPath)
         .then(() => getExistingHistory(historyPath))
         .catch(() => beginNewHistory());
@@ -71,55 +75,94 @@ function getHistoryInfo(history) {
         return {
             id: entry.id,
             time: entry.time,
-            isRevert: entry.isRevert
+            isRevert: entry.isRevert,
+            nAnnotations: entry.nAnnotations
         };
     });
 }
 
-function extendHistory(history, data, path, historyPath, isRevert) {
-    const filename = path.split("/").pop();
-    return fsPromises.readFile(path, "utf8").then(oldData => {
-        if (diff.diffJson(JSON.parse(data), JSON.parse(oldData)).length === 1) {
+
+/**
+ * 
+ * @param {Object} history 
+ * @param {string} newData canonical and stringified(null,1) 
+ * @param {string} oldData canonical and stringified(null,1)
+ * @param {string} filename dummy
+ * @param {boolean} isRevert 
+ * @return {Object} updated history or null if no change
+ */
+function extendHistory(history, newData, oldData, filename, isRevert) {
+    // console.log(`Ext_old: ${oldData}`);
+    // console.log(`Ext: data.length ${newData.length}, old.length ${oldData.length}`);
+
+    console.time('diff1');
+    if (oldData && newData.length == oldData.length) {
+        const diffen=diff.diffJson(JSON.parse(newData), JSON.parse(oldData));
+        if (diffen.length === 1) {
+            console.timeEnd('diff1');
+            console.log("Equal!")
             // Don't save an identical version to history
             return;
         }
-        const revertPatch = diff.createPatch(filename, data, oldData);
-        const historyEntry = {
-            id: history.nextId,
-            time: new Date().toISOString(),
-            patch: revertPatch,
-            isRevert: isRevert
-        };
-        history.history.push(historyEntry);
-        if (maxHistoryEntries >= 0 && history.history.length > maxHistoryEntries) {
-            history.history = history.history.slice(history.history.length - maxHistoryEntries);
-        }
-        history.nextId++;
-        const historyData = JSON.stringify(history);
-        return fsPromises.writeFile(historyPath, historyData);
-    });
+        console.timeEnd('diff1');
+        console.log("Diffsize: ",diffen.length);
+    } 
+    else {
+        console.timeEnd('diff1');
+        console.log("Different len: ",newData.length,",",oldData && oldData.length);
+    }
+
+    if (!oldData) { // Create zero annotation data
+        let data=JSON.parse(newData);
+        data.annotations=[];
+        data.nAnnotations=0;
+        oldData = JSON.stringify(data, null, 1);
+    }
+
+    console.time('diff2');
+    const revertPatch = diff.createPatch(null, newData, oldData);
+    console.timeEnd('diff2');
+    console.log(revertPatch);
+    console.time('diff3');
+    const historyEntry = {
+        id: history.nextId,
+        time: new Date().toISOString(),
+        patch: revertPatch,
+        isRevert: isRevert,
+        nAnnotations: oldData?JSON.parse(oldData).nAnnotations:0
+    };
+    history.history.push(historyEntry);
+    console.timeEnd('diff3');
+    console.time('diff4');
+    if (maxHistoryEntries >= 0 && history.history.length > maxHistoryEntries) {
+        history.history = history.history.slice(history.history.length - maxHistoryEntries);
+    }
+    history.nextId++;
+    const historyData = JSON.stringify(history);
+    console.timeEnd('diff4');
+    return historyData;
 }
 
-function writeNewVersion(path, data, isRevert) {
-    const historyPath = getHistoryPath(path);
-    return getHistory(path)
-        .then(history => extendHistory(history, data, path, historyPath, isRevert))
-        .then(() => fsPromises.writeFile(path, data));
-}
-
-function writeFirstVersion(path, data) {
-    return fsPromises.writeFile(path, data);
-}
-
+/**
+ * Iteratively apply revert-patches until reaching versionId
+ * @param {string} data Latest saved data to start from (stringified(null,1))
+ * @param {Object} history Saved history, to revert from
+ * @param {number} versionId How far back to revert
+ * @return {string} revertedData
+ */
 function getOlderVersionOfData(data, history, versionId) {
+    console.log('getOld');
+    console.log(typeof data);
     const lastEntryIndex = history.history.findIndex(entry => entry.id === versionId);
     if (lastEntryIndex === -1) {
         throw new Error("Tried to revert to a nonexistent history entry");
     }
     let revertedData = data;
     const entries = history.history.slice(lastEntryIndex).reverse();
+    console.log(`Initial size: ${revertedData.length}`);
     entries.forEach(entry => {
         revertedData = diff.applyPatch(revertedData, entry.patch);
+        console.log(`Updated size: ${revertedData.length}`);
     });
     return revertedData;
 }
@@ -128,40 +171,66 @@ function getOlderVersionOfData(data, history, versionId) {
  * Write data to a given path and add a new entry to the history of
  * the file that can be reverted at a later time.
  * @param {string} path The path to the file.
- * @param data The data to write to the file.
+ * @param {Object} data The data to be stored.
  * @param {boolean} [isRevert=false] Whether or not the history entry
  * corresponding to the file should be marked as the file being reverted.
  */
+console.log=console.error;
 function writeWithHistory(path, data, isRevert=false) {
-    return fsPromises.access(path)
-        .then(() => writeNewVersion(path, data, isRevert))
-        .catch(() => writeFirstVersion(path, data));
+    console.log('WriteHist');
+    console.log(typeof data);
+
+    console.time('can');
+    const canonicalData = diff.canonicalize(data); // Sort keys
+    console.timeEnd('can');
+    console.time('str');
+    const rawData = JSON.stringify(canonicalData, null, 1);
+    console.timeEnd('str');
+    
+    const historyPath = getHistoryPath(path);
+    const filename = path.split("/").pop(); //dummy.json?
+
+    return Promise.all([getHistory(historyPath),readLatestVersion(path)])
+        .then(([history, oldData]) => extendHistory(history, rawData, oldData, filename, isRevert))
+        .then(historyData => {
+            if (!historyData) {
+                return Promise.resolve(); // No update
+            }
+            else {
+                return Promise.allSettled([
+                    fsPromises.writeFile(historyPath, historyData),
+                    fsPromises.writeFile(path, rawData)
+                ]);
+            }
+        });
 }
 
 /**
  * Read the latest version of a file.
  * @param {string} path The path to the file.
- * @return {Promise<>} Promise that resolves with the file content.
+ * @return {Promise<string>} Promise that resolves with the file content.
  */
 function readLatestVersion(path) {
-    return fsPromises.readFile(path, "utf8");
+    console.log('readlatest');
+    return fsPromises.access(path)
+        .then(() => fsPromises.readFile(path, "utf8"))
+        .catch(() => {
+            console.log(`Missing file ${path}`);
+            Promise.resolve("{}"); //valid JSON
+        });
 }
 
 /**
  * Read an older version of a file without writing the revert to storage.
  * @param {string} path The path to the file.
  * @param {number} versionId The id of the version to read.
- * @returns {Promise<>} Promise that resolves with the file content.
+ * @returns {Promise<string>} Promise that resolves with the file content.
  */
 function readOlderVersion(path, versionId) {
-    let history;
+    console.log('readOld');
     const historyPath = getHistoryPath(path);
-    return getHistory(path)
-        .then(historyData => {
-            history = historyData;
-            return readLatestVersion(path);
-        })
-        .then(data => getOlderVersionOfData(data, history, versionId));
+    return Promise.all([getHistory(historyPath),readLatestVersion(path)])
+        .then(([history, savedData]) => getOlderVersionOfData(savedData, history, versionId));
 }
 
 /**
@@ -173,8 +242,9 @@ function readOlderVersion(path, versionId) {
  * @return {Promise<>} Promise that resolves when the file has been reverted.
  */
 function revertVersion(path, versionId) {
+    console.log("================================REVERT=================");
     return readOlderVersion(path, versionId)
-        .then(data => writeWithHistory(path, data, true));
+        .then(data => writeWithHistory(path, JSON.parse(data), true));
 }
 
 /**
@@ -184,7 +254,7 @@ function revertVersion(path, versionId) {
  */
 function getAvailableVersions(path) {
     const historyPath = getHistoryPath(path);
-    return getHistory(path)
+    return getHistory(historyPath)
         .then(history => getHistoryInfo(history));
 }
 

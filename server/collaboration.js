@@ -275,8 +275,9 @@ class Collaboration {
                 );
                 break;
             case "revert":
-                autosave.revertAnnotations(this.id, this.image, msg.versionId)
-                    .then(() => this.loadState(true));
+                this.saveState() // First store current state
+                    .then(() => autosave.revertAnnotations(this.id, this.image, msg.versionId)) // Reverts the file
+                    .then(() => this.loadState(true)); 
                 break;
             default:
                 this.log(`Tried to handle unknown version action: ${msg.actionType}`, console.warn);
@@ -358,6 +359,7 @@ class Collaboration {
         this.ongoingLoad = this.ongoingLoad.then(() => {
             return autosave.loadAnnotations(this.id, this.image);
         }).then(data => {
+            data || console.warn('WARNING: loadAnnotations returned zero data');
             if (data.version === "1.0" || data.version === "1.1") {
                 if (data.name) {
                     this.name = data.name;
@@ -389,8 +391,9 @@ class Collaboration {
 
     saveState() {
         if (this.hasUnsavedChanges) {
+            console.log('SaveState has unsaved');
             const updateTime = getCurrentTimeAsString();
-            const data = {
+            const data = { //Format specification (less canonicalized, order is important)
                 version: "1.1",
                 id: this.id,
                 name: this.name,
@@ -404,13 +407,15 @@ class Collaboration {
                 comments: this.comments
             };
             return autosave.saveAnnotations(this.id, this.image, data).then(() => {
+                console.log(`SaveState saved ${this.id}`);
                 this.notifyAutosave();
                 this.updatedOn = updateTime;
-                this.hasUnsavedChanges = false;
+                this.hasUnsavedChanges = false; //changes during save will be lost
                 return true;
             });
         }
         else {
+            console.log('SaveState nothing to save');
             return Promise.resolve(false);
         }
     }
@@ -425,7 +430,7 @@ class Collaboration {
             this.autosaveTimeout = setTimeout(() => {
                 this.saveState();
                 this.autosaveTimeout = null;
-            }, 120000);
+            }, 20000); //Autosave timeout in ms
         }
     }
 
