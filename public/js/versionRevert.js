@@ -22,6 +22,7 @@ const versionRevert = (function() {
         if (version.isRevert) {
             text += " (Revert)";
         }
+        text+=`  ${version.nAnnotations} annotations`;
         element.text(text);
         element.click(() => {
             const wasSelected = _selection === version.id;
