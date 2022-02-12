@@ -1,6 +1,7 @@
 const fs = require("fs");
 const fsPromises = fs.promises;
 const diff = require("diff");
+const path = require("path");
 
 const maxHistoryEntries = 50; // Set as negative to remove limit
 
@@ -38,18 +39,10 @@ const maxHistoryEntries = 50; // Set as negative to remove limit
  * history entries.
  */
 
-function getHistoryPath(path) {
-    const apart = path.split("/");
-    const filename = apart.pop();
-    const historyFilename = "__HISTORY__" + filename;
-    apart.push(historyFilename);
-    const together = apart.join("/");
-    return together;
+function getHistoryPath(str) {
+    const apart = path.parse(str);
+    return path.join(apart.dir,"__HISTORY__"+apart.base);
 }
-// function getHistoryPath(str) {
-//     const apart = path.parse(str);
-//     return path.join(apart.dir,"__HISTORY__"+apart.base);
-// }
 
 function getExistingHistory(historyPath) {
     return fsPromises.readFile(historyPath, "utf8")
