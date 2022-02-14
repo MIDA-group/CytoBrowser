@@ -3,6 +3,8 @@ const fsPromises = fs.promises;
 const diff = require("diff");
 const path = require("path");
 
+let jsondiffpatch = require('jsondiffpatch');
+
 const maxHistoryEntries = 50; // Set as negative to remove limit
 
 
@@ -99,15 +101,21 @@ function extendHistory(history, newData, oldData, filename, isRevert) {
         oldData = JSON.stringify(data, null, 1);
     }
 
-    console.time('diff create patch');
-    const revertPatch = diff.createPatch(null, newData, oldData);
-    console.timeEnd('diff create patch');
+    // console.time('diff create patch');
+    // const revertPatch = diff.createPatch(null, newData, oldData);
+    // console.timeEnd('diff create patch');
+    console.time('diff create patch 2');
+    const delta = jsondiffpatch.diff(JSON.parse(newData), JSON.parse(oldData));
+    const revertPatch2 = JSON.stringify(delta);
+    console.timeEnd('diff create patch 2');
+//    console.log(delta);
     //console.log(revertPatch);
 
     const historyEntry = {
         id: history.nextId,
         time: new Date().toISOString(),
-        patch: revertPatch,
+        //patch: revertPatch,
+        patch: revertPatch2,
         isRevert: isRevert,
         nAnnotations: oldData?JSON.parse(oldData).nAnnotations:0
     };
@@ -120,7 +128,7 @@ function extendHistory(history, newData, oldData, filename, isRevert) {
 
     return history;
 }
-
+console.log=console.error;
 /**
  * Iteratively apply revert-patches until reaching versionId
  * @param {string} data Latest saved data to start from (stringified(null,1))
@@ -135,16 +143,19 @@ function getOlderVersionOfData(data, history, versionId) {
     if (lastEntryIndex === -1) {
         throw new Error("Tried to revert to a nonexistent history entry");
     }
-    let revertedData = data;
+    let revertedData = JSON.parse(data);
     const entries = history.history.slice(lastEntryIndex).reverse();
     console.log(`Initial size: ${revertedData.length}`);
     console.time('diff apply patch');
     entries.forEach(entry => {
-        revertedData = diff.applyPatch(revertedData, entry.patch);
+        //revertedData = diff.applyPatch(revertedData, entry.patch);
+        // console.log(revertedData);
+        // console.log(JSON.parse(entry.patch));
+        jsondiffpatch.patch(revertedData, JSON.parse(entry.patch));
         console.log(`Updated size: ${revertedData.length}`);
     });
     console.timeEnd('diff apply patch');
-    return revertedData;
+    return JSON.stringify(revertedData,null,1);
 }
 
 /**
@@ -155,7 +166,6 @@ function getOlderVersionOfData(data, history, versionId) {
  * @param {boolean} [isRevert=false] Whether or not the history entry
  * corresponding to the file should be marked as the file being reverted.
  */
-console.log=console.error;
 function writeWithHistory(path, data, isRevert=false) {
     console.log('WriteHist');
     console.log(typeof data);
