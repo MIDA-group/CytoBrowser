@@ -4,6 +4,7 @@
  * different users of the CytoBrowser.
  */
 
+console.log=console.error;
 const sanitize = require("sanitize-filename");
 
 // Modules initialized in export
@@ -275,6 +276,7 @@ class Collaboration {
                 );
                 break;
             case "revert":
+                console.log("Revert initiated");
                 this.saveState() // First store current state
                     .then(() => autosave.revertAnnotations(this.id, this.image, msg.versionId)) // Reverts the file
                     .then(() => this.loadState(true)); 
@@ -346,6 +348,7 @@ class Collaboration {
         this.broadcastMessage(msg);
     }
 
+    // Just report back that save is completed
     notifyAutosave() {
         const msg = {type: "autosave", time: Date.now()};
         this.broadcastMessage(msg);
@@ -390,6 +393,7 @@ class Collaboration {
     }
 
     saveState() {
+        console.log(`saveS: ${this.annotations.length}`);
         if (this.hasUnsavedChanges) {
             console.log('SaveState has unsaved');
             const updateTime = getCurrentTimeAsString();
@@ -407,10 +411,10 @@ class Collaboration {
                 comments: this.comments
             };
             return autosave.saveAnnotations(this.id, this.image, data).then(() => {
-                console.log(`SaveState saved ${this.id}`);
+                console.log(`SaveState saved ${this.id}:${data.nAnnotations}`);
                 this.notifyAutosave();
                 this.updatedOn = updateTime;
-                this.hasUnsavedChanges = false; //changes during save will be lost
+                this.hasUnsavedChanges = false; //FIX: changes during save will be lost
                 return true;
             });
         }
@@ -421,17 +425,21 @@ class Collaboration {
     }
 
     flagUnsavedChanges() {
+        console.log('Flagging change!');
         this.hasUnsavedChanges = true;
     }
 
     trySavingState() {
-        if (!this.autosaveTimeout) {
-            this.saveState();
-            this.autosaveTimeout = setTimeout(() => {
-                this.saveState();
-                this.autosaveTimeout = null;
-            }, 20000); //Autosave timeout in ms
+        console.log('TrySave');
+        if (this.autosaveTimeout) { // Repeated tries, then just reset timer
+            console.log('TrySave1');
+            clearTimeout(this.autosaveTimeout);
         }
+        this.autosaveTimeout = setTimeout(() => {
+            console.log('TrySave2');
+            this.saveState();
+            this.autosaveTimeout = null;
+        }, 10000); //Autosave timeout in ms
     }
 
     pointsAreDuplicate(pointsA, pointsB) {
