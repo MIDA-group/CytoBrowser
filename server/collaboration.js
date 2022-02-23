@@ -4,8 +4,10 @@
  * different users of the CytoBrowser.
  */
 
-console.log=console.error;
 const sanitize = require("sanitize-filename");
+
+
+const autosaveTimeout = 10000; //Autosave timeout in ms
 
 // Modules initialized in export
 let autosave, metadata;
@@ -45,7 +47,6 @@ class Collaboration {
         this.image = image;
         this.ongoingLoad = new Promise(r => r()); // Dummy promise just in case
         this.hasUnsavedChanges = false;
-        this.lastSaveTime = null;
         this.loadState(false);
         this.log(`Initializing collaboration.`, console.info);
     }
@@ -277,7 +278,6 @@ class Collaboration {
                 );
                 break;
             case "revert":
-                console.log("Revert initiated");
                 this.saveState() // First store current state
                     .then(() => autosave.revertAnnotations(this.id, this.image, msg.versionId)) // Reverts the file
                     .then(() => this.loadState(true)); // The load the reverted state
@@ -351,8 +351,7 @@ class Collaboration {
 
     // Just report back that save is completed
     notifyAutosave() {
-        this.lastSaveTime=Date.now();
-        const msg = {type: "autosave", time: this.lastSaveTime};
+        const msg = {type: "autosave", time: Date.now()};
         this.broadcastMessage(msg);
     }
 
@@ -364,7 +363,7 @@ class Collaboration {
         this.ongoingLoad = this.ongoingLoad.then(() => {
             return autosave.loadAnnotations(this.id, this.image);
         }).then(data => {
-            data || console.warn('WARNING: loadAnnotations returned zero data');
+            data || this.log('WARNING: loadAnnotations returned zero data', console.warn);
             if (data.version === "1.0" || data.version === "1.1") {
                 if (data.name) {
                     this.name = data.name;
@@ -395,9 +394,7 @@ class Collaboration {
     }
 
     saveState() {
-        console.log(`saveS: ${this.annotations.length}`);
         if (this.hasUnsavedChanges) {
-            console.log('SaveState has unsaved');
             const updateTime = getCurrentTimeAsString();
             const data = { //Format specification (less canonicalized, order is important)
                 version: "1.1",
@@ -412,8 +409,7 @@ class Collaboration {
                 annotations: this.annotations,
                 comments: this.comments
             };
-            return autosave.saveAnnotations(this.id, this.image, data, this.lastSaveTime).then(() => {
-                console.log(`SaveState saved ${this.id}:${data.nAnnotations}`);
+            return autosave.saveAnnotations(this.id, this.image, data).then(() => {
                 this.notifyAutosave();
                 this.updatedOn = updateTime;
                 this.hasUnsavedChanges = false; //FIX: changes during save will be lost
@@ -421,27 +417,22 @@ class Collaboration {
             });
         }
         else {
-            console.log('SaveState nothing to save');
             return Promise.resolve(false);
         }
     }
 
     flagUnsavedChanges() {
-        console.log('Flagging change!');
         this.hasUnsavedChanges = true;
     }
 
     trySavingState() {
-        console.log('TrySave');
         if (this.autosaveTimeout) { // Repeated tries, then just reset timer
-            console.log('TrySave1');
             clearTimeout(this.autosaveTimeout);
         }
         this.autosaveTimeout = setTimeout(() => {
-            console.log('TrySave2');
             this.saveState();
             this.autosaveTimeout = null;
-        }, 10000); //Autosave timeout in ms
+        }, autosaveTimeout); //Autosave timeout in ms
     }
 
     pointsAreDuplicate(pointsA, pointsB) {
