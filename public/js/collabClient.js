@@ -221,6 +221,7 @@ const collabClient = (function(){
         }
     }
 
+    // Just a message that save is completed
     function _handleAutosave(msg) {
         const time = new Date(msg.time);
         tmappUI.setLastAutosave(time);

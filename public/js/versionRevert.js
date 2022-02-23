@@ -18,11 +18,12 @@ const versionRevert = (function() {
         if (_selection === version.id) {
             element.addClass("active");
         }
-        let text = dateUtils.formatReadableDate(version.time);
-        if (version.isRevert) {
-            text += " (Revert)";
+        let text = version.id + " ";
+        if (version.time) {
+            text+=dateUtils.formatReadableDate(version.time);
         }
-        text+=`  ${version.nAnnotations} annotations`;
+        
+        text+=` - ${version.nAnnotations} annotations`;
         element.text(text);
         element.click(() => {
             const wasSelected = _selection === version.id;
@@ -39,7 +40,7 @@ const versionRevert = (function() {
     /**
      * Set a list of available versions for the current collaboration.
      * @param {Array<Object>} versions The available versions. Each
-     * version object includes the fields id, time, and isRevert.
+     * version object includes the fields id, time, and nAnnotations.
      */
     function setVersions(versions) {
         _deselectVersion();

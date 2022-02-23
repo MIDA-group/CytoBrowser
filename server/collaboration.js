@@ -45,6 +45,7 @@ class Collaboration {
         this.image = image;
         this.ongoingLoad = new Promise(r => r()); // Dummy promise just in case
         this.hasUnsavedChanges = false;
+        this.lastSaveTime = null;
         this.loadState(false);
         this.log(`Initializing collaboration.`, console.info);
     }
@@ -279,7 +280,7 @@ class Collaboration {
                 console.log("Revert initiated");
                 this.saveState() // First store current state
                     .then(() => autosave.revertAnnotations(this.id, this.image, msg.versionId)) // Reverts the file
-                    .then(() => this.loadState(true)); 
+                    .then(() => this.loadState(true)); // The load the reverted state
                 break;
             default:
                 this.log(`Tried to handle unknown version action: ${msg.actionType}`, console.warn);
@@ -350,7 +351,8 @@ class Collaboration {
 
     // Just report back that save is completed
     notifyAutosave() {
-        const msg = {type: "autosave", time: Date.now()};
+        this.lastSaveTime=Date.now();
+        const msg = {type: "autosave", time: this.lastSaveTime};
         this.broadcastMessage(msg);
     }
 
@@ -410,7 +412,7 @@ class Collaboration {
                 annotations: this.annotations,
                 comments: this.comments
             };
-            return autosave.saveAnnotations(this.id, this.image, data).then(() => {
+            return autosave.saveAnnotations(this.id, this.image, data, this.lastSaveTime).then(() => {
                 console.log(`SaveState saved ${this.id}:${data.nAnnotations}`);
                 this.notifyAutosave();
                 this.updatedOn = updateTime;
