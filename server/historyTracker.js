@@ -3,7 +3,7 @@ const fsPromises = fs.promises;
 const diff = require("diff");
 const path = require("path");
 
-let jsondiffpatch = require('jsondiffpatch');
+const jsondiffpatch = require('jsondiffpatch');
 
 const maxHistoryEntries = 50; // Set as negative to remove limit
 
@@ -15,8 +15,6 @@ const maxHistoryEntries = 50; // Set as negative to remove limit
  * @property {string} time The time at which the change was made.
  * @property {string} patch A patch from the diff module that can be
  * used to revert the history step.
- * @property {boolean} isRevert Whether or not this step in history
- * was a revert to an earlier step.
  */
 
 /**
@@ -25,8 +23,6 @@ const maxHistoryEntries = 50; // Set as negative to remove limit
  * @typedef {Object} HistoryEntryInfo
  * @property {number} id Number used to specify the history entry.
  * @property {string} time The time at which the change was made.
- * @property {boolean} isRevert Whether or not this step in history
- * was a revert to an earlier step.
  * @property {number} nAnnotations Number of annotations (reached after a revert).
  */
 
@@ -34,7 +30,7 @@ const maxHistoryEntries = 50; // Set as negative to remove limit
  * A description of a file's full recorded history.
  * @typedef {Object} History
  * @property {string} version The version of the history formatting,
- * currently "1.0".
+ * currently "1.1".
  * @property {number} nextId The id that should be assigned to the next
  * history entry that is added.
  * @property {Array<HistoryEntry>} history A chronological list of
@@ -53,7 +49,7 @@ function getExistingHistory(historyPath) {
 
 function beginNewHistory() {
     return Promise.resolve({
-        version: "1.0",
+        version: "1.1",
         nextId: 0,
         history: []
     });
@@ -70,65 +66,78 @@ function getHistoryInfo(history) {
         return {
             id: entry.id,
             time: entry.time,
-            isRevert: entry.isRevert,
             nAnnotations: entry.nAnnotations
         };
     });
 }
 
+function assert(condition, message) {
+    if (!condition) {
+        throw new Error(message || "Assertion failed");
+    }
+}
 
 /**
  * Add a reverse diff to the history
  * @param {Object} history 
- * @param {string} newData canonical and stringified(null,1) 
- * @param {string} oldData canonical and stringified(null,1), may be null
- * @param {string} filename dummy
- * @param {boolean} isRevert 
+ * @param {Object} newData // The currently saved data
+ * @param {Object} oldData // The state before the save
  * @return {Object} updated history or null if no change
  */
-function extendHistory(history, newData, oldData, filename, isRevert) {
-    if (oldData && newData.length == oldData.length) {
-        const equal=newData.valueOf() === oldData.valueOf();
-        if (equal) { // Typically from reverting twice to the same 
+function extendHistory(history, newData, oldData, lastSaveTime) {
+    if (oldData) {
+        oldData=JSON.parse(oldData); //FIXFIX
+    }
+/*
+    if (!oldData) { // Create zero annotation data
+        assert(history.history.length===0,"History file exist, but saved annotation missing. Suggested to remove the history file.");
+        oldData=jsondiffpatch.clone(newData);
+        oldData.annotations=[];
+        oldData.nAnnotations=0;
+        assert(!history.history.length);
+        history.history.push(undefined); // Will be overwritten below
+    }
+*/
+
+    if (oldData) {
+        assert(history.history.length>0,"History file error!");
+
+        console.time('diff create patch');
+        const delta = jsondiffpatch.diff(newData, oldData);
+        if (delta === undefined) { // Equal data; typically from reverting twice to the same 
+            console.log('Equal!');
             return false;
         }
-    } 
+        const revertPatch = JSON.stringify(delta);
+        console.timeEnd('diff create patch');
 
-    if (!oldData) { // Create zero annotation data
-        let data=JSON.parse(newData);
-        data.annotations=[];
-        data.nAnnotations=0;
-        oldData = JSON.stringify(data, null, 1);
+        // Update the last entry in the history by suitable patch
+        const lastEntry=history.history[history.history.length-1];
+        assert(lastEntry.patch==="{}");
+        assert(lastEntry.nAnnotations===oldData.nAnnotations);
+        lastEntry.patch=revertPatch;
     }
 
-    // console.time('diff create patch');
-    // const revertPatch = diff.createPatch(null, newData, oldData);
-    // console.timeEnd('diff create patch');
-    console.time('diff create patch 2');
-    const delta = jsondiffpatch.diff(JSON.parse(newData), JSON.parse(oldData));
-    const revertPatch2 = JSON.stringify(delta);
-    console.timeEnd('diff create patch 2');
-//    console.log(delta);
-    //console.log(revertPatch);
-
-    const historyEntry = {
-        id: history.nextId,
+    // Entry for the current state
+    const newHistoryEntry = {
+        id: history.nextId++,
         time: new Date().toISOString(),
-        //patch: revertPatch,
-        patch: revertPatch2,
-        isRevert: isRevert,
-        nAnnotations: oldData?JSON.parse(oldData).nAnnotations:0
+        patch: "{}", // Already there
+        nAnnotations: newData.nAnnotations 
     };
-    history.history.push(historyEntry);
+    history.history.push(newHistoryEntry);  
 
+console.log(history.history);
+    
     if (maxHistoryEntries >= 0 && history.history.length > maxHistoryEntries) {
         history.history = history.history.slice(history.history.length - maxHistoryEntries);
     }
-    history.nextId++;
 
     return history;
 }
 console.log=console.error;
+// For enumerables: objects, arrays, strings
+function isEmpty(obj) { for (const i in obj) return false; return true; }
 /**
  * Iteratively apply revert-patches until reaching versionId
  * @param {string} data Latest saved data to start from (stringified(null,1))
@@ -145,14 +154,15 @@ function getOlderVersionOfData(data, history, versionId) {
     }
     let revertedData = JSON.parse(data);
     const entries = history.history.slice(lastEntryIndex).reverse();
-    console.log(`Initial size: ${revertedData.length}`);
+    console.log(`Initial size: ${JSON.stringify(revertedData).length}`);
     console.time('diff apply patch');
     entries.forEach(entry => {
-        //revertedData = diff.applyPatch(revertedData, entry.patch);
-        // console.log(revertedData);
-        // console.log(JSON.parse(entry.patch));
-        jsondiffpatch.patch(revertedData, JSON.parse(entry.patch));
-        console.log(`Updated size: ${revertedData.length}`);
+        let patch=JSON.parse(entry.patch);
+        if (!isEmpty(patch)) { // patch does not handle '{}' (but uses undefined, which cannot be serialized)
+console.log(patch);
+            jsondiffpatch.patch(revertedData, patch);
+        }
+        console.log(`Updated size: ${JSON.stringify(revertedData).length}`);
     });
     console.timeEnd('diff apply patch');
     return JSON.stringify(revertedData,null,1);
@@ -163,11 +173,10 @@ function getOlderVersionOfData(data, history, versionId) {
  * the file that can be reverted at a later time.
  * @param {string} path The path to the file.
  * @param {Object} data The data to be stored.
- * @param {boolean} [isRevert=false] Whether or not the history entry
  * corresponding to the file should be marked as the file being reverted.
  */
-function writeWithHistory(path, data, isRevert=false) {
-    console.log('WriteHist');
+function writeWithHistory(path, data, lastSaveTime) {
+    console.log(`WriteHist ${data.nAnnotations}`);
     console.log(typeof data);
 
     console.time('can');
@@ -178,10 +187,9 @@ function writeWithHistory(path, data, isRevert=false) {
     console.timeEnd('str');
     
     const historyPath = getHistoryPath(path);
-    const filename = path.split("/").pop(); //dummy.json?
 
     return Promise.all([getHistory(historyPath),readLatestVersion(path)])
-        .then(([history, oldData]) => extendHistory(history, rawData, oldData, filename, isRevert))
+        .then(([history, oldData]) => extendHistory(history, canonicalData, oldData, lastSaveTime))
         .then(historyData => {
             if (!historyData) {
                 return Promise.resolve(); // No update
@@ -234,7 +242,7 @@ function readOlderVersion(path, versionId) {
 function revertVersion(path, versionId) {
     console.log("================================REVERT=================");
     return readOlderVersion(path, versionId)
-        .then(data => writeWithHistory(path, JSON.parse(data), true));
+        .then(data => writeWithHistory(path, JSON.parse(data)));
 }
 
 /**
@@ -259,10 +267,10 @@ function isHistoryFilename(path) {
 }
 
 module.exports = {
-    writeWithHistory: writeWithHistory,
-    readLatestVersion: readLatestVersion,
-    readOlderVersion: readOlderVersion,
-    revertVersion: revertVersion,
-    getAvailableVersions: getAvailableVersions,
-    isHistoryFilename: isHistoryFilename
+    writeWithHistory,
+    readLatestVersion,
+    readOlderVersion,
+    revertVersion,
+    getAvailableVersions,
+    isHistoryFilename
 };

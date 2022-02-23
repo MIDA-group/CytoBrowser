@@ -46,13 +46,13 @@ function loadAnnotations(id, image) {
  * @param {Object} data The data to be stored.
  * @returns {Promise} Promise that resolves once the data is stored.
  */
-function saveAnnotations(id, image, data) {
+function saveAnnotations(id, image, data, lastSaveTime) {
     const subDir = getSubDirName(image);
     const filename = getFilename(id, image);
     const dir = `${autosaveDir}/${subDir}`;
     const path = `${autosaveDir}/${subDir}/${filename}.json`;
     return fsPromises.mkdir(dir, {recursive: true}).then(() => {
-        return historyTracker.writeWithHistory(path, data);
+        return historyTracker.writeWithHistory(path, data, lastSaveTime);
     });
 }
 
