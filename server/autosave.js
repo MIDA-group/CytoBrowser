@@ -30,13 +30,13 @@ function getFilename(id, image) {
  * Load data from the autosave file structure.
  * @param {string} id The id of the collaboration.
  * @param {string} image The name of the image being saved.
- * @returns {Promise} Promise that resolves with the parsed data.
+ * @returns {Promise<Object>} Promise that resolves with the parsed data.
  */
 function loadAnnotations(id, image) {
     const subDir = getSubDirName(image);
     const filename = getFilename(id, image);
     const path = `${autosaveDir}/${subDir}/${filename}.json`;
-    return historyTracker.readLatestVersion(path).then(JSON.parse);
+    return historyTracker.readLatestVersion(path);
 }
 
 /**
@@ -46,13 +46,13 @@ function loadAnnotations(id, image) {
  * @param {Object} data The data to be stored.
  * @returns {Promise} Promise that resolves once the data is stored.
  */
-function saveAnnotations(id, image, data, lastSaveTime) {
+function saveAnnotations(id, image, data) {
     const subDir = getSubDirName(image);
     const filename = getFilename(id, image);
     const dir = `${autosaveDir}/${subDir}`;
     const path = `${autosaveDir}/${subDir}/${filename}.json`;
     return fsPromises.mkdir(dir, {recursive: true}).then(() => {
-        return historyTracker.writeWithHistory(path, data, lastSaveTime);
+        return historyTracker.writeWithHistory(path, data);
     });
 }
 
