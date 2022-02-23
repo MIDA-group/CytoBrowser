@@ -10,7 +10,7 @@ const versionRevert = (function() {
         _selection = null;
     }
 
-    function _createVersionElement(version) {
+    function _createVersionElement(version, current=false) {
         const element = $(`
             <a href="javascript:void(0)" class="list-group-item list-group-item-action">
             </a>
@@ -18,13 +18,18 @@ const versionRevert = (function() {
         if (_selection === version.id) {
             element.addClass("active");
         }
-        let text = version.id + " ";
+        let text = version.id + ": ";
         if (version.time) {
             text+=dateUtils.formatReadableDate(version.time);
         }
-        
         text+=` - ${version.nAnnotations} annotations`;
-        element.text(text);
+        element.html(text);
+
+        if (current) {
+            element.append(" <i style='float:right;'>Current</i>");
+            element.addClass("disabled");
+        }
+
         element.click(() => {
             const wasSelected = _selection === version.id;
             _deselectVersion();
@@ -46,8 +51,8 @@ const versionRevert = (function() {
         _deselectVersion();
         const list = $("#version-list");
         list.empty();
-        versions.reverse().forEach(version => {
-            const element = _createVersionElement(version);
+        versions.reverse().forEach((version,index) => {
+            const element = _createVersionElement(version,index===0);
             list.append(element);
         });
     }
