@@ -30,28 +30,28 @@ const collabClient = (function(){
      */
     function _handleMessage(msg) {
         switch(msg.type) {
-            case "annotationAction":
+            case "annotationAction": //add/move annotations etc.
                 _handleAnnotationAction(msg);
                 break;
-            case "metadataAction":
-                _handleMetadataAction(msg);
+            case "globalDataAction": //add/remove global comments
+                _handleGlobalDataAction(msg);
                 break;
-            case "versionAction":
+            case "versionAction": //revert to old autosave
                 _handleVersionAction(msg);
                 break;
-            case "memberEvent":
+            case "memberEvent": //add/remove members, mouse info etc.
                 _handleMemberEvent(msg);
                 break;
-            case "summary":
+            case "summary": //info about the session
                 _handleSummary(msg);
                 break;
-            case "imageSwap":
+            case "imageSwap": //for follower
                 _handleImageSwap(msg);
                 break;
-            case "autosave":
+            case "autosave": //complete msg
                 _handleAutosave(msg);
                 break;
-            case "forceUpdate":
+            case "forceUpdate": 
                 _requestSummary();
                 break;
             case "nameChange":
@@ -81,7 +81,7 @@ const collabClient = (function(){
         }
     }
 
-    function _handleMetadataAction(msg) {
+    function _handleGlobalDataAction(msg) {
         switch(msg.actionType) {
             case "addComment":
                 globalDataHandler.handleCommentFromServer(msg.comment);
@@ -90,7 +90,7 @@ const collabClient = (function(){
                 globalDataHandler.handleCommentRemovalFromServer(msg.id);
                 break;
             default:
-                console.warn(`Unknown metadata action type: ${msg.actionType}`);
+                console.warn(`Unknown global data action type: ${msg.actionType}`);
         }
     }
 
@@ -521,7 +521,7 @@ const collabClient = (function(){
      */
     function addComment(content) {
         send({
-            type: "metadataAction",
+            type: "globalDataAction",
             actionType: "addComment",
             content: content
         });
@@ -533,7 +533,7 @@ const collabClient = (function(){
      */
     function removeComment(id) {
         send({
-            type: "metadataAction",
+            type: "globalDataAction",
             actionType: "removeComment",
             id: id
         });
@@ -725,25 +725,25 @@ const collabClient = (function(){
     }
 
     return {
-        createCollab: createCollab,
-        connect: connect,
-        disconnect: disconnect,
-        send: send,
-        swapImage: swapImage,
-        addAnnotation: addAnnotation,
-        updateAnnotation: updateAnnotation,
-        removeAnnotation: removeAnnotation,
-        clearAnnotations: clearAnnotations,
-        addComment: addComment,
-        removeComment: removeComment,
-        changeUsername: changeUsername,
-        getDefaultName: getDefaultName,
-        changeCollabName: changeCollabName,
-        updatePosition: updatePosition,
-        updateCursor: updateCursor,
-        followView: followView,
-        stopFollowing: stopFollowing,
-        getVersions: getVersions,
-        revertVersion: revertVersion
+        createCollab,
+        connect,
+        disconnect,
+        send,
+        swapImage,
+        addAnnotation,
+        updateAnnotation,
+        removeAnnotation,
+        clearAnnotations,
+        addComment,
+        removeComment,
+        changeUsername,
+        getDefaultName,
+        changeCollabName,
+        updatePosition,
+        updateCursor,
+        followView,
+        stopFollowing,
+        getVersions,
+        revertVersion
     };
 })();

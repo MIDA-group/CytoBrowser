@@ -101,7 +101,7 @@ const annotationStorageConversion = (function() {
     }
 
     return {
-        addAnnotationStorageData: addAnnotationStorageData,
-        getAnnotationStorageData: getAnnotationStorageData
+        addAnnotationStorageData,
+        getAnnotationStorageData
     }
 })();

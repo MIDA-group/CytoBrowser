@@ -148,9 +148,9 @@ class Collaboration {
                     this.handleAnnotationAction(sender, member, msg);
                 });
                 break;
-            case "metadataAction":
+            case "globalDataAction":
                 this.ongoingLoad.then(() => {
-                    this.handleMetadataAction(sender, member, msg);
+                    this.handleGlobalDataAction(sender, member, msg);
                 });
                 break;
             case "versionAction":
@@ -227,7 +227,7 @@ class Collaboration {
         this.trySavingState();
     }
 
-    handleMetadataAction(sender, member, msg) {
+    handleGlobalDataAction(sender, member, msg) {
         if (!member.ready) {
             return;
         }
@@ -246,7 +246,7 @@ class Collaboration {
                 };
                 this.comments.push(comment);
                 this.broadcastMessage({
-                    type: "metadataAction",
+                    type: "globalDataAction",
                     actionType: "addComment",
                     comment: comment
                 }, null, true);
@@ -564,10 +564,10 @@ module.exports = function(autosaveDir, metadataJsonDir) {
     autosave = require("./autosave")(autosaveDir);
     metadata = require("./metadata")(metadataJsonDir);
     return {
-        getId: getId,
-        joinCollab: joinCollab,
-        leaveCollab: leaveCollab,
-        handleMessage: handleMessage,
-        getAvailable: getAvailable
+        getId,
+        joinCollab,
+        leaveCollab,
+        handleMessage,
+        getAvailable
     };
 }
