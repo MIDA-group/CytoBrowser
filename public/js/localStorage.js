@@ -71,7 +71,7 @@ const localStorage = (function (){
     }
 
     return {
-        saveJSON: saveJSON,
-        loadJSON: loadJSON
+        saveJSON,
+        loadJSON
     };
 })();
