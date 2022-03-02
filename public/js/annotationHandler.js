@@ -61,7 +61,7 @@ const annotationHandler = (function (){
         return id;
     }
 
-    function _cloneAnnotation(annotation) {
+    function _cloneAnnotation(annotation, include_computables=true) {
         // A deep clone could also be done with jQuery.extend(true, {}, annotation)
         // But this explicit clone was over 10 times faster when tested
         // Make sure to remember to update it if fields are changed
@@ -74,8 +74,7 @@ const annotationHandler = (function (){
             }),
             z: annotation.z,
             mclass: annotation.mclass,
-            centroid: annotation.centroid && {x: annotation.centroid.x, y: annotation.centroid.y},
-            diameter: annotation.diameter,
+            
             bookmarked: annotation.bookmarked,
             comments: annotation.comments && annotation.comments.map(comment => {
                 return {
@@ -87,6 +86,11 @@ const annotationHandler = (function (){
             id: annotation.id,
             originalId: annotation.originalId
         };
+        if (include_computables) {
+            Object.assign(clone,{                
+                centroid: annotation.centroid && {x: annotation.centroid.x, y: annotation.centroid.y},
+                diameter: annotation.diameter});
+        }
         return clone;
     }
 
@@ -407,8 +411,8 @@ const annotationHandler = (function (){
      * updated, update() can be run in the passed function.
      * @param {function} f Function to be called with each annotation.
      */
-    function forEachAnnotation(f) {
-        _annotations.map(_cloneAnnotation).forEach(f);
+    function forEachAnnotation(f, include_computable=true) {
+        _annotations.map((elem) => _cloneAnnotation(elem,include_computable)).forEach(f);
     }
 
     /**
