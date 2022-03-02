@@ -280,7 +280,7 @@ class Collaboration {
             case "revert":
                 this.saveState() // First store current state
                     .then(() => autosave.revertAnnotations(this.id, this.image, msg.versionId)) // Reverts the file
-                    .then(() => this.loadState(true)); // The load the reverted state
+                    .then(() => this.loadState(true)); // Then load the reverted state
                 break;
             default:
                 this.log(`Tried to handle unknown version action: ${msg.actionType}`, console.warn);

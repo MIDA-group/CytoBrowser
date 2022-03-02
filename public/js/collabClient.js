@@ -472,10 +472,12 @@ const collabClient = (function(){
      * @param {Object} annotation Data for the added annotation.
      */
     function addAnnotation(annotation) {
+        //skip computables
+        const {centroid, diameter, ...essentials} = annotation;
         send({
             type: "annotationAction",
             actionType: "add",
-            annotation: annotation
+            annotation: essentials
         });
     }
 
@@ -485,11 +487,13 @@ const collabClient = (function(){
      * @param {Object} annotation Data for the updated annotation.
      */
     function updateAnnotation(id, annotation) {
+        //skip computables
+        const {centroid, diameter, ...essentials} = annotation;
         send({
             type: "annotationAction",
             actionType: "update",
             id: id,
-            annotation: annotation
+            annotation: essentials
         });
     }
 
