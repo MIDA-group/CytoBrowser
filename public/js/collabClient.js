@@ -63,6 +63,7 @@ const collabClient = (function(){
     }
 
     function _handleAnnotationAction(msg) {
+        console.time('yy');
         switch(msg.actionType) {
             case "add":
                 annotationHandler.add(msg.annotation, "image", false);
@@ -79,6 +80,7 @@ const collabClient = (function(){
             default:
                 console.warn(`Unknown annotation action type: ${msg.actionType}`);
         }
+        console.timeEnd('yy');
     }
 
     function _handleGlobalDataAction(msg) {
@@ -165,6 +167,7 @@ const collabClient = (function(){
      * by the server.
      */
     function _handleSummary(msg) {
+        console.time('ss1');
         if (msg.image !== tmapp.getImageName()) {
             tmapp.openImage(msg.image, () => {
                 _joinBatch = null;
@@ -172,34 +175,53 @@ const collabClient = (function(){
             }, disconnect);
             return;
         }
+        console.timeEnd('ss1');
+        console.time('ss2');
         if (_joinBatch) {
             annotationHandler.forEachAnnotation(annotation => {
                 _joinBatch.push(annotation);
             });
         }
+        console.timeEnd('ss2');
+        console.time('ss3a');
         metadataHandler.clear();
         globalDataHandler.clear();
+        console.timeEnd('ss3a');
+        console.time('ss3b');
         metadataHandler.updateMetadataValues(msg.metadata);
+        console.timeEnd('ss3b');
+        console.time('ss3c');
         annotationHandler.clear(false);
+        console.timeEnd('ss3c');
+        console.time('ss3d');
         annotationHandler.add(msg.annotations, "image", false);
+        console.timeEnd('ss3d');
+        console.time('ss4');
         if (_joinBatch) {
             annotationHandler.add(_joinBatch, "image");
             _joinBatch = null;
         }
+        console.timeEnd('ss4');
+        console.time('ss5');
         msg.comments.forEach(comment => {
             globalDataHandler.handleCommentFromServer(comment);
         });
         _members = msg.members;
         _localMember = _members.find(member => member.id === msg.requesterId);
         _userId= _localMember.id;
+        console.timeEnd('ss5');
 
+        console.time('ss6');
         _memberUpdate();
+        console.timeEnd('ss6');
+        console.time('ss7');
         tmappUI.setCollabName(msg.name);
         tmapp.updateCollabStatus();
         if (_onCreated) {
             _onCreated();
             _onCreated = null;
         }
+        console.timeEnd('ss7');
     }
 
     function _requestSummary() {
@@ -390,9 +412,15 @@ const collabClient = (function(){
                     disconnect();
                 }
             }
+            const count = (function () { let i = 1; return () => i++; })();
             ws.onmessage = function(event) {
+                console.log('Msg: ',count());
                 if (event.data !== "__pong__") {
-                    _handleMessage(JSON.parse(event.data));
+                    console.time('xx');
+                    let msg=JSON.parse(event.data);
+                    console.log(msg.type);
+                    _handleMessage(msg);
+                    console.timeEnd('xx');
                 }
             }
             ws.onclose = function(event) {
