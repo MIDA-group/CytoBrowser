@@ -82,8 +82,10 @@ const annotationVisuals = (function() {
      * @param {Array} annotations All currently placed annotations.
      */
     function update(annotations){
+//        console.profile('update') 
         _unfilteredAnnotations = annotations;
         _filterAndUpdate();
+//        console.profileEnd();
     }
 
     /**

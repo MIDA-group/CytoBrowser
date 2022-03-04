@@ -50,6 +50,34 @@ const annotationHandler = (function (){
         globalDataHandler.updateAnnotationCounts(_nMarkers, _nRegions, _classCounts);
     }
 
+    // Low-res array of arrays
+    const _annotationGrid = []; 
+    const _gridShift = 10; //2^n sized grid squares
+    const _gridMax = 20-_gridShift; //at most (2^n)^2 grid squares
+    // Add to _annotations and to _annotationGrid
+    function _getGridIdx(annotation) {
+        if (!annotation.points || !annotation.points.length) {
+            console.error('Annotation without points[0]');
+            return 0;
+        }
+        const p=annotation.points[0];
+        if ((p.x>>_gridShift)>>_gridMax) {
+            error('Too large image, increase _gridMax'); 
+        }
+        return (p.y>>_gridShift)<<_gridMax | (p.x>>_gridShift);
+    }
+    function _addAnnotation(annotation) {
+        const idx=_annotations.push(annotation);
+        const grid=_getGridIdx(annotation);
+        _annotationGrid[grid] ?? (_annotationGrid[grid]=[]); //allow node<15.x
+        _annotationGrid[grid].push(annotation);
+    }
+    //array of annotations in grid
+    function _getGridAnnotations(annotation) {
+        const grid=_getGridIdx(annotation);
+        return _annotationGrid[grid] ?? [];
+    }
+
     function _generateId() {
         const order = Math.ceil(Math.log10((1 + _annotations.length) * 100));
         const multiplier = Math.pow(10, order);
@@ -105,11 +133,17 @@ const annotationHandler = (function (){
     }
 
     function _findDuplicateAnnotation(annotation) {
-        return _annotations.find(existingAnnotation =>
+        return _getGridAnnotations(annotation).find(existingAnnotation =>
             existingAnnotation.z === annotation.z
             && existingAnnotation.mclass === annotation.mclass
             && _pointsAreDuplicate(annotation.points, existingAnnotation.points)
         );
+        
+        // return _annotations.find(existingAnnotation =>
+        //     existingAnnotation.z === annotation.z
+        //     && existingAnnotation.mclass === annotation.mclass
+        //     && _pointsAreDuplicate(annotation.points, existingAnnotation.points)
+        // );
     }
 
     function _updateVisuals() {
@@ -172,6 +206,8 @@ const annotationHandler = (function (){
             annotations = [annotations];
         }
         console.log(`Adding ${annotations.length} annotations...`);
+console.time('add');
+//console.profile('add') 
         annotations.forEach(annotation => {
             const addedAnnotation = _cloneAnnotation(annotation);
 
@@ -190,7 +226,7 @@ const annotationHandler = (function (){
             let replacedAnnotation = _findDuplicateAnnotation(addedAnnotation);
             if (replacedAnnotation) {
                 console.warn("Adding an annotation with identical properties to an existing annotation, replacing.");
-                update(replacedAnnotation.id, addedAnnotation, coordSystem, false);
+            //    update(replacedAnnotation.id, addedAnnotation, coordSystem, false);
                 return;
             }
 
@@ -225,7 +261,7 @@ const annotationHandler = (function (){
                 addedAnnotation.author = userInfo.getName();
 
             // Store a data representation of the annotation
-            _annotations.push(addedAnnotation);
+            _addAnnotation(addedAnnotation);
 
             // Update the annotation count
             if (addedAnnotation.points.length === 1) {
@@ -239,11 +275,17 @@ const annotationHandler = (function (){
             // Send the update to collaborators
             transmit && collabClient.addAnnotation(addedAnnotation);
         });
+//console.profileEnd() 
 
+console.timeEnd('add');
+console.time('count');
         _updateAnnotationCounts();
+console.timeEnd('count');
 
+console.time('vis');
         // Add a graphical representation of the annotation
         _updateVisuals();
+console.timeEnd('vis');
     }
 
     /**
