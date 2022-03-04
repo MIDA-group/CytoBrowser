@@ -68,6 +68,10 @@ const annotationHandler = (function (){
     }
     function _addAnnotation(annotation) {
         const idx=_annotations.push(annotation);
+        _addGridAnnotation(annotation);
+        return idx;
+    }
+    function _addGridAnnotation(annotation) {
         const grid=_getGridIdx(annotation);
         _annotationGrid[grid] ?? (_annotationGrid[grid]=[]); //allow node<15.x
         _annotationGrid[grid].push(annotation);
@@ -76,6 +80,11 @@ const annotationHandler = (function (){
     function _getGridAnnotations(annotation) {
         const grid=_getGridIdx(annotation);
         return _annotationGrid[grid] ?? [];
+    }
+    function _removeGridAnnotation(annotation) {
+        const grid = _getGridAnnotations(annotation);
+        const gridIndex = grid.findIndex(x => x.id === annotation.id);
+        grid.splice(gridIndex,1);
     }
 
     function _generateId() {
@@ -122,6 +131,7 @@ const annotationHandler = (function (){
         return clone;
     }
 
+    // true if same geometry
     function _pointsAreDuplicate(pointsA, pointsB) {
         if (pointsA.length !== pointsB.length)
             return false;
@@ -132,6 +142,7 @@ const annotationHandler = (function (){
         });
     }
 
+    // true if annotation with same geometry already stored
     function _findDuplicateAnnotation(annotation) {
         return _getGridAnnotations(annotation).find(existingAnnotation =>
             existingAnnotation.z === annotation.z
@@ -202,6 +213,7 @@ const annotationHandler = (function (){
      * told to add the annotation.
      */
     function add(annotations, coordSystem="web", transmit = true) {
+        let once=false;
         if (!Array.isArray(annotations)) {
             annotations = [annotations];
         }
@@ -225,8 +237,9 @@ console.time('add');
             // Check if an identical annotation already exists, remove old one if it does
             let replacedAnnotation = _findDuplicateAnnotation(addedAnnotation);
             if (replacedAnnotation) {
-                console.warn("Adding an annotation with identical properties to an existing annotation, replacing.");
-            //    update(replacedAnnotation.id, addedAnnotation, coordSystem, false);
+                // old node does not like ||=
+                once || (console.warn("Adding annotation(s) with identical properties as existing one, replacing."), once=true);
+                update(replacedAnnotation.id, addedAnnotation, coordSystem, false, false);
                 return;
             }
 
@@ -296,7 +309,7 @@ console.timeEnd('vis');
      * @param {boolean} [transmit=true] Any collaborators should also be
      * told to update their annotation.
      */
-    function update(id, annotation, coordSystem="web", transmit = true) {
+    function update(id, annotation, coordSystem="web", transmit = true, redraw = true) {
         const updatedAnnotation = getAnnotationById(id);
         // Check if the annotation being updated exists first
         if (updatedAnnotation === undefined) {
@@ -340,8 +353,12 @@ console.timeEnd('vis');
             _updateAnnotationCounts();
         }
 
+        // Check if changing grid square
+        const oldGridIndex = _getGridIdx(updatedAnnotation);      
+
         // Copy over the updated properties
         Object.assign(updatedAnnotation, annotation);
+        const newGridIndex = _getGridIdx(updatedAnnotation);
 
         // Set the centroid of the annotation
         updatedAnnotation.centroid = mathUtils.getCentroid(updatedAnnotation.points);
@@ -352,14 +369,25 @@ console.timeEnd('vis');
 
         // Store the annotation in data
         const updatedIndex = _annotations.findIndex(annotationx => annotationx.id === id);
+
+        // if (newGridIndex !== oldGridIndex) {
+        //     // console.log(`Moving from idx ${oldGridIndex} to ${newGridIndex}`);
+        //     _removeGridAnnotation(_annotations[updatedIndex]);
+        // }
+
         Object.assign(_annotations[updatedIndex], updatedAnnotation);
+
+        // if (newGridIndex !== oldGridIndex) {
+        //     _addGridAnnotation(_annotations[updatedIndex]);
+        // }
+
 
         // Send the update to collaborators
         transmit && collabClient.updateAnnotation(id, updatedAnnotation);
 
 
         // Update the annotation in the graphics
-        _updateVisuals();
+        redraw && _updateVisuals();
     }
 
     /**
@@ -408,6 +436,9 @@ console.timeEnd('vis');
 
             // Remove the annotation from the data
             const removedAnnotation = annotations.splice(deletedIndex, 1)[0];
+
+            // Remove from gridded
+            _removeGridAnnotation(removedAnnotation);
 
             // Update the annotation count
             if (removedAnnotation.points.length === 1) {
