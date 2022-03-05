@@ -34,6 +34,8 @@ const annotationHandler = (function (){
      * @property {number} [originalId] Original ID of annotation, that
      * may have had to be changed if the annotation was added when the
      * id was already in use.
+     * @property {number} [prediction] Optional prediction score indicating
+     * cancer probability.
      */
     /**
      * Representation of the OpenSeadragon coordinate system used to
@@ -123,7 +125,8 @@ const annotationHandler = (function (){
             }),
             author: annotation.author,
             id: annotation.id,
-            originalId: annotation.originalId
+            originalId: annotation.originalId,
+            prediction: annotation.prediction
         };
         if (include_computables) {
             Object.assign(clone,{                
