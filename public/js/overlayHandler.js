@@ -123,7 +123,7 @@ const overlayHandler = (function (){
     }
 
     function _getAnnotationText(d) {
-        return `#${d.id}: ${d.mclass}`;
+        return `#${d.prediction.toFixed(4)}: ${d.mclass}`;
     }
 
     function _resizeMembers() {
