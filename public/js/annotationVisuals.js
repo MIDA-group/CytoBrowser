@@ -11,29 +11,56 @@ const annotationVisuals = (function() {
     let _filterIsTrivial = true;
     let _lastQueryWasValid = true;
 
+    /* This is the heavy work function: filter and visualize annotations */
+    const pending_vis_count = (function () { let i = 0; return (val=0) => i+=val; })();
+    const pending_list_count = (function () { let i = 0; return (val=0) => i+=val; })();
     function _filterAndUpdate() {
-console.time('u1');
+        console.time('visFiltUpd');
+
         const annotations = _unfilteredAnnotations.filter(annotation => {
             const filterableAnnotation = filters.preprocessAnnotationBeforeFiltering(annotation);
             return _filter.evaluate(filterableAnnotation);
         });
-console.timeEnd('u1');
-console.time('u2');
-        overlayHandler.updateAnnotations(annotations);
-        console.timeEnd('u2');
-        console.time('u2b');
+
+        //Draw annotations and update list asynchronously
+        const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+        let this_vis_count=pending_vis_count(1); //add one
+        console.log('Init overlay update: ',this_vis_count);
+        wait(0) //Using Promise.resolve() didn't give time enough for rendering
+            .then(() => {
+                if (this_vis_count==pending_vis_count()) { //if we're the last one
+                    console.log('running overlay update: ',this_vis_count);
+                    overlayHandler.updateAnnotations(annotations);
+                }
+                else {
+                    console.log('skipping overlay update',this_vis_count,pending_vis_count());
+                }
+            });
+
+        let this_list_count=pending_list_count(1); //add one
         if (_annotationList) {
-            _annotationList.updateData(annotations.slice().reverse()); // No sort -> reverse order
+            console.log('Init list update: ',this_list_count);
+            wait(0) 
+                .then(() => {
+                    if (this_list_count==pending_list_count()) { //if we're the last one
+                        console.log('running list update: ',this_list_count);
+                        _annotationList.updateData(annotations.slice().reverse()); // No sort -> reverse order
+                    }
+                    else {
+                        console.log('skipping list update',this_list_count,pending_list_count());
+                    }
+                });
         }
         else {
             console.warn("No annotation list has been set.");
         }
-        console.timeEnd('u2b');
-        console.time('u3');
+
         if (!_filterIsTrivial && _lastQueryWasValid) {
             tmappUI.setFilterInfo(_unfilteredAnnotations.length, annotations.length);
         }
-        console.timeEnd('u3');
+
+        console.timeEnd('visFiltUpd');
     }
 
     function _setFilter(query) {
