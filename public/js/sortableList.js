@@ -89,10 +89,17 @@ class SortableList {
         this._table.append("tbody");
     }
 
+    // _data has proporty "changed" which is true if _setData made a change (not verified to work with selectFun)
     _setData(rawData) {
-        this._data = rawData.map(datum => {
+        console.time("setData");
+        let updates=0;
+        this._data = rawData.map((datum,index) => {
+            const old = this._data[index];
+
             const adjustedDatum = {};
+            adjustedDatum.changed = old == null; 
             adjustedDatum[this._idKey] = datum[this._idKey];
+            adjustedDatum.changed || old[this._idKey] === adjustedDatum[this._idKey] || (adjustedDatum.changed=true);
             this._fields.forEach(field => {
                 if (field.selectFun) {
                     adjustedDatum[field.key] = field.selectFun(datum);
@@ -100,22 +107,31 @@ class SortableList {
                 else {
                     adjustedDatum[field.key] = datum[field.key];
                 }
+                adjustedDatum.changed || old[field.key] === adjustedDatum[field.key] || (adjustedDatum.changed=true);
             });
+            adjustedDatum.changed && updates++;
             return adjustedDatum;
         });
+        console.timeEnd("setData");
+        console.log(updates," elements updated.");
     }
 
     _displayData() {
+        console.time("dispData");
         const list = this;
         const fields = this._fields;
-        this._table.select("tbody")
+        const rows = this._table.select("tbody")
             .selectAll(".data-row")
             .data(this._data, d => d[this._idKey])
             .join("tr")
             .attr("class", "data-row")
             .attr("data-annotation-id", d => d[this._idKey])
-            .order((a, b) => a.a < b.a)
-            .each(function(d) { // each row
+            .order((a, b) => a.a < b.a);
+
+        const changed = rows.filter((d, i) => d.changed);
+        changed
+            .style("font-weight", "bold") // bold changes
+            .each(function(d) { // each row (no arrow function, to keep 'this')
                 if (list._onClick || list._onDoubleClick) {
                     d3.select(this)
                         .style("cursor", "pointer")
@@ -143,9 +159,12 @@ class SortableList {
                         }
                     });
             });
+        setTimeout(() => changed.style("font-weight", "normal"), 2000); //unbold after 2s
+        console.timeEnd("dispData");
     }
 
     _reorderData() {
+        console.time("sortData");
         let sortIcon;
         if (this._sortDirection === "ascending") {
             sortIcon = "&#x2193;";
@@ -171,6 +190,7 @@ class SortableList {
                 const key = d3.select(this).attr("data-key");
                 return key === sortKey ? sortIcon : '<span class="text-muted">&#x2195;</span>';
             });
+        console.timeEnd("sortData");
     }
 
     _progressSort(key) {
@@ -188,15 +208,11 @@ class SortableList {
     }
 
     updateData(data) {
-        const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
-        console.time('uL1');
+        console.time('updateData');
         this._setData(data);
-        
-        wait(0) //Promise.resolve() didn't give time enough for rendering
-            .then(() => this._displayData())
-            .then(() => this._reorderData());
-
-        console.timeEnd('uL1');
+        this._displayData(); //may be slow if large data
+        this._reorderData();
+        console.timeEnd('updateData');
     }
 
     /**
