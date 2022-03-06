@@ -304,6 +304,7 @@ console.timeEnd('vis');
      * told to update their annotation.
      */
     function update(id, annotation, coordSystem="web", transmit = true, redraw = true) {
+        console.time("annUpd");
         const updatedAnnotation = getAnnotationById(id);
         // Check if the annotation being updated exists first
         if (updatedAnnotation === undefined) {
@@ -382,6 +383,7 @@ console.timeEnd('vis');
 
         // Update the annotation in the graphics
         redraw && _updateVisuals();
+        console.timeEnd("annUpd");
     }
 
     /**
