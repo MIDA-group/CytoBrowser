@@ -12,20 +12,28 @@ const annotationVisuals = (function() {
     let _lastQueryWasValid = true;
 
     function _filterAndUpdate() {
+console.time('u1');
         const annotations = _unfilteredAnnotations.filter(annotation => {
             const filterableAnnotation = filters.preprocessAnnotationBeforeFiltering(annotation);
             return _filter.evaluate(filterableAnnotation);
         });
+console.timeEnd('u1');
+console.time('u2');
         overlayHandler.updateAnnotations(annotations);
+        console.timeEnd('u2');
+        console.time('u2b');
         if (_annotationList) {
             _annotationList.updateData(annotations.slice().reverse()); // No sort -> reverse order
         }
         else {
             console.warn("No annotation list has been set.");
         }
+        console.timeEnd('u2b');
+        console.time('u3');
         if (!_filterIsTrivial && _lastQueryWasValid) {
             tmappUI.setFilterInfo(_unfilteredAnnotations.length, annotations.length);
         }
+        console.timeEnd('u3');
     }
 
     function _setFilter(query) {
@@ -83,8 +91,10 @@ const annotationVisuals = (function() {
      */
     function update(annotations){
 //        console.profile('update') 
+        console.time('upd');
         _unfilteredAnnotations = annotations;
         _filterAndUpdate();
+        console.timeEnd('upd');
 //        console.profileEnd();
     }
 

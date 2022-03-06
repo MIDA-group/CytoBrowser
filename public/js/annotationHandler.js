@@ -76,7 +76,7 @@ const annotationHandler = (function (){
         _annotationGrid[grid] ?? (_annotationGrid[grid]=[]); //allow node<15.x
         _annotationGrid[grid].push(annotation);
     }
-    //array of annotations in grid
+    //array of annotations in grid (not to be written to)
     function _getGridAnnotations(annotation) {
         const grid=_getGridIdx(annotation);
         return _annotationGrid[grid] ?? [];
@@ -149,12 +149,6 @@ const annotationHandler = (function (){
             && existingAnnotation.mclass === annotation.mclass
             && _pointsAreDuplicate(annotation.points, existingAnnotation.points)
         );
-        
-        // return _annotations.find(existingAnnotation =>
-        //     existingAnnotation.z === annotation.z
-        //     && existingAnnotation.mclass === annotation.mclass
-        //     && _pointsAreDuplicate(annotation.points, existingAnnotation.points)
-        // );
     }
 
     function _updateVisuals() {

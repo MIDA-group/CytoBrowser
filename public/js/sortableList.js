@@ -1,3 +1,4 @@
+
 class SortableList {
     "use strict";
 
@@ -114,7 +115,7 @@ class SortableList {
             .attr("class", "data-row")
             .attr("data-annotation-id", d => d[this._idKey])
             .order((a, b) => a.a < b.a)
-            .each(function(d) {
+            .each(function(d) { // each row
                 if (list._onClick || list._onDoubleClick) {
                     d3.select(this)
                         .style("cursor", "pointer")
@@ -133,7 +134,7 @@ class SortableList {
                     .join("td")
                     .attr("class", "p-1")
                     .style("vertical-align", "middle")
-                    .each(function(f) {
+                    .each(function(f) { //each column
                         if (f.displayFun) {
                             f.displayFun(this, d);
                         }
@@ -187,9 +188,15 @@ class SortableList {
     }
 
     updateData(data) {
+        const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
+        console.time('uL1');
         this._setData(data);
-        this._displayData();
-        this._reorderData();
+        
+        wait(0) //Promise.resolve() didn't give time enough for rendering
+            .then(() => this._displayData())
+            .then(() => this._reorderData());
+
+        console.timeEnd('uL1');
     }
 
     /**
