@@ -87,6 +87,7 @@ const annotationHandler = (function (){
             author: annotation.author,
             id: annotation.id,
             originalId: annotation.originalId,
+
             prediction: annotation.prediction
         };
         if (include_computables) {
@@ -162,6 +163,13 @@ const annotationHandler = (function (){
         }
     }
 
+    /**
+     * Generates a single prediction score
+     * @returns {Object} null
+     */
+    function _generatePrediction() {
+        return null
+    }
 
     /**
      * Add a single annotation to the data.
@@ -226,6 +234,10 @@ const annotationHandler = (function (){
             // Set the author of the annotation
             if (!addedAnnotation.author)
                 addedAnnotation.author = userInfo.getName();
+            
+            // Set the prediction score
+            if (addedAnnotation.prediction === undefined)
+                addedAnnotation.prediction = _generatePrediction();
 
             // Store a data representation of the annotation
             _annotations.push(addedAnnotation);
