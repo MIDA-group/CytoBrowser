@@ -93,8 +93,11 @@ const tmappUI = (function(){
             {
                 name: "Prediction",
                 key: "prediction",
+                title: "Cancer probability score",
                 minWidth: "8em",
-                selectFun: d => d.prediction,
+                displayFun: (elem, d) => {
+                    $(elem).html(d.prediction === null ? null : d.prediction.toFixed(4));
+                },
                 sortable: true
             },
             {
