@@ -19,7 +19,8 @@ const filters = (function () {
         stringValue: Symbol("String value"),
         numberValue: Symbol("Number value"),
         leftP: Symbol("Left parenthesis"),
-        rightP: Symbol("Right parenthesis")
+        rightP: Symbol("Right parenthesis"),
+        nullValue: Symbol("Null value")
     };
 
     const _tokenExp = /\s*(("[^"]*")|('[^']*')|([a-zA-Z]+)|(-?\d+(\.\d+)?)|[^\s\da-zA-Z])\s*/g;
@@ -27,6 +28,7 @@ const filters = (function () {
     const _boolValueExp = /^(false)|(true)$/;
     const _stringValueExp = /^(("[^"]*")|('[^']*'))$/;
     const _numberValueExp = /^-?\d+(\.\d+)?$/;
+    const _nullValueExp = /^(null)$/;
 
     function _getTokenType(token) {
         switch (token) {
@@ -56,6 +58,9 @@ const filters = (function () {
             default:
                 if (_boolValueExp.test(token)) {
                     return _tokenTypes.boolValue;
+                }
+                else if (_nullValueExp.test(token)) {
+                    return _tokenTypes.nullValue;
                 }
                 else if (_keyExp.test(token)) {
                     return _tokenTypes.key;
@@ -138,6 +143,9 @@ const filters = (function () {
         }
 
         evaluate(input) {
+            if (this.key === "prediction" && input[this.key] === null) {
+                return false
+            }
             return input[this.key] > this.value.evaluate(input);
         }
     }
@@ -150,6 +158,9 @@ const filters = (function () {
         }
 
         evaluate(input) {
+            if (this.key === "prediction" && input[this.key] === null) {
+                return false
+            }
             return input[this.key] < this.value.evaluate(input);
         }
     }
@@ -214,6 +225,8 @@ const filters = (function () {
                 return new FilterValue(Number(token.value));
             case _tokenTypes.key:
                 return new FilterKeyValue(token.value);
+            case _tokenTypes.nullValue:
+                return new FilterValue(null)
             default:
                 throw new Error(`Expected a value or a key, got '${token.value}'`);
         }
@@ -317,7 +330,7 @@ const filters = (function () {
      * <equality> ::= "IS"|"is"|"="
      * <gt> ::= ">"
      * <lt> ::= "<"
-     * <value> ::= <key>|"true"|"false"|<string>|<integer>|<float>
+     * <value> ::= <key>|"true"|"false"|<string>|<integer>|<float>|"null"
      *
      * <key> corresponds to any sequence of alphanumeric characters that
      * start with a letter, and <string> corresponds to any sequence
@@ -360,6 +373,7 @@ const filters = (function () {
             x: annotation.centroid.x,
             y: annotation.centroid.y,
             z: annotation.z,
+            prediction: annotation.prediction,
         };
     }
 
