@@ -1,3 +1,11 @@
+// Catch all
+process.on('uncaughtException', function(e) {
+    if (e.code === 'MODULE_NOT_FOUND') {
+        console.error("\nError: Required module missing!\nTry running 'npm install'\n\n\n");
+    }
+    throw e;
+});
+
 // Handle command line arguments
 const argv = require("minimist")(process.argv.slice(2), {
     boolean: ['open-browser'],
