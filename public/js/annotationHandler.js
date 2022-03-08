@@ -8,6 +8,8 @@
 const annotationHandler = (function (){
     "use strict";
 
+    const timingLog=false; //Log add/update times
+
     /**
      * Data representation of an annotation that should be used when adding or
      * updating information about it. While all annotations that have already
@@ -211,9 +213,9 @@ const annotationHandler = (function (){
         if (!Array.isArray(annotations)) {
             annotations = [annotations];
         }
+
         console.log(`Adding ${annotations.length} annotations...`);
-console.time('add');
-//console.profile('add') 
+        timingLog && console.time('addAnnotation');
         annotations.forEach(annotation => {
             const addedAnnotation = _cloneAnnotation(annotation);
 
@@ -282,17 +284,12 @@ console.time('add');
             // Send the update to collaborators
             transmit && collabClient.addAnnotation(addedAnnotation);
         });
-//console.profileEnd() 
 
-console.timeEnd('add');
-console.time('count');
         _updateAnnotationCounts();
-console.timeEnd('count');
+        timingLog && console.timeEnd('addAnnotation');
 
-console.time('vis');
         // Add a graphical representation of the annotation
         _updateVisuals();
-console.timeEnd('vis');
     }
 
     /**
@@ -304,7 +301,7 @@ console.timeEnd('vis');
      * told to update their annotation.
      */
     function update(id, annotation, coordSystem="web", transmit = true, redraw = true) {
-        console.time("annUpd");
+        timingLog && console.time('updateAnnotation');
         const updatedAnnotation = getAnnotationById(id);
         // Check if the annotation being updated exists first
         if (updatedAnnotation === undefined) {
@@ -365,16 +362,16 @@ console.timeEnd('vis');
         // Store the annotation in data
         const updatedIndex = _annotations.findIndex(annotationx => annotationx.id === id);
 
-        // if (newGridIndex !== oldGridIndex) {
-        //     // console.log(`Moving from idx ${oldGridIndex} to ${newGridIndex}`);
-        //     _removeGridAnnotation(_annotations[updatedIndex]);
-        // }
+        if (newGridIndex !== oldGridIndex) {
+            // console.log(`Moving from idx ${oldGridIndex} to ${newGridIndex}`);
+            _removeGridAnnotation(_annotations[updatedIndex]);
+        }
 
         Object.assign(_annotations[updatedIndex], updatedAnnotation);
 
-        // if (newGridIndex !== oldGridIndex) {
-        //     _addGridAnnotation(_annotations[updatedIndex]);
-        // }
+        if (newGridIndex !== oldGridIndex) {
+            _addGridAnnotation(_annotations[updatedIndex]);
+        }
 
 
         // Send the update to collaborators
@@ -383,7 +380,7 @@ console.timeEnd('vis');
 
         // Update the annotation in the graphics
         redraw && _updateVisuals();
-        console.timeEnd("annUpd");
+        timingLog && console.timeEnd('updateAnnotation');
     }
 
     /**

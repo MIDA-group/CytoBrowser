@@ -37,7 +37,7 @@ const annotationStorageConversion = (function() {
                     });
                 }
             }
-console.log('hi');
+
             // Change to a collab on the right image if we're on the wrong one
             if (!ignoreMismatch && data.image !== tmapp.getImageName()) {
                 tmappUI.choice("Warning: Selected data is for another image", 

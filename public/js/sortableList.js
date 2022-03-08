@@ -1,4 +1,5 @@
 
+const timingLog = false; //Log add/update times
 class SortableList {
     "use strict";
 
@@ -91,7 +92,7 @@ class SortableList {
 
     // _data has proporty "changed" which is true if _setData made a change (not verified to work with selectFun)
     _setData(rawData) {
-        console.time("setData");
+        timingLog && console.time("setListData");
         let updates=0;
         this._data = rawData.map((datum,index) => {
             const old = this._data[index];
@@ -112,12 +113,12 @@ class SortableList {
             adjustedDatum.changed && updates++;
             return adjustedDatum;
         });
-        console.timeEnd("setData");
-        console.log(updates," elements updated.");
+        timingLog && console.timeEnd("setListData");
+        // console.log(updates," elements updated.");
     }
 
     _displayData() {
-        console.time("dispData");
+        timingLog && console.time("dispListData");
         const list = this;
         const fields = this._fields;
         const rows = this._table.select("tbody")
@@ -160,11 +161,11 @@ class SortableList {
                     });
             });
         setTimeout(() => changed.style("font-weight", "normal"), 2000); //unbold after 2s
-        console.timeEnd("dispData");
+        timingLog && console.timeEnd("dispListData");
     }
 
     _reorderData() {
-        console.time("sortData");
+        timingLog && console.time("sortListData");
         let sortIcon;
         if (this._sortDirection === "ascending") {
             sortIcon = "&#x2193;";
@@ -190,7 +191,7 @@ class SortableList {
                 const key = d3.select(this).attr("data-key");
                 return key === sortKey ? sortIcon : '<span class="text-muted">&#x2195;</span>';
             });
-        console.timeEnd("sortData");
+        timingLog && console.timeEnd("sortListData");
     }
 
     _progressSort(key) {
@@ -208,11 +209,9 @@ class SortableList {
     }
 
     updateData(data) {
-        console.time('updateData');
         this._setData(data);
         this._displayData(); //may be slow if large data
         this._reorderData();
-        console.timeEnd('updateData');
     }
 
     /**
