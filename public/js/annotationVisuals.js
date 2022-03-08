@@ -5,6 +5,8 @@
 const annotationVisuals = (function() {
     "use strict";
 
+    const timingLog=false; //Log filterAndUpdate times
+
     let _annotationList = null;
     let _unfilteredAnnotations = [];
     let _filter = filters.getFilterFromQuery("");
@@ -12,14 +14,14 @@ const annotationVisuals = (function() {
     let _lastQueryWasValid = true;
 
     // Counters allowing to jump over intermediate updates
-    const pending_vis_count = (function () { let i = 0n; return (val=0n) => i+=BigInt(val); })();
-    const pending_list_count = (function () { let i = 0n; return (val=0n) => i+=BigInt(val); })();
+    const pendingVisCount = (function () { let i = 0n; return (val=0n) => i+=BigInt(val); })();
+    const pendingListCount = (function () { let i = 0n; return (val=0n) => i+=BigInt(val); })();
     let lastCompletedVis = 0;
     let lastCompletedList = 0;
 
     /* This is the heavy work function: filter and visualize annotations */
     function _filterAndUpdate() {
-        console.time('visFiltUpd');
+        timingLog && console.time('visFiltUpd');
 
         const annotations = _unfilteredAnnotations.filter(annotation => {
             const filterableAnnotation = filters.preprocessAnnotationBeforeFiltering(annotation);
@@ -29,33 +31,28 @@ const annotationVisuals = (function() {
         //Draw annotations and update list asynchronously
         const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
 
-        let this_vis_count=pending_vis_count(1); //add one
-        console.log('Init overlay update: ',this_vis_count);
+        let thisVisCount=pendingVisCount(1); //add one
         wait(0) //Using Promise.resolve() didn't give time enough for rendering
             .then(() => {
-                if (this_vis_count==pending_vis_count() || (new Date()-lastCompletedVis > 100)) { //if we're the last one, or >100ms since last update
-                    console.log('running overlay update: ',this_vis_count);
+                if (thisVisCount==pendingVisCount() || (new Date()-lastCompletedVis > 100)) { //if we're the last one, or >100ms since last update
                     overlayHandler.updateAnnotations(annotations);
                     lastCompletedVis = new Date();
                 }
                 else {
-                    console.log('skipping overlay update',this_vis_count,pending_vis_count());
+                    // console.log('skipping overlay update',thisVisCount,pendingVisCount());
                 }
             });
 
-        let this_list_count=pending_list_count(1); //add one
+        let thisListCount=pendingListCount(1); //add one
         if (_annotationList) {
-            console.log('Init list update: ',this_list_count);
             wait(0) 
                 .then(() => {
-                    if (this_list_count==pending_list_count() || (new Date()-lastCompletedList > 100)) { //if we're the last one, or >100ms since last update
-                        console.log('running list update: ',this_list_count);
+                    if (thisListCount==pendingListCount() || (new Date()-lastCompletedList > 100)) { //if we're the last one, or >100ms since last update
                         _annotationList.updateData(annotations.slice().reverse()); // No sort -> reverse order
                         lastCompletedList = new Date();
                     }
                     else {
-                        console.log('skipping list update',this_list_count,pending_list_count());
-                        console.error('Now - last = ',new Date()-lastCompletedList);
+                        // console.log('skipping list update',thisListCount,pendingListCount(),new Date()-lastCompletedList);
                     }
                 });
         }
@@ -67,7 +64,7 @@ const annotationVisuals = (function() {
             tmappUI.setFilterInfo(_unfilteredAnnotations.length, annotations.length);
         }
 
-        console.timeEnd('visFiltUpd');
+        timingLog && console.timeEnd('visFiltUpd');
     }
 
     function _setFilter(query) {
@@ -124,12 +121,8 @@ const annotationVisuals = (function() {
      * @param {Array} annotations All currently placed annotations.
      */
     function update(annotations){
-//        console.profile('update') 
-        console.time('upd');
         _unfilteredAnnotations = annotations;
         _filterAndUpdate();
-        console.timeEnd('upd');
-//        console.profileEnd();
     }
 
     /**
