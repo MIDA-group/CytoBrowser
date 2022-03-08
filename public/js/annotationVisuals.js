@@ -11,9 +11,13 @@ const annotationVisuals = (function() {
     let _filterIsTrivial = true;
     let _lastQueryWasValid = true;
 
+    // Counters allowing to jump over intermediate updates
+    const pending_vis_count = (function () { let i = 0n; return (val=0n) => i+=BigInt(val); })();
+    const pending_list_count = (function () { let i = 0n; return (val=0n) => i+=BigInt(val); })();
+    let lastCompletedVis = 0;
+    let lastCompletedList = 0;
+
     /* This is the heavy work function: filter and visualize annotations */
-    const pending_vis_count = (function () { let i = 0; return (val=0) => i+=val; })();
-    const pending_list_count = (function () { let i = 0; return (val=0) => i+=val; })();
     function _filterAndUpdate() {
         console.time('visFiltUpd');
 
@@ -29,9 +33,10 @@ const annotationVisuals = (function() {
         console.log('Init overlay update: ',this_vis_count);
         wait(0) //Using Promise.resolve() didn't give time enough for rendering
             .then(() => {
-                if (this_vis_count==pending_vis_count()) { //if we're the last one
+                if (this_vis_count==pending_vis_count() || (new Date()-lastCompletedVis > 100)) { //if we're the last one, or >100ms since last update
                     console.log('running overlay update: ',this_vis_count);
                     overlayHandler.updateAnnotations(annotations);
+                    lastCompletedVis = new Date();
                 }
                 else {
                     console.log('skipping overlay update',this_vis_count,pending_vis_count());
@@ -43,12 +48,14 @@ const annotationVisuals = (function() {
             console.log('Init list update: ',this_list_count);
             wait(0) 
                 .then(() => {
-                    if (this_list_count==pending_list_count()) { //if we're the last one
+                    if (this_list_count==pending_list_count() || (new Date()-lastCompletedList > 100)) { //if we're the last one, or >100ms since last update
                         console.log('running list update: ',this_list_count);
                         _annotationList.updateData(annotations.slice().reverse()); // No sort -> reverse order
+                        lastCompletedList = new Date();
                     }
                     else {
                         console.log('skipping list update',this_list_count,pending_list_count());
+                        console.error('Now - last = ',new Date()-lastCompletedList);
                     }
                 });
         }
