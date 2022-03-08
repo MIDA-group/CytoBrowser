@@ -116,7 +116,6 @@ const annotationHandler = (function (){
             z: annotation.z,
             mclass: annotation.mclass,
             
-            bookmarked: annotation.bookmarked,
             comments: annotation.comments && annotation.comments.map(comment => {
                 return {
                     author: comment.author,
@@ -125,14 +124,20 @@ const annotationHandler = (function (){
             }),
             author: annotation.author,
             id: annotation.id,
-            originalId: annotation.originalId,
-
-            prediction: annotation.prediction
+            originalId: annotation.originalId
         };
-        if (include_computables) {
+
+        if (include_computables) { //and defaults
             Object.assign(clone,{                
+                bookmarked: annotation.bookmarked,
+                prediction: annotation.prediction,
                 centroid: annotation.centroid && {x: annotation.centroid.x, y: annotation.centroid.y},
-                diameter: annotation.diameter});
+                diameter: annotation.diameter
+            });
+        }
+        else { //include if non-default valued
+            annotation.bookmarked && Object.assign(clone,{bookmarked: annotation.bookmarked});
+            annotation.prediction!=null && Object.assign(clone,{prediction: annotation.prediction});
         }
         return clone;
     }

@@ -91,13 +91,12 @@ const annotationStorageConversion = (function() {
         };
         annotationHandler.forEachAnnotation(annotation => {
             data.annotations.push(annotation)
-        }, false); //don't copy computables (centroid, diameter,...)
+        }, false); //don't copy computables (centroid, diameter,...) or defaults (bookmarked=false,...)
         globalDataHandler.forEachComment(comment => {
             data.comments.push(comment)
         });
         data.nAnnotations = data.annotations.length;
         data.nComments = data.comments.length;
-        console.log(data);
         return data;
     }
 
