@@ -124,9 +124,9 @@ const overlayHandler = (function (){
 
     function _getAnnotationText(d) {
         if (d.prediction === null) {
-            return `#${d.prediction}: ${d.mclass}`;
+            return `${d.mclass}`;
         }
-        return `#${d.prediction.toFixed(4)}: ${d.mclass}`;
+        return `${d.prediction.toFixed(4)}: ${d.mclass}`;
     }
 
     function _resizeMembers() {
