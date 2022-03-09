@@ -124,7 +124,9 @@ const annotationHandler = (function (){
             }),
             author: annotation.author,
             id: annotation.id,
-            originalId: annotation.originalId
+            originalId: annotation.originalId,
+
+            prediction: annotation.prediction
         };
 
         if (include_computables) { //and defaults

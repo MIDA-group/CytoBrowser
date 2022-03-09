@@ -91,17 +91,13 @@ const tmappUI = (function(){
     function _initAnnotationList() {
         const list = new SortableList("#annotation-list", "#rtoolbar", "id", [
             {
-                name: "x",
-                key: "x",
-                minWidth: "5em",
-                selectFun: d => Math.round(d.centroid.x),
-                sortable: true
-            },
-            {
-                name: "y",
-                key: "y",
-                minWidth: "5em",
-                selectFun: d => Math.round(d.centroid.y),
+                name: "Prediction",
+                key: "prediction",
+                title: "Cancer probability score",
+                minWidth: "8em",
+                displayFun: (elem, d) => {
+                    $(elem).html(d.prediction === null ? null : d.prediction.toFixed(4));
+                },
                 sortable: true
             },
             {
