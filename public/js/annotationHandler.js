@@ -125,7 +125,6 @@ const annotationHandler = (function (){
             author: annotation.author,
             id: annotation.id,
             originalId: annotation.originalId
-
         };
 
         if (include_computables) { //and defaults
@@ -285,10 +284,6 @@ const annotationHandler = (function (){
             // Set the author of the annotation
             if (!addedAnnotation.author)
                 addedAnnotation.author = userInfo.getName();
-            
-            // Set the prediction score
-            if (addedAnnotation.prediction === undefined)
-                addedAnnotation.prediction = _generatePrediction();
             
             // Set the prediction score
             if (addedAnnotation.prediction === undefined)
