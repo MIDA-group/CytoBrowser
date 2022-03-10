@@ -91,13 +91,17 @@ const tmappUI = (function(){
     function _initAnnotationList() {
         const list = new SortableList("#annotation-list", "#rtoolbar", "id", [
             {
-                name: "Prediction",
-                key: "prediction",
-                title: "Cancer probability score",
-                minWidth: "8em",
-                displayFun: (elem, d) => {
-                    $(elem).html(d.prediction === null ? null : d.prediction.toFixed(4));
-                },
+                name: "x",
+                key: "x",
+                minWidth: "5em",
+                selectFun: d => Math.round(d.centroid.x),
+                sortable: true
+            },
+            {
+                name: "y",
+                key: "y",
+                minWidth: "5em",
+                selectFun: d => Math.round(d.centroid.y),
                 sortable: true
             },
             {
@@ -120,6 +124,16 @@ const tmappUI = (function(){
                     badge.addClass("badge text-white");
                     badge.css("background-color", color);
                     $(elem).html(badge);
+                },
+                sortable: true
+            },
+            {
+                name: "Pred.",
+                key: "prediction",
+                title: "Class prediction score",
+                minWidth: "8em",
+                displayFun: (elem, d) => {
+                    $(elem).html(d.prediction === null ? null : d.prediction.toFixed(4));
                 },
                 sortable: true
             },
