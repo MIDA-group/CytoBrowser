@@ -149,7 +149,7 @@ class SortableList {
                     .selectAll("td")
                     .data(fields)
                     .join("td")
-                    .attr("class", "p-1")
+                    .attr("class", "px-0 py-1")
                     .style("vertical-align", "middle")
                     .each(function(f) { //each column
                         if (f.displayFun) {
