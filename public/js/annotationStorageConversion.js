@@ -29,6 +29,25 @@ const annotationStorageConversion = (function() {
      */
     function addAnnotationStorageData(data, ignoreMismatch=false) {
         if (data.version === "1.0" || data.version === "1.1") {
+            let currentClassesNames = classUtils.getSortedClassesNames();
+            let targetClassesNames = currentClassesNames;
+
+            if (data.classConfig) {
+                targetClassesNames = [];
+                data.classConfig.forEach((entry) => targetClassesNames.push(entry.name));
+            }
+
+            targetClassesNames = targetClassesNames.sort();
+
+            let sameClasses = targetClassesNames.every(function(value, index) {
+                return value === currentClassesNames[index];
+            });
+
+            const rebuildClassConfig = () => {
+                tmappUI.updateClassSelectionButtons(data.classConfig);
+                annotationHandler.restartAnnotationCounts();
+            }
+
             const addAnnotations = () => {
                 annotationHandler.add(data.annotations, "image");
                 if (data.version === "1.1") {
@@ -49,25 +68,44 @@ const annotationStorageConversion = (function() {
                         click: () => { 
                             addAnnotationStorageData(data, true); 
                         }
-                    }]);
-                }
-            else if (!annotationHandler.isEmpty()) {
-                tmappUI.choice("What should be done with the current annotations?", null, [
-                    {
-                        label: "Add loaded annotations to existing ones",
-                        click: () => {addAnnotations();}
-                    },
-                    {
-                        label: "Replace existing annotations with loaded ones",
-                        click: () => {
-                            annotationHandler.clear();
-                            globalDataHandler.clear();
-                            addAnnotations();
-                        }
                     }
                 ]);
             }
+            
+            else if (!annotationHandler.isEmpty()) {
+                if (currentClassesNames.length === targetClassesNames.length && sameClasses){
+                    tmappUI.choice("What should be done with the current annotations?", null, [
+                        {
+                            label: "Add loaded annotations to existing ones",
+                            click: () => {addAnnotations();}
+                        },
+                        {
+                            label: "Replace existing annotations with loaded ones",
+                            click: () => {
+                                annotationHandler.clear();
+                                globalDataHandler.clear();
+                                addAnnotations();
+                            }
+                        }
+                    ]);
+                }
+                else {
+                    tmappUI.choice("Warning: Current and loaded classification systems are incompatible.", null, [
+                        {
+                            label: "Replace classif. system and annotations with loaded ones",
+                            click: () => {
+                                annotationHandler.clear();
+                                globalDataHandler.clear();
+                                rebuildClassConfig();
+                                addAnnotations();
+                            }
+                        }
+                    ]);
+                }
+            }
+
             else {
+                rebuildClassConfig()
                 addAnnotations();
             }
         }
