@@ -474,6 +474,10 @@ const tmappUI = (function(){
         _initCollaborationMenu();
     }
 
+    /**
+     * Updates the class selection buttons to reflect changes in the classification system.
+     * @param {Object} classConfig
+     */
     function updateClassSelectionButtons(classConfig) {
         classUtils.setClassConfig(classConfig);
         _initClassSelectionButtons();
