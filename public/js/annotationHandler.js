@@ -54,6 +54,14 @@ const annotationHandler = (function (){
         globalDataHandler.updateAnnotationCounts(_nMarkers, _nRegions, _classCounts);
     }
 
+    function _restartAnnotationCounts() {
+        _nMarkers = 0;
+        _nRegions = 0;
+        _classCounts = {};
+        classUtils.forEachClass(c => _classCounts[c.name] = 0);
+        globalDataHandler.updateAnnotationCounts(_nMarkers, _nRegions, _classCounts);
+    }
+
     // Low-res array of arrays
     const _annotationGrid = []; 
     const _gridShift = 10; //2^n sized grid squares
@@ -524,6 +532,13 @@ const annotationHandler = (function (){
         return _annotations.length === 0;
     }
 
+    /**
+     * Call private function to restart annotation counts.
+     */
+    function restartAnnotationCounts() {
+        _restartAnnotationCounts();
+    }
+
     // Return public members of the closure
     return {
         add,
@@ -533,6 +548,7 @@ const annotationHandler = (function (){
         clear,
         forEachAnnotation,
         getAnnotationById,
-        isEmpty
+        isEmpty,
+        restartAnnotationCounts
     };
 })();
