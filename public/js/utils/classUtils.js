@@ -15,7 +15,25 @@ const classUtils = (function(){
      * class name.
      * @property {string} color The color used to represent the class.
      */
-    const _classes = classConfig;
+    let _classes = classConfig;
+
+    /**
+     * Get the name of each class exisiting in the current class configuration system.
+     * @returns {Array<string>} _classes
+     */
+    function getSortedClassesNames() {
+        let classesNames = [];
+        _classes.forEach((entry) => classesNames.push(entry.name));
+        return classesNames.sort();
+    }
+
+    /**
+     * Set the class configuration system.
+     * @param {Object} classConfig 
+     */
+    function setClassConfig(classConfig) {
+        _classes = classConfig;
+    }
 
     /**
      * Get the color assigned for a given class.
@@ -59,6 +77,8 @@ const classUtils = (function(){
 
     return {
         count: () => _classes.length,
+        getSortedClassesNames: getSortedClassesNames,
+        setClassConfig: setClassConfig,
         classColor: classColor,
         getClassFromID: getClassFromID,
         getIDFromName: getIDFromName,
