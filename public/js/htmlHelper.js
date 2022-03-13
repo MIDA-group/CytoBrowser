@@ -520,6 +520,7 @@ const htmlHelper = (function() {
      * class.
      */
     function buildClassSelectionButtons(container, activeIndex) {
+        container.html('');
         classUtils.forEachClass((mclass, index) => {
             const active = activeIndex === index;
             const button = _classSelectionButton(mclass, active);
