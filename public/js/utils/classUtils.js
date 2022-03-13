@@ -18,7 +18,7 @@ const classUtils = (function(){
     let _classes = classConfig;
 
     /**
-     * Get the name of each class exisiting in the current class configuration system.
+     * Get the name of each class in the current classification system.
      * @returns {Array<string>} _classes
      */
     function getSortedClassesNames() {
@@ -28,7 +28,7 @@ const classUtils = (function(){
     }
 
     /**
-     * Set the class configuration system.
+     * Set the classification system based on a new configuration.
      * @param {Object} classConfig 
      */
     function setClassConfig(classConfig) {
