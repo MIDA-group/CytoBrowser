@@ -474,6 +474,11 @@ const tmappUI = (function(){
         _initCollaborationMenu();
     }
 
+    function updateClassSelectionButtons(classConfig) {
+        classUtils.setClassConfig(classConfig);
+        _initClassSelectionButtons();
+    }
+
     /**
      * Open a popup modal for a general multiple-choice event. If a
      * modal is currently opened, it will be closed and reopened
@@ -806,6 +811,7 @@ const tmappUI = (function(){
 
     return {
         initUI: initUI,
+        updateClassSelectionButtons:updateClassSelectionButtons,
         choice: choice,
         openAnnotationEditMenu: openAnnotationEditMenu,
         setCollabID: setCollabID,
