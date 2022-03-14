@@ -44,8 +44,9 @@ const annotationStorageConversion = (function() {
             });
 
             const rebuildClassConfig = () => {
-                tmappUI.updateClassSelectionButtons(data.classConfig);
-                annotationHandler.restartAnnotationCounts();
+                classUtils.setClassConfig(data.classConfig);
+                tmappUI.updateClassSelectionButtons();
+                annotationHandler.updateClassConfig(data.classConfig);
             }
 
             const addAnnotations = () => {
@@ -90,9 +91,9 @@ const annotationStorageConversion = (function() {
                     ]);
                 }
                 else {
-                    tmappUI.choice("Warning: Current and loaded classification systems are incompatible.", null, [
+                    tmappUI.choice("Warning: Current and loaded class systems are incompatible", null, [
                         {
-                            label: "Replace classif. system and annotations with loaded ones",
+                            label: "Replace class system and annotations with loaded ones",
                             click: () => {
                                 annotationHandler.clear();
                                 globalDataHandler.clear();
