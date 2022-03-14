@@ -181,6 +181,11 @@ const collabClient = (function(){
         globalDataHandler.clear();
         metadataHandler.updateMetadataValues(msg.metadata);
         annotationHandler.clear(false);
+        
+        classUtils.setClassConfig(msg.classConfig);
+        tmappUI.updateClassSelectionButtons();
+        annotationHandler.updateClassConfig(msg.classConfig);
+
         annotationHandler.add(msg.annotations, "image", false);
         if (_joinBatch) {
             annotationHandler.add(_joinBatch, "image");
@@ -525,6 +530,18 @@ const collabClient = (function(){
     }
 
     /**
+     * Notify collaborators about the classification system being updated.
+     * @param {Object} classConfig Data for the updated classification system.
+     */
+    function updateClassConfig(classConfig) {
+        send({
+            type: "classConfigAction",
+            actionType: "update",
+            classConfig: classConfig
+        });
+    }
+
+    /**
      * Add a comment to the current collaboration.
      * @param {string} content The text content of the comment.
      */
@@ -743,6 +760,7 @@ const collabClient = (function(){
         updateAnnotation,
         removeAnnotation,
         clearAnnotations,
+        updateClassConfig,
         addComment,
         removeComment,
         changeUsername,
