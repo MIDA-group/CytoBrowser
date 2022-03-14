@@ -478,8 +478,7 @@ const tmappUI = (function(){
      * Updates the class selection buttons to reflect changes in the classification system.
      * @param {Object} classConfig
      */
-    function updateClassSelectionButtons(classConfig) {
-        classUtils.setClassConfig(classConfig);
+    function updateClassSelectionButtons() {
         _initClassSelectionButtons();
     }
 
