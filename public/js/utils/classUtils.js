@@ -31,8 +31,14 @@ const classUtils = (function(){
      * Set the classification system based on a new configuration.
      * @param {Object} classConfig 
      */
-    function setClassConfig(classConfig) {
-        _classes = classConfig;
+    function setClassConfig(updatedClassConfig) {
+        if (updatedClassConfig !== undefined && updatedClassConfig.length >= 1) {
+            _classes = updatedClassConfig;
+        }
+        else {
+            _classes = classConfig;
+        }
+        
     }
 
     /**
