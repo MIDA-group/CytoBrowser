@@ -535,8 +535,11 @@ const annotationHandler = (function (){
     /**
      * Call private function to restart annotation counts.
      */
-    function restartAnnotationCounts() {
+    function updateClassConfig(classConfig, transmit = true) {
         _restartAnnotationCounts();
+
+        // Send the update to collaborators
+        transmit && collabClient.updateClassConfig(classConfig);
     }
 
     // Return public members of the closure
@@ -549,6 +552,6 @@ const annotationHandler = (function (){
         forEachAnnotation,
         getAnnotationById,
         isEmpty,
-        restartAnnotationCounts
+        updateClassConfig
     };
 })();
