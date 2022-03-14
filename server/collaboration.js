@@ -49,6 +49,7 @@ class Collaboration {
         this.hasUnsavedChanges = false;
         this.loadState(false);
         this.log(`Initializing collaboration.`, console.info);
+        this.classConfig = [];
     }
 
     close() {
@@ -148,6 +149,11 @@ class Collaboration {
                     this.handleAnnotationAction(sender, member, msg);
                 });
                 break;
+            case "classConfigAction":
+                this.ongoingLoad.then(() => {
+                    this.handleClassConfigAction(sender, member, msg);
+                });
+                break;
             case "globalDataAction":
                 this.ongoingLoad.then(() => {
                     this.handleGlobalDataAction(sender, member, msg);
@@ -225,6 +231,25 @@ class Collaboration {
         }
         this.flagUnsavedChanges();
         this.trySavingState();
+    }
+
+    handleClassConfigAction(sender, member, msg) {
+        if (!member.ready) {
+            // Members who aren't ready shouldn't do anything with annotations
+            return;
+        }
+        switch (msg.actionType) {
+            case "add":
+                break;
+            case "update":
+                {
+                    Object.assign(this.classConfig, msg.classConfig);
+                    this.forwardMessage(sender, msg);
+                }
+                break;
+            }
+            this.flagUnsavedChanges();
+            this.trySavingState();
     }
 
     handleGlobalDataAction(sender, member, msg) {
@@ -336,6 +361,7 @@ class Collaboration {
             image: this.image,
             members: Array.from(this.members.values()),
             annotations: this.annotations,
+            classConfig: this.classConfig,
             comments: this.comments,
             metadata: metadata.getMetadataForImage(this.image)
         }
@@ -379,6 +405,7 @@ class Collaboration {
                     const commentIds = this.comments.map(comment => comment.id);
                     this.nextCommentId = Math.max(...commentIds) + 1;
                 }
+                this.classConfig = data.classConfig;
             }
         }).catch(() => {
             this.log(`Couldn't load preexisting annotations for ${this.image}.`, console.info);
@@ -406,6 +433,7 @@ class Collaboration {
                 updatedOn: updateTime,
                 nAnnotations: this.annotations.length,
                 nComments: this.comments.length,
+                classConfig: this.classConfig,
                 annotations: this.annotations,
                 comments: this.comments
             };
