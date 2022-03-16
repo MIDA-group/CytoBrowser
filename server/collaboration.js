@@ -239,8 +239,6 @@ class Collaboration {
             return;
         }
         switch (msg.actionType) {
-            case "add":
-                break;
             case "update":
                 {
                     Object.assign(this.classConfig, msg.classConfig);
