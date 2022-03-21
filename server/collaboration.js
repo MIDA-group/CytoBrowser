@@ -403,6 +403,9 @@ class Collaboration {
                     const commentIds = this.comments.map(comment => comment.id);
                     this.nextCommentId = Math.max(...commentIds) + 1;
                 }
+                if (data.classConfig === undefined) { //Ensure backwards compatibility
+                    data.classConfig = [];
+                }
                 this.classConfig = data.classConfig;
             }
         }).catch(() => {
