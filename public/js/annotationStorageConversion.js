@@ -29,24 +29,15 @@ const annotationStorageConversion = (function() {
      */
     function addAnnotationStorageData(data, ignoreMismatch=false) {
         if (data.version === "1.0" || data.version === "1.1") {
-            let currentClassesNames = classUtils.getSortedClassesNames();
-            let targetClassesNames = currentClassesNames;
+            let currentClassSystem = classUtils.getClassConfig();
 
-            if (data.classConfig) {
-                targetClassesNames = [];
-                data.classConfig.forEach((entry) => targetClassesNames.push(entry.name));
-            }
-
-            targetClassesNames = targetClassesNames.sort();
-
-            let sameClasses = targetClassesNames.every(function(value, index) {
-                return value === currentClassesNames[index];
-            });
+            // Ensure backward compatibility: If no class system is defined, use default Bethesda system.
+            let targetClassesSystem = (data.classConfig) ? data.classConfig : classConfig;
 
             const rebuildClassConfig = () => {
-                classUtils.setClassConfig(data.classConfig);
+                classUtils.setClassConfig(targetClassesSystem);
                 tmappUI.updateClassSelectionButtons();
-                annotationHandler.updateClassConfig(data.classConfig);
+                annotationHandler.updateClassConfig(targetClassesSystem);
             }
 
             const addAnnotations = () => {
@@ -74,7 +65,7 @@ const annotationStorageConversion = (function() {
             }
             
             else if (!annotationHandler.isEmpty()) {
-                if (currentClassesNames.length === targetClassesNames.length && sameClasses){
+                if (classUtils.compareTwoClassSystems(currentClassSystem, targetClassesSystem)) {
                     tmappUI.choice("What should be done with the current annotations?", null, [
                         {
                             label: "Add loaded annotations to existing ones",
@@ -128,6 +119,9 @@ const annotationStorageConversion = (function() {
             annotations: [],
             comments: []
         };
+        if (!classUtils.isBethesda(classUtils.getClassConfig())) {
+            data.classConfig = classUtils.getClassConfig();
+        }
         annotationHandler.forEachAnnotation(annotation => {
             data.annotations.push(annotation)
         }, false); //don't copy computables (centroid, diameter,...) or defaults (bookmarked=false,...)
