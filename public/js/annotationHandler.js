@@ -240,6 +240,9 @@ const annotationHandler = (function (){
 
         console.log(`Adding ${annotations.length} annotations...`);
         timingLog && console.time('addAnnotation');
+
+        let classes = classUtils.getSortedNames(classUtils.getClassConfig());
+
         annotations.forEach(annotation => {
             const addedAnnotation = _cloneAnnotation(annotation);
 
@@ -251,6 +254,11 @@ const annotationHandler = (function (){
                 addedAnnotation.points = coords.map(coord => coord.image);
             if (!addedAnnotation.points.every(coordinateHelper.pointIsInsideImage)) {
                 console.warn("Cannot add an annotation with points outside the image.");
+                return;
+            }
+
+            if (!(classes.includes(addedAnnotation.mclass))) {
+                console.warn("Cannot add an annotation with unrecognised/incompatible class.");
                 return;
             }
 
