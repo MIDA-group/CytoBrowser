@@ -31,8 +31,8 @@ const annotationStorageConversion = (function() {
         if (data.version === "1.0" || data.version === "1.1") {
             let currentClassSystem = classUtils.getClassConfig();
 
-            // Ensure backward compatibility: If no class system is defined, use default Bethesda system.
-            let targetClassesSystem = (data.classConfig) ? data.classConfig : classConfig;
+            // Ensure backward compatibility: If no class system is defined, use default system.
+            let targetClassesSystem = (data.classConfig) ? data.classConfig : defaultClassConfig;
 
             const rebuildClassConfig = () => {
                 classUtils.setClassConfig(targetClassesSystem);
@@ -119,7 +119,7 @@ const annotationStorageConversion = (function() {
             annotations: [],
             comments: []
         };
-        if (!classUtils.isBethesda(classUtils.getClassConfig())) {
+        if (!classUtils.isDefaultClassConfig(classUtils.getClassConfig())) {
             data.classConfig = classUtils.getClassConfig();
         }
         annotationHandler.forEachAnnotation(annotation => {
