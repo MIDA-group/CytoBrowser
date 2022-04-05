@@ -1,6 +1,6 @@
 /**
  * Information about the representation of the different classes specified
- * in the classConfig.js file.
+ * in the defaultClassConfig.js file.
  * @namespace classUtils
  */
 const classUtils = (function(){

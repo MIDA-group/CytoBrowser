@@ -1,9 +1,12 @@
 /**
- * The classConfig object specified in this file describes the marker
- * classes that can be used in the application. Each entry describes
- * a class's name, description, and color.
+ * Default classConfig, if not supplied from imported annotation file.
+ * 
+ * The classConfig object specified in this file describes the default
+ * marker classes that can be used in the application. Each entry 
+ * describes a class's name, description, and color. 
+ * Order of classes matters for button order and sorting.
  */
-const classConfig = [
+const defaultClassConfig = [
     {
         name: "NILM",
         description: "Negative for intraepithelial lesion or malignancy",
