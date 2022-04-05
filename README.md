@@ -21,11 +21,6 @@ cd CytoBrowser
 #Install the necessary dependencies
 npm install
 
-#Start the web server on a specified host
-node cytobrowser.js 127.0.0.1 8080
-
-#Or more generally
-node cytobrowser.js [hostname] [port]
 
 #Put your OpenSeadragon compatible images in the 'data/' directory
 #For converters, see e.g.: <a href="http://openseadragon.github.io/examples/creating-zooming-images/">http://openseadragon.github.io/examples/creating-zooming-images/</a>
@@ -34,14 +29,19 @@ node cytobrowser.js [hostname] [port]
 #(There are more examples in the '<a href="https://github.com/MIDA-group/CytoBrowser/tree/master/examples">examples/</a>' directory)
 ./examples/Zeiss-1-Stacked.sh  #This requires bftools and libvips
 
+
+#Start the web server on a free port on localhost, and open a browser
+node cytobrowser.js --open-browser
+
+
+
+
 #Optionally open an ssh-pipe from your local machine to the web server
 ssh -L 8080:localhost:8080 remote.host
 
-#Open a web browser on your local machine, load an image and start annotating
-xdg-open <a href="http://localhost:8080">http://localhost:8080</a>
+#More generally, to start the web server on a specified port
+node cytobrowser.js [hostname] [port]
 
-#Or open a specific image directly
-xdg-open http://localhost:8080/?image=image_name
 
 #Enjoy! =)
 </pre>
