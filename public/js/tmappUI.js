@@ -107,7 +107,7 @@ const tmappUI = (function(){
             {
                 name: "z",
                 key: "z",
-                minWidth: "4em",
+                minWidth: "3em",
                 selectFun: d => d.z,
                 sortable: true
             },
@@ -115,7 +115,7 @@ const tmappUI = (function(){
                 name: "Class",
                 key: "mclassId",
                 selectFun: d => classUtils.getIDFromName(d.mclass),
-                minWidth: "6em",
+                minWidth: "5em",
                 displayFun: (elem, d) => {
                     const color = classUtils.classColor(d.mclassId);
                     const name = classUtils.getClassFromID(d.mclassId).name;
@@ -128,10 +128,20 @@ const tmappUI = (function(){
                 sortable: true
             },
             {
+                name: "Pred.",
+                key: "prediction",
+                title: "Class prediction score",
+                minWidth: "6em",
+                displayFun: (elem, d) => {
+                    $(elem).html((d.prediction === null || d.prediction === undefined) ? null : d.prediction.toFixed(4));
+                },
+                sortable: true
+            },
+            {
                 name: "B",
                 key: "bookmarked",
                 title: "Annotation has been bookmarked",
-                minWidth: "3em",
+                minWidth: "2em",
                 displayFun: (elem, d) => {
                     $(elem).html(d.bookmarked ? "&check;" : "-");
                 },
@@ -141,7 +151,7 @@ const tmappUI = (function(){
                 name: "R",
                 key: "isARegion",
                 title: "Annotation is a region",
-                minWidth: "3em",
+                minWidth: "2em",
                 selectFun: d => d.points.length > 1,
                 displayFun: (elem, d) => {
                     $(elem).html(d.isARegion ? "&check;" : "-");
@@ -152,7 +162,7 @@ const tmappUI = (function(){
                 name: "C",
                 key: "nComments",
                 title: "Number of comments",
-                minWidth: "3em",
+                minWidth: "2em",
                 selectFun: d => (d.comments && d.comments.length) || 0,
                 sortable: true
             },
@@ -163,7 +173,7 @@ const tmappUI = (function(){
                 displayFun: (elem, d) => {
                     const url = tmapp.annotationURL(d.id);
                     const button = $(`<a href="${url}" role="button">Go to</a>`); //Real URL, can be bookmarked
-                    button.addClass("btn btn-outline-dark btn-sm");
+                    button.addClass("btn btn-outline-dark btn-sm p-0 px-1");
                     button.click((event) => {event.preventDefault(); tmapp.moveToAnnotation(d.id)}); //prevent slow HREF and move directly
                     $(elem).html(button);
                 },
@@ -462,6 +472,14 @@ const tmappUI = (function(){
         _initVisualizationSliders();
         _initKeyboardShortcuts();
         _initCollaborationMenu();
+    }
+
+    /**
+     * Updates the class selection buttons to reflect changes in the classification system.
+     * @param {Object} classConfig
+     */
+    function updateClassSelectionButtons() {
+        _initClassSelectionButtons();
     }
 
     /**
@@ -796,6 +814,7 @@ const tmappUI = (function(){
 
     return {
         initUI: initUI,
+        updateClassSelectionButtons:updateClassSelectionButtons,
         choice: choice,
         openAnnotationEditMenu: openAnnotationEditMenu,
         setCollabID: setCollabID,

@@ -529,6 +529,7 @@
                     <li><code>x</code> &#8211; The x position of the annotation's centroid.</li>
                     <li><code>y</code> &#8211; The y position of the annotation's centroid.</li>
                     <li><code>z</code> &#8211; The z position of the annotation.</li>
+                    <li><code>prediction</code> &#8211; The class probability of the annotation.</li>
                 </ul>
                 <p>
                     The session picker uses a different set of keys
@@ -548,12 +549,13 @@
                     Values specify what the annotation properties should
                     be compared to in the filter. A value can be a boolean,
                     in which case it is specified as <code>true</code> or
-                    <code>false</code>, a string, in which case a quotation
-                    mark should be placed on either side of the value, or
-                    a number, which can be either an integer or a real number.
-                    In addition, the value can be specified as a key, in
-                    which case two properties of the annotation are compared
-                    to each other.
+                    <code>false</code>, a null object, in which case it is
+                    specified as <code>null</code>, a string, in which case
+                    a quotation mark should be placed on either side of the
+                    value, or a number, which can be either an integer or a
+                    real number. In addition, the value can be specified as
+                    a key, in which case two properties of the annotation are
+                    compared to each other.
                 </p>
               <h5>Comparisons</h5>
                 <p>
@@ -590,6 +592,7 @@
                     <li><code>bookmarked &equals; true OR comments &gt; 0</code> &#8211; Annotations that have either been bookmarked or commented on.</li>
                     <li><code>bookmarked &equals; true AND (class &equals; "Other" OR comments &gt; 0)</code> &#8211; Bookmarked annotations that either have the class "Other" or have been commented on.</li>
                     <li><code>x &gt; y</code> &#8211; Annotations where the x position is greater than the y position.</li>
+                    <li><code>prediction &equals; null</code> &#8211; Annotations where the prediction has not been defined.</li>
                 </ul>
           </div>
         </div>
@@ -743,7 +746,7 @@
 <!-- <script src="js/openseadragon/openseadragon-filtering.js"></script> -->
 <script src="js/openseadragon/openseadragon-svg-overlay.js"></script>
 <script src="js/openseadragon/openseadragon-scalebar.js"></script>
-<script src="classConfig.js"></script>
+<script src="defaultClassConfig.js"></script>
 <script src="js/utils/classUtils.js"></script>
 <script src="js/utils/dateUtils.js"></script>
 <script src="js/utils/mathUtils.js"></script>

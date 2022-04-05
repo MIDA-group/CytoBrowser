@@ -34,6 +34,8 @@ const annotationHandler = (function (){
      * @property {number} [originalId] Original ID of annotation, that
      * may have had to be changed if the annotation was added when the
      * id was already in use.
+     * @property {number} [prediction] Optional prediction score indicating
+     * cancer probability.
      */
     /**
      * Representation of the OpenSeadragon coordinate system used to
@@ -49,6 +51,14 @@ const annotationHandler = (function (){
     classUtils.forEachClass(c => _classCounts[c.name] = 0);
 
     function _updateAnnotationCounts() {
+        globalDataHandler.updateAnnotationCounts(_nMarkers, _nRegions, _classCounts);
+    }
+
+    function _restartAnnotationCounts() {
+        _nMarkers = 0;
+        _nRegions = 0;
+        _classCounts = {};
+        classUtils.forEachClass(c => _classCounts[c.name] = 0);
         globalDataHandler.updateAnnotationCounts(_nMarkers, _nRegions, _classCounts);
     }
 
@@ -114,7 +124,6 @@ const annotationHandler = (function (){
             z: annotation.z,
             mclass: annotation.mclass,
             
-            bookmarked: annotation.bookmarked,
             comments: annotation.comments && annotation.comments.map(comment => {
                 return {
                     author: comment.author,
@@ -125,10 +134,18 @@ const annotationHandler = (function (){
             id: annotation.id,
             originalId: annotation.originalId
         };
-        if (include_computables) {
+
+        if (include_computables) { //and defaults
             Object.assign(clone,{                
+                bookmarked: annotation.bookmarked,
+                prediction: annotation.prediction,
                 centroid: annotation.centroid && {x: annotation.centroid.x, y: annotation.centroid.y},
-                diameter: annotation.diameter});
+                diameter: annotation.diameter
+            });
+        }
+        else { //include if non-default valued
+            annotation.bookmarked && Object.assign(clone,{bookmarked: annotation.bookmarked});
+            annotation.prediction!=null && Object.assign(clone,{prediction: annotation.prediction});
         }
         return clone;
     }
@@ -200,6 +217,13 @@ const annotationHandler = (function (){
         }
     }
 
+    /**
+     * Generates a single prediction score
+     * @returns {Object} null
+     */
+    function _generatePrediction() {
+        return null
+    }
 
     /**
      * Add a single annotation to the data.
@@ -216,6 +240,9 @@ const annotationHandler = (function (){
 
         console.log(`Adding ${annotations.length} annotations...`);
         timingLog && console.time('addAnnotation');
+
+        let classes = classUtils.getSortedNames(classUtils.getClassConfig());
+
         annotations.forEach(annotation => {
             const addedAnnotation = _cloneAnnotation(annotation);
 
@@ -227,6 +254,11 @@ const annotationHandler = (function (){
                 addedAnnotation.points = coords.map(coord => coord.image);
             if (!addedAnnotation.points.every(coordinateHelper.pointIsInsideImage)) {
                 console.warn("Cannot add an annotation with points outside the image.");
+                return;
+            }
+
+            if (!(classes.includes(addedAnnotation.mclass))) {
+                console.warn("Cannot add an annotation with unrecognised/incompatible class.");
                 return;
             }
 
@@ -268,6 +300,10 @@ const annotationHandler = (function (){
             // Set the author of the annotation
             if (!addedAnnotation.author)
                 addedAnnotation.author = userInfo.getName();
+            
+            // Set the prediction score
+            if (addedAnnotation.prediction === undefined)
+                addedAnnotation.prediction = _generatePrediction();
 
             // Store a data representation of the annotation
             _addAnnotation(addedAnnotation);
@@ -504,6 +540,16 @@ const annotationHandler = (function (){
         return _annotations.length === 0;
     }
 
+    /**
+     * Call private function to restart annotation counts.
+     */
+    function updateClassConfig(classConfig, transmit = true) {
+        _restartAnnotationCounts();
+
+        // Send the update to collaborators
+        transmit && collabClient.updateClassConfig(classConfig);
+    }
+
     // Return public members of the closure
     return {
         add,
@@ -513,6 +559,7 @@ const annotationHandler = (function (){
         clear,
         forEachAnnotation,
         getAnnotationById,
-        isEmpty
+        isEmpty,
+        updateClassConfig
     };
 })();

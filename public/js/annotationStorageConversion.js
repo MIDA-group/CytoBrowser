@@ -29,6 +29,17 @@ const annotationStorageConversion = (function() {
      */
     function addAnnotationStorageData(data, ignoreMismatch=false) {
         if (data.version === "1.0" || data.version === "1.1") {
+            let currentClassSystem = classUtils.getClassConfig();
+
+            // Ensure backward compatibility: If no class system is defined, use default Bethesda system.
+            let targetClassesSystem = (data.classConfig) ? data.classConfig : classConfig;
+
+            const rebuildClassConfig = () => {
+                classUtils.setClassConfig(targetClassesSystem);
+                tmappUI.updateClassSelectionButtons();
+                annotationHandler.updateClassConfig(targetClassesSystem);
+            }
+
             const addAnnotations = () => {
                 annotationHandler.add(data.annotations, "image");
                 if (data.version === "1.1") {
@@ -49,25 +60,44 @@ const annotationStorageConversion = (function() {
                         click: () => { 
                             addAnnotationStorageData(data, true); 
                         }
-                    }]);
-                }
-            else if (!annotationHandler.isEmpty()) {
-                tmappUI.choice("What should be done with the current annotations?", null, [
-                    {
-                        label: "Add loaded annotations to existing ones",
-                        click: () => {addAnnotations();}
-                    },
-                    {
-                        label: "Replace existing annotations with loaded ones",
-                        click: () => {
-                            annotationHandler.clear();
-                            globalDataHandler.clear();
-                            addAnnotations();
-                        }
                     }
                 ]);
             }
+            
+            else if (!annotationHandler.isEmpty()) {
+                if (classUtils.compareTwoClassSystems(currentClassSystem, targetClassesSystem)) {
+                    tmappUI.choice("What should be done with the current annotations?", null, [
+                        {
+                            label: "Add loaded annotations to existing ones",
+                            click: () => {addAnnotations();}
+                        },
+                        {
+                            label: "Replace existing annotations with loaded ones",
+                            click: () => {
+                                annotationHandler.clear();
+                                globalDataHandler.clear();
+                                addAnnotations();
+                            }
+                        }
+                    ]);
+                }
+                else {
+                    tmappUI.choice("Warning: Current and loaded class systems are incompatible", null, [
+                        {
+                            label: "Replace class system and annotations with loaded ones",
+                            click: () => {
+                                annotationHandler.clear();
+                                globalDataHandler.clear();
+                                rebuildClassConfig();
+                                addAnnotations();
+                            }
+                        }
+                    ]);
+                }
+            }
+
             else {
+                rebuildClassConfig()
                 addAnnotations();
             }
         }
@@ -89,15 +119,17 @@ const annotationStorageConversion = (function() {
             annotations: [],
             comments: []
         };
+        if (!classUtils.isBethesda(classUtils.getClassConfig())) {
+            data.classConfig = classUtils.getClassConfig();
+        }
         annotationHandler.forEachAnnotation(annotation => {
             data.annotations.push(annotation)
-        }, false); //don't copy computables (centroid, diameter,...)
+        }, false); //don't copy computables (centroid, diameter,...) or defaults (bookmarked=false,...)
         globalDataHandler.forEachComment(comment => {
             data.comments.push(comment)
         });
         data.nAnnotations = data.annotations.length;
         data.nComments = data.comments.length;
-        console.log(data);
         return data;
     }
 

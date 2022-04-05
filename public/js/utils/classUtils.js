@@ -1,6 +1,6 @@
 /**
  * Information about the representation of the different classes specified
- * in the classConfig.js file.
+ * in the defaultClassConfig.js file.
  * @namespace classUtils
  */
 const classUtils = (function(){
@@ -15,7 +15,67 @@ const classUtils = (function(){
      * class name.
      * @property {string} color The color used to represent the class.
      */
-    const _classes = classConfig;
+    let _classes = classConfig;
+
+    /**
+     * Get a sorted array containing the name of each class in a given class system.
+     * @returns {Array<string>}
+     */
+    function getSortedNames(class_system) {
+        let classesNames = [];
+        class_system.forEach((entry) => classesNames.push(entry.name));
+        return classesNames.sort();
+    }
+
+    /**
+     * Check whether a class system corresponds to the Bethesda system.
+     * @param {Object} class_system
+     * @returns {Boolean} indicates whether the argument class_system is the Bethesda system.
+     */
+    function isBethesda(class_system) {
+        return (compareTwoClassSystems(class_system, classConfig) || class_system.length === 0);
+    }
+
+    /**
+     * Compare two class systems by name of classes
+     * @param {Object} class_system_a the first class system
+     * @param {Object} class_system_b the second class system
+     * @returns {Boolean} indication whether the given class sytems have the same classes
+     */
+    function compareTwoClassSystems(class_system_a, class_system_b) {
+        let sorted_classNames_a = getSortedNames(class_system_a);
+        let sorted_classNames_b = getSortedNames(class_system_b);
+
+        let sameClassLenghts = class_system_a.length === class_system_b.length;
+
+        let sameClassNames = sorted_classNames_a.every(function(value, index) {
+            return value === sorted_classNames_b[index];
+        });
+
+        return (sameClassLenghts && sameClassNames);
+    }
+
+    /**
+     * Get the current class system.
+     * @returns {Object}
+     */
+    function getClassConfig() {
+        return _classes;
+    }
+
+    /**
+     * Set the classification system based on a new configuration.
+     * @param {Object} classConfig 
+     */
+    function setClassConfig(updatedClassConfig) {
+        if (updatedClassConfig !== undefined && updatedClassConfig.length >= 1) {
+            _classes = updatedClassConfig;
+        }
+        else {
+            _classes = classConfig;
+        }
+        
+    }
 
     /**
      * Get the color assigned for a given class.
@@ -59,6 +119,11 @@ const classUtils = (function(){
 
     return {
         count: () => _classes.length,
+        getSortedNames: getSortedNames,
+        isBethesda: isBethesda,
+        compareTwoClassSystems: compareTwoClassSystems,
+        getClassConfig: getClassConfig,
+        setClassConfig: setClassConfig,
         classColor: classColor,
         getClassFromID: getClassFromID,
         getIDFromName: getIDFromName,

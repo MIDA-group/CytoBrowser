@@ -33,6 +33,9 @@ const collabClient = (function(){
             case "annotationAction": //add/move annotations etc.
                 _handleAnnotationAction(msg);
                 break;
+            case "classConfigAction": //updated class system
+                _handleClassConfigAction(msg);
+                break;
             case "globalDataAction": //add/remove global comments
                 _handleGlobalDataAction(msg);
                 break;
@@ -78,6 +81,18 @@ const collabClient = (function(){
                 break;
             default:
                 console.warn(`Unknown annotation action type: ${msg.actionType}`);
+        }
+    }
+
+    function _handleClassConfigAction(msg) {
+        switch(msg.actionType) {
+            case "update":
+                classUtils.setClassConfig(msg.classConfig);
+                tmappUI.updateClassSelectionButtons();
+                annotationHandler.updateClassConfig(msg.classConfig, false);
+                break;
+            default:
+                console.warn(`Unknown class config action type: ${msg.actionType}`);
         }
     }
 
@@ -181,6 +196,11 @@ const collabClient = (function(){
         globalDataHandler.clear();
         metadataHandler.updateMetadataValues(msg.metadata);
         annotationHandler.clear(false);
+        
+        classUtils.setClassConfig(msg.classConfig);
+        tmappUI.updateClassSelectionButtons();
+        annotationHandler.updateClassConfig(msg.classConfig, false);
+
         annotationHandler.add(msg.annotations, "image", false);
         if (_joinBatch) {
             annotationHandler.add(_joinBatch, "image");
@@ -525,6 +545,18 @@ const collabClient = (function(){
     }
 
     /**
+     * Notify collaborators about the classification system being updated.
+     * @param {Object} classConfig Data for the updated classification system.
+     */
+    function updateClassConfig(classConfig) {
+        send({
+            type: "classConfigAction",
+            actionType: "update",
+            classConfig: classConfig
+        });
+    }
+
+    /**
      * Add a comment to the current collaboration.
      * @param {string} content The text content of the comment.
      */
@@ -743,6 +775,7 @@ const collabClient = (function(){
         updateAnnotation,
         removeAnnotation,
         clearAnnotations,
+        updateClassConfig,
         addComment,
         removeComment,
         changeUsername,
