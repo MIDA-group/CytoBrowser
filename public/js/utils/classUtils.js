@@ -15,7 +15,7 @@ const classUtils = (function(){
      * class name.
      * @property {string} color The color used to represent the class.
      */
-    let _classes = classConfig;
+    let _classes = defaultClassConfig;
 
     /**
      * Get a sorted array containing the name of each class in a given class system.
@@ -28,16 +28,16 @@ const classUtils = (function(){
     }
 
     /**
-     * Check whether a class system corresponds to the Bethesda system.
+     * Check whether a class system corresponds to the default system.
      * @param {Object} class_system
-     * @returns {Boolean} indicates whether the argument class_system is the Bethesda system.
+     * @returns {Boolean} indicates whether the argument class_system is the default system.
      */
-    function isBethesda(class_system) {
-        return (compareTwoClassSystems(class_system, classConfig) || class_system.length === 0);
+    function isDefaultClassSystem(class_system) {
+        return (compareTwoClassSystems(class_system, defaultClassConfig) || class_system.length === 0);
     }
 
     /**
-     * Compare two class systems by name of classes
+     * Compare two class systems by name of classes, ignoring the class order
      * @param {Object} class_system_a the first class system
      * @param {Object} class_system_b the second class system
      * @returns {Boolean} indication whether the given class sytems have the same classes
@@ -72,7 +72,7 @@ const classUtils = (function(){
             _classes = updatedClassConfig;
         }
         else {
-            _classes = classConfig;
+            _classes = defaultClassConfig;
         }
         
     }
@@ -119,14 +119,14 @@ const classUtils = (function(){
 
     return {
         count: () => _classes.length,
-        getSortedNames: getSortedNames,
-        isBethesda: isBethesda,
-        compareTwoClassSystems: compareTwoClassSystems,
-        getClassConfig: getClassConfig,
-        setClassConfig: setClassConfig,
-        classColor: classColor,
-        getClassFromID: getClassFromID,
-        getIDFromName: getIDFromName,
-        forEachClass: forEachClass
+        getSortedNames,
+        isDefaultClassSystem,
+        compareTwoClassSystems,
+        getClassConfig,
+        setClassConfig,
+        classColor,
+        getClassFromID,
+        getIDFromName,
+        forEachClass
     }
 })();
