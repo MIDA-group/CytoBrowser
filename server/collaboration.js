@@ -171,7 +171,9 @@ class Collaboration {
                 this.handleImageSwap(sender, member, msg);
                 break;
             case "requestSummary":
-                this.handleRequestSummary(sender, member, msg);
+                this.ongoingLoad.then(() => {
+                    this.handleRequestSummary(sender, member, msg);
+                });
                 break;
             case "nameChange":
                 this.handleNameChange(sender, member, msg);
