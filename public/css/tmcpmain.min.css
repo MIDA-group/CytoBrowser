@@ -34,4 +34,13 @@
 }
   
   
-    
+td a { 
+    display: block;
+    color: inherit;
+    text-decoration: inherit;
+}
+td a:hover { 
+    display: block;
+    color: inherit;
+    text-decoration: inherit;
+}

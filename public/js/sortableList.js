@@ -144,13 +144,14 @@ class SortableList {
                         d3.select(this).on("dblclick", () => list._onDoubleClick(d));
                     }
                 }
-
                 d3.select(this)
                     .selectAll("td")
                     .data(fields)
                     .join("td")
                     .attr("class", "px-0 py-1")
                     .style("vertical-align", "middle")
+                    .append("a")
+                    .attr("href", "google.com")
                     .each(function(f) { //each column
                         if (f.displayFun) {
                             f.displayFun(this, d);
