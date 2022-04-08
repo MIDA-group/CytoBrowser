@@ -179,7 +179,7 @@ const tmappUI = (function(){
                 },
                 sortable: false
             }
-        ]);
+        ]); //,(d) => {tmapp.moveToAnnotation(d.id)}
 
         annotationVisuals.setAnnotationList(list);
     }
