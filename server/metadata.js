@@ -8,8 +8,7 @@
  */
 
 const fs = require("fs");
-const parser = require("fast-xml-parser");
-
+const {XMLParser} = require('fast-xml-parser');
 
 const metadataCache = {};
 const metadataExpirationTime = 60000; // Let the cache expire after 30s
@@ -22,7 +21,8 @@ function xmlToObject(xmlData) {
         allowBooleanAttributes: true,
         parseAttributeValue: true
     };
-    return parser.parse(xmlData, options);
+    const parser = new XMLParser(options);
+    return parser.parse(xmlData);
 }
 
 function extractImportantMetadata(jsonData) {
