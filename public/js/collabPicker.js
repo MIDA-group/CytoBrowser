@@ -8,6 +8,7 @@ const collabPicker = (function() {
     const _tableFields = [
         {
             name: "Name",
+            title: "Session name",
             key: "name",
             sortable: true
         },
@@ -18,17 +19,26 @@ const collabPicker = (function() {
         },
         {
             name: "Updated",
+            title: "Last edit",
             key: "updatedOn",
             sortable: true,
             selectFun: d => dateUtils.formatReadableDate(d.updatedOn)
         },
         {
+            name: "# Classes",
+            title: "No. classes in the Class-config",
+            key: "nClasses",
+            sortable: true
+        },
+        {
             name: "# Annotations",
+            title: "Total number of annotations",
             key: "nAnnotations",
             sortable: true
         },
         {
             name: "# Users",
+            title: "No. active users",
             key: "nUsers",
             sortable: true
         }
@@ -122,6 +132,8 @@ const collabPicker = (function() {
         });
     }
 
+    // Get Session info from the server for a given image
+    // HttpRequest to 'api/collaboration/available?image=...'
     function _retrieveCollabInfo(image) {
         let resolveLoad, rejectLoad;
         const loadPromise = new Promise((resolve, reject) => {
@@ -134,11 +146,12 @@ const collabPicker = (function() {
         collabReq.setRequestHeader("Cache-Control", "no-cache, no-store, must-revalidate, max-age=0"); // HTTP 1.1
         collabReq.setRequestHeader("Pragma", "no-cache"); // HTTP 1.0
         collabReq.setRequestHeader("Expires", "0"); // Proxies
-        
+
         collabReq.send(null);
         collabReq.onreadystatechange = () => {
             if (collabReq.readyState === 4 && collabReq.status === 200) {
                 const available = JSON.parse(collabReq.responseText).available;
+                available.forEach((e) => e.nClasses|=defaultClassConfig.length);
                 resolveLoad(available);
             }
             else if (collabReq.readyState === 4) {
