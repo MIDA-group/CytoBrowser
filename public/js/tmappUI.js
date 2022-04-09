@@ -133,7 +133,7 @@ const tmappUI = (function(){
                 title: "Class prediction score",
                 minWidth: "6em",
                 displayFun: (elem, d) => {
-                    $(elem).html((d.prediction == null) ? null : d.prediction.toFixed(4));
+                    $(elem).html((d.prediction == null) ? "&nbsp;" : d.prediction.toFixed(4));
                 },
                 sortable: true
             },
