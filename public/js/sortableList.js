@@ -43,8 +43,10 @@ class SortableList {
      * @param {Function} [onDoubleClick] Function to be called when a row
      * in the list is double clicked, passing the data on that row as an
      * argument. If omitted, nothing happens when a row is double clicked.
+     * @param {'href':Function,'onclick':Function} [anchor] Functions generating 
+     * attributes for an anchor <a></a> wrapping each cell in a row.
      */
-    constructor(table, scroller, idKey, fields, onClick=null, onDoubleClick=null) {
+    constructor(table, scroller, idKey, fields, onClick=null, onDoubleClick=null, anchor=null) {
         this._fields = fields;
         this._data = [];
         this._idKey = idKey;
@@ -52,6 +54,7 @@ class SortableList {
         this._scroller = scroller;
         this._onClick = onClick;
         this._onDoubleClick = onDoubleClick;
+        this._anchor = anchor;
         this._createHeaderRowAndBody();
         this.unsetSorted();
     }
@@ -144,22 +147,30 @@ class SortableList {
                         d3.select(this).on("dblclick", () => list._onDoubleClick(d));
                     }
                 }
-                d3.select(this)
+                let td=d3.select(this)
                     .selectAll("td")
                     .data(fields)
                     .join("td")
                     .attr("class", "px-0 py-1")
-                    .style("vertical-align", "middle")
-                    .append("a")
-                    .attr("href", "google.com")
-                    .each(function(f) { //each column
-                        if (f.displayFun) {
-                            f.displayFun(this, d);
-                        }
-                        else {
-                            d3.select(this).text(d[f.key]);
-                        }
-                    });
+                    .style("vertical-align", "middle");
+                if (list._anchor) { // wrap content in an anchor <a>...</a>
+                    td=td.append("a");
+                    if (list._anchor.href) {
+                        td.attr("href", () => list._anchor.href(d));
+                    }
+                    if (list._anchor.onclick) {
+                        td.on("click", () => list._anchor.onclick(d));
+                    }
+                }
+                td.each(function(f) { //each column
+                    if (f.displayFun) {
+                        f.displayFun(this, d);
+                    }
+                    else {
+                        d3.select(this).text(d[f.key]);
+                    }
+                });
+
             });
         setTimeout(() => changed.style("font-weight", "normal"), 2000); //unbold after 2s
         timingLog && console.timeEnd("dispListData");

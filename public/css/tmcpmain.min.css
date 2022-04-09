@@ -32,14 +32,9 @@
 .collapsed .collapse_rotate {
     transform: rotate(90deg);
 }
-  
-  
-td a { 
-    display: block;
-    color: inherit;
-    text-decoration: inherit;
-}
-td a:hover { 
+
+/* Discrete links in our annotation-list */
+#annotation-list td a { 
     display: block;
     color: inherit;
     text-decoration: inherit;

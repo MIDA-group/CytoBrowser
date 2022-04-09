@@ -165,21 +165,15 @@ const tmappUI = (function(){
                 minWidth: "2em",
                 selectFun: d => (d.comments && d.comments.length) || 0,
                 sortable: true
-            },
-            {
-                name: "",
-                key: "moveToButton",
-                minWidth: "5em",
-                displayFun: (elem, d) => {
-                    const url = tmapp.annotationURL(d.id);
-                    const button = $(`<a href="${url}" role="button">Go to</a>`); //Real URL, can be bookmarked
-                    button.addClass("btn btn-outline-dark btn-sm p-0 px-1");
-                    button.click((event) => {event.preventDefault(); tmapp.moveToAnnotation(d.id)}); //prevent slow HREF and move directly
-                    $(elem).html(button);
-                },
-                sortable: false
-            }
-        ]); //,(d) => {tmapp.moveToAnnotation(d.id)}
+            }   
+        ],
+        null, 
+        null, 
+        {
+            'href':(d)=>tmapp.annotationURL(d.id),
+            'onclick':(d)=>{event.preventDefault();tmapp.moveToAnnotation(d.id);}
+        }
+        );
 
         annotationVisuals.setAnnotationList(list);
     }
