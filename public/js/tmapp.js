@@ -21,6 +21,7 @@ const tmapp = (function() {
         minZoomImageRatio: 1,
         maxZoomPixelRatio: 4,
         gestureSettingsMouse: {clickToZoom: false},
+        gestureSettingsTouch: {clickToZoom: false},
         zoomPerClick: 1.4,
         constrainDuringPan: true,
         visibilityRatio: 1,
