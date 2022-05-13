@@ -413,6 +413,7 @@ const overlayHandler = (function (){
             .call(group => {
                 if (_markerText) {
                     group.append("text")
+                        .classed("notSelectable", true)
                         .style("fill", _getAnnotationColor)
                         .style("font-size", "1%")
                         .style("font-weight", "700")
