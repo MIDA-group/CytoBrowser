@@ -266,8 +266,9 @@ const annotationHandler = (function (){
             let replacedAnnotation = _findDuplicateAnnotation(addedAnnotation);
             if (replacedAnnotation) {
                 // old node does not like ||=
-                once || (console.warn("Adding annotation(s) with identical properties as existing one, replacing."), once=true);
-                update(replacedAnnotation.id, addedAnnotation, coordSystem, false, false);
+                once || (console.warn("Adding annotation(s) with identical properties as existing one, ignoring."), once=true);
+                // changed from update to ignore, since on fast updates we could run into partial updates
+                //update(replacedAnnotation.id, addedAnnotation, coordSystem, false, false);
                 return;
             }
 
