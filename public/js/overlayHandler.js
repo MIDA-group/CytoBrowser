@@ -246,6 +246,15 @@ const overlayHandler = (function (){
                     annotationHandler.remove(d.id);
                 }
             },
+            dblClickHandler: function(event) {
+                if (event.pointerType === 'touch') { // If touch
+                    const location = {
+                        x: event.originalEvent.pageX,
+                        y: event.originalEvent.pageY
+                    };
+                    tmappUI.openAnnotationEditMenu(d.id, location);
+                }                
+            },
             pressHandler: function(event) {
                 tmapp.setCursorStatus({held: true});
                 const mouse_pos = new OpenSeadragon.Point(event.originalEvent.offsetX,event.originalEvent.offsetY);
@@ -286,7 +295,7 @@ const overlayHandler = (function (){
                     };
                     tmappUI.openAnnotationEditMenu(d.id, location);
                 }
-            }
+            }          
         }).setTracking(true);
     }
 

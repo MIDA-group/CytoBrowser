@@ -261,8 +261,9 @@ const tmappUI = (function(){
         menu.focusout(event => {
             const isSame = menu.get(0) === event.relatedTarget;
             const isInside = $.contains(menu.get(0), event.relatedTarget);
-            if (!isSame && !isInside)
+            if (!isSame && !isInside) {
                 _closeContextMenu();
+            }
         });
         menu.contextmenu(() => false);
         const close = $("#close_context_menu");
