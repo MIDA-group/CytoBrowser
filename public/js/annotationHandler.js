@@ -74,7 +74,7 @@ const annotationHandler = (function (){
         }
         const p=annotation.points[0];
         if ((p.x>>_gridShift)>>_gridMax) {
-            error('Too large image, increase _gridMax'); 
+            alert(`Too large x-coord ${p.x}, increase _gridMax`); 
         }
         return (p.y>>_gridShift)<<_gridMax | (p.x>>_gridShift);
     }
