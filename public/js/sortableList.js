@@ -153,8 +153,14 @@ class SortableList {
                     .join("td")
                     .attr("class", "px-0 py-1")
                     .style("vertical-align", "middle");
+
                 if (list._anchor) { // wrap content in an anchor <a>...</a>
-                    td=td.append("a");
+                    td.each(function() { //each column
+                        if (!d3.select(this).select("a").node()) { //all which do not have an anchor
+                            d3.select(this).append("a"); //append one
+                        }
+                    });
+                    td=td.select("a"); // step into the anchor
                     if (list._anchor.href) {
                         td.attr("href", () => list._anchor.href(d));
                     }
@@ -162,6 +168,7 @@ class SortableList {
                         td.on("click", () => list._anchor.onclick(d));
                     }
                 }
+
                 td.each(function(f) { //each column
                     if (f.displayFun) {
                         f.displayFun(this, d);
