@@ -809,34 +809,38 @@ const tmapp = (function() {
     }
 
     return {
-        init: init,
-        openImage: openImage,
-        moveTo: moveTo,
-        makeURL: makeURL,
-        parseURL: parseURL,
-        processURL: processURL,
-        annotationURL: annotationURL,
-        moveToAnnotation: moveToAnnotation,
-        setCollab: setCollab,
-        clearCollab: clearCollab,
-        incrementFocus: incrementFocus,
-        decrementFocus: decrementFocus,
-        getZLevels: getZLevels,
+        init,
+        openImage,
 
-        setBrightness: setBrightness,
-        setContrast: setContrast,
-        changeBrightness: changeBrightness,
-        changeContrast: changeContrast,
+        moveTo,
+        moveToAnnotation,
+        
+        makeURL,
+        parseURL,
+        processURL,
+        annotationURL,
 
-        getImageName: getImageName,
-        updateCollabStatus: updateCollabStatus,
-        setCursorStatus: setCursorStatus,
-        enableControls: enableControls,
-        disableControls: disableControls,
+        setCollab,
+        clearCollab,
 
-        keyHandler: keyHandler,
-        keyDownHandler: keyDownHandler,
+        incrementFocus,
+        decrementFocus,
+        getZLevels,
 
-        updateScalebar: updateScalebar
+        setBrightness,
+        setContrast,
+        changeBrightness,
+        changeContrast,
+
+        getImageName,
+        updateCollabStatus,
+        setCursorStatus,
+        enableControls,
+        disableControls,
+
+        keyHandler,
+        keyDownHandler,
+
+        updateScalebar
     };
 })();

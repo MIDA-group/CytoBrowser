@@ -26,6 +26,8 @@ class SortableList {
      * field can be used to sort the annotations. Defaults to false.
      * @property {string} [minWidth] The minimum width of the column for
      * this field.
+     * @property {() => string} [displayStyle] Typically "none" to make 
+     * column invisible
      */
 
     /**
@@ -70,27 +72,40 @@ class SortableList {
             if (field.minWidth) {
                 col.style("min-width", field.minWidth);
             }
+            const th = row.append("th")
+                .style("user-select", "none")
+                .text(field.name);
+            if (field.displayStyle) {
+                th.style("display", field.displayStyle());
+            }
             if (field.sortable) {
-                row.append("th")
-                    .on("click", () => this._progressSort(field.key))
+                th.on("click", () => this._progressSort(field.key))
                     .style("cursor", "pointer")
-                    .style("user-select", "none")
                     .attr("class", "p-1")
                     .attr("title", field.title ? field.title : field.name)
-                    .text(field.name)
                     .append("span")
                     .attr("class", "sort-indicator ml-1")
                     .style("width", "1em")
                     .attr("data-key", field.key);
             }
-            else {
-                row.append("th")
-                    .style("user-select", "none")
-                    .text(field.name);
-            }
-
         });
         this._table.append("tbody");
+    }
+
+    _updateDisplayStyle() {
+        let changed=false;
+        const th = this._table.selectAll("th")
+            .data(this._fields)
+            .join("th");
+        th.each(function(f) {
+            if (f.displayStyle) {
+                if (changed || d3.select(this).style("display") !== f.displayStyle()) {
+                    d3.select(this).style("display", f.displayStyle());
+                    changed=true;
+                }
+            }
+        });
+        return changed;
     }
 
     // _data has proporty "changed" which is true if _setData made a change (not verified to work with selectFun)
@@ -120,7 +135,7 @@ class SortableList {
         // console.log(updates," elements updated.");
     }
 
-    _displayData() {
+    _displayData(force = false) {
         timingLog && console.time("dispListData");
         const list = this;
         const fields = this._fields;
@@ -132,7 +147,7 @@ class SortableList {
             .attr("data-annotation-id", d => d[this._idKey])
             .order((a, b) => a.a < b.a);
 
-        const changed = rows.filter((d, i) => d.changed);
+        const changed = force? rows: rows.filter((d, i) => d.changed);
         changed
             .style("font-weight", "bold") // bold changes
             .each(function(d) { // each row (no arrow function, to keep 'this')
@@ -147,29 +162,37 @@ class SortableList {
                         d3.select(this).on("dblclick", () => list._onDoubleClick(d));
                     }
                 }
-                let td=d3.select(this)
+                const td=d3.select(this)
                     .selectAll("td")
                     .data(fields)
                     .join("td")
                     .attr("class", "px-0 py-1")
                     .style("vertical-align", "middle");
 
+                td.each(function(f) { //each column
+                    if (f.displayStyle) {
+                        d3.select(this).style("display",f.displayStyle());
+                    } 
+                });
+
+                let elem=td; //td or anchor 
                 if (list._anchor) { // wrap content in an anchor <a>...</a>
                     td.each(function() { //each column
                         if (!d3.select(this).select("a").node()) { //all which do not have an anchor
                             d3.select(this).append("a"); //append one
                         }
                     });
-                    td=td.select("a"); // step into the anchor
+                    elem=td.select("a"); // step into all anchors
                     if (list._anchor.href) {
-                        td.attr("href", () => list._anchor.href(d));
+                        elem.attr("href", () => list._anchor.href(d));
                     }
                     if (list._anchor.onclick) {
-                        td.on("click", () => list._anchor.onclick(d));
+                        elem.on("click", () => list._anchor.onclick(d));
                     }
                 }
 
-                td.each(function(f) { //each column
+                //td or anchor
+                elem.each(function(f) { //each column
                     if (f.displayFun) {
                         f.displayFun(this, d);
                     }
@@ -228,8 +251,9 @@ class SortableList {
     }
 
     updateData(data) {
+        const changed=this._updateDisplayStyle();
         this._setData(data);
-        this._displayData(); //may be slow if large data
+        this._displayData(changed); //may be slow if large data
         this._reorderData();
     }
 

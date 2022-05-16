@@ -48,8 +48,16 @@ const annotationHandler = (function (){
     let _nMarkers = 0;
     let _nRegions = 0;
     let _classCounts = {};
+    let _hasPrediction = false;
     classUtils.forEachClass(c => _classCounts[c.name] = 0);
 
+    // True if any predictions exist
+    function _checkPrediction() {
+        return _annotations.some(x => x.prediction!=null);
+    }
+
+
+    // Updates visuals
     function _updateAnnotationCounts() {
         globalDataHandler.updateAnnotationCounts(_nMarkers, _nRegions, _classCounts);
     }
@@ -317,6 +325,7 @@ const annotationHandler = (function (){
                 _nRegions++;
             }
             _classCounts[addedAnnotation.mclass]++;
+            _hasPrediction = _hasPrediction || (addedAnnotation.prediction!=null); //old Node dislikes ||=
 
             // Send the update to collaborators
             transmit && collabClient.addAnnotation(addedAnnotation);
@@ -380,6 +389,14 @@ const annotationHandler = (function (){
             _classCounts[updatedAnnotation.mclass]--;
             _classCounts[annotation.mclass]++;
             _updateAnnotationCounts();
+        }
+
+        // Update _hasPrediction
+        if (annotation.prediction!=null) {
+            _hasPrediction = true;
+        }
+        else if (updatedAnnotation.prediction==null) { // Possible remove, need to check
+            _hasPrediction = _checkPrediction();
         }
 
         // Check if changing grid square
@@ -484,6 +501,7 @@ const annotationHandler = (function (){
             regionEditor.stopEditingRegionIfBeingEdited(id);
         });
 
+        _hasPrediction = _checkPrediction();
         _updateAnnotationCounts();
 
         // Remove the annotation from the graphics
@@ -542,6 +560,13 @@ const annotationHandler = (function (){
     }
 
     /**
+     * Called for each row, so should be fast
+     */
+    function hasPrediction() {
+        return _hasPrediction;
+    }
+
+    /**
      * Call private function to restart annotation counts.
      */
     function updateClassConfig(classConfig, transmit = true) {
@@ -561,6 +586,7 @@ const annotationHandler = (function (){
         forEachAnnotation,
         getAnnotationById,
         isEmpty,
+        hasPrediction,
         updateClassConfig
     };
 })();

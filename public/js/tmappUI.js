@@ -131,11 +131,12 @@ const tmappUI = (function(){
                 name: "Pred.",
                 key: "prediction",
                 title: "Class prediction score",
-                minWidth: "6em",
+                minWidth: "0em",
                 displayFun: (elem, d) => {
                     $(elem).html((d.prediction == null) ? "&nbsp;" : d.prediction.toFixed(4));
                 },
-                sortable: true
+                sortable: true,
+                displayStyle: () => annotationHandler.hasPrediction()?"":"none"
             },
             {
                 name: "B",
@@ -808,30 +809,35 @@ const tmappUI = (function(){
     }
 
     return {
-        initUI: initUI,
-        updateClassSelectionButtons:updateClassSelectionButtons,
+        initUI,
+        updateClassSelectionButtons,
         choice: choice,
-        openAnnotationEditMenu: openAnnotationEditMenu,
-        setCollabID: setCollabID,
-        clearCollabID: clearCollabID,
-        updateCollaborators: updateCollaborators,
-        clearCollaborators: clearCollaborators,
-        enableCollabCreation: enableCollabCreation,
-        displayImageError: displayImageError,
-        clearImageError: clearImageError,
-        updateImageBrowser: updateImageBrowser,
-        setUserName: setUserName,
-        setCollabName: setCollabName,
-        setImageName: setImageName,
-        setImageZLevel: setImageZLevel,
-        setImageZoom: setImageZoom,
-        setImageRotation: setImageRotation,
-        setLastAutosave: setLastAutosave,
-        setFilterError: setFilterError,
-        setFilterInfo: setFilterInfo,
-        clearFilterInfo: clearFilterInfo,
-        setURL: setURL,
-        setOverwriteURL: setOverwriteURL,
-        inFocus: inFocus
+        openAnnotationEditMenu,
+
+        setCollabID,
+        clearCollabID,
+        updateCollaborators,
+        clearCollaborators,
+        enableCollabCreation,
+        
+        displayImageError,
+        clearImageError,
+
+        updateImageBrowser,
+
+        setUserName,
+        setCollabName,
+        setImageName,
+        setImageZLevel,
+        setImageZoom,
+        setImageRotation,
+        setLastAutosave,
+        setFilterError,
+        setFilterInfo,
+        clearFilterInfo,
+        setURL,
+        setOverwriteURL,
+
+        inFocus
     };
 })();
