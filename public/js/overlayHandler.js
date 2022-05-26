@@ -19,7 +19,8 @@ const overlayHandler = (function (){
         _previousCursors,
         _scale,
         _rotation,
-        _maxScale;
+        _maxScale,
+        _markerScale = 1; //Modifcation factor
 
     /**
      * Edit a string with stored in the transform attribute of a node.
@@ -99,7 +100,7 @@ const overlayHandler = (function (){
     }
 
     function _markerSize() {
-        return 250*_maxScale*Math.pow(_scale/_maxScale, 0.4); //Let marker grow slowly as we zoom out, to keep it visible
+        return _markerScale**2*250*_maxScale*Math.pow(_scale/_maxScale, 0.4); //Let marker grow slowly as we zoom out, to keep it visible
     }
 
     function _regionStrokeWidth() {
@@ -686,6 +687,11 @@ const overlayHandler = (function (){
         _resizeRegions();
     }
 
+    function setMarkerScale(scale) {
+        _markerScale=scale;
+        _resizeMarkers();
+    }
+
     /**
      * Let the overlay handler know the rotation of the viewport in order
      * to properly adjust any elements that need to be rotated.
@@ -759,15 +765,16 @@ const overlayHandler = (function (){
     }
 
     return {
-        updateMembers: updateMembers,
-        updateAnnotations: updateAnnotations,
-        updatePendingRegion: updatePendingRegion,
-        startRegionEdit: startRegionEdit,
-        stopRegionEdit: stopRegionEdit,
-        clearAnnotations: clearAnnotations,
-        setOverlayScale: setOverlayScale,
-        setOverlayRotation: setOverlayRotation,
-        setActiveAnnotationOverlay: setActiveAnnotationOverlay,
-        init: init
+        updateMembers,
+        updateAnnotations,
+        updatePendingRegion,
+        startRegionEdit,
+        stopRegionEdit,
+        clearAnnotations,
+        setOverlayScale,
+        setMarkerScale,
+        setOverlayRotation,
+        setActiveAnnotationOverlay,
+        init
     };
 })();
