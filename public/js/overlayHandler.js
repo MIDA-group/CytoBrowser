@@ -18,7 +18,8 @@ const overlayHandler = (function (){
         _activeAnnotationOverlayName,
         _previousCursors,
         _scale,
-        _rotation;
+        _rotation,
+        _maxScale;
 
     /**
      * Edit a string with stored in the transform attribute of a node.
@@ -98,7 +99,7 @@ const overlayHandler = (function (){
     }
 
     function _markerSize() {
-        return 10*Math.pow(_scale,0.5); //Scale markers with sqrt
+        return 250*_maxScale*Math.pow(_scale/_maxScale, 0.4); //Let marker grow slowly as we zoom out, to keep it visible
     }
 
     function _regionStrokeWidth() {
@@ -679,6 +680,7 @@ const overlayHandler = (function (){
     function setOverlayScale(zoomLevel, maxZoom, wContainer, hContainer) {
         const windowSizeAdjustment = 1400 / wContainer;
         _scale = windowSizeAdjustment / zoomLevel;
+        _maxScale = windowSizeAdjustment / maxZoom;
         _resizeMembers();
         _resizeMarkers();
         _resizeRegions();
