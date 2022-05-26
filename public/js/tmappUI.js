@@ -70,7 +70,7 @@ const tmappUI = (function(){
         const winh = $(window).height();
         const winw = $(window).width();
         const top = maxBottom < winh ? location.y : Math.max(15, location.y - menu.height());
-        const left = maxRight < winw ? location.x : location.x - menu.width();
+        const left = maxRight < winw ? location.x : Math.max(3,location.x - menu.width());
         menu.css({top: top, left: left, pointerEvents: "auto"});
 
         _pageInFocus = false;
