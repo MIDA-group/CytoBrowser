@@ -20,8 +20,10 @@ const tmapp = (function() {
         maxImageCacheCount: 800, //need more for z-stacks
         minZoomImageRatio: 1,
         maxZoomPixelRatio: 4,
-        gestureSettingsMouse: {clickToZoom: false},
-        gestureSettingsTouch: {clickToZoom: false},
+        gestureSettingsMouse: {clickToZoom: false, dblClickToZoom: false},
+        gestureSettingsTouch: {clickToZoom: false, dblClickToZoom: false},
+        gestureSettingsPen: {clickToZoom: false, dblClickToZoom: false},
+        gestureSettingsUnknown: {clickToZoom: false, dblClickToZoom: false},
         zoomPerClick: 1.4,
         constrainDuringPan: true,
         visibilityRatio: 1,
