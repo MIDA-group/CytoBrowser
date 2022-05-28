@@ -144,7 +144,13 @@ const annotationTool = (function() {
             overlayHandler.updatePendingRegion(null);
         }
 
+        let recentTap=false; // Avoid double-tap creating two vertices
         function addPoint(position) {
+            if (event.pointerType === 'touch') {
+                if (recentTap) return;
+                recentTap=true;
+                setTimeout(() => recentTap=false, 200); // If two taps within 200ms, don't make 2nd point
+            }
             _nextPoint = coordinateHelper.viewportToImage({
                 x: position.x,
                 y: position.y
