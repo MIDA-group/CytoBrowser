@@ -55,7 +55,8 @@ const tmapp = (function() {
             inside: false
         },
         _disabledControls,
-        _availableZLevels;
+        _availableZLevels,
+        _mouseHandler;
 
 
     function _getFocusIndex() {
@@ -309,7 +310,7 @@ const tmapp = (function() {
         }
 
         //OSD handlers have to be registered using MouseTracker OSD objects
-        new OpenSeadragon.MouseTracker({
+        _mouseHandler = new OpenSeadragon.MouseTracker({
             element: viewer.canvas,
             clickHandler: clickHandler,
             dblClickHandler: dblClickHandler,
@@ -788,6 +789,9 @@ const tmapp = (function() {
         // All other OSD keys
         _viewer.innerTracker.keyHandler(event);
     }
+    function mouseHandler() {
+        return _mouseHandler;
+    }
 
     /**
      * Update the scale of the scalebar.
@@ -842,6 +846,7 @@ const tmapp = (function() {
 
         keyHandler,
         keyDownHandler,
+        mouseHandler,
 
         updateScalebar
     };

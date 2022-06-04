@@ -240,6 +240,16 @@ const overlayHandler = (function (){
      */
     function _addAnnotationMouseEvents(d, node) {
         let mouse_offset; //offset (in webCoords) between mouse click and object
+
+        function toggleEditing(d, node) {
+            const selection = d3.select(node);
+            if (selection.attr("data-being-edited")) {
+                regionEditor.stopEditingRegionIfBeingEdited(d.id);
+            }
+            else {
+                regionEditor.startEditingRegion(d.id);
+            }
+        }
         new OpenSeadragon.MouseTracker({
             element: node,
             clickHandler: function(event) {
@@ -247,15 +257,35 @@ const overlayHandler = (function (){
                 if (event.originalEvent.ctrlKey) {
                     annotationHandler.remove(d.id);
                 }
+                else if (getActiveAnnotationOverlay()==="region") {
+                    const rect1 = event.eventSource.element.getBoundingClientRect(); //There must be an easier way
+                    const rect2 = tmapp.mouseHandler().element.getBoundingClientRect(); //Possibly OSD 2.5 
+                    event.position.x+=rect1.left-rect2.left; //https://github.com/openseadragon/openseadragon/issues/1652
+                    event.position.y+=rect1.top-rect2.top;
+                    tmapp.mouseHandler().clickHandler( event );
+                }
             },
-            dblClickHandler: function(event) {
-                if (event.pointerType === 'touch') { // If touch
+            dblClickHandler: function(event) { 
+                // If we just created a new object in the 1st click of our dblClick, then kill it
+                annotationTool.resetIfYounger(event.eventSource.dblClickTimeThreshold); 
+
+                 if (annotationTool.isEditing()) { //If editing, allow dblClick->complete
+                    const rect1 = event.eventSource.element.getBoundingClientRect();
+                    const rect2 = tmapp.mouseHandler().element.getBoundingClientRect();
+                    event.position.x+=rect1.left-rect2.left;
+                    event.position.y+=rect1.top-rect2.top;
+                    tmapp.mouseHandler().dblClickHandler( event );
+                }
+                else if (event.pointerType === 'touch') { // If touch
                     const location = {
                         x: event.originalEvent.pageX,
                         y: event.originalEvent.pageY
                     };
                     tmappUI.openAnnotationEditMenu(d.id, location);
-                }                
+                }   
+                else {
+                    toggleEditing(d, node);
+                }        
             },
             pressHandler: function(event) {
                 tmapp.setCursorStatus({held: true});
@@ -364,21 +394,10 @@ const overlayHandler = (function (){
                 .attr("fill-opacity", 0.2);
         }
 
-        function toggleEditing() {
-            const selection = d3.select(node);
-            if (selection.attr("data-being-edited")) {
-                regionEditor.stopEditingRegionIfBeingEdited(d.id);
-            }
-            else {
-                regionEditor.startEditingRegion(d.id);
-            }
-        }
-
         new OpenSeadragon.MouseTracker({
             element: node,
             enterHandler: highlight,
-            exitHandler: unHighlight,
-            dblClickHandler: toggleEditing
+            exitHandler: unHighlight
         }).setTracking(true);
     }
 
@@ -734,6 +753,9 @@ const overlayHandler = (function (){
                 throw new Error("Invalid overlay name.");
         }
     }
+    function getActiveAnnotationOverlay() {
+        return _activeAnnotationOverlayName;
+    }
 
     /**
      * Initialize the overlay handler. Should be called whenever OSD is
@@ -775,6 +797,7 @@ const overlayHandler = (function (){
         setMarkerScale,
         setOverlayRotation,
         setActiveAnnotationOverlay,
+        getActiveAnnotationOverlay,
         init
     };
 })();
