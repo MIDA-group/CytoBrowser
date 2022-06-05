@@ -60,18 +60,18 @@
     </nav>
 
     <!-- Main content -->
-    <div id="main_content" class="container-fluid d-flex h-100 position-relative" style="min-width: 400px;" tabindex="-1">
-        <div id="main_row" class="row flex-fill position-absolute m-0" style="right: 0; top: 0; left: 0; bottom: 0;">
-            <div class="col md-10 px-1" style="min-width: 50%; min-height: 85%; width: 100%; overflow: hidden; flex-grow: 100;"> <!-- Doesn't make sense to have overflow of the viewer -->
+    <div id="main_content" class="container-fluid d-flex h-100 position-relative" style="min-width: 400px" tabindex="-1">
+        <div id="main_row" class="row flex-fill position-absolute m-0 pr-1" style="right: 0; top: 0; left: 0; bottom: 0;">
+            <div class="col md-10 px-0" style="min-width: 50%; min-height: 85%; width: 100%; overflow: visible; flex-grow: 100;"> <!-- Doesn't make sense to have overflow of the viewer -->
                 <div id="ISS_viewer" class="ISS_viewer blurrable flex-grow-1 h-100 w-100"></div>
                 <div id="alert_wrapper" style="height: 100%; width: 100%; display: flex; justify-content: center; align-items: center; position: absolute; top: 0; padding: 5%; pointer-events: none"></div>
             </div>
 
             <!-- Right side main toolbar -->
-            <div class="col-auto d-flex flex-column md-2 pt-2 pl-0 pr-1 h-100" style="overflow-y:auto; overflow-x:hidden; flex-grow: 1;" id="rtoolbar">
+            <div class="col-auto d-flex flex-column md-2 pt-2 pl-1 pr-0 h-100" style="overflow-y:auto; overflow-x:hidden; flex-grow: 1;" id="rtoolbar">
                 <div class="card w-100">
                     <!-- Modal access -->
-                    <div class="card-body pb-2 px-2">
+                    <div class="card-body pb-2 px-1 px-md-2">
                         <button type="button" class="btn btn-block btn-primary" data-toggle="modal" data-target="#image_browser">
                             Open image browser
                         </button>
@@ -194,7 +194,7 @@
                     <hr />
 
                     <!-- Functionality buttons -->
-                    <div class="card-body pb-0 pt-2 px-2">
+                    <div class="card-body pb-0 pt-2 px-1 px-md-2">
                         <div class="card-block pb-4">
                             <div class="row">
                                 <!-- Annotation tools -->
@@ -238,7 +238,7 @@
                     </div>
 
                     <!-- Import/Export -->
-                    <div class="card-body px-2 pb-0">
+                    <div class="card-body pb-0 px-1 px-md-2">
                         <div class="row pb-1 pt-2">
                             <div class="col-3">
                                 <input class="d-none" type="file" id="data_files_import" onclick="this.value=null;" name="files[]">
@@ -254,7 +254,7 @@
                     </div>
 
                     <!-- Annotation filter -->
-                    <div class="card-body px-2">
+                    <div class="card-body px-1 px-md-2">
                         <div class="row">
                             <div class="col">
                                 <div class="input-group">
