@@ -802,13 +802,6 @@
     // Uses window.location.base for remoteStorage
     tmappUI.initUI();
 
-    // Only way I manage to get correct size navbar on vertical phone layout (due to zoom, content is wider than 100%)!
-    function resizeNavbar() {
-        document.getElementById("navbar").style.width = `${Math.max(document.getElementById("main_row").clientWidth,document.body.clientWidth)}px`;
-        // console.log(`${Math.max(document.getElementById("main_row").clientWidth,document.body.clientWidth)}px`);
-    }
-    window.addEventListener('resize', resizeNavbar);
-
     // Handle browser history.back/forward()
     window.onpopstate = function(event) {
         $('.modal').modal('hide'); //close all modals
@@ -818,6 +811,14 @@
 
     // Start our tmapp
     $(document).ready(() => {
+
+        // Only way I manage to get correct size navbar on vertical phone layout (due to zoom, content is wider than 100%)!
+        function resizeNavbar() {
+            document.getElementById("navbar").style.width = `${Math.max(document.getElementById("main_row").clientWidth,document.body.clientWidth)}px`;
+            // console.log(`${Math.max(document.getElementById("main_row").clientWidth,document.body.clientWidth)}px`);
+        }
+        window.addEventListener('resize', resizeNavbar);
+
         // Options when initializing tmapp
         const tmappOptions = {};
         const {imageName, collab, state}=tmapp.parseURL(new URL(window.location.href));
