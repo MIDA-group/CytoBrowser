@@ -45,8 +45,8 @@ class SortableList {
      * @param {Function} [onDoubleClick] Function to be called when a row
      * in the list is double clicked, passing the data on that row as an
      * argument. If omitted, nothing happens when a row is double clicked.
-     * @param {'href':Function,'onclick':Function} [anchor] Functions generating 
-     * attributes for an anchor <a></a> wrapping each cell in a row.
+     * @param {Function} [anchor] Functions generating href
+     * for an anchor <a></a> wrapping each cell in a row.
      */
     constructor(table, scroller, idKey, fields, onClick=null, onDoubleClick=null, anchor=null) {
         this._fields = fields;
@@ -177,18 +177,13 @@ class SortableList {
 
                 let elem=td; //td or anchor 
                 if (list._anchor) { // wrap content in an anchor <a>...</a>
+                    const href = list._anchor(d);
                     td.each(function() { //each column
                         if (!d3.select(this).select("a").node()) { //all which do not have an anchor
                             d3.select(this).append("a"); //append one
                         }
                     });
-                    elem=td.select("a"); // step into all anchors
-                    if (list._anchor.href) {
-                        elem.attr("href", () => list._anchor.href(d));
-                    }
-                    if (list._anchor.onclick) {
-                        elem.on("click", () => list._anchor.onclick(d));
-                    }
+                    elem=td.select("a").attr("href", href);
                 }
 
                 //td or anchor
