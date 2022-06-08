@@ -202,10 +202,10 @@ class SortableList {
             });
         if (maxCount<this._data.length) {
             this._table.select("tbody")
-                .selectAll("#overflowRow")
+                .selectAll(".overflowRow")
                 .data([[`${this._data.length-maxCount} elements not shown...`]])
                 .join("tr")
-                .attr("id","overflowRow")
+                .attr("class","overflowRow")
                 .selectAll("td")
                 .data(d => d)
                 .join("td")
@@ -215,7 +215,7 @@ class SortableList {
         } 
         else {
             this._table.select("tbody")
-                .selectAll("#overflowRow")
+                .selectAll(".overflowRow")
                 .remove();
         }
         setTimeout(() => changed.style("font-weight", "normal"), 2000); //unbold after 2s
