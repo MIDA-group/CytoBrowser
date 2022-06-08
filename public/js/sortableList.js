@@ -108,6 +108,7 @@ class SortableList {
         return changed;
     }
 
+    //TODO(?): Is there actually a point in keeping two arrays? Just use rawData directly instead?
     // _data has proporty "changed" which is true if _setData made a change (not verified to work with selectFun)
     _setData(rawData) {
         timingLog && console.time("setListData");
@@ -119,6 +120,7 @@ class SortableList {
             adjustedDatum.changed = old == null; 
             adjustedDatum[this._idKey] = datum[this._idKey];
             adjustedDatum.changed || old[this._idKey] === adjustedDatum[this._idKey] || (adjustedDatum.changed=true);
+            adjustedDatum.rawRef=datum; //reference to the original raw data
             this._fields.forEach(field => {
                 if (field.selectFun) {
                     adjustedDatum[field.key] = field.selectFun(datum);
@@ -126,18 +128,20 @@ class SortableList {
                 else {
                     adjustedDatum[field.key] = datum[field.key];
                 }
-                adjustedDatum.changed || old[field.key] === adjustedDatum[field.key] || (adjustedDatum.changed=true);
+                adjustedDatum.changed || old[field.key] === adjustedDatum[field.key] || (adjustedDatum.changed=true); //||=
             });
             adjustedDatum.changed && updates++;
             return adjustedDatum;
         });
         timingLog && console.timeEnd("setListData");
-        // console.log(updates," elements updated.");
+        //console.log(`Made ${updates} updates in list`);
     }
 
     _displayData(force = false) {
         timingLog && console.time("dispListData");
         const list = this;
+        if (list._anchor) tmapp.makeURL(); //make sure it's updatable; CROCK: only needed if we use URL-update
+
         const fields = this._fields;
         const rows = this._table.select("tbody")
             .selectAll(".data-row")

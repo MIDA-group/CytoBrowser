@@ -168,9 +168,9 @@ const tmappUI = (function(){
                 sortable: true
             }   
         ],
-        (d)=>{event.preventDefault();tmapp.moveToAnnotation(d.id);}, //onclick
+        d => {event.preventDefault();tmapp.moveToAnnotation(d.id);}, //onclick
         null, 
-        (d)=>tmapp.annotationURL(d.id) //href
+        d => tmapp.annotationURL(d.rawRef,true) //href, updateURL to save some ms
         );
 
         annotationVisuals.setAnnotationList(list);

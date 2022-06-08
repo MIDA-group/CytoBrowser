@@ -149,22 +149,24 @@ const tmapp = (function() {
         _updateURLParams();
     }
 
-    function makeURL({x, y, z, rotation, zoom}) {
-        const url = new URL(window.location.href);
-        const roundTo = (x, n) => Math.round(x * Math.pow(10, n)) / Math.pow(10, n);
+    const roundTo = (x, n) => Math.round(x * Math.pow(10, n)) / Math.pow(10, n);
+    let urlCache=null;
+    function makeURL({x, y, z, rotation, zoom}={},update=false) {
+        const url = (update&&urlCache)?urlCache:new URL(window.location.href);
         const params = url.searchParams;
         if (_currentImage) {
-            params.set("image", _currentImage.name);
-            params.set("zoom", roundTo(zoom, 2));
-            params.set("x", roundTo(x, 5));
-            params.set("y", roundTo(y, 5));
-            params.set("z", z);
-            params.set("rotation", rotation||0);
+            update || params.set("image", _currentImage.name);
+            zoom!=null && params.set("zoom", roundTo(zoom, 2));
+            x!=null && params.set("x", roundTo(x, 5));
+            y!=null && params.set("y", roundTo(y, 5));
+            z!=null && params.set("z", z);
+            rotation!=null && params.set("rotation", rotation||0);
         }
-        _collab ? params.set("collab", _collab) : params.delete("collab");
+        update || (_collab ? params.set("collab", _collab) : params.delete("collab"));
+        urlCache=url;
         return url;
     }
-
+    
     function parseURL(url) {
         if (!(url instanceof URL)) {
             url=new URL(url);
@@ -607,42 +609,52 @@ const tmapp = (function() {
         return Math.pow(0.5*img_diag/(600+annotation.diameter),0.9);
     }
 
+    // Bundle position of an annotation, for moveTo and URL
+    function _defaultLocation(annotation) {
+        const target = coordinateHelper.imageToViewport(annotation.centroid);
+        return {
+            zoom: _defaultZoom(annotation),
+            x: target.x,
+            y: target.y,
+            z: annotation.z
+        }
+    }
+
     /**
      * Move the viewport to look at a specific annotation.
-     * @param {number} id The id of the annotation being moved to.
+     * @param {number} x The annottation or its id where to move.
+     *
+     * Note: getAnnotationById is currently O(N) slow!
      */
-    function moveToAnnotation(id) {
+    function moveToAnnotation(x) {
         // Only move if you're not following anyone
         if (_disabledControls) {
             console.warn("Can't move to annotation when following someone.");
             return;
         }
 
-        const annotation = annotationHandler.getAnnotationById(id);
+        const annotation = (x.id != null)? x: annotationHandler.getAnnotationById(x);
         if (annotation === undefined) {
+            console.log(`Got input: ${x}`, x);
             throw new Error("Tried to move to an unused annotation id.");
         }
-        const target = coordinateHelper.imageToViewport(annotation.centroid);
-        moveTo({
-            zoom: _defaultZoom(annotation),
-            x: target.x,
-            y: target.y,
-            z: annotation.z
-        });
+        moveTo(_defaultLocation(annotation));
     }
 
-    function annotationURL(id) {
-        const annotation = annotationHandler.getAnnotationById(id);
+    /**
+     * Create URL pointing to view of a specific annotation.
+     * @param {number} x The annottation or its id where to move.
+     *
+     * Note: getAnnotationById is currently O(N) slow!
+     */
+    function annotationURL(x, update=false) {
+        const annotation = (x.id != null)? x: annotationHandler.getAnnotationById(x);
         if (annotation === undefined) {
-            throw new Error("Tried to move to an unused annotation id.");
+            console.log(`Got input: ${x}`, x);
+            throw new Error("Tried to get URL of an unused annotation id.");
         }
-        const target = coordinateHelper.imageToViewport(annotation.centroid);
-        return makeURL({
-            zoom: _defaultZoom(annotation),
-            x: target.x,
-            y: target.y,
-            z: annotation.z
-        });
+        
+        return makeURL(_defaultLocation(annotation),update);
     }
 
     /**
