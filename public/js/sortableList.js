@@ -137,7 +137,7 @@ class SortableList {
         //console.log(`Made ${updates} updates in list`);
     }
 
-    _displayData(force = false) {
+    _displayData(force = false, maxCount = Infinity) {
         timingLog && console.time("dispListData");
         const list = this;
         if (list._anchor) tmapp.makeURL(); //make sure it's updatable; CROCK: only needed if we use URL-update
@@ -145,7 +145,7 @@ class SortableList {
         const fields = this._fields;
         const rows = this._table.select("tbody")
             .selectAll(".data-row")
-            .data(this._data, d => d[this._idKey])
+            .data(this._data.slice(0,maxCount), d => d[this._idKey])
             .join("tr")
             .attr("class", "data-row")
             .attr("data-annotation-id", d => d[this._idKey])
@@ -199,8 +199,25 @@ class SortableList {
                         d3.select(this).text(d[f.key]);
                     }
                 });
-
             });
+        if (maxCount<this._data.length) {
+            this._table.select("tbody")
+                .selectAll("#overflowRow")
+                .data([[`${this._data.length-maxCount} elements not shown...`]])
+                .join("tr")
+                .attr("id","overflowRow")
+                .selectAll("td")
+                .data(d => d)
+                .join("td")
+                .attr("colspan",fields.length)
+                .text(d => d)
+                .attr("title", "List truncated for reasons of speed. Use 'Filter' or 'Sort' to select the data you wish to display.")
+        } 
+        else {
+            this._table.select("tbody")
+                .selectAll("#overflowRow")
+                .remove();
+        }
         setTimeout(() => changed.style("font-weight", "normal"), 2000); //unbold after 2s
         timingLog && console.timeEnd("dispListData");
     }
@@ -252,7 +269,7 @@ class SortableList {
     updateData(data) {
         const changed=this._updateDisplayStyle();
         this._setData(data);
-        this._displayData(changed); //may be slow if large data
+        this._displayData(changed,1000); //may be slow if large data
         this._reorderData();
     }
 
