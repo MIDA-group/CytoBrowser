@@ -769,7 +769,7 @@ const overlayHandler = (function (){
             .attr("id", "regions");
         const pendingRegion = d3.select(svgOverlay.node())
             .append("g")
-            .attr("id", "regions")
+            .attr("id", "pendingRegions")
             .style("pointer-events", "none");
         const markers = d3.select(svgOverlay.node())
             .append("g")
