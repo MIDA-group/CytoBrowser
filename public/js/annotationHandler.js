@@ -541,13 +541,17 @@ const annotationHandler = (function (){
      * @param {number} id The id used for looking up the annotation.
      * @returns {Object} A clone of the annotation with the specified id,
      * or undefined if not in use.
+     * 
+     * Currently O(N) slow, so don't overuse!
      */
+    //let gaid=0; 
     function getAnnotationById(id) {
         const annotation = _annotations.find(annotation => annotation.id === id);
         if (annotation === undefined) {
             return undefined;
         }
         const annotationClone = _cloneAnnotation(annotation);
+    //    console.log(`gaid: ${gaid++}`);
         return annotationClone;
     }
 
