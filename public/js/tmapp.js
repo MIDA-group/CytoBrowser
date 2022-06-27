@@ -410,6 +410,84 @@ const tmapp = (function() {
         //Create svgOverlay(); so that anything like D3, or any canvas library can act upon. https://d3js.org/
         const overlay =  _viewer.svgOverlay();
         overlayHandler.init(overlay);
+
+
+        let _glOverlay = document.createElement('glOverlay');
+        _glOverlay.style.position = 'absolute';
+        _glOverlay.style.left = 0;
+        _glOverlay.style.top = 0;
+        _glOverlay.style.width = '100%';
+        _glOverlay.style.height = '100%';
+        _viewer.canvas.appendChild(_glOverlay);
+
+        if (true) { //FPS around 38 with pixi.js
+            // Create the application helper and add its render target to the page
+            let app = new PIXI.Application({
+                resizeTo: _glOverlay,
+                transparent: true
+            });
+            _glOverlay.appendChild(app.view);
+
+            for (var i = 0; i < 10000; i++) {
+                const graphics = new PIXI.Graphics();
+                // Rectangle
+                graphics.beginFill(0xDE3249);
+                graphics.drawRect(0, 0, 5, 5);
+                graphics.endFill();
+                
+                graphics.x = Math.random() * app.renderer.width * 2 - app.renderer.width;
+                graphics.y = Math.random() * app.renderer.height * 2 - app.renderer.height;
+                app.stage.addChild(graphics);
+            }
+
+            // Add a ticker callback to animate
+            app.ticker.add((delta) => {
+                app.stage.rotation+=0.001;
+                app.stage.children.forEach(x=>x.rotation+=0.01);
+            });
+        }
+        else { //FPS around 10 with two.js
+            var two = new Two({
+                type: Two.Types.webgl,
+                fitted: true,
+                autostart: true
+            }).appendTo(_glOverlay);
+            var rect = two.makeRectangle(two.width / 2, two.height / 2, two.width ,50);
+        
+            var stage = new Two.Group();
+            for (var i = 0; i < 10000; i++) {
+            var x = Math.random() * two.width * 2 - two.width;
+            var y = Math.random() * two.height * 2 - two.height;
+            var size = 5;
+            var shape = new Two.Rectangle(x, y, size, size);
+            shape.rotation = Math.random() * Math.PI * 2;
+            shape.noStroke().fill = 'red';
+            stage.add(shape);
+            }
+            shape.fill = 'red';
+            shape.position.set(two.width / 2, two.height / 2);      
+            two.add(stage);      
+
+            two.bind('update', function() {
+                rect.rotation += 0.01;
+                stage.rotation += 0.001;
+                stage.children.forEach(x=>x.rotation+=0.01);
+            }); 
+        }
+
+        let fps;
+        let requestTime;
+        function loop(time) {
+            if (requestTime) {
+                fps = Math.round(1000/((performance.now() - requestTime)));
+            }
+        
+            console.log('Fps:',fps);
+            requestTime = time;
+            window.requestAnimationFrame((timeRes) => loop(timeRes));
+        }
+        
+        window.requestAnimationFrame((timeRes) => loop(timeRes));        
     }
 
     function _clearCurrentImage() {
