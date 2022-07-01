@@ -446,34 +446,6 @@ const tmapp = (function() {
                 app.stage.children.forEach(x=>x.rotation+=0.01);
             });
         }
-        else { //FPS around 10 with two.js
-            var two = new Two({
-                type: Two.Types.webgl,
-                fitted: true,
-                autostart: true
-            }).appendTo(_glOverlay);
-            var rect = two.makeRectangle(two.width / 2, two.height / 2, two.width ,50);
-        
-            var stage = new Two.Group();
-            for (var i = 0; i < 10000; i++) {
-            var x = Math.random() * two.width * 2 - two.width;
-            var y = Math.random() * two.height * 2 - two.height;
-            var size = 5;
-            var shape = new Two.Rectangle(x, y, size, size);
-            shape.rotation = Math.random() * Math.PI * 2;
-            shape.noStroke().fill = 'red';
-            stage.add(shape);
-            }
-            shape.fill = 'red';
-            shape.position.set(two.width / 2, two.height / 2);      
-            two.add(stage);      
-
-            two.bind('update', function() {
-                rect.rotation += 0.01;
-                stage.rotation += 0.001;
-                stage.children.forEach(x=>x.rotation+=0.01);
-            }); 
-        }
 
         let fps;
         let requestTime;
