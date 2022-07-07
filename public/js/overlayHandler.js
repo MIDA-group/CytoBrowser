@@ -20,7 +20,8 @@ const overlayHandler = (function (){
         _scale,
         _rotation,
         _maxScale,
-        _markerScale = 1; //Modifcation factor
+        _markerScale = 1, //Modifcation factor
+        _app = null //Pixi
 
     /**
      * Edit a string with stored in the transform attribute of a node.
@@ -283,8 +284,7 @@ const overlayHandler = (function (){
                     };
                     tmappUI.openAnnotationEditMenu(d.id, location);
                 }   
-                else {
-                    toggleEditing(d, node);
+                else {                    toggleEditing(d, node);
                 }        
             },
             pressHandler: function(event) {
@@ -401,6 +401,7 @@ const overlayHandler = (function (){
         }).setTracking(true);
     }
 
+    // New marker
     function _enterMarker(enter) {
         return enter.append("g")
             .attr("transform", d => {
@@ -409,6 +410,24 @@ const overlayHandler = (function (){
                 return `translate(${coords.x}, ${coords.y}) scale(${_markerSize()}) rotate(${-_rotation})`;
             })
             .attr("opacity", 1)
+            .each(d => {
+                const viewport = coordinateHelper.imageToViewport(d.points[0]);
+                const coords = coordinateHelper.viewportToOverlay(viewport);
+                console.log(`translate(${coords.x}, ${coords.y}) scale(${_markerSize()}) rotate(${-_rotation})`);
+
+                {
+                    const graphics = new PIXI.Graphics();
+                    // Rectangle
+                    const step=_markerSize()/4;
+                    graphics.beginFill(0xDE3249);
+                    graphics.drawRect(-step,-step,step,step);
+                    graphics.endFill();
+                    
+                    graphics.x = coords.x;
+                    graphics.y = coords.y;
+                    _app.stage.addChild(graphics);
+                }
+            })
             .call(group =>
                 group.append("path")
                     .attr("d", d3.symbol().size(_markerSquareSize).type(d3.symbolSquare))
@@ -815,13 +834,13 @@ const overlayHandler = (function (){
      * @param {Object} svgOverlay The return value of the OSD instance's
      * svgOverlay() method.
      */
-    function init(svgOverlay) {
+    function init(svgOverlay,app=null) {
         const regions = d3.select(svgOverlay.node())
             .append("g")
             .attr("id", "regions");
         const pendingRegion = d3.select(svgOverlay.node())
             .append("g")
-            .attr("id", "pendingRegions")
+            .attr("id", "regions")
             .style("pointer-events", "none");
         const markers = d3.select(svgOverlay.node())
             .append("g")
@@ -836,6 +855,8 @@ const overlayHandler = (function (){
         _previousCursors = d3.local();
         if (_activeAnnotationOverlayName)
             setActiveAnnotationOverlay(_activeAnnotationOverlayName);
+
+        _app=app;
     }
 
     return {

@@ -407,59 +407,28 @@ const tmapp = (function() {
         const imageStack = _expandImageName(imageName);
         _openImages(imageStack);
 
+
+        const pixiOverlay = _viewer.pixiOverlay();
+        
         //Create svgOverlay(); so that anything like D3, or any canvas library can act upon. https://d3js.org/
-        const overlay =  _viewer.svgOverlay();
-        overlayHandler.init(overlay);
+        const overlay = _viewer.svgOverlay();
+        overlayHandler.init(overlay,pixiOverlay.app());
 
-
-        let _glOverlay = document.createElement('glOverlay');
-        _glOverlay.style.position = 'absolute';
-        _glOverlay.style.left = 0;
-        _glOverlay.style.top = 0;
-        _glOverlay.style.width = '100%';
-        _glOverlay.style.height = '100%';
-        _viewer.canvas.appendChild(_glOverlay);
-
-        if (true) { //FPS around 38 with pixi.js
-            // Create the application helper and add its render target to the page
-            let app = new PIXI.Application({
-                resizeTo: _glOverlay,
-                transparent: true
-            });
-            _glOverlay.appendChild(app.view);
-
-            for (var i = 0; i < 10000; i++) {
-                const graphics = new PIXI.Graphics();
-                // Rectangle
-                graphics.beginFill(0xDE3249);
-                graphics.drawRect(0, 0, 5, 5);
-                graphics.endFill();
-                
-                graphics.x = Math.random() * app.renderer.width * 2 - app.renderer.width;
-                graphics.y = Math.random() * app.renderer.height * 2 - app.renderer.height;
-                app.stage.addChild(graphics);
+        if (false) {
+            let fps;
+            let requestTime;
+            function loop(time) {
+                if (requestTime) {
+                    fps = Math.round(1000/((performance.now() - requestTime)));
+                }
+            
+                console.log('Fps:',fps);
+                requestTime = time;
+                window.requestAnimationFrame((timeRes) => loop(timeRes));
             }
-
-            // Add a ticker callback to animate
-            app.ticker.add((delta) => {
-                app.stage.rotation+=0.001;
-                app.stage.children.forEach(x=>x.rotation+=0.01);
-            });
+            window.requestAnimationFrame((timeRes) => loop(timeRes));        
         }
 
-        let fps;
-        let requestTime;
-        function loop(time) {
-            if (requestTime) {
-                fps = Math.round(1000/((performance.now() - requestTime)));
-            }
-        
-            console.log('Fps:',fps);
-            requestTime = time;
-            window.requestAnimationFrame((timeRes) => loop(timeRes));
-        }
-        
-        window.requestAnimationFrame((timeRes) => loop(timeRes));        
     }
 
     function _clearCurrentImage() {
