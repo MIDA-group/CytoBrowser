@@ -420,11 +420,12 @@ const overlayHandler = (function (){
                     // Rectangle
                     const step=_markerSize()/4;
                     graphics.beginFill(0xDE3249);
-                    graphics.drawRect(-step,-step,step,step);
+                    graphics.drawRect(-step,-step,2*step,2*step); //x,y,w,h
                     graphics.endFill();
                     
-                    graphics.x = coords.x;
-                    graphics.y = coords.y;
+                    graphics.position.set(coords.x,coords.y);
+                    graphics.rotation=Math.PI/4;
+                    console.log(`Add: ${coords.x}, ${coords.y}`);
                     _app.stage.addChild(graphics);
                 }
             })
