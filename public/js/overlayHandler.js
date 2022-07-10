@@ -21,7 +21,9 @@ const overlayHandler = (function (){
         _rotation,
         _maxScale,
         _markerScale = 1, //Modifcation factor
-        _app = null //Pixi
+        _stage = null, //Pixi
+        _markerContainer = null,
+        _markerList = []
 
     /**
      * Edit a string with stored in the transform attribute of a node.
@@ -140,6 +142,9 @@ const overlayHandler = (function (){
     }
 
     function _resizeMarkers() {
+        console.log('Resize: ',_markerSize());
+        _markerContainer.children.forEach(c => c.scale.set(_markerSize()/1000));
+        
         _markerOverlay.selectAll("g")
             .attr("transform", _transformFunction({scale: _markerSize()}));
     }
@@ -336,6 +341,7 @@ const overlayHandler = (function (){
 
         function highlight() {
             d3.select(node)
+                .each(d => _markerList[d.id].getChildByName('square').scale.set(1.25))
                 .selectAll("path")
                 .filter((d, i) => i === 0)
                 .transition("highlight").duration(200)
@@ -352,6 +358,7 @@ const overlayHandler = (function (){
 
         function unHighlight() {
             d3.select(node)
+                .each(d => _markerList[d.id].getChildByName('square').scale.set(1))
                 .selectAll("path")
                 .filter((d, i) => i === 0)
                 .transition("highlight").duration(200)
@@ -413,21 +420,43 @@ const overlayHandler = (function (){
             .each(d => {
                 const viewport = coordinateHelper.imageToViewport(d.points[0]);
                 const coords = coordinateHelper.viewportToOverlay(viewport);
-                console.log(`translate(${coords.x}, ${coords.y}) scale(${_markerSize()}) rotate(${-_rotation})`);
 
+                const color = _getAnnotationColor(d).replace('#','0x');
+                const step=Math.SQRT2*_markerSquareSize*1000; //Rounding errors in Pixi for small values, thus '*1000'
                 {
                     const graphics = new PIXI.Graphics();
+                    
                     // Rectangle
-                    const step=_markerSize()/4;
-                    graphics.beginFill(0xDE3249);
-                    graphics.drawRect(-step,-step,2*step,2*step); //x,y,w,h
-                    graphics.endFill();
+                    const square = new PIXI.Graphics()
+                    square.name="square";
+                    // Frame
+                    const frame = new PIXI.Graphics()
+                        .lineStyle(_markerSquareStrokeWidth*1000, color)
+                        .drawRect(-step,-step,2*step,2*step); //x,y,w,h
+                    // Transparent dark fill
+                    const bg = new PIXI.Graphics()
+                        .beginFill(0xFF0000)
+                        .lineStyle(0)
+                        .drawRect(-step,-step,2*step,2*step) //x,y,w,h
+                        .endFill();
+                    bg.alpha=0.2;
+                    square.addChild(bg,frame); //.setParent() does not give correct render order
+                    graphics.addChild(square);
+
+                    // Circle
+                    const circle = new PIXI.Graphics()
+                        .lineStyle(_markerCircleStrokeWidth*1000, "0x808080") //gray
+                        .drawCircle(0, 0, 3.2*_markerCircleSize*1000);                 
+                    graphics.addChild(circle);
                     
                     graphics.position.set(coords.x,coords.y);
                     graphics.rotation=Math.PI/4;
-                    console.log(`Add: ${coords.x}, ${coords.y}`);
-                    _app.stage.addChild(graphics);
+                    graphics.scale.set(_markerSize()/1000);
+
+                    _markerContainer.addChild(graphics);
+                    _markerList[d.id]=graphics;
                 }
+                //console.log(d);
             })
             .call(group =>
                 group.append("path")
@@ -857,7 +886,9 @@ const overlayHandler = (function (){
         if (_activeAnnotationOverlayName)
             setActiveAnnotationOverlay(_activeAnnotationOverlayName);
 
-        _app=app;
+        _stage=app.stage;
+        _markerContainer = new PIXI.Container();
+        _stage.addChild(_markerContainer);
     }
 
     return {

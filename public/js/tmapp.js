@@ -409,8 +409,6 @@ const tmapp = (function() {
 
 
         const pixiOverlay = _viewer.pixiOverlay();
-        
-        //Create svgOverlay(); so that anything like D3, or any canvas library can act upon. https://d3js.org/
         const overlay = _viewer.svgOverlay();
         overlayHandler.init(overlay,pixiOverlay.app());
 
