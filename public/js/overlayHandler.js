@@ -341,7 +341,7 @@ const overlayHandler = (function (){
 
         function highlight() {
             d3.select(node)
-                .each(d => _markerList[d.id].getChildByName('square').scale.set(1.25))
+                .each(d => Ease.ease.add(_markerList[d.id].getChildByName('square'),{scale:1.25},{duration:200}))
                 .selectAll("path")
                 .filter((d, i) => i === 0)
                 .transition("highlight").duration(200)
@@ -358,7 +358,7 @@ const overlayHandler = (function (){
 
         function unHighlight() {
             d3.select(node)
-                .each(d => _markerList[d.id].getChildByName('square').scale.set(1))
+                .each(d => Ease.ease.add(_markerList[d.id].getChildByName('square'),{scale:1},{duration:200}))
                 .selectAll("path")
                 .filter((d, i) => i === 0)
                 .transition("highlight").duration(200)

@@ -412,6 +412,7 @@ const tmapp = (function() {
         const overlay = _viewer.svgOverlay();
         overlayHandler.init(overlay,pixiOverlay.app());
 
+        //PIXI.Ticker.shared.add(() => fps.frame());
         if (false) {
             let fps;
             let requestTime;
