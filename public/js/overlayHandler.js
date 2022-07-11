@@ -351,7 +351,7 @@ const overlayHandler = (function (){
                 .filter((d, i) => i === 0)
                 .transition("highlight").duration(200)
                 .attr("transform", _transformFunction({
-                    scale: 1.25,
+                    scale: 1.25, // Chrome-bug(?) This is not applied to all new markers
                     rotate: 45
                 }))
                 .attr("stroke", _getAnnotationColor);
