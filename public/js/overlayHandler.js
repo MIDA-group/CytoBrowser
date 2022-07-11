@@ -289,7 +289,8 @@ const overlayHandler = (function (){
                     };
                     tmappUI.openAnnotationEditMenu(d.id, location);
                 }   
-                else {                    toggleEditing(d, node);
+                else {                    
+                    toggleEditing(d, node);
                 }        
             },
             pressHandler: function(event) {
@@ -342,6 +343,10 @@ const overlayHandler = (function (){
         function highlight() {
             d3.select(node)
                 .each(d => Ease.ease.add(_markerList[d.id].getChildByName('square'),{scale:1.25},{duration:200}))
+                // .each(d => {
+                //     console.log('ID: ',d.id);
+                //     console.log('M: ',_markerList[d.id]);
+                // })
                 .selectAll("path")
                 .filter((d, i) => i === 0)
                 .transition("highlight").duration(200)
@@ -451,10 +456,12 @@ const overlayHandler = (function (){
                     
                     graphics.position.set(coords.x,coords.y);
                     graphics.rotation=Math.PI/4;
-                    graphics.scale.set(_markerSize()/1000);
+                    graphics.scale.set(0);
 
                     _markerContainer.addChild(graphics);
                     _markerList[d.id]=graphics;
+                    console.log('AID: ',d.id);
+                    Ease.ease.add(graphics,{scale:_markerSize()/1000},{duration:250});
                 }
                 //console.log(d);
             })
@@ -507,6 +514,11 @@ const overlayHandler = (function (){
     }
 
     function _updateMarker(update) {
+        update.each(d => {
+            const viewport = coordinateHelper.imageToViewport(d.points[0]);
+            const coords = coordinateHelper.viewportToOverlay(viewport);
+            _markerList[d.id].position.set(coords.x,coords.y);
+        });
         update.attr("transform", _transformFunction(function(d) {
                 const viewport = coordinateHelper.imageToViewport(d.points[0]);
                 const coords = coordinateHelper.viewportToOverlay(viewport);
