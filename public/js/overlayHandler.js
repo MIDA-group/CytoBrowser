@@ -537,6 +537,13 @@ const overlayHandler = (function (){
     }
 
     function _exitMarker(exit) {
+        exit.each(d => {
+            Ease.ease.add(_markerList[d.id],{scale:_markerList[d.id].scale.x*2},{duration:10})
+                .once('complete', () => {
+                    _markerList[d.id].destroy(true);
+                    delete _markerList[d.id];
+                });
+        });
         return exit.transition("appear").duration(200)
             .attr("opacity", 0)
             .attr("transform", _transformFunction({
