@@ -42,6 +42,8 @@
             //resizeTo: this._pixi,
             transparent: true
         });
+        this._app.renderer.plugins.interaction.moveWhenInside = true;
+
         this._pixi.appendChild(this._app.view);
         
         this._viewer.addHandler('animation', function() {

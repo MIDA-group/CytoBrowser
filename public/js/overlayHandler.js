@@ -22,6 +22,7 @@ const overlayHandler = (function (){
         _maxScale,
         _markerScale = 1, //Modifcation factor
         _stage = null, //Pixi
+        _app = null, //for renderer.plugins.interaction.moveWhenInside
         _markerContainer = null,
         _markerList = []
 
@@ -234,6 +235,68 @@ const overlayHandler = (function (){
                     });
                 });
         }
+    }
+
+    /* Same as MouseEvents but with Pixi Interaction */
+    function _addMarkerInteraction(id, obj, marker) {
+        let mouse_offset; //offset (in webCoords) between mouse click and object
+        let pressed=false; //see also for drag vs. click: https://gist.github.com/fwindpeak/ce39d1acdd55cb37a5bcd8e01d429799
+
+        function scale(obj,s) {
+            Ease.ease.add(obj,{scale:s},{duration:200});
+        }
+
+
+        function pressHandler(event) {
+            tmapp.setCursorStatus({held: true});
+            const mouse_pos = new OpenSeadragon.Point(event.data.global.x,event.data.global.y);
+//            const object_pos = new OpenSeadragon.Point(marker.position.x,marker.position.y);
+            const object_pos = coordinateHelper.imageToWeb(annotationHandler.getAnnotationById(id).centroid);
+            mouse_offset = mouse_pos.minus(object_pos);
+            pressed=true;
+            _app.renderer.plugins.interaction.moveWhenInside = false;
+        }
+        function releaseHandler(event) {
+            tmapp.setCursorStatus({held: false});
+            pressed=false;
+            _app.renderer.plugins.interaction.moveWhenInside = true;
+        }
+        function dragHandler(event) {
+            if (!pressed) return;
+            regionEditor.stopEditingRegion();
+
+            const mouse_pos = new OpenSeadragon.Point(event.data.global.x,event.data.global.y);
+            const object_new_pos = coordinateHelper.webToImage(mouse_pos.minus(mouse_offset)); //imageCoords
+
+            // Use a clone of the annotation to make sure the edit is permitted
+            const dClone = annotationHandler.getAnnotationById(id);
+            const object_pos = dClone.centroid; //current pos imageCoords
+
+            const delta = object_new_pos.minus(object_pos);
+            dClone.points.forEach(point => {
+                point.x += delta.x;
+                point.y += delta.y;
+            });
+            annotationHandler.update(id, dClone, "image");
+
+            const viewportCoords = coordinateHelper.pageToViewport({
+                x: event.data.originalEvent.pageX,
+                y: event.data.originalEvent.pageY
+            });
+            tmapp.setCursorStatus(viewportCoords);
+        }
+
+        obj.interactive = true;
+        obj.buttonMode = true; //Button style cursor
+        obj.interactiveChildren = false; //Just in case
+        obj.on('pointerover', () => scale(marker.getChildByName('square'),1.25));
+        obj.on('pointerout', () => scale(marker.getChildByName('square'),1));
+
+        obj
+            .on('pointerdown', pressHandler)
+            .on('pointerup', releaseHandler)
+            .on('pointerupoutside', releaseHandler)
+            .on('pointermove', dragHandler)
     }
 
     /**
@@ -458,6 +521,7 @@ const overlayHandler = (function (){
                     graphics.rotation=Math.PI/4;
                     graphics.scale.set(0);
 
+                    _addMarkerInteraction(d.id,bg,graphics); //mouse interface to the simplest item
                     _markerContainer.addChild(graphics);
                     _markerList[d.id]=graphics;
                     console.log('AID: ',d.id);
@@ -906,6 +970,7 @@ const overlayHandler = (function (){
             setActiveAnnotationOverlay(_activeAnnotationOverlayName);
 
         _stage=app.stage;
+        _app=app;
         _markerContainer = new PIXI.Container();
         _stage.addChild(_markerContainer);
     }

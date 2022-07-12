@@ -408,8 +408,8 @@ const tmapp = (function() {
         _openImages(imageStack);
 
 
-        const pixiOverlay = _viewer.pixiOverlay();
         const overlay = _viewer.svgOverlay();
+        const pixiOverlay = _viewer.pixiOverlay();
         overlayHandler.init(overlay,pixiOverlay.app());
 
         //PIXI.Ticker.shared.add(() => fps.frame());
