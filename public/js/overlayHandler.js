@@ -243,11 +243,20 @@ const overlayHandler = (function (){
         let pressed=false; //see also for drag vs. click: https://gist.github.com/fwindpeak/ce39d1acdd55cb37a5bcd8e01d429799
 
         function scale(obj,s) {
-            Ease.ease.add(obj,{scale:s},{duration:200});
+            Ease.ease.add(obj,{scale:s},{duration:100});
         }
 
-
+        function highlight(event) {
+            scale(marker.getChildByName('square'),1.25);
+        }
+        function unHighlight(event) {
+            if (pressed) return; //Keep highlight during drag
+            scale(marker.getChildByName('square'),1);
+        }
         function pressHandler(event) {
+            // console.log(event.data.originalEvent);
+            // event.currentTarget._accessibleDiv.setPointerCapture(event.data.originalEvent.pointerId);
+            // //event.data.originalEvent.preventDefault();
             tmapp.setCursorStatus({held: true});
             const mouse_pos = new OpenSeadragon.Point(event.data.global.x,event.data.global.y);
 //            const object_pos = new OpenSeadragon.Point(marker.position.x,marker.position.y);
@@ -257,6 +266,7 @@ const overlayHandler = (function (){
             _app.renderer.plugins.interaction.moveWhenInside = false;
         }
         function releaseHandler(event) {
+            // event.currentTarget.releasePointerCapture(event.data.originalEvent.pointerId);
             tmapp.setCursorStatus({held: false});
             pressed=false;
             _app.renderer.plugins.interaction.moveWhenInside = true;
@@ -287,15 +297,14 @@ const overlayHandler = (function (){
         }
 
         obj.interactive = true;
-        obj.buttonMode = true; //Button style cursor
+        //obj.buttonMode = true; //Button style cursor
         obj.interactiveChildren = false; //Just in case
-        obj.on('pointerover', () => scale(marker.getChildByName('square'),1.25));
-        obj.on('pointerout', () => scale(marker.getChildByName('square'),1));
-
         obj
+            .on('pointerover', highlight)
+            .on('pointerout', unHighlight)
             .on('pointerdown', pressHandler)
             .on('pointerup', releaseHandler)
-            .on('pointerupoutside', releaseHandler)
+            .on('pointerupoutside', (event) => {releaseHandler(event);unHighlight(event);})
             .on('pointermove', dragHandler)
     }
 

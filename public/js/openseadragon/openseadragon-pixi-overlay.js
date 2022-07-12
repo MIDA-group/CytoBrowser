@@ -43,6 +43,7 @@
             transparent: true
         });
         this._app.renderer.plugins.interaction.moveWhenInside = true;
+        this._app.renderer.plugins.interaction.autoPreventDefault=true;
 
         this._pixi.appendChild(this._app.view);
         
