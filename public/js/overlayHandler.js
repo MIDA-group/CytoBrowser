@@ -24,6 +24,7 @@ const overlayHandler = (function (){
         _stage = null, //Pixi
         _app = null, //for renderer.plugins.interaction.moveWhenInside
         _markerContainer = null,
+        _svo = null,
         _markerList = []
 
     /**
@@ -939,6 +940,10 @@ const overlayHandler = (function (){
      * "marker".
      */
     function setActiveAnnotationOverlay(name) {
+        function alpha(obj,s) {
+            Ease.ease.add(obj,{alpha:s},{duration:200});
+        }
+
         _activeAnnotationOverlayName = name;
         if (!_regionOverlay || !_markerOverlay)
             return;
@@ -951,6 +956,11 @@ const overlayHandler = (function (){
                 _markerOverlay.style("pointer-events", "none")
                     .transition("highlight").duration(500)
                     .style("opacity", 0.4);
+                if (_markerContainer) {
+                    alpha(_markerContainer,0.4);
+                    _svo._svg.style.zIndex=1;
+                    //_app.view.style.zIndex=0;
+                }
                 break;
             case "marker":
                 _regionOverlay.style("pointer-events", "none")
@@ -959,6 +969,11 @@ const overlayHandler = (function (){
                 _markerOverlay.style("pointer-events", "fill")
                     .transition("highlight").duration(500)
                     .style("opacity", 1);
+                if (_markerContainer) {
+                    alpha(_markerContainer,1);
+                    _svo._svg.style.zIndex=0;
+                    //_app.view.style.zIndex=1;
+                }
                 break;
             default:
                 throw new Error("Invalid overlay name.");
@@ -1000,6 +1015,7 @@ const overlayHandler = (function (){
         _app=app;
         _markerContainer = new PIXI.Container();
         _stage.addChild(_markerContainer);
+        _svo=svgOverlay;
     }
 
     return {
