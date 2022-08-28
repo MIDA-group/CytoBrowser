@@ -300,6 +300,7 @@ const tmapp = (function() {
         // Live updates of whether or not the mouse is held down
         function heldHandler(held) {
             return function(event) {
+                console.log('OSD: ',event.originalEvent.defaultPrevented, event);
                 setCursorStatus({held: held});
             };
         }
@@ -407,12 +408,19 @@ const tmapp = (function() {
         const imageStack = _expandImageName(imageName);
         _openImages(imageStack);
 
-
         const overlay = _viewer.svgOverlay();
         const pixiOverlay = _viewer.pixiOverlay();
         overlayHandler.init(overlay,pixiOverlay.app());
 
         //PIXI.Ticker.shared.add(() => fps.frame());
+
+        // var ticker = PIXI.Ticker.shared;
+        // ticker.autoStart = false;
+        // ticker.stop();
+
+        // renderer.plugins.interaction.destroy();
+        // renderer.plugins.interaction = null;
+
         if (false) {
             let fps;
             let requestTime;
@@ -421,7 +429,8 @@ const tmapp = (function() {
                     fps = Math.round(1000/((performance.now() - requestTime)));
                 }
             
-                console.log('Fps:',fps);
+            // console.log('FPS:',fps);
+            $("#fps").text(`FPS: ${fps}`);
                 requestTime = time;
                 window.requestAnimationFrame((timeRes) => loop(timeRes));
             }

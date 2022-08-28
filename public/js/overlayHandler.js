@@ -254,9 +254,7 @@ const overlayHandler = (function (){
             scale(marker.getChildByName('square'),1);
         }
         function pressHandler(event) {
-            // console.log(event.data.originalEvent);
-            // event.currentTarget._accessibleDiv.setPointerCapture(event.data.originalEvent.pointerId);
-            // //event.data.originalEvent.preventDefault();
+            event.data.originalEvent.stopPropagation();
             tmapp.setCursorStatus({held: true});
             const mouse_pos = new OpenSeadragon.Point(event.data.global.x,event.data.global.y);
 //            const object_pos = new OpenSeadragon.Point(marker.position.x,marker.position.y);
@@ -273,6 +271,7 @@ const overlayHandler = (function (){
         }
         function dragHandler(event) {
             if (!pressed) return;
+            console.log(event.data.originalEvent);
             regionEditor.stopEditingRegion();
 
             const mouse_pos = new OpenSeadragon.Point(event.data.global.x,event.data.global.y);
@@ -410,6 +409,7 @@ const overlayHandler = (function (){
     }
 
     function _addMarkerMouseEvents(d, node) {
+        return;
         _addAnnotationMouseEvents(d, node);
 
         function highlight() {
