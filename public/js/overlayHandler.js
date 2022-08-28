@@ -305,6 +305,11 @@ const overlayHandler = (function (){
             });
             tmapp.setCursorStatus(viewportCoords);
         }
+        function clickHandler(event) {
+            if (event.data.originalEvent.ctrlKey) {
+                annotationHandler.remove(id);
+            }
+        }
 
         obj.interactive = true;
         //obj.buttonMode = true; //Button style cursor
@@ -316,23 +321,7 @@ const overlayHandler = (function (){
             .on('pointerup', releaseHandler)
             .on('pointerupoutside', (event) => {releaseHandler(event);unHighlight(event);})
             .on('pointermove', dragHandler)
-            .on('click', (event) => {console.log('Cl: ',event);})
-            .on('rightclick', (event) => {console.log('RC: ',event);})
-            .on('rightdown', (event) => {console.log('RD: ',event);})
-            /*.addEventListener('click', {
-                handleEvent(e): {
-                  let prefix;
-             
-                  switch (e.detail) {
-                    case 1: prefix = 'single'; break;
-                    case 2: prefix = 'double'; break;
-                    case 3: prefix = 'triple'; break;
-                    default: prefix = e.detail + 'th'; break;
-                  }
-             
-                  console.log('That was a ' + prefix + 'click');
-                }
-              });*/
+            .on('click', clickHandler);
     }
 
     /**
