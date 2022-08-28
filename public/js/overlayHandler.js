@@ -253,15 +253,26 @@ const overlayHandler = (function (){
             if (pressed) return; //Keep highlight during drag
             scale(marker.getChildByName('square'),1);
         }
+
         function pressHandler(event) {
-            event.data.originalEvent.stopPropagation();
-            tmapp.setCursorStatus({held: true});
-            const mouse_pos = new OpenSeadragon.Point(event.data.global.x,event.data.global.y);
-//            const object_pos = new OpenSeadragon.Point(marker.position.x,marker.position.y);
-            const object_pos = coordinateHelper.imageToWeb(annotationHandler.getAnnotationById(id).centroid);
-            mouse_offset = mouse_pos.minus(object_pos);
-            pressed=true;
-            _app.renderer.plugins.interaction.moveWhenInside = false;
+            const isRightButton = event.data.button === 2;
+            console.log('PH: ',JSON.stringify(event.data)); //The event ages before logged
+            if (isRightButton) {
+                tmappUI.openAnnotationEditMenu(id, event.data.global);
+            }
+            else {
+                tmapp.setCursorStatus({held: true});
+                const mouse_pos = new OpenSeadragon.Point(event.data.global.x,event.data.global.y);
+    //TODO: Use marker instead of slow looking up
+    //            const object_pos = new OpenSeadragon.Point(marker.position.x,marker.position.y);
+                const object_pos = coordinateHelper.imageToWeb(annotationHandler.getAnnotationById(id).centroid);
+                mouse_offset = mouse_pos.minus(object_pos);
+                pressed=true;
+
+                //Fire move events also when the cursor is outside of the object
+                _app.renderer.plugins.interaction.moveWhenInside = false;
+                event.data.originalEvent.stopPropagation();
+            }
         }
         function releaseHandler(event) {
             // event.currentTarget.releasePointerCapture(event.data.originalEvent.pointerId);
@@ -305,6 +316,23 @@ const overlayHandler = (function (){
             .on('pointerup', releaseHandler)
             .on('pointerupoutside', (event) => {releaseHandler(event);unHighlight(event);})
             .on('pointermove', dragHandler)
+            .on('click', (event) => {console.log('Cl: ',event);})
+            .on('rightclick', (event) => {console.log('RC: ',event);})
+            .on('rightdown', (event) => {console.log('RD: ',event);})
+            /*.addEventListener('click', {
+                handleEvent(e): {
+                  let prefix;
+             
+                  switch (e.detail) {
+                    case 1: prefix = 'single'; break;
+                    case 2: prefix = 'double'; break;
+                    case 3: prefix = 'triple'; break;
+                    default: prefix = e.detail + 'th'; break;
+                  }
+             
+                  console.log('That was a ' + prefix + 'click');
+                }
+              });*/
     }
 
     /**
@@ -402,6 +430,7 @@ const overlayHandler = (function (){
                         x: event.originalEvent.pageX,
                         y: event.originalEvent.pageY
                     };
+                    console.log('RBx: ',d.id,location);
                     tmappUI.openAnnotationEditMenu(d.id, location);
                 }
             }          
