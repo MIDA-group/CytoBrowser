@@ -89,7 +89,7 @@
             }
 
             this._app.renderer.resize(this._containerWidth, this._containerHeight);
-            console.log(`pixiOverlay resize: ${this._containerWidth},${this._containerHeight}`);
+//            console.log(`pixiOverlay resize: ${this._containerWidth},${this._containerHeight}`);
 
 
         //var p = this._viewer.viewport.viewerElementToViewportCoordinates(new $.Point(0, 0), true);

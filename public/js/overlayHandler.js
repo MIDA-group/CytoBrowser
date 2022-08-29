@@ -144,7 +144,7 @@ const overlayHandler = (function (){
     }
 
     function _resizeMarkers() {
-        console.log('Resize: ',_markerSize());
+//        console.log('Resize: ',_markerSize());
         _markerContainer.children.forEach(c => c.scale.set(_markerSize()/1000));
         
         _markerOverlay.selectAll("g")
@@ -257,7 +257,7 @@ const overlayHandler = (function (){
 
         function pressHandler(event) {
             const isRightButton = event.data.button === 2;
-            console.log('PH: ',JSON.stringify(event.data)); //The event ages before logged
+//            console.log('PH: ',JSON.stringify(event.data)); //The event ages before logged
             if (isRightButton) {
                 tmappUI.openAnnotationEditMenu(id, event.data.global);
             }
@@ -285,7 +285,6 @@ const overlayHandler = (function (){
         }
         function dragHandler(event) {
             if (!pressed) return;
-            console.log(event.data.originalEvent);
             regionEditor.stopEditingRegion();
 
             const mouse_pos = new OpenSeadragon.Point(event.data.global.x,event.data.global.y);
@@ -561,7 +560,7 @@ const overlayHandler = (function (){
             .attr("opacity", 1)
             .each(d => {
                 _markerList[d.id]=_pixiMarker(d);
-                console.log('AID: ',d.id);
+//                console.log('AID: ',d.id);
             })
             .call(group =>
                 group.append("path")
@@ -810,8 +809,12 @@ const overlayHandler = (function (){
      * Clear all annotations currently in the overlay, in case you need to quickly replace them.
      */
     function clearAnnotations(){
-        if (_markerOverlay)
+        if (_markerOverlay) {
             _markerOverlay.selectAll("g").remove();
+
+            _markerList.forEach(item=>item.destroy(true));
+            _markerList=[];
+        }
         if (_regionOverlay)
             _regionOverlay.selectAll("g").remove();
     }

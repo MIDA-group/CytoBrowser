@@ -300,7 +300,7 @@ const tmapp = (function() {
         // Live updates of whether or not the mouse is held down
         function heldHandler(held) {
             return function(event) {
-                console.log('OSD: ',event.originalEvent.defaultPrevented, event);
+//                console.log('OSD: ',event.originalEvent.defaultPrevented, event);
                 setCursorStatus({held: held});
             };
         }
