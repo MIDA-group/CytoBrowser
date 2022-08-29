@@ -269,6 +269,7 @@ const overlayHandler = (function (){
                 const object_pos = coordinateHelper.imageToWeb(annotationHandler.getAnnotationById(id).centroid);
                 mouse_offset = mouse_pos.minus(object_pos);
                 pressed=true;
+                marker.pressed=true;
 
                 //Fire move events also when the cursor is outside of the object
                 _app.renderer.plugins.interaction.moveWhenInside = false;
@@ -279,6 +280,7 @@ const overlayHandler = (function (){
             // event.currentTarget.releasePointerCapture(event.data.originalEvent.pointerId);
             tmapp.setCursorStatus({held: false});
             pressed=false;
+            marker.pressed=false;
             _app.renderer.plugins.interaction.moveWhenInside = true;
         }
         function dragHandler(event) {
@@ -504,6 +506,50 @@ const overlayHandler = (function (){
         }).setTracking(true);
     }
 
+    function _pixiMarker(d) {
+        const viewport = coordinateHelper.imageToViewport(d.points[0]);
+        const coords = coordinateHelper.viewportToOverlay(viewport);
+
+        const color = _getAnnotationColor(d).replace('#','0x');
+        const step=Math.SQRT2*_markerSquareSize*1000; //Rounding errors in Pixi for small values, thus '*1000'
+        
+        const graphics = new PIXI.Graphics();
+        
+        // Rectangle
+        const square = new PIXI.Graphics();
+        square.name="square";
+        // Frame
+        const frame = new PIXI.Graphics()
+            .lineStyle(_markerSquareStrokeWidth*1000, color)
+            .drawRect(-step,-step,2*step,2*step); //x,y,w,h
+        frame.name="frame";
+        // Transparent dark fill
+        const bg = new PIXI.Graphics()
+            .beginFill(0xFF0000)
+            .lineStyle(0)
+            .drawRect(-step,-step,2*step,2*step) //x,y,w,h
+            .endFill();
+        bg.alpha=0.2;
+        square.addChild(bg,frame); //.setParent() does not give correct render order
+        graphics.addChild(square);
+
+        // Circle
+        const circle = new PIXI.Graphics()
+            .lineStyle(_markerCircleStrokeWidth*1000, "0x808080") //gray
+            .drawCircle(0, 0, 3.2*_markerCircleSize*1000);                 
+        graphics.addChild(circle);
+        
+        graphics.position.set(coords.x,coords.y);
+        graphics.rotation=Math.PI/4;
+        graphics.scale.set(0);
+
+        _addMarkerInteraction(d.id,bg,graphics); //mouse interface to the simplest item
+        _markerContainer.addChild(graphics);
+        Ease.ease.add(graphics,{scale:_markerSize()/1000},{duration:250});
+
+        return graphics;
+    }
+
     // New marker
     function _enterMarker(enter) {
         return enter.append("g")
@@ -514,48 +560,8 @@ const overlayHandler = (function (){
             })
             .attr("opacity", 1)
             .each(d => {
-                const viewport = coordinateHelper.imageToViewport(d.points[0]);
-                const coords = coordinateHelper.viewportToOverlay(viewport);
-
-                const color = _getAnnotationColor(d).replace('#','0x');
-                const step=Math.SQRT2*_markerSquareSize*1000; //Rounding errors in Pixi for small values, thus '*1000'
-                {
-                    const graphics = new PIXI.Graphics();
-                    
-                    // Rectangle
-                    const square = new PIXI.Graphics()
-                    square.name="square";
-                    // Frame
-                    const frame = new PIXI.Graphics()
-                        .lineStyle(_markerSquareStrokeWidth*1000, color)
-                        .drawRect(-step,-step,2*step,2*step); //x,y,w,h
-                    // Transparent dark fill
-                    const bg = new PIXI.Graphics()
-                        .beginFill(0xFF0000)
-                        .lineStyle(0)
-                        .drawRect(-step,-step,2*step,2*step) //x,y,w,h
-                        .endFill();
-                    bg.alpha=0.2;
-                    square.addChild(bg,frame); //.setParent() does not give correct render order
-                    graphics.addChild(square);
-
-                    // Circle
-                    const circle = new PIXI.Graphics()
-                        .lineStyle(_markerCircleStrokeWidth*1000, "0x808080") //gray
-                        .drawCircle(0, 0, 3.2*_markerCircleSize*1000);                 
-                    graphics.addChild(circle);
-                    
-                    graphics.position.set(coords.x,coords.y);
-                    graphics.rotation=Math.PI/4;
-                    graphics.scale.set(0);
-
-                    _addMarkerInteraction(d.id,bg,graphics); //mouse interface to the simplest item
-                    _markerContainer.addChild(graphics);
-                    _markerList[d.id]=graphics;
-                    console.log('AID: ',d.id);
-                    Ease.ease.add(graphics,{scale:_markerSize()/1000},{duration:250});
-                }
-                //console.log(d);
+                _markerList[d.id]=_pixiMarker(d);
+                console.log('AID: ',d.id);
             })
             .call(group =>
                 group.append("path")
@@ -605,11 +611,52 @@ const overlayHandler = (function (){
             );
     }
 
+    // Hack to do color change, https://www.html5gamedevs.com/topic/9374-change-the-style-of-line-that-is-already-drawn/page/2/
+    PIXI.Graphics.prototype.updateLineStyle = function({width=null, color=null, alpha=null}={}) {
+        this.geometry.graphicsData.forEach(data => {
+            if (width!=null) { data.lineStyle.width = width; }
+            if (color!=null) { data.lineStyle.color = color; }
+            if (alpha!=null) { data.lineStyle.alpha = alpha; }
+        });
+        this.geometry.invalidate();
+    }
+
+    let _easeTimeout = 0;
     function _updateMarker(update) {
         update.each(d => {
+            let changed = false;
+            const marker = _markerList[d.id];
             const viewport = coordinateHelper.imageToViewport(d.points[0]);
             const coords = coordinateHelper.viewportToOverlay(viewport);
-            _markerList[d.id].position.set(coords.x,coords.y);
+            if (marker.position.x!==coords.x || marker.position.y!==coords.y) { 
+                marker.position.set(coords.x,coords.y);
+                changed = true;
+            }
+
+            const square = marker.getChildByName('square');
+            const frame = square.getChildByName('frame');
+            const color = _getAnnotationColor(d).replace('#','0x');
+            if (color !== frame.line.color) { //alternatively use frame._lineStyle.color
+                frame.line.color = color;
+                frame.updateLineStyle({color});
+                changed = true;
+            }
+
+            // Highligh changes a bit, with half alpha to say "hands off"
+            if (changed && !marker.pressed) {
+                const duration = 100; //0.1 second
+                if (!_easeTimeout) {
+                    Ease.ease.add(marker.getChildByName('square'),{scale:1.25,alpha:0.5},{duration});
+                }
+                else {
+                    clearTimeout(_easeTimeout);
+                }
+                _easeTimeout = setTimeout(() => {
+                    Ease.ease.add(marker.getChildByName('square'),{scale:1,alpha:1},{duration});
+                    _easeTimeout = 0;
+                }, duration); 
+
+            }
         });
         update.attr("transform", _transformFunction(function(d) {
                 const viewport = coordinateHelper.imageToViewport(d.points[0]);
@@ -959,7 +1006,6 @@ const overlayHandler = (function (){
                 if (_markerContainer) {
                     alpha(_markerContainer,0.4);
                     _svo._svg.style.zIndex=1;
-                    //_app.view.style.zIndex=0;
                 }
                 break;
             case "marker":
@@ -972,7 +1018,6 @@ const overlayHandler = (function (){
                 if (_markerContainer) {
                     alpha(_markerContainer,1);
                     _svo._svg.style.zIndex=0;
-                    //_app.view.style.zIndex=1;
                 }
                 break;
             default:
