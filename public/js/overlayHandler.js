@@ -165,6 +165,8 @@ const overlayHandler = (function (){
     }
 
     function _rotateMarkers() {
+        _markerContainer.children.forEach(c => c.angle=-_rotation);
+
         _markerOverlay.selectAll("g")
             .attr("transform", _transformFunction({rotate: -_rotation}));
     }
@@ -530,6 +532,7 @@ const overlayHandler = (function (){
             .endFill();
         bg.alpha=0.2;
         square.addChild(bg,frame); //.setParent() does not give correct render order
+        square.angle=45; 
         graphics.addChild(square);
 
         // Circle
@@ -539,7 +542,7 @@ const overlayHandler = (function (){
         graphics.addChild(circle);
         
         graphics.position.set(coords.x,coords.y);
-        graphics.rotation=Math.PI/4;
+        graphics.angle=-_rotation;
         graphics.scale.set(0);
 
         _addMarkerInteraction(d.id,bg,graphics); //mouse interface to the simplest item
