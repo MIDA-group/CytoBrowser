@@ -646,7 +646,8 @@ const overlayHandler = (function (){
                     })
                     .catch(() => {
                         // console.warn('Sometimes we get a reject, just ignore!');
-                        reject(); 
+                        // reject(); 
+                        resolve(); //This also indicates that we're done
                     });
             }
         });
@@ -672,7 +673,8 @@ const overlayHandler = (function (){
                     })
                     .catch(() => {
                         // console.warn('Sometimes we get a reject, just ignore!');
-                        reject(); 
+                        // reject(); 
+                        resolve(); //This also indicates that we're done
                     });
             }
         });

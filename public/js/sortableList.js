@@ -209,12 +209,13 @@ class SortableList {
                     .transition()
                     .end()
                     .then(() => {
-                        console.log('Done with List rendering');
+                        // console.log('Done with List rendering');
                         resolve(); 
                     })
                     .catch(() => {
-                        console.warn('Sometimes we get a reject, just ignore!');
-                        reject(); 
+                        // console.warn('Sometimes we get a reject, just ignore!');
+                        // reject(); 
+                        resolve(); //This also indicates that we're done
                     });
             }
         });
@@ -241,9 +242,12 @@ class SortableList {
         doneChanges
             .then(() => {
                 this.updateData.inProgress(false);
-                if (this._unboldTimeout) {
-                    clearTimeout(this._unboldTimeout);
-                }
+
+            //Avoids flicker, but fails if the selection changes
+                // if (this._unboldTimeout) {
+                //     clearTimeout(this._unboldTimeout);
+                // }
+
                 this._unboldTimeout = setTimeout(() => {
                     changed.style("font-weight", "normal");
                     this._unboldTimeout = 0;
