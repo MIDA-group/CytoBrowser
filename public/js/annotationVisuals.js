@@ -16,7 +16,6 @@ const annotationVisuals = (function() {
     // Counters allowing to jump over intermediate updates
     const pendingVisCount = (function () { let i = 0n; return (val=0n) => i+=BigInt(val); })();
     const pendingListCount = (function () { let i = 0n; return (val=0n) => i+=BigInt(val); })();
-    let lastCompletedList = 0;
     
     /* This is the heavy work function: filter and visualize annotations */
     function _filterAndUpdate() {
@@ -50,16 +49,22 @@ const annotationVisuals = (function() {
         
         let thisListCount=pendingListCount(1); //add one
         if (_annotationList) {
-            wait(0) 
+            if (_annotationList.updateData.inProgress()) {
+                wait(0) 
                 .then(() => {
-                    if (thisListCount==pendingListCount() || (new Date()-lastCompletedList > 100)) { //if we're the last one, or >100ms since last update
+                    if (thisListCount==pendingListCount()) { //if we're the last one
+                        console.log('running delayed list update: ',thisListCount,pendingListCount());
                         _annotationList.updateData(annotations.slice().reverse()); // No sort -> reverse order
-                        lastCompletedList = new Date();
                     }
                     else {
-                        // console.log('skipping list update',thisListCount,pendingListCount(),new Date()-lastCompletedList);
+                        console.log('skipping list update',thisListCount,pendingListCount());
                     }
                 });
+            }
+            else {
+                console.log('running immediate list update: ',thisListCount,pendingListCount());
+                _annotationList.updateData(annotations.slice().reverse()); // No sort -> reverse order
+            }
         }
         else {
             console.warn("No annotation list has been set.");
@@ -69,7 +74,7 @@ const annotationVisuals = (function() {
             tmappUI.setFilterInfo(_unfilteredAnnotations.length, annotations.length);
         }
 
-        timingLog && console.timeEnd('visFiltUpd');
+        timingLog && console.timeEnd('visFiltUpd'); //Async early return
     }
 
     function _setFilter(query) {

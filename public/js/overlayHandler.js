@@ -641,11 +641,11 @@ const overlayHandler = (function (){
                     .transition()
                     .end()
                     .then(() => {
-                        console.log('Done with Marker rendering');
+                        // console.log('Done with Marker rendering');
                         resolve(); 
                     })
                     .catch(() => {
-                        console.warn('Sometimes we get a reject, just ignore!');
+                        // console.warn('Sometimes we get a reject, just ignore!');
                         reject(); 
                     });
             }
@@ -667,11 +667,11 @@ const overlayHandler = (function (){
                     .transition()
                     .end()
                     .then(() => {
-                        console.log('Done with Region rendering');
+                        // console.log('Done with Region rendering');
                         resolve(); 
                     })
                     .catch(() => {
-                        console.warn('Sometimes we get a reject, just ignore!');
+                        // console.warn('Sometimes we get a reject, just ignore!');
                         reject(); 
                     });
             }
@@ -681,8 +681,8 @@ const overlayHandler = (function (){
             .then(() => {
                 updateAnnotations.inProgress(false);
             })
-            .catch(() => { 
-                console.warn('Annotation rendering reported an issue.'); 
+            .catch((err) => { 
+                console.warn('Annotation rendering reported an issue: ',err); 
             });
     }
     // Boolean to check if we're busy rendering
