@@ -402,7 +402,7 @@ const overlayHandler = (function (){
     }
 
     function _enterMarker(enter) {
-        enter.append("g")
+        return enter.append("g")
             .attr("transform", d => {
                 const viewport = coordinateHelper.imageToViewport(d.points[0]);
                 const coords = coordinateHelper.viewportToOverlay(viewport);
@@ -472,10 +472,11 @@ const overlayHandler = (function (){
                 .style("fill", _getAnnotationColor)
                 .text(_getAnnotationText);
         }
+        return update; 
     }
 
     function _exitMarker(exit) {
-        exit.transition("appear").duration(200)
+        return exit.transition("appear").duration(200)
             .attr("opacity", 0)
             .attr("transform", _transformFunction({
                 scale: s => 2 * s
@@ -484,7 +485,7 @@ const overlayHandler = (function (){
     }
 
     function _enterRegion(enter) {
-        enter.append("g")
+        return enter.append("g")
             .attr("class", "region")
             .call(group =>
                 group.append("path")
@@ -500,7 +501,7 @@ const overlayHandler = (function (){
     }
 
     function _updateRegion(update) {
-        update.call(update =>
+        return update.call(update =>
                 update.select(".region-area")
                     .attr("d", _getRegionPath)
                     .transition("changeColor").duration(500)
@@ -525,13 +526,13 @@ const overlayHandler = (function (){
     }
 
     function _exitRegion(exit) {
-        exit.transition("appear").duration(200)
+        return exit.transition("appear").duration(200)
             .attr("opacity", 0)
             .remove();
     }
 
     function _enterMember(enter) {
-        const group = enter.append("g")
+        enter.append("g")
             .attr("transform", d => {
                 const coords = coordinateHelper.viewportToOverlay(d.cursor);
                 return `translate(${coords.x}, ${coords.y}), rotate(-30), scale(${_cursorSize(d.cursor)})`
@@ -615,6 +616,7 @@ const overlayHandler = (function (){
      * @param {Array} annotations The currently placed annotations.
      */
     function updateAnnotations(annotations){
+        updateAnnotations.inProgress(true); //No function 'self' existing
         const markers = annotations.filter(annotation =>
             annotation.points.length === 1
         );
@@ -622,21 +624,69 @@ const overlayHandler = (function (){
             annotation.points.length > 1
         );
 
-        _markerOverlay.selectAll("g")
-            .data(markers, d => d.id)
-            .join(
-                _enterMarker,
-                _updateMarker,
-                _exitMarker
-            );
-        _regionOverlay.selectAll(".region")
-            .data(regions, d => d.id)
-            .join(
-                _enterRegion,
-                _updateRegion,
-                _exitRegion
-            );
+        const doneMarkers = new Promise((resolve, reject) => {
+            const marks = _markerOverlay.selectAll("g")
+                .data(markers, d => d.id)
+                .join(
+                    _enterMarker,
+                    _updateMarker,
+                    _exitMarker
+                );
+
+            if (marks.empty()) {
+                resolve();
+            }
+            else {
+                marks
+                    .transition()
+                    .end()
+                    .then(() => {
+                        console.log('Done with Marker rendering');
+                        resolve(); 
+                    })
+                    .catch(() => {
+                        console.warn('Sometimes we get a reject, just ignore!');
+                        reject(); 
+                    });
+            }
+        });
+        const doneRegions = new Promise((resolve, reject) => {
+            const regs = _regionOverlay.selectAll(".region")
+                .data(regions, d => d.id)
+                .join(
+                    _enterRegion,
+                    _updateRegion,
+                    _exitRegion
+                );
+
+            if (regs.empty()) { //required even though end() should resolve directly on empty selection
+                resolve();
+            }
+            else {
+                regs
+                    .transition()
+                    .end()
+                    .then(() => {
+                        console.log('Done with Region rendering');
+                        resolve(); 
+                    })
+                    .catch(() => {
+                        console.warn('Sometimes we get a reject, just ignore!');
+                        reject(); 
+                    });
+            }
+        });
+
+        Promise.allSettled([doneMarkers,doneRegions])
+            .then(() => {
+                updateAnnotations.inProgress(false);
+            })
+            .catch(() => { 
+                console.warn('Annotation rendering reported an issue.'); 
+            });
     }
+    // Boolean to check if we're busy rendering
+    updateAnnotations.inProgress = (function () { let flag = false; return (set=null) => { if (set!=null) flag=set; return flag; }} )();
 
     /**
      * Update the visuals for the pending region.

@@ -16,9 +16,8 @@ const annotationVisuals = (function() {
     // Counters allowing to jump over intermediate updates
     const pendingVisCount = (function () { let i = 0n; return (val=0n) => i+=BigInt(val); })();
     const pendingListCount = (function () { let i = 0n; return (val=0n) => i+=BigInt(val); })();
-    let lastCompletedVis = 0;
     let lastCompletedList = 0;
-
+    
     /* This is the heavy work function: filter and visualize annotations */
     function _filterAndUpdate() {
         timingLog && console.time('visFiltUpd');
@@ -32,17 +31,23 @@ const annotationVisuals = (function() {
         const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
 
         let thisVisCount=pendingVisCount(1); //add one
-        wait(0) //Using Promise.resolve() didn't give time enough for rendering
-            .then(() => {
-                if (thisVisCount==pendingVisCount() || (new Date()-lastCompletedVis > 100)) { //if we're the last one, or >100ms since last update
-                    overlayHandler.updateAnnotations(annotations);
-                    lastCompletedVis = new Date();
-                }
-                else {
-                    // console.log('skipping overlay update',thisVisCount,pendingVisCount());
-                }
-            });
-
+        if (overlayHandler.updateAnnotations.inProgress()) {
+            wait(0) //Using Promise.resolve() didn't give time enough for rendering
+                .then(() => {
+                    if (thisVisCount==pendingVisCount()) { //if we're the last one
+                        console.log('running delayed overlay update: ',thisVisCount,pendingVisCount());
+                        overlayHandler.updateAnnotations(annotations);
+                    }
+                    else {
+                        console.log('skipping overlay update',thisVisCount,pendingVisCount());
+                    }
+                });
+        }
+        else {
+            console.log('running immediate overlay update: ',thisVisCount,pendingVisCount());
+            overlayHandler.updateAnnotations(annotations);
+        }
+        
         let thisListCount=pendingListCount(1); //add one
         if (_annotationList) {
             wait(0) 
