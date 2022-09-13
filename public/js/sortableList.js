@@ -26,6 +26,8 @@ class SortableList {
      * field can be used to sort the annotations. Defaults to false.
      * @property {string} [minWidth] The minimum width of the column for
      * this field.
+     * @property {() => string} [displayStyle] Typically "none" to make 
+     * column invisible
      */
 
     /**
@@ -43,8 +45,10 @@ class SortableList {
      * @param {Function} [onDoubleClick] Function to be called when a row
      * in the list is double clicked, passing the data on that row as an
      * argument. If omitted, nothing happens when a row is double clicked.
+     * @param {Function} [anchor] Functions generating href
+     * for an anchor <a></a> wrapping each cell in a row.
      */
-    constructor(table, scroller, idKey, fields, onClick=null, onDoubleClick=null) {
+    constructor(table, scroller, idKey, fields, onClick=null, onDoubleClick=null, anchor=null) {
         this._fields = fields;
         this._data = [];
         this._idKey = idKey;
@@ -52,8 +56,10 @@ class SortableList {
         this._scroller = scroller;
         this._onClick = onClick;
         this._onDoubleClick = onDoubleClick;
+        this._anchor = anchor;
         this._createHeaderRowAndBody();
         this.unsetSorted();
+        this._unboldTimeout = 0;
     }
 
     _createHeaderRowAndBody() {
@@ -67,29 +73,43 @@ class SortableList {
             if (field.minWidth) {
                 col.style("min-width", field.minWidth);
             }
+            const th = row.append("th")
+                .style("user-select", "none")
+                .text(field.name);
+            if (field.displayStyle) {
+                th.style("display", field.displayStyle());
+            }
             if (field.sortable) {
-                row.append("th")
-                    .on("click", () => this._progressSort(field.key))
+                th.on("click", () => this._progressSort(field.key))
                     .style("cursor", "pointer")
-                    .style("user-select", "none")
                     .attr("class", "p-1")
                     .attr("title", field.title ? field.title : field.name)
-                    .text(field.name)
                     .append("span")
                     .attr("class", "sort-indicator ml-1")
                     .style("width", "1em")
                     .attr("data-key", field.key);
             }
-            else {
-                row.append("th")
-                    .style("user-select", "none")
-                    .text(field.name);
-            }
-
         });
         this._table.append("tbody");
     }
 
+    _updateDisplayStyle() {
+        let changed=false;
+        const th = this._table.selectAll("th")
+            .data(this._fields)
+            .join("th");
+        th.each(function(f) {
+            if (f.displayStyle) {
+                if (changed || d3.select(this).style("display") !== f.displayStyle()) {
+                    d3.select(this).style("display", f.displayStyle());
+                    changed=true;
+                }
+            }
+        });
+        return changed;
+    }
+
+    //TODO(?): Is there actually a point in keeping two arrays? Just use rawData directly instead?
     // _data has proporty "changed" which is true if _setData made a change (not verified to work with selectFun)
     _setData(rawData) {
         timingLog && console.time("setListData");
@@ -101,6 +121,7 @@ class SortableList {
             adjustedDatum.changed = old == null; 
             adjustedDatum[this._idKey] = datum[this._idKey];
             adjustedDatum.changed || old[this._idKey] === adjustedDatum[this._idKey] || (adjustedDatum.changed=true);
+            adjustedDatum.rawRef=datum; //reference to the original raw data
             this._fields.forEach(field => {
                 if (field.selectFun) {
                     adjustedDatum[field.key] = field.selectFun(datum);
@@ -108,60 +129,135 @@ class SortableList {
                 else {
                     adjustedDatum[field.key] = datum[field.key];
                 }
-                adjustedDatum.changed || old[field.key] === adjustedDatum[field.key] || (adjustedDatum.changed=true);
+                adjustedDatum.changed || old[field.key] === adjustedDatum[field.key] || (adjustedDatum.changed=true); //||=
             });
             adjustedDatum.changed && updates++;
             return adjustedDatum;
         });
         timingLog && console.timeEnd("setListData");
-        // console.log(updates," elements updated.");
+        //console.log(`Made ${updates} updates in list`);
     }
 
-    _displayData() {
+    _displayData(force = false, maxCount = Infinity) {
         timingLog && console.time("dispListData");
         const list = this;
+        if (list._anchor) tmapp.makeURL(); //make sure it's updatable; CROCK: only needed if we use URL-update
+
         const fields = this._fields;
         const rows = this._table.select("tbody")
             .selectAll(".data-row")
-            .data(this._data, d => d[this._idKey])
+            .data(this._data.slice(0,maxCount), d => d[this._idKey])
             .join("tr")
             .attr("class", "data-row")
             .attr("data-annotation-id", d => d[this._idKey])
             .order((a, b) => a.a < b.a);
 
-        const changed = rows.filter((d, i) => d.changed);
-        changed
-            .style("font-weight", "bold") // bold changes
-            .each(function(d) { // each row (no arrow function, to keep 'this')
-                if (list._onClick || list._onDoubleClick) {
-                    d3.select(this)
-                        .style("cursor", "pointer")
-                        .style("user-select", "none");
-                    if (list._onClick) {
-                        d3.select(this).on("click", () => list._onClick(d));
-                    }
-                    if (list._onDoubleClick) {
-                        d3.select(this).on("dblclick", () => list._onDoubleClick(d));
-                    }
-                }
+        const changed = force? rows: rows.filter((d, i) => d.changed);
+        const doneChanges = new Promise((resolve, reject) => {
+            if (changed.empty()) {
+                resolve();
+            }
+            else {
+                changed
+                    .style("font-weight", "bold") // bold changes
+                    .each(function(d) { // each row (no arrow function, to keep 'this')
+                        if (list._onClick || list._onDoubleClick) {
+                            d3.select(this)
+                                .style("cursor", "pointer")
+                                .style("user-select", "none");
+                            if (list._onClick) {
+                                d3.select(this).on("click", () => list._onClick(d));
+                            }
+                            if (list._onDoubleClick) {
+                                d3.select(this).on("dblclick", () => list._onDoubleClick(d));
+                            }
+                        }
+                        const td=d3.select(this)
+                            .selectAll("td")
+                            .data(fields)
+                            .join("td")
+                            .attr("class", "px-0 py-1")
+                            .style("vertical-align", "middle");
 
-                d3.select(this)
-                    .selectAll("td")
-                    .data(fields)
-                    .join("td")
-                    .attr("class", "px-0 py-1")
-                    .style("vertical-align", "middle")
-                    .each(function(f) { //each column
-                        if (f.displayFun) {
-                            f.displayFun(this, d);
+                        td.each(function(f) { //each column
+                            if (f.displayStyle) {
+                                d3.select(this).style("display",f.displayStyle());
+                            } 
+                        });
+
+                        let elem=td; //td or anchor 
+                        if (list._anchor) { // wrap content in an anchor <a>...</a>
+                            const href = list._anchor(d);
+                            td.each(function() { //each column
+                                if (!d3.select(this).select("a").node()) { //all which do not have an anchor
+                                    d3.select(this).append("a"); //append one
+                                }
+                            });
+                            elem=td.select("a").attr("href", href);
                         }
-                        else {
-                            d3.select(this).text(d[f.key]);
-                        }
+
+                        //td or anchor
+                        elem.each(function(f) { //each column
+                            if (f.displayFun) {
+                                f.displayFun(this, d);
+                            }
+                            else {
+                                d3.select(this).text(d[f.key]);
+                            }
+                        });
+                    })
+                    .transition()
+                    .end()
+                    .then(() => {
+                        // console.log('Done with List rendering');
+                        resolve(); 
+                    })
+                    .catch(() => {
+                        // console.warn('Sometimes we get a reject, just ignore!');
+                        // reject(); 
+                        resolve(); //This also indicates that we're done
                     });
+            }
+        });
+
+        if (maxCount<this._data.length) {
+            this._table.select("tbody")
+                .selectAll(".overflowRow")
+                .data([[`${this._data.length-maxCount} elements not shown...`]])
+                .join("tr")
+                .attr("class","overflowRow")
+                .selectAll("td")
+                .data(d => d)
+                .join("td")
+                .attr("colspan",fields.length)
+                .text(d => d)
+                .attr("title", "List truncated for reasons of speed. Use 'Filter' or 'Sort' to select the data you wish to display.")
+        } 
+        else {
+            this._table.select("tbody")
+                .selectAll(".overflowRow")
+                .remove();
+        }
+
+        doneChanges
+            .then(() => {
+                this.updateData.inProgress(false);
+
+            //Avoids flicker, but fails if the selection changes
+                // if (this._unboldTimeout) {
+                //     clearTimeout(this._unboldTimeout);
+                // }
+
+                this._unboldTimeout = setTimeout(() => {
+                    changed.style("font-weight", "normal");
+                    this._unboldTimeout = 0;
+                }, 2000); //unbold after 2s
+            })
+            .catch((err) => { 
+                console.warn('Annotation rendering reported an issue: ',err); 
             });
-        setTimeout(() => changed.style("font-weight", "normal"), 2000); //unbold after 2s
-        timingLog && console.timeEnd("dispListData");
+
+        timingLog && console.timeEnd("dispListData"); //Async so reaching here early
     }
 
     _reorderData() {
@@ -209,8 +305,11 @@ class SortableList {
     }
 
     updateData(data) {
+        this.updateData.inProgress(true); //No function 'self' existing
+
+        const changed=this._updateDisplayStyle();
         this._setData(data);
-        this._displayData(); //may be slow if large data
+        this._displayData(changed,1000); //may be slow if large data, calls inProgress(false) when done
         this._reorderData();
     }
 
@@ -285,3 +384,5 @@ class SortableList {
         });
     }
 }
+// Boolean to check if we're busy rendering
+SortableList.prototype.updateData.inProgress = (function () { let flag = false; return (set=null) => { if (set!=null) flag=set; return flag; }} )();

@@ -70,7 +70,7 @@ const tmappUI = (function(){
         const winh = $(window).height();
         const winw = $(window).width();
         const top = maxBottom < winh ? location.y : Math.max(15, location.y - menu.height());
-        const left = maxRight < winw ? location.x : location.x - menu.width();
+        const left = maxRight < winw ? location.x : Math.max(3,location.x - menu.width());
         menu.css({top: top, left: left, pointerEvents: "auto"});
 
         _pageInFocus = false;
@@ -131,11 +131,12 @@ const tmappUI = (function(){
                 name: "Pred.",
                 key: "prediction",
                 title: "Class prediction score",
-                minWidth: "6em",
+                minWidth: "0em",
                 displayFun: (elem, d) => {
-                    $(elem).html((d.prediction == null) ? null : d.prediction.toFixed(4));
+                    $(elem).html((d.prediction == null) ? "&nbsp;" : d.prediction.toFixed(4));
                 },
-                sortable: true
+                sortable: true,
+                displayStyle: () => annotationHandler.hasPrediction()?"":"none"
             },
             {
                 name: "B",
@@ -165,21 +166,12 @@ const tmappUI = (function(){
                 minWidth: "2em",
                 selectFun: d => (d.comments && d.comments.length) || 0,
                 sortable: true
-            },
-            {
-                name: "",
-                key: "moveToButton",
-                minWidth: "5em",
-                displayFun: (elem, d) => {
-                    const url = tmapp.annotationURL(d.id);
-                    const button = $(`<a href="${url}" role="button">Go to</a>`); //Real URL, can be bookmarked
-                    button.addClass("btn btn-outline-dark btn-sm p-0 px-1");
-                    button.click((event) => {event.preventDefault(); tmapp.moveToAnnotation(d.id)}); //prevent slow HREF and move directly
-                    $(elem).html(button);
-                },
-                sortable: false
-            }
-        ]);
+            }   
+        ],
+        d => {event.preventDefault();tmapp.moveToAnnotation(d.id);}, //onclick
+        null, 
+        d => tmapp.annotationURL(d.rawRef,true) //href, updateURL to save some ms
+        );
 
         annotationVisuals.setAnnotationList(list);
     }
@@ -267,8 +259,9 @@ const tmappUI = (function(){
         menu.focusout(event => {
             const isSame = menu.get(0) === event.relatedTarget;
             const isInside = $.contains(menu.get(0), event.relatedTarget);
-            if (!isSame && !isInside)
+            if (!isSame && !isInside) {
                 _closeContextMenu();
+            }
         });
         menu.contextmenu(() => false);
         const close = $("#close_context_menu");
@@ -332,8 +325,11 @@ const tmappUI = (function(){
     }
 
     function _initVisualizationSliders() {
+        $("#marker_size_slider").slider().on('change', function(e) {overlayHandler.setMarkerScale(e.value.newValue);});
         $("#brightness_slider").slider().on('change', function(e) {tmapp.setBrightness(e.value.newValue);});
         $("#contrast_slider").slider().on('change', function(e) {tmapp.setContrast(e.value.newValue);});
+    
+        $("#marker_size_reset").click(function() { $('#marker_size_slider').slider('setValue', 1, true, true);});
         $("#brightness_reset").click(function() { $('#brightness_slider').slider('setValue', 0, true, true);});
         $("#contrast_reset").click(function() { $('#contrast_slider').slider('setValue', 0, true, true);});
     }
@@ -813,30 +809,35 @@ const tmappUI = (function(){
     }
 
     return {
-        initUI: initUI,
-        updateClassSelectionButtons:updateClassSelectionButtons,
+        initUI,
+        updateClassSelectionButtons,
         choice: choice,
-        openAnnotationEditMenu: openAnnotationEditMenu,
-        setCollabID: setCollabID,
-        clearCollabID: clearCollabID,
-        updateCollaborators: updateCollaborators,
-        clearCollaborators: clearCollaborators,
-        enableCollabCreation: enableCollabCreation,
-        displayImageError: displayImageError,
-        clearImageError: clearImageError,
-        updateImageBrowser: updateImageBrowser,
-        setUserName: setUserName,
-        setCollabName: setCollabName,
-        setImageName: setImageName,
-        setImageZLevel: setImageZLevel,
-        setImageZoom: setImageZoom,
-        setImageRotation: setImageRotation,
-        setLastAutosave: setLastAutosave,
-        setFilterError: setFilterError,
-        setFilterInfo: setFilterInfo,
-        clearFilterInfo: clearFilterInfo,
-        setURL: setURL,
-        setOverwriteURL: setOverwriteURL,
-        inFocus: inFocus
+        openAnnotationEditMenu,
+
+        setCollabID,
+        clearCollabID,
+        updateCollaborators,
+        clearCollaborators,
+        enableCollabCreation,
+        
+        displayImageError,
+        clearImageError,
+
+        updateImageBrowser,
+
+        setUserName,
+        setCollabName,
+        setImageName,
+        setImageZLevel,
+        setImageZoom,
+        setImageRotation,
+        setLastAutosave,
+        setFilterError,
+        setFilterInfo,
+        clearFilterInfo,
+        setURL,
+        setOverwriteURL,
+
+        inFocus
     };
 })();

@@ -48,8 +48,16 @@ const annotationHandler = (function (){
     let _nMarkers = 0;
     let _nRegions = 0;
     let _classCounts = {};
+    let _hasPrediction = false;
     classUtils.forEachClass(c => _classCounts[c.name] = 0);
 
+    // True if any predictions exist
+    function _checkPrediction() {
+        return _annotations.some(x => x.prediction!=null);
+    }
+
+
+    // Updates visuals
     function _updateAnnotationCounts() {
         globalDataHandler.updateAnnotationCounts(_nMarkers, _nRegions, _classCounts);
     }
@@ -74,7 +82,7 @@ const annotationHandler = (function (){
         }
         const p=annotation.points[0];
         if ((p.x>>_gridShift)>>_gridMax) {
-            error('Too large image, increase _gridMax'); 
+            alert(`Too large x-coord ${p.x}, increase _gridMax`); 
         }
         return (p.y>>_gridShift)<<_gridMax | (p.x>>_gridShift);
     }
@@ -266,8 +274,9 @@ const annotationHandler = (function (){
             let replacedAnnotation = _findDuplicateAnnotation(addedAnnotation);
             if (replacedAnnotation) {
                 // old node does not like ||=
-                once || (console.warn("Adding annotation(s) with identical properties as existing one, replacing."), once=true);
-                update(replacedAnnotation.id, addedAnnotation, coordSystem, false, false);
+                once || (console.warn("Adding annotation(s) with identical properties as existing one, ignoring."), once=true);
+                // changed from update to ignore, since on fast updates we could run into partial updates
+                //update(replacedAnnotation.id, addedAnnotation, coordSystem, false, false);
                 return;
             }
 
@@ -316,6 +325,7 @@ const annotationHandler = (function (){
                 _nRegions++;
             }
             _classCounts[addedAnnotation.mclass]++;
+            _hasPrediction = _hasPrediction || (addedAnnotation.prediction!=null); //old Node dislikes ||=
 
             // Send the update to collaborators
             transmit && collabClient.addAnnotation(addedAnnotation);
@@ -379,6 +389,14 @@ const annotationHandler = (function (){
             _classCounts[updatedAnnotation.mclass]--;
             _classCounts[annotation.mclass]++;
             _updateAnnotationCounts();
+        }
+
+        // Update _hasPrediction
+        if (annotation.prediction!=null) {
+            _hasPrediction = true;
+        }
+        else if (updatedAnnotation.prediction==null) { // Possible remove, need to check
+            _hasPrediction = _checkPrediction();
         }
 
         // Check if changing grid square
@@ -483,6 +501,7 @@ const annotationHandler = (function (){
             regionEditor.stopEditingRegionIfBeingEdited(id);
         });
 
+        _hasPrediction = _checkPrediction();
         _updateAnnotationCounts();
 
         // Remove the annotation from the graphics
@@ -522,13 +541,17 @@ const annotationHandler = (function (){
      * @param {number} id The id used for looking up the annotation.
      * @returns {Object} A clone of the annotation with the specified id,
      * or undefined if not in use.
+     * 
+     * Currently O(N) slow, so don't overuse!
      */
+    //let gaid=0; 
     function getAnnotationById(id) {
         const annotation = _annotations.find(annotation => annotation.id === id);
         if (annotation === undefined) {
             return undefined;
         }
         const annotationClone = _cloneAnnotation(annotation);
+    //    console.log(`gaid: ${gaid++}`);
         return annotationClone;
     }
 
@@ -538,6 +561,13 @@ const annotationHandler = (function (){
      */
     function isEmpty() {
         return _annotations.length === 0;
+    }
+
+    /**
+     * Called for each row, so should be fast
+     */
+    function hasPrediction() {
+        return _hasPrediction;
     }
 
     /**
@@ -560,6 +590,7 @@ const annotationHandler = (function (){
         forEachAnnotation,
         getAnnotationById,
         isEmpty,
+        hasPrediction,
         updateClassConfig
     };
 })();

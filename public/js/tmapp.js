@@ -20,7 +20,10 @@ const tmapp = (function() {
         maxImageCacheCount: 800, //need more for z-stacks
         minZoomImageRatio: 1,
         maxZoomPixelRatio: 4,
-        gestureSettingsMouse: {clickToZoom: false},
+        gestureSettingsMouse: {clickToZoom: false, dblClickToZoom: false},
+        gestureSettingsTouch: {clickToZoom: false, dblClickToZoom: false},
+        gestureSettingsPen: {clickToZoom: false, dblClickToZoom: false},
+        gestureSettingsUnknown: {clickToZoom: false, dblClickToZoom: false},
         zoomPerClick: 1.4,
         constrainDuringPan: true,
         visibilityRatio: 1,
@@ -52,7 +55,8 @@ const tmapp = (function() {
             inside: false
         },
         _disabledControls,
-        _availableZLevels;
+        _availableZLevels,
+        _mouseHandler;
 
 
     function _getFocusIndex() {
@@ -145,22 +149,24 @@ const tmapp = (function() {
         _updateURLParams();
     }
 
-    function makeURL({x, y, z, rotation, zoom}) {
-        const url = new URL(window.location.href);
-        const roundTo = (x, n) => Math.round(x * Math.pow(10, n)) / Math.pow(10, n);
+    const roundTo = (x, n) => Math.round(x * Math.pow(10, n)) / Math.pow(10, n);
+    let urlCache=null;
+    function makeURL({x, y, z, rotation, zoom}={},update=false) {
+        const url = (update&&urlCache)?urlCache:new URL(window.location.href);
         const params = url.searchParams;
         if (_currentImage) {
-            params.set("image", _currentImage.name);
-            params.set("zoom", roundTo(zoom, 2));
-            params.set("x", roundTo(x, 5));
-            params.set("y", roundTo(y, 5));
-            params.set("z", z);
-            params.set("rotation", rotation||0);
+            update || params.set("image", _currentImage.name);
+            zoom!=null && params.set("zoom", roundTo(zoom, 2));
+            x!=null && params.set("x", roundTo(x, 5));
+            y!=null && params.set("y", roundTo(y, 5));
+            z!=null && params.set("z", z);
+            rotation!=null && params.set("rotation", rotation||0);
         }
-        _collab ? params.set("collab", _collab) : params.delete("collab");
+        update || (_collab ? params.set("collab", _collab) : params.delete("collab"));
+        urlCache=url;
         return url;
     }
-
+    
     function parseURL(url) {
         if (!(url instanceof URL)) {
             url=new URL(url);
@@ -306,7 +312,7 @@ const tmapp = (function() {
         }
 
         //OSD handlers have to be registered using MouseTracker OSD objects
-        new OpenSeadragon.MouseTracker({
+        _mouseHandler = new OpenSeadragon.MouseTracker({
             element: viewer.canvas,
             clickHandler: clickHandler,
             dblClickHandler: dblClickHandler,
@@ -603,42 +609,52 @@ const tmapp = (function() {
         return Math.pow(0.5*img_diag/(600+annotation.diameter),0.9);
     }
 
+    // Bundle position of an annotation, for moveTo and URL
+    function _defaultLocation(annotation) {
+        const target = coordinateHelper.imageToViewport(annotation.centroid);
+        return {
+            zoom: _defaultZoom(annotation),
+            x: target.x,
+            y: target.y,
+            z: annotation.z
+        }
+    }
+
     /**
      * Move the viewport to look at a specific annotation.
-     * @param {number} id The id of the annotation being moved to.
+     * @param {number} x The annottation or its id where to move.
+     *
+     * Note: getAnnotationById is currently O(N) slow!
      */
-    function moveToAnnotation(id) {
+    function moveToAnnotation(x) {
         // Only move if you're not following anyone
         if (_disabledControls) {
             console.warn("Can't move to annotation when following someone.");
             return;
         }
 
-        const annotation = annotationHandler.getAnnotationById(id);
+        const annotation = (x.id != null)? x: annotationHandler.getAnnotationById(x);
         if (annotation === undefined) {
+            console.log(`Got input: ${x}`, x);
             throw new Error("Tried to move to an unused annotation id.");
         }
-        const target = coordinateHelper.imageToViewport(annotation.centroid);
-        moveTo({
-            zoom: _defaultZoom(annotation),
-            x: target.x,
-            y: target.y,
-            z: annotation.z
-        });
+        moveTo(_defaultLocation(annotation));
     }
 
-    function annotationURL(id) {
-        const annotation = annotationHandler.getAnnotationById(id);
+    /**
+     * Create URL pointing to view of a specific annotation.
+     * @param {number} x The annottation or its id where to move.
+     *
+     * Note: getAnnotationById is currently O(N) slow!
+     */
+    function annotationURL(x, update=false) {
+        const annotation = (x.id != null)? x: annotationHandler.getAnnotationById(x);
         if (annotation === undefined) {
-            throw new Error("Tried to move to an unused annotation id.");
+            console.log(`Got input: ${x}`, x);
+            throw new Error("Tried to get URL of an unused annotation id.");
         }
-        const target = coordinateHelper.imageToViewport(annotation.centroid);
-        return makeURL({
-            zoom: _defaultZoom(annotation),
-            x: target.x,
-            y: target.y,
-            z: annotation.z
-        });
+        
+        return makeURL(_defaultLocation(annotation),update);
     }
 
     /**
@@ -785,6 +801,9 @@ const tmapp = (function() {
         // All other OSD keys
         _viewer.innerTracker.keyHandler(event);
     }
+    function mouseHandler() {
+        return _mouseHandler;
+    }
 
     /**
      * Update the scale of the scalebar.
@@ -808,34 +827,39 @@ const tmapp = (function() {
     }
 
     return {
-        init: init,
-        openImage: openImage,
-        moveTo: moveTo,
-        makeURL: makeURL,
-        parseURL: parseURL,
-        processURL: processURL,
-        annotationURL: annotationURL,
-        moveToAnnotation: moveToAnnotation,
-        setCollab: setCollab,
-        clearCollab: clearCollab,
-        incrementFocus: incrementFocus,
-        decrementFocus: decrementFocus,
-        getZLevels: getZLevels,
+        init,
+        openImage,
 
-        setBrightness: setBrightness,
-        setContrast: setContrast,
-        changeBrightness: changeBrightness,
-        changeContrast: changeContrast,
+        moveTo,
+        moveToAnnotation,
+        
+        makeURL,
+        parseURL,
+        processURL,
+        annotationURL,
 
-        getImageName: getImageName,
-        updateCollabStatus: updateCollabStatus,
-        setCursorStatus: setCursorStatus,
-        enableControls: enableControls,
-        disableControls: disableControls,
+        setCollab,
+        clearCollab,
 
-        keyHandler: keyHandler,
-        keyDownHandler: keyDownHandler,
+        incrementFocus,
+        decrementFocus,
+        getZLevels,
 
-        updateScalebar: updateScalebar
+        setBrightness,
+        setContrast,
+        changeBrightness,
+        changeContrast,
+
+        getImageName,
+        updateCollabStatus,
+        setCursorStatus,
+        enableControls,
+        disableControls,
+
+        keyHandler,
+        keyDownHandler,
+        mouseHandler,
+
+        updateScalebar
     };
 })();

@@ -60,18 +60,18 @@
     </nav>
 
     <!-- Main content -->
-    <div id="main_content" class="container-fluid d-flex h-100 position-relative" style="min-width: 400px;" tabindex="-1">
-        <div id="main_row" class="row flex-fill position-absolute m-0" style="right: 0; top: 0; left: 0; bottom: 0;">
-            <div class="col md-10 px-1" style="min-width: 50%; min-height: 85%; width: 100%; overflow: hidden; flex-grow: 100;"> <!-- Doesn't make sense to have overflow of the viewer -->
+    <div id="main_content" class="container-fluid d-flex h-100 position-relative" style="min-width: 400px" tabindex="-1">
+        <div id="main_row" class="row flex-fill position-absolute m-0 pr-1" style="right: 0; top: 0; left: 0; bottom: 0;">
+            <div class="col md-10 px-0" style="min-width: 50%; min-height: 85%; width: 100%; overflow: visible; flex-grow: 100;"> <!-- Doesn't make sense to have overflow of the viewer -->
                 <div id="ISS_viewer" class="ISS_viewer blurrable flex-grow-1 h-100 w-100"></div>
                 <div id="alert_wrapper" style="height: 100%; width: 100%; display: flex; justify-content: center; align-items: center; position: absolute; top: 0; padding: 5%; pointer-events: none"></div>
             </div>
 
             <!-- Right side main toolbar -->
-            <div class="col-auto d-flex flex-column md-2 pt-2 pl-0 pr-1 h-100" style="overflow-y:auto; overflow-x:hidden; flex-grow: 1;" id="rtoolbar">
+            <div class="col-auto d-flex flex-column md-2 pt-2 pl-1 pr-0 h-100" style="overflow-y:auto; overflow-x:hidden; flex-grow: 1;" id="rtoolbar">
                 <div class="card w-100">
                     <!-- Modal access -->
-                    <div class="card-body pb-2 px-2">
+                    <div class="card-body pb-2 px-1 px-md-2">
                         <button type="button" class="btn btn-block btn-primary" data-toggle="modal" data-target="#image_browser">
                             Open image browser
                         </button>
@@ -86,6 +86,14 @@
                         </button>
                         <div class="m-0 my-2">
                             <div class="collapse card" id="visualization_collapse">
+                                <div class="card-body">
+                                    <h6 class="card-subtitle text-muted">Marker size</h6>
+                                    <span class="m-2">
+                                        &nbsp;0 <input id="marker_size_slider" type="text" data-slider-min="0" data-slider-max="2" data-slider-step="0.1" data-slider-value="1"/> &nbsp;2
+                                        <input id="marker_size_reset" class="btn btn-secondary btn-sm p-0 px-1 m-0 mb-1 ml-3" type="reset" value="Reset">
+                                    </span>
+                                </div>
+                                <hr class="m-2">
                                 <div class="card-body">
                                     <h6 class="card-subtitle text-muted">Brightness</h6>
                                     <span class="m-2">
@@ -186,7 +194,7 @@
                     <hr />
 
                     <!-- Functionality buttons -->
-                    <div class="card-body pb-0 pt-2 px-2">
+                    <div class="card-body pb-0 pt-2 px-1 px-md-2">
                         <div class="card-block pb-4">
                             <div class="row">
                                 <!-- Annotation tools -->
@@ -230,10 +238,10 @@
                     </div>
 
                     <!-- Import/Export -->
-                    <div class="card-body px-2 pb-0">
+                    <div class="card-body pb-0 px-1 px-md-2">
                         <div class="row pb-1 pt-2">
                             <div class="col-3">
-                                <input class="d-none" type="file" id="data_files_import" onclick="this.value=null;" name="files[]">
+                                <input class="d-none" type="file" id="data_files_import" onclick="this.value=null;" name="files[]" accept=".json">
                                 <button id="json_to_data" class="btn btn-primary btn-block" type="button"> Import </button>
                             </div>
                             <div class="col-3">
@@ -246,7 +254,7 @@
                     </div>
 
                     <!-- Annotation filter -->
-                    <div class="card-body px-2">
+                    <div class="card-body px-1 px-md-2">
                         <div class="row">
                             <div class="col">
                                 <div class="input-group">
@@ -724,7 +732,7 @@
     </div> <!-- End of version picker -->
 
     <!-- Context menu -->
-    <div id="context_menu" class="card w-25 position-absolute fade" style="pointer-events: none; z-index: 500;" tabindex="-1">
+    <div id="context_menu" class="card position-absolute fade" style="width: 25rem; max-width: 80%; pointer-events: none; z-index: 500;" tabindex="-1">
         <div class="card-header">
             <span id="context_menu_title">Edit annotation</span>
             <button id="close_context_menu" class="close" type="button">
@@ -794,13 +802,6 @@
     // Uses window.location.base for remoteStorage
     tmappUI.initUI();
 
-    // Only way I manage to get correct size navbar on vertical phone layout (due to zoom, content is wider than 100%)!
-    function resizeNavbar() {
-        document.getElementById("navbar").style.width = `${Math.max(document.getElementById("main_row").clientWidth,document.body.clientWidth)}px`;
-        // console.log(`${Math.max(document.getElementById("main_row").clientWidth,document.body.clientWidth)}px`);
-    }
-    window.addEventListener('resize', resizeNavbar);
-
     // Handle browser history.back/forward()
     window.onpopstate = function(event) {
         $('.modal').modal('hide'); //close all modals
@@ -810,6 +811,14 @@
 
     // Start our tmapp
     $(document).ready(() => {
+
+        // Only way I manage to get correct size navbar on vertical phone layout (due to zoom, content is wider than 100%)!
+        function resizeNavbar() {
+            document.getElementById("navbar").style.width = `${Math.max(document.getElementById("main_row").clientWidth,document.body.clientWidth)}px`;
+            // console.log(`${Math.max(document.getElementById("main_row").clientWidth,document.body.clientWidth)}px`);
+        }
+        window.addEventListener('resize', resizeNavbar);
+
         // Options when initializing tmapp
         const tmappOptions = {};
         const {imageName, collab, state}=tmapp.parseURL(new URL(window.location.href));

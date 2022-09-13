@@ -19,7 +19,9 @@ const annotationTool = (function() {
                     mclass: _activeMclass
                 };
                 annotationHandler.add(annotation, "viewport");
-            }
+            },
+            isEditing: () => false,
+            resetIfYounger: (time) => {}
         };
     })();
 
@@ -29,7 +31,8 @@ const annotationTool = (function() {
             _endPoint,
             _zLevel,
             _mclass,
-            _clicks = 0; //Counting clicks to i) allow dblClick to behave like click, while ii) not starting new rectangle on dblClick-complete
+            _clicks = 0, //Counting clicks to i) allow dblClick to behave like click, while ii) not starting new rectangle on dblClick-complete
+            _birthTime;
 
         function _getAnnotation() {
             const points = [
@@ -76,6 +79,7 @@ const annotationTool = (function() {
             }
             else {
                 _startPoint = coords;
+                _birthTime = Date.now();
                 _updatePending();
             }
         }
@@ -114,7 +118,11 @@ const annotationTool = (function() {
                 }
             },
             revert: reset,
-            reset: reset
+            reset: reset,
+            isEditing: () => _startPoint != null,
+            resetIfYounger: (time) => {
+                if (Date.now()-_birthTime<time) reset();
+            }
         };
     })();
 
@@ -123,7 +131,8 @@ const annotationTool = (function() {
         let _points = [],
             _nextPoint,
             _zLevel,
-            _mclass;
+            _mclass,
+            _birthTime;
 
         function _getAnnotation(points) {
             return {
@@ -144,7 +153,13 @@ const annotationTool = (function() {
             overlayHandler.updatePendingRegion(null);
         }
 
+        let recentTap=false; // Avoid double-tap creating two vertices
         function addPoint(position) {
+            if (event.pointerType === 'touch') {
+                if (recentTap) return;
+                recentTap=true;
+                setTimeout(() => recentTap=false, 200); // If two taps within 200ms, don't make 2nd point
+            }
             _nextPoint = coordinateHelper.viewportToImage({
                 x: position.x,
                 y: position.y
@@ -152,6 +167,9 @@ const annotationTool = (function() {
             _zLevel = position.z;
             _mclass = _activeMclass;
             const last = _points.pop();
+            if (!last) {
+                _birthTime = Date.now();
+            }
             if (last && (last.x !== _nextPoint.x || last.y !== _nextPoint.y))
                 _points.push(last);
             if (mathUtils.pathIntersectsSelf([..._points, _nextPoint], false))
@@ -190,7 +208,11 @@ const annotationTool = (function() {
                 if (!_points.length)
                     reset();
             },
-            reset: reset
+            reset: reset,
+            isEditing: () => _points.length !== 0,
+            resetIfYounger: (time) => {
+                if (Date.now()-_birthTime<time) reset();
+            }
         };
     })();
 
@@ -214,7 +236,7 @@ const annotationTool = (function() {
 
         const fun = _activeTool[funName];
         if (fun)
-            fun(position);
+            return fun(position);
     }
 
     function _replaceTool(newTool) {
@@ -307,14 +329,26 @@ const annotationTool = (function() {
         _callToolFunction("update", position);
     }
 
+    function isEditing() {
+        return _callToolFunction("isEditing");
+    }
+
+    //If object is less than time ms old, then reset it
+    //Only valid for regions (since markers complete instantaneously)
+    function resetIfYounger(time) {
+        _activeTool && _activeTool["resetIfYounger"](time);
+    }
+
     return {
-        setTool: setTool,
-        setMclass: setMclass,
-        click: click,
-        dblClick: dblClick,
-        complete: complete,
-        reset: reset,
-        revert: revert,
-        updateMousePosition: updateMousePosition
+        setTool,
+        setMclass,
+        click,
+        dblClick,
+        complete,
+        reset,
+        revert,
+        updateMousePosition,
+        isEditing,
+        resetIfYounger
     };
 })();

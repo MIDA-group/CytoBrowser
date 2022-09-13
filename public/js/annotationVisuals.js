@@ -16,9 +16,7 @@ const annotationVisuals = (function() {
     // Counters allowing to jump over intermediate updates
     const pendingVisCount = (function () { let i = 0n; return (val=0n) => i+=BigInt(val); })();
     const pendingListCount = (function () { let i = 0n; return (val=0n) => i+=BigInt(val); })();
-    let lastCompletedVis = 0;
-    let lastCompletedList = 0;
-
+    
     /* This is the heavy work function: filter and visualize annotations */
     function _filterAndUpdate() {
         timingLog && console.time('visFiltUpd');
@@ -32,29 +30,41 @@ const annotationVisuals = (function() {
         const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
 
         let thisVisCount=pendingVisCount(1); //add one
-        wait(0) //Using Promise.resolve() didn't give time enough for rendering
-            .then(() => {
-                if (thisVisCount==pendingVisCount() || (new Date()-lastCompletedVis > 100)) { //if we're the last one, or >100ms since last update
-                    overlayHandler.updateAnnotations(annotations);
-                    lastCompletedVis = new Date();
-                }
-                else {
-                    // console.log('skipping overlay update',thisVisCount,pendingVisCount());
-                }
-            });
-
-        let thisListCount=pendingListCount(1); //add one
-        if (_annotationList) {
-            wait(0) 
+        if (overlayHandler.updateAnnotations.inProgress()) {
+            wait(0) //Using Promise.resolve() didn't give time enough for rendering
                 .then(() => {
-                    if (thisListCount==pendingListCount() || (new Date()-lastCompletedList > 100)) { //if we're the last one, or >100ms since last update
-                        _annotationList.updateData(annotations.slice().reverse()); // No sort -> reverse order
-                        lastCompletedList = new Date();
+                    if (thisVisCount==pendingVisCount()) { //if we're the last one
+                        // console.log('running delayed overlay update: ',thisVisCount,pendingVisCount());
+                        overlayHandler.updateAnnotations(annotations);
                     }
                     else {
-                        // console.log('skipping list update',thisListCount,pendingListCount(),new Date()-lastCompletedList);
+                        // console.log('skipping overlay update',thisVisCount,pendingVisCount());
                     }
                 });
+        }
+        else {
+            // console.log('running immediate overlay update: ',thisVisCount,pendingVisCount());
+            overlayHandler.updateAnnotations(annotations);
+        }
+        
+        let thisListCount=pendingListCount(1); //add one
+        if (_annotationList) {
+            if (_annotationList.updateData.inProgress()) {
+                wait(0) 
+                .then(() => {
+                    if (thisListCount==pendingListCount()) { //if we're the last one
+                        // console.log('running delayed list update: ',thisListCount,pendingListCount());
+                        _annotationList.updateData(annotations.slice().reverse()); // No sort -> reverse order
+                    }
+                    else {
+                        // console.log('skipping list update',thisListCount,pendingListCount());
+                    }
+                });
+            }
+            else {
+                // console.log('running immediate list update: ',thisListCount,pendingListCount());
+                _annotationList.updateData(annotations.slice().reverse()); // No sort -> reverse order
+            }
         }
         else {
             console.warn("No annotation list has been set.");
@@ -64,7 +74,7 @@ const annotationVisuals = (function() {
             tmappUI.setFilterInfo(_unfilteredAnnotations.length, annotations.length);
         }
 
-        timingLog && console.timeEnd('visFiltUpd');
+        timingLog && console.timeEnd('visFiltUpd'); //Async early return
     }
 
     function _setFilter(query) {

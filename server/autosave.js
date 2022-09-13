@@ -83,6 +83,7 @@ function getSavedCollabInfo(image) {
                         author: data.author,
                         createdOn: data.createdOn,
                         updatedOn: data.updatedOn,
+                        nClasses: data.classConfig ? data.classConfig.length : 0, //0 = default (client side)
                         nAnnotations: data.nAnnotations,
                         nComments: data.nComments
                     };

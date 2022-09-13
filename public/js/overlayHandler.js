@@ -18,7 +18,9 @@ const overlayHandler = (function (){
         _activeAnnotationOverlayName,
         _previousCursors,
         _scale,
-        _rotation;
+        _rotation,
+        _maxScale,
+        _markerScale = 1; //Modifcation factor
 
     /**
      * Edit a string with stored in the transform attribute of a node.
@@ -98,7 +100,7 @@ const overlayHandler = (function (){
     }
 
     function _markerSize() {
-        return 10*Math.pow(_scale,0.5); //Scale markers with sqrt
+        return _markerScale**2*250*_maxScale*Math.pow(_scale/_maxScale, 0.4); //Let marker grow slowly as we zoom out, to keep it visible
     }
 
     function _regionStrokeWidth() {
@@ -238,6 +240,16 @@ const overlayHandler = (function (){
      */
     function _addAnnotationMouseEvents(d, node) {
         let mouse_offset; //offset (in webCoords) between mouse click and object
+
+        function toggleEditing(d, node) {
+            const selection = d3.select(node);
+            if (selection.attr("data-being-edited")) {
+                regionEditor.stopEditingRegionIfBeingEdited(d.id);
+            }
+            else {
+                regionEditor.startEditingRegion(d.id);
+            }
+        }
         new OpenSeadragon.MouseTracker({
             element: node,
             clickHandler: function(event) {
@@ -245,6 +257,35 @@ const overlayHandler = (function (){
                 if (event.originalEvent.ctrlKey) {
                     annotationHandler.remove(d.id);
                 }
+                else if (getActiveAnnotationOverlay()==="region") {
+                    const rect1 = event.eventSource.element.getBoundingClientRect(); //There must be an easier way
+                    const rect2 = tmapp.mouseHandler().element.getBoundingClientRect(); //Possibly OSD 2.5 
+                    event.position.x+=rect1.left-rect2.left; //https://github.com/openseadragon/openseadragon/issues/1652
+                    event.position.y+=rect1.top-rect2.top;
+                    tmapp.mouseHandler().clickHandler( event );
+                }
+            },
+            dblClickHandler: function(event) { 
+                // If we just created a new object in the 1st click of our dblClick, then kill it
+                annotationTool.resetIfYounger(event.eventSource.dblClickTimeThreshold); 
+
+                 if (annotationTool.isEditing()) { //If editing, allow dblClick->complete
+                    const rect1 = event.eventSource.element.getBoundingClientRect();
+                    const rect2 = tmapp.mouseHandler().element.getBoundingClientRect();
+                    event.position.x+=rect1.left-rect2.left;
+                    event.position.y+=rect1.top-rect2.top;
+                    tmapp.mouseHandler().dblClickHandler( event );
+                }
+                else if (event.pointerType === 'touch') { // If touch
+                    const location = {
+                        x: event.originalEvent.pageX,
+                        y: event.originalEvent.pageY
+                    };
+                    tmappUI.openAnnotationEditMenu(d.id, location);
+                }   
+                else {
+                    toggleEditing(d, node);
+                }        
             },
             pressHandler: function(event) {
                 tmapp.setCursorStatus({held: true});
@@ -286,7 +327,7 @@ const overlayHandler = (function (){
                     };
                     tmappUI.openAnnotationEditMenu(d.id, location);
                 }
-            }
+            }          
         }).setTracking(true);
     }
 
@@ -353,26 +394,15 @@ const overlayHandler = (function (){
                 .attr("fill-opacity", 0.2);
         }
 
-        function toggleEditing() {
-            const selection = d3.select(node);
-            if (selection.attr("data-being-edited")) {
-                regionEditor.stopEditingRegionIfBeingEdited(d.id);
-            }
-            else {
-                regionEditor.startEditingRegion(d.id);
-            }
-        }
-
         new OpenSeadragon.MouseTracker({
             element: node,
             enterHandler: highlight,
-            exitHandler: unHighlight,
-            dblClickHandler: toggleEditing
+            exitHandler: unHighlight
         }).setTracking(true);
     }
 
     function _enterMarker(enter) {
-        enter.append("g")
+        return enter.append("g")
             .attr("transform", d => {
                 const viewport = coordinateHelper.imageToViewport(d.points[0]);
                 const coords = coordinateHelper.viewportToOverlay(viewport);
@@ -413,6 +443,7 @@ const overlayHandler = (function (){
             .call(group => {
                 if (_markerText) {
                     group.append("text")
+                        .classed("notSelectable", true)
                         .style("fill", _getAnnotationColor)
                         .style("font-size", "1%")
                         .style("font-weight", "700")
@@ -441,10 +472,11 @@ const overlayHandler = (function (){
                 .style("fill", _getAnnotationColor)
                 .text(_getAnnotationText);
         }
+        return update; 
     }
 
     function _exitMarker(exit) {
-        exit.transition("appear").duration(200)
+        return exit.transition("appear").duration(200)
             .attr("opacity", 0)
             .attr("transform", _transformFunction({
                 scale: s => 2 * s
@@ -453,7 +485,7 @@ const overlayHandler = (function (){
     }
 
     function _enterRegion(enter) {
-        enter.append("g")
+        return enter.append("g")
             .attr("class", "region")
             .call(group =>
                 group.append("path")
@@ -469,7 +501,7 @@ const overlayHandler = (function (){
     }
 
     function _updateRegion(update) {
-        update.call(update =>
+        return update.call(update =>
                 update.select(".region-area")
                     .attr("d", _getRegionPath)
                     .transition("changeColor").duration(500)
@@ -494,13 +526,13 @@ const overlayHandler = (function (){
     }
 
     function _exitRegion(exit) {
-        exit.transition("appear").duration(200)
+        return exit.transition("appear").duration(200)
             .attr("opacity", 0)
             .remove();
     }
 
     function _enterMember(enter) {
-        const group = enter.append("g")
+        enter.append("g")
             .attr("transform", d => {
                 const coords = coordinateHelper.viewportToOverlay(d.cursor);
                 return `translate(${coords.x}, ${coords.y}), rotate(-30), scale(${_cursorSize(d.cursor)})`
@@ -584,6 +616,7 @@ const overlayHandler = (function (){
      * @param {Array} annotations The currently placed annotations.
      */
     function updateAnnotations(annotations){
+        updateAnnotations.inProgress(true); //No function 'self' existing
         const markers = annotations.filter(annotation =>
             annotation.points.length === 1
         );
@@ -591,21 +624,71 @@ const overlayHandler = (function (){
             annotation.points.length > 1
         );
 
-        _markerOverlay.selectAll("g")
-            .data(markers, d => d.id)
-            .join(
-                _enterMarker,
-                _updateMarker,
-                _exitMarker
-            );
-        _regionOverlay.selectAll(".region")
-            .data(regions, d => d.id)
-            .join(
-                _enterRegion,
-                _updateRegion,
-                _exitRegion
-            );
+        const doneMarkers = new Promise((resolve, reject) => {
+            const marks = _markerOverlay.selectAll("g")
+                .data(markers, d => d.id)
+                .join(
+                    _enterMarker,
+                    _updateMarker,
+                    _exitMarker
+                );
+
+            if (marks.empty()) {
+                resolve();
+            }
+            else {
+                marks
+                    .transition()
+                    .end()
+                    .then(() => {
+                        // console.log('Done with Marker rendering');
+                        resolve(); 
+                    })
+                    .catch(() => {
+                        // console.warn('Sometimes we get a reject, just ignore!');
+                        // reject(); 
+                        resolve(); //This also indicates that we're done
+                    });
+            }
+        });
+        const doneRegions = new Promise((resolve, reject) => {
+            const regs = _regionOverlay.selectAll(".region")
+                .data(regions, d => d.id)
+                .join(
+                    _enterRegion,
+                    _updateRegion,
+                    _exitRegion
+                );
+
+            if (regs.empty()) { //required even though end() should resolve directly on empty selection
+                resolve();
+            }
+            else {
+                regs
+                    .transition()
+                    .end()
+                    .then(() => {
+                        // console.log('Done with Region rendering');
+                        resolve(); 
+                    })
+                    .catch(() => {
+                        // console.warn('Sometimes we get a reject, just ignore!');
+                        // reject(); 
+                        resolve(); //This also indicates that we're done
+                    });
+            }
+        });
+
+        Promise.allSettled([doneMarkers,doneRegions])
+            .then(() => {
+                updateAnnotations.inProgress(false);
+            })
+            .catch((err) => { 
+                console.warn('Annotation rendering reported an issue: ',err); 
+            });
     }
+    // Boolean to check if we're busy rendering
+    updateAnnotations.inProgress = (function () { let flag = false; return (set=null) => { if (set!=null) flag=set; return flag; }} )();
 
     /**
      * Update the visuals for the pending region.
@@ -669,9 +752,15 @@ const overlayHandler = (function (){
     function setOverlayScale(zoomLevel, maxZoom, wContainer, hContainer) {
         const windowSizeAdjustment = 1400 / wContainer;
         _scale = windowSizeAdjustment / zoomLevel;
+        _maxScale = windowSizeAdjustment / maxZoom;
         _resizeMembers();
         _resizeMarkers();
         _resizeRegions();
+    }
+
+    function setMarkerScale(scale) {
+        _markerScale=scale;
+        _resizeMarkers();
     }
 
     /**
@@ -716,6 +805,9 @@ const overlayHandler = (function (){
                 throw new Error("Invalid overlay name.");
         }
     }
+    function getActiveAnnotationOverlay() {
+        return _activeAnnotationOverlayName;
+    }
 
     /**
      * Initialize the overlay handler. Should be called whenever OSD is
@@ -729,7 +821,7 @@ const overlayHandler = (function (){
             .attr("id", "regions");
         const pendingRegion = d3.select(svgOverlay.node())
             .append("g")
-            .attr("id", "regions")
+            .attr("id", "pendingRegions")
             .style("pointer-events", "none");
         const markers = d3.select(svgOverlay.node())
             .append("g")
@@ -747,15 +839,17 @@ const overlayHandler = (function (){
     }
 
     return {
-        updateMembers: updateMembers,
-        updateAnnotations: updateAnnotations,
-        updatePendingRegion: updatePendingRegion,
-        startRegionEdit: startRegionEdit,
-        stopRegionEdit: stopRegionEdit,
-        clearAnnotations: clearAnnotations,
-        setOverlayScale: setOverlayScale,
-        setOverlayRotation: setOverlayRotation,
-        setActiveAnnotationOverlay: setActiveAnnotationOverlay,
-        init: init
+        updateMembers,
+        updateAnnotations,
+        updatePendingRegion,
+        startRegionEdit,
+        stopRegionEdit,
+        clearAnnotations,
+        setOverlayScale,
+        setMarkerScale,
+        setOverlayRotation,
+        setActiveAnnotationOverlay,
+        getActiveAnnotationOverlay,
+        init
     };
 })();

@@ -119,7 +119,7 @@ const annotationStorageConversion = (function() {
             annotations: [],
             comments: []
         };
-        if (!classUtils.isDefaultClassConfig(classUtils.getClassConfig())) {
+        if (!classUtils.isDefaultClassSystem(classUtils.getClassConfig())) {
             data.classConfig = classUtils.getClassConfig();
         }
         annotationHandler.forEachAnnotation(annotation => {

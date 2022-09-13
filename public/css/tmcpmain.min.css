@@ -32,6 +32,21 @@
 .collapsed .collapse_rotate {
     transform: rotate(90deg);
 }
-  
-  
-    
+
+/* Discrete links in our annotation-list */
+#annotation-list td a { 
+    display: block;
+    color: inherit;
+    text-decoration: inherit;
+}
+
+/* Disable text selection, https://stackoverflow.com/questions/11237936/mobile-web-disable-long-touch-taphold-text-selection */
+.notSelectable {
+    -webkit-touch-callout:none;
+    -webkit-user-select:none;
+    -khtml-user-select:none;
+    -moz-user-select:none;
+    -ms-user-select:none;
+    user-select:none;
+    -webkit-tap-highlight-color:rgba(0,0,0,0);
+}
