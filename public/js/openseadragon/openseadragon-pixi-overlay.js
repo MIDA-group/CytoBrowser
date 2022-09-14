@@ -100,17 +100,16 @@
         var scale = this._viewer.viewport._containerInnerSize.x * zoom;
         
         this._app.stage.scale.set(scale/1000);
-        //this._app.stage.position.set(scale/1000*p.x*1000,scale/1000*p.y*1000);
         this._app.stage.position.set(p.x,p.y);
-    
         this._app.stage.rotation=rotation;
-        
-        {
+
+        // Draw a red frame around the overlay
+/*         {
             const graphics = new PIXI.Graphics();
             graphics.lineStyle(1, 0xFF0000);
             graphics.drawRect(0,0,1000,1000);
             this._app.stage.addChild(graphics);
-        }
+        } */
 
 //         // Listen for animate update
 // this._app.ticker.add((delta) => {
