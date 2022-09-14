@@ -420,23 +420,6 @@ const tmapp = (function() {
 
         // renderer.plugins.interaction.destroy();
         // renderer.plugins.interaction = null;
-
-        if (false) {
-            let fps;
-            let requestTime;
-            function loop(time) {
-                if (requestTime) {
-                    fps = Math.round(1000/((performance.now() - requestTime)));
-                }
-            
-            // console.log('FPS:',fps);
-            $("#fps").text(`FPS: ${fps}`);
-                requestTime = time;
-                window.requestAnimationFrame((timeRes) => loop(timeRes));
-            }
-            window.requestAnimationFrame((timeRes) => loop(timeRes));        
-        }
-
     }
 
     function _clearCurrentImage() {

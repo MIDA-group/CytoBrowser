@@ -332,6 +332,32 @@ const tmappUI = (function(){
         $("#marker_size_reset").click(function() { $('#marker_size_slider').slider('setValue', 1, true, true);});
         $("#brightness_reset").click(function() { $('#brightness_slider').slider('setValue', 0, true, true);});
         $("#contrast_reset").click(function() { $('#contrast_slider').slider('setValue', 0, true, true);});
+
+        $("#fps_switch").change(function(e) {
+            if (e.target.checked) {
+                let fps;
+                let requestTime;
+                function loop(time) {
+                    if (e.target.checked) {
+                        if (requestTime) {
+                            fps = Math.round(1000/((performance.now() - requestTime)));
+                        }
+                        // console.log('FPS:',fps);
+                        $("#fps").text(`FPS: ${fps}`);
+                        requestTime = time;
+    
+                        window.requestAnimationFrame((timeRes) => loop(timeRes));
+                    }
+                    else {
+                        $("#fps").text('');
+                    }
+                }
+                window.requestAnimationFrame((timeRes) => loop(timeRes));        
+            }
+            else {
+                $("#fps").text('');
+            }
+        }); 
     }
 
     function _initKeyboardShortcuts() {
