@@ -40,7 +40,8 @@
         // Create the application helper and add its render target to the page
         this._app = new PIXI.Application({
             //resizeTo: this._pixi,
-            transparent: true
+            transparent: true,
+            antialias: true
         });
         this._app.renderer.plugins.interaction.moveWhenInside = true;
         this._app.renderer.plugins.interaction.autoPreventDefault=true;
