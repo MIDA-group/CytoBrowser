@@ -1,5 +1,6 @@
 /**
  * Namespace for handling any local visual representation of annotations.
+ * I.e., updating overlayHandler and _annotationList
  * @namespace annotationVisuals
  */
 const annotationVisuals = (function() {

@@ -146,7 +146,8 @@ const overlayHandler = (function (){
     function _resizeMarkers() {
 //        console.log('Resize: ',_markerSize());
         _markerContainer.children.forEach(c => c.scale.set(_markerSize()/1000));
-        
+
+        // No more svg-markers
         _markerOverlay.selectAll("g")
             .attr("transform", _transformFunction({scale: _markerSize()}));
     }
@@ -167,8 +168,9 @@ const overlayHandler = (function (){
     function _rotateMarkers() {
         _markerContainer.children.forEach(c => c.angle=-_rotation);
 
-        _markerOverlay.selectAll("g")
-            .attr("transform", _transformFunction({rotate: -_rotation}));
+        // No more svg-markers
+        // _markerOverlay.selectAll("g")
+        //     .attr("transform", _transformFunction({rotate: -_rotation}));
     }
 
     function _removeRegionEditControls(d, node) {
@@ -248,13 +250,18 @@ const overlayHandler = (function (){
         function scale(obj,s) {
             Ease.ease.add(obj,{scale:s},{duration:100});
         }
+        function alpha(obj,s) {
+            Ease.ease.add(obj,{alpha:s},{duration:100});
+        }
 
         function highlight(event) {
             scale(marker.getChildByName('square'),1.25);
+            alpha(marker.getChildByName('label'),1);
         }
         function unHighlight(event) {
             if (pressed) return; //Keep highlight during drag
             scale(marker.getChildByName('square'),1);
+            alpha(marker.getChildByName('label'),0);
         }
 
         function pressHandler(event) {
@@ -431,8 +438,8 @@ const overlayHandler = (function (){
     }
 
     function _addMarkerMouseEvents(d, node) {
-        return;
-        _addAnnotationMouseEvents(d, node);
+//        return;
+//        _addAnnotationMouseEvents(d, node);
 
         function highlight() {
             d3.select(node)
@@ -541,6 +548,21 @@ const overlayHandler = (function (){
             .drawCircle(0, 0, 3.2*_markerCircleSize*1000);                 
         graphics.addChild(circle);
         
+        // Text label
+        const label = new PIXI.Text(_getAnnotationText(d), {
+              fontSize: 26,
+              fontWeight: 700,
+              fill: _getAnnotationColor(d)
+            });
+        label.name="label";
+        label.roundPixels = true;
+        label.resolution = 8;
+        label.alpha = 0;
+        label.position.set(6.2*_markerCircleSize*1000, -11*_markerCircleSize*1000);
+        label.scale.set(6);
+        graphics.addChild(label);
+
+        // Global part
         graphics.position.set(coords.x,coords.y);
         graphics.angle=-_rotation;
         graphics.scale.set(0);
@@ -555,6 +577,7 @@ const overlayHandler = (function (){
     // New marker
     function _enterMarker(enter) {
         return enter.append("g")
+        // No more svg-markers
             .attr("transform", d => {
                 const viewport = coordinateHelper.imageToViewport(d.points[0]);
                 const coords = coordinateHelper.viewportToOverlay(viewport);
