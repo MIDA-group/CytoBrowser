@@ -474,8 +474,10 @@ const overlayHandler = (function (){
         const color = _getAnnotationColor(d).replace('#','0x');
         const step=Math.SQRT2*_markerSquareSize*1000; //Rounding errors in Pixi for small values, thus '*1000'
         
-        const graphics = new PIXI.Graphics();
-        
+        const graphics = new PIXI.Graphics() // Circle in base object
+            .lineStyle(_markerCircleStrokeWidth*1000, "0x808080") //gray
+            .drawCircle(0, 0, 3.2*_markerCircleSize*1000);                 
+    
         // Tilted square
         const square = new PIXI.Graphics()
             .beginFill(0x000000,0.2)
@@ -485,12 +487,6 @@ const overlayHandler = (function (){
         square.angle=45; 
         square.name="square";
         graphics.addChild(square);
-
-        // Circle
-        const circle = new PIXI.Graphics()
-            .lineStyle(_markerCircleStrokeWidth*1000, "0x808080") //gray
-            .drawCircle(0, 0, 3.2*_markerCircleSize*1000);                 
-        graphics.addChild(circle);
 
         // Global part
         graphics.position.set(coords.x,coords.y);
@@ -806,7 +802,6 @@ const overlayHandler = (function (){
         Promise.allSettled([doneMarkers,doneRegions])
             .then(() => {
                 updateAnnotations.inProgress(false);
-                console.log('Update completed');
                 console.timeEnd('updateAnnotations');
             })
             .catch((err) => { 
