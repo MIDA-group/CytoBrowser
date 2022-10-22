@@ -476,23 +476,14 @@ const overlayHandler = (function (){
         
         const graphics = new PIXI.Graphics();
         
-        // Rectangle
-        const square = new PIXI.Graphics();
-        square.name="square";
-        // Frame
-        const frame = new PIXI.Graphics()
+        // Tilted square
+        const square = new PIXI.Graphics()
+            .beginFill(0x000000,0.2)
             .lineStyle(_markerSquareStrokeWidth*1000, color)
-            .drawRect(-step,-step,2*step,2*step); //x,y,w,h
-        frame.name="frame";
-        // Transparent dark fill
-        const bg = new PIXI.Graphics()
-            .beginFill(0xFF0000)
-            .lineStyle(0)
             .drawRect(-step,-step,2*step,2*step) //x,y,w,h
             .endFill();
-        bg.alpha=0.2;
-        square.addChild(bg,frame); //.setParent() does not give correct render order
         square.angle=45; 
+        square.name="square";
         graphics.addChild(square);
 
         // Circle
@@ -507,7 +498,7 @@ const overlayHandler = (function (){
         graphics.scale.set(0);
         graphics.id=d.id; //non-pixi, just data
 
-        _addMarkerInteraction(d,bg,graphics); //mouse interface to the simplest item
+        _addMarkerInteraction(d,square,graphics); //mouse interface to the simplest item
         _markerContainer.addChild(graphics);
         Ease.ease.add(graphics,{scale:_markerSize()/1000},{duration:250});
 
@@ -568,11 +559,10 @@ const overlayHandler = (function (){
             }
 
             const square = marker.getChildByName('square');
-            const frame = square.getChildByName('frame');
             const color = _getAnnotationColor(d).replace('#','0x');
-            if (color !== frame.line.color) { //alternatively use frame._lineStyle.color
-                frame.line.color = color;
-                frame.updateLineStyle({color});
+            if (color !== square.line.color) { //alternatively use square._lineStyle.color
+                square.line.color = color;
+                square.updateLineStyle({color});
                 changed = true;
             }
 
