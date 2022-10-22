@@ -714,17 +714,10 @@ const overlayHandler = (function (){
                 return;
             }
             Ease.ease.add(_markerList[d.id],{scale:_markerList[d.id].scale.x*2},{duration:10})
-                .once('complete', () => {
-                    if (!_markerList[d.id]) {
-                        //Normal event as long as we rely on clearAnnotation
-                        //console.log(`EXIT: Marker #${d.id} lost during exit, probably from clearAnnotation.`);
-                        return;
-                    }
-        
-                    // console.log('exited:',d.id);
-                    _markerList[d.id].destroy(true);
-                    delete _markerList[d.id];
+                .once('complete', (ease) => {
+                    ease.elements.forEach(item=>item.destroy(true)); //Self destruct after animation
                 });
+            delete _markerList[d.id];
         });
         // No more svg-markers      
         // return exit.transition("appear").duration(200)
