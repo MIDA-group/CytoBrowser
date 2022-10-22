@@ -139,13 +139,13 @@ const annotationVisuals = (function() {
     /**
      * Clear all annotations from the overlay. This function should
      * be called whenever annotations are to be quickly cleared and
-     * readded, e.g. when loading annotations from a collab summary.
+     * re-added, e.g. when loading annotations from a collab summary.
      * Since the annotation elements will remain until their animation
      * has finished when removing them, d3 will think that they
      * still exist when calling update() before calling this function.
      */
     function clear(){
-    	// TODO: This function shouldn't have to exist, update() should be enough
+    	// TODO: This function shouldn't have to exist, update() should be enough (beware of filters though)
     	overlayHandler.clearAnnotations();
     }
 

@@ -463,8 +463,8 @@ const annotationHandler = (function (){
     }
 
     /**
-     * Remove an annotation from the data.
-     * @param {number|Array<number>} ids The id of the annotation to be removed.
+     * Remove an, or a list of, annotation(s) from the data.
+     * @param {number|Array<number>} ids The id(s) of the annotation to be removed.
      * @param {boolean} [transmit=true] Any collaborators should also be
      * told to remove the annotation.
      */
@@ -472,6 +472,7 @@ const annotationHandler = (function (){
         if (!Array.isArray(ids)) {
             ids = [ids];
         }
+        // console.log('rmv: ',ids);
         ids.forEach(id => {
             const annotations = _annotations;
             const deletedIndex = annotations.findIndex(annotation => annotation.id === id);

@@ -8,8 +8,9 @@ const overlayHandler = (function (){
     const _markerSquareSize = 1/8,
         _markerCircleSize = 1/32,
         _markerSquareStrokeWidth = 0.03,
-        _markerCircleStrokeWidth = 0.01,
-        _markerText = true;
+        _markerCircleStrokeWidth = 0.01;
+        // No more svg-markers
+        //_markerText = true;
 
     let _cursorOverlay,
         _markerOverlay,
@@ -24,7 +25,7 @@ const overlayHandler = (function (){
         _stage = null, //Pixi
         _app = null, //for renderer.plugins.interaction.moveWhenInside
         _markerContainer = null,
-        _svo = null,
+        _svo = null, //svg overlay
         _markerList = []
 
     /**
@@ -148,8 +149,8 @@ const overlayHandler = (function (){
         _markerContainer.children.forEach(c => c.scale.set(_markerSize()/1000));
 
         // No more svg-markers
-        _markerOverlay.selectAll("g")
-            .attr("transform", _transformFunction({scale: _markerSize()}));
+        // _markerOverlay.selectAll("g")
+        //     .attr("transform", _transformFunction({scale: _markerSize()}));
     }
 
     function _resizeRegions() {
@@ -274,6 +275,7 @@ const overlayHandler = (function (){
                 tmapp.setCursorStatus({held: true});
                 const mouse_pos = new OpenSeadragon.Point(event.data.global.x,event.data.global.y);
     //TODO: Use marker instead of slow looking up
+                // console.log('pressid: ',id);
     //            const object_pos = new OpenSeadragon.Point(marker.position.x,marker.position.y);
                 const object_pos = coordinateHelper.imageToWeb(annotationHandler.getAnnotationById(id).centroid);
                 mouse_offset = mouse_pos.minus(object_pos);
@@ -318,6 +320,7 @@ const overlayHandler = (function (){
         }
         function clickHandler(event) {
             if (event.data.originalEvent.ctrlKey) {
+                // console.log('Remove');
                 annotationHandler.remove(id);
             }
         }
@@ -438,7 +441,7 @@ const overlayHandler = (function (){
     }
 
     function _addMarkerMouseEvents(d, node) {
-//        return;
+        return;
 //        _addAnnotationMouseEvents(d, node);
 
         function highlight() {
@@ -577,63 +580,63 @@ const overlayHandler = (function (){
     // New marker
     function _enterMarker(enter) {
         return enter.append("g")
-        // No more svg-markers
-            .attr("transform", d => {
-                const viewport = coordinateHelper.imageToViewport(d.points[0]);
-                const coords = coordinateHelper.viewportToOverlay(viewport);
-                return `translate(${coords.x}, ${coords.y}) scale(${_markerSize()}) rotate(${-_rotation})`;
-            })
-            .attr("opacity", 1)
             .each(d => {
                 _markerList[d.id]=_pixiMarker(d);
-//                console.log('AID: ',d.id);
+                    // console.log('AID: ',d.id);
             })
-            .call(group =>
-                group.append("path")
-                    .attr("d", d3.symbol().size(_markerSquareSize).type(d3.symbolSquare))
-                    .attr("transform", "rotate(0) scale(0)")
-                    .attr("stroke-width", _markerSquareStrokeWidth)
-                    .attr("stroke", _getAnnotationColor)
-                    .style("fill","rgba(0,0,0,0.2)")
-                    .transition("appear").duration(250)
-                    .attr("transform", _transformFunction({
-                        rotate: 45,
-                        scale: 1
-                    }))
-                    .end().then(() =>
-                        group.each(function(d) {
-                            _addMarkerMouseEvents(d, this);
-                        })
-                    )
-            )
-            .call(group =>
-                group.append("path")
-                    .attr("d", d3.symbol().size(_markerCircleSize).type(d3.symbolCircle))
-                    .attr("transform", "scale(0)")
-                    .attr("stroke-width", _markerCircleStrokeWidth)
-                    .attr("stroke", "gray")
-                    .style("fill", "transparent")
-                    .style("pointer-events", "none")
-                    .transition("appear").delay(150).duration(100)
-                    .attr("transform", _transformFunction({
-                        scale: 1
-                    }))
-            )
-            .call(group => {
-                if (_markerText) {
-                    group.append("text")
-                        .classed("notSelectable", true)
-                        .style("fill", _getAnnotationColor)
-                        .style("font-size", "1%")
-                        .style("font-weight", "700")
-                        .style("pointer-events", "none")
-                        .style("opacity", 0)
-                        .attr("text-anchor", "left")
-                        .attr("transform", "translate(0.2, -0.2)")
-                        .text(_getAnnotationText);
-                    }
-                }
-            );
+    // No more svg-markers
+            // .attr("transform", d => {
+            //     const viewport = coordinateHelper.imageToViewport(d.points[0]);
+            //     const coords = coordinateHelper.viewportToOverlay(viewport);
+            //     return `translate(${coords.x}, ${coords.y}) scale(${_markerSize()}) rotate(${-_rotation})`;
+            // })
+            // .attr("opacity", 1)
+            // .call(group =>
+            //     group.append("path")
+            //         .attr("d", d3.symbol().size(_markerSquareSize).type(d3.symbolSquare))
+            //         .attr("transform", "rotate(0) scale(0)")
+            //         .attr("stroke-width", _markerSquareStrokeWidth)
+            //         .attr("stroke", _getAnnotationColor)
+            //         .style("fill","rgba(0,0,0,0.2)")
+            //         .transition("appear").duration(250)
+            //         .attr("transform", _transformFunction({
+            //             rotate: 45,
+            //             scale: 1
+            //         }))
+            //         .end().then(() =>
+            //             group.each(function(d) {
+            //                 _addMarkerMouseEvents(d, this);
+            //             })
+            //         )
+            // )
+            // .call(group =>
+            //     group.append("path")
+            //         .attr("d", d3.symbol().size(_markerCircleSize).type(d3.symbolCircle))
+            //         .attr("transform", "scale(0)")
+            //         .attr("stroke-width", _markerCircleStrokeWidth)
+            //         .attr("stroke", "gray")
+            //         .style("fill", "transparent")
+            //         .style("pointer-events", "none")
+            //         .transition("appear").delay(150).duration(100)
+            //         .attr("transform", _transformFunction({
+            //             scale: 1
+            //         }))
+            // )
+            // .call(group => {
+            //     if (_markerText) {
+            //         group.append("text")
+            //             .classed("notSelectable", true)
+            //             .style("fill", _getAnnotationColor)
+            //             .style("font-size", "1%")
+            //             .style("font-weight", "700")
+            //             .style("pointer-events", "none")
+            //             .style("opacity", 0)
+            //             .attr("text-anchor", "left")
+            //             .attr("transform", "translate(0.2, -0.2)")
+            //             .text(_getAnnotationText);
+            //         }
+            //     }
+            // );
     }
 
     // Hack to do color change, https://www.html5gamedevs.com/topic/9374-change-the-style-of-line-that-is-already-drawn/page/2/
@@ -649,6 +652,7 @@ const overlayHandler = (function (){
     let _easeTimeout = 0;
     function _updateMarker(update) {
         update.each(d => {
+            // console.log('UID: ',d.id);
             let changed = false;
             const marker = _markerList[d.id];
             const viewport = coordinateHelper.imageToViewport(d.points[0]);
@@ -683,37 +687,53 @@ const overlayHandler = (function (){
 
             }
         });
-        update.attr("transform", _transformFunction(function(d) {
-                const viewport = coordinateHelper.imageToViewport(d.points[0]);
-                const coords = coordinateHelper.viewportToOverlay(viewport);
-                return {translate: [coords.x, coords.y]};
-            }))
-            .selectAll("path")
-            .filter((d, i) => i === 0)
-            .transition("changeColor").duration(500)
-            .attr("stroke", _getAnnotationColor);
-        if (_markerText) {
-            update.select("text")
-                .style("fill", _getAnnotationColor)
-                .text(_getAnnotationText);
-        }
+        // No more svg-markers      
+        // update.attr("transform", _transformFunction(function(d) {
+        //         const viewport = coordinateHelper.imageToViewport(d.points[0]);
+        //         const coords = coordinateHelper.viewportToOverlay(viewport);
+        //         return {translate: [coords.x, coords.y]};
+        //     }))
+        //     .selectAll("path")
+        //     .filter((d, i) => i === 0)
+        //     .transition("changeColor").duration(500)
+        //     .attr("stroke", _getAnnotationColor);
+        // if (_markerText) {
+        //     update.select("text")
+        //         .style("fill", _getAnnotationColor)
+        //         .text(_getAnnotationText);
+        // }
         return update; 
     }
 
     function _exitMarker(exit) {
+        // console.log('EXIT');
         exit.each(d => {
+            // console.log('exit:',d.id);
+            if (!_markerList[d.id]) {
+                console.log(`EXIT: Marker #${d.id} lost before exit, probably from clearAnnotation.`);
+                return;
+            }
             Ease.ease.add(_markerList[d.id],{scale:_markerList[d.id].scale.x*2},{duration:10})
                 .once('complete', () => {
+                    if (!_markerList[d.id]) {
+                        //Normal event as long as we rely on clearAnnotation
+                        //console.log(`EXIT: Marker #${d.id} lost during exit, probably from clearAnnotation.`);
+                        return;
+                    }
+        
+                    // console.log('exited:',d.id);
                     _markerList[d.id].destroy(true);
                     delete _markerList[d.id];
                 });
         });
-        return exit.transition("appear").duration(200)
-            .attr("opacity", 0)
-            .attr("transform", _transformFunction({
-                scale: s => 2 * s
-            }))
-            .remove();
+        // No more svg-markers      
+        // return exit.transition("appear").duration(200)
+        //     .attr("opacity", 0)
+        //     .attr("transform", _transformFunction({
+        //         scale: s => 2 * s
+        //     }))
+        //     .remove();
+        return exit.remove();
     }
 
     function _enterRegion(enter) {
@@ -833,10 +853,11 @@ const overlayHandler = (function (){
 
     /**
      * Clear all annotations currently in the overlay, in case you need to quickly replace them.
+     * (Presumably to replace with just update.)
      */
     function clearAnnotations(){
         if (_markerOverlay) {
-            _markerOverlay.selectAll("g").remove();
+            _markerOverlay.selectAll("g").remove(); //d3 still used as container
 
             _markerList.forEach(item=>item.destroy(true));
             _markerList=[];
@@ -850,6 +871,9 @@ const overlayHandler = (function (){
      * Use d3 to update annotations, adding new ones and removing old ones.
      * The annotations are identified by their id.
      * @param {Array} annotations The currently placed annotations.
+     */
+    /**
+     * Resolved promises on .transition().end() => updateAnnotations.inProgress(false)
      */
     function updateAnnotations(annotations){
         updateAnnotations.inProgress(true); //No function 'self' existing
@@ -1029,9 +1053,10 @@ const overlayHandler = (function (){
                 _regionOverlay.style("pointer-events", "fill")
                     .transition("highlight").duration(500)
                     .style("opacity", 1);
-                _markerOverlay.style("pointer-events", "none")
-                    .transition("highlight").duration(500)
-                    .style("opacity", 0.4);
+                // No more svg-markers
+                // _markerOverlay.style("pointer-events", "none")
+                //     .transition("highlight").duration(500)
+                //     .style("opacity", 0.4);
                 if (_markerContainer) {
                     alpha(_markerContainer,0.4);
                     _svo._svg.style.zIndex=1;
@@ -1041,9 +1066,10 @@ const overlayHandler = (function (){
                 _regionOverlay.style("pointer-events", "none")
                     .transition("highlight").duration(500)
                     .style("opacity", 0.4);
-                _markerOverlay.style("pointer-events", "fill")
-                    .transition("highlight").duration(500)
-                    .style("opacity", 1);
+                // No more svg-markers
+                // _markerOverlay.style("pointer-events", "fill")
+                //     .transition("highlight").duration(500)
+                //     .style("opacity", 1);
                 if (_markerContainer) {
                     alpha(_markerContainer,1);
                     _svo._svg.style.zIndex=0;
