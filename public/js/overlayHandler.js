@@ -260,7 +260,7 @@ const overlayHandler = (function (){
         function unHighlight(event) {
             if (pressed) return; //Keep highlight during drag
             scale(marker.getChildByName('square'),1);
-            marker.getChildByName('label').destroy(true);
+            marker.getChildByName('label')?.destroy(true); //We might call unHighlight several times
             //alpha(marker.getChildByName('label'),0);
         }
 
@@ -589,7 +589,6 @@ const overlayHandler = (function (){
                     Ease.ease.add(marker.getChildByName('square'),{scale:1,alpha:1},{duration});
                     _easeTimeout = 0;
                 }, duration); 
-
             }
         });
     }
