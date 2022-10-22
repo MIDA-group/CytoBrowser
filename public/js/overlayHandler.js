@@ -234,7 +234,14 @@ const overlayHandler = (function (){
     }
 
     /* Same as MouseEvents but with Pixi Interaction */
-    function _addMarkerInteraction(id, obj, marker) {
+    /**
+     * 
+     * @param {annotation object} d 
+     * @param {pixi graphics object} obj The (simple) object we set as interactive
+     * @param {pixi graphics object} marker The whole marker object
+     */
+    function _addMarkerInteraction(d, obj, marker) {
+        const id = d.id;
         let mouse_offset; //offset (in webCoords) between mouse click and object
         let pressed=false; //see also for drag vs. click: https://gist.github.com/fwindpeak/ce39d1acdd55cb37a5bcd8e01d429799
 
@@ -247,12 +254,14 @@ const overlayHandler = (function (){
 
         function highlight(event) {
             scale(marker.getChildByName('square'),1.25);
-            alpha(marker.getChildByName('label'),1);
+            marker.addChild(_pixiMarkerLabel(d));
+            //alpha(marker.getChildByName('label'),1);
         }
         function unHighlight(event) {
             if (pressed) return; //Keep highlight during drag
             scale(marker.getChildByName('square'),1);
-            alpha(marker.getChildByName('label'),0);
+            marker.getChildByName('label').destroy(true);
+            //alpha(marker.getChildByName('label'),0);
         }
 
         function pressHandler(event) {
@@ -430,55 +439,6 @@ const overlayHandler = (function (){
         }).setTracking(true);
     }
 
-    function _addMarkerMouseEvents(d, node) {
-        return;
-//        _addAnnotationMouseEvents(d, node);
-
-        function highlight() {
-            d3.select(node)
-                .each(d => Ease.ease.add(_markerList[d.id].getChildByName('square'),{scale:1.25},{duration:200}))
-                // .each(d => {
-                //     console.log('ID: ',d.id);
-                //     console.log('M: ',_markerList[d.id]);
-                // })
-                .selectAll("path")
-                .filter((d, i) => i === 0)
-                .transition("highlight").duration(200)
-                .attr("transform", _transformFunction({
-                    scale: 1.25, // Chrome-bug(?) This is not applied to all new markers
-                    rotate: 45
-                }))
-                .attr("stroke", _getAnnotationColor);
-            d3.select(node)
-                .selectAll("text")
-                .transition("highlight").duration(200)
-                .style("opacity", 1);
-        }
-
-        function unHighlight() {
-            d3.select(node)
-                .each(d => Ease.ease.add(_markerList[d.id].getChildByName('square'),{scale:1},{duration:200}))
-                .selectAll("path")
-                .filter((d, i) => i === 0)
-                .transition("highlight").duration(200)
-                .attr("transform", _transformFunction({
-                    scale: 1.0,
-                    rotate: 45
-                }))
-                .attr("stroke", _getAnnotationColor);
-            d3.select(node)
-                .selectAll("text")
-                .transition("highlight").duration(200)
-                .style("opacity", 0);
-        }
-
-        new OpenSeadragon.MouseTracker({
-            element: node,
-            enterHandler: highlight,
-            exitHandler: unHighlight
-        }).setTracking(true);
-    }
-
     function _addRegionMouseEvents(d, node) {
         _addAnnotationMouseEvents(d, node);
 
@@ -540,31 +500,39 @@ const overlayHandler = (function (){
             .lineStyle(_markerCircleStrokeWidth*1000, "0x808080") //gray
             .drawCircle(0, 0, 3.2*_markerCircleSize*1000);                 
         graphics.addChild(circle);
-        
-        // Text label
-        const label = new PIXI.Text(_getAnnotationText(d), {
-              fontSize: 26,
-              fontWeight: 700,
-              fill: _getAnnotationColor(d)
-            });
-        label.name="label";
-        label.roundPixels = true;
-        label.resolution = 8;
-        label.alpha = 0;
-        label.position.set(6.2*_markerCircleSize*1000, -11*_markerCircleSize*1000);
-        label.scale.set(6);
-        graphics.addChild(label);
 
         // Global part
         graphics.position.set(coords.x,coords.y);
         graphics.angle=-_rotation;
         graphics.scale.set(0);
+        graphics.id=d.id; //non-pixi, just data
 
-        _addMarkerInteraction(d.id,bg,graphics); //mouse interface to the simplest item
+        _addMarkerInteraction(d,bg,graphics); //mouse interface to the simplest item
         _markerContainer.addChild(graphics);
         Ease.ease.add(graphics,{scale:_markerSize()/1000},{duration:250});
 
         return graphics;
+    }
+
+    // Generating labels for >10k objects is slow, so we just use single add/remove instead
+    /**
+     * 
+     * @param {annotation object} d 
+     */
+    function _pixiMarkerLabel(d) {
+        // Text label
+        const label = new PIXI.Text(_getAnnotationText(d), {
+            fontSize: 26,
+            fontWeight: 700,
+            fill: _getAnnotationColor(d)
+        });
+        label.name="label";
+        label.roundPixels = true;
+        label.resolution = 8;
+        label.alpha = 1;
+        label.position.set(6.2*_markerCircleSize*1000, -11*_markerCircleSize*1000);
+        label.scale.set(6);
+        return label;
     }
 
     // New marker
@@ -781,6 +749,8 @@ const overlayHandler = (function (){
      * Resolved promises on .transition().end() => updateAnnotations.inProgress(false)
      */
     function updateAnnotations(annotations){
+        console.time('updateAnnotations');
+
         updateAnnotations.inProgress(true); //No function 'self' existing
         const markers = annotations.filter(annotation =>
             annotation.points.length === 1
@@ -847,6 +817,8 @@ const overlayHandler = (function (){
         Promise.allSettled([doneMarkers,doneRegions])
             .then(() => {
                 updateAnnotations.inProgress(false);
+                console.log('Update completed');
+                console.timeEnd('updateAnnotations');
             })
             .catch((err) => { 
                 console.warn('Annotation rendering reported an issue: ',err); 

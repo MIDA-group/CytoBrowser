@@ -30,24 +30,6 @@ const annotationVisuals = (function() {
         //Draw annotations and update list asynchronously
         const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
 
-        let thisVisCount=pendingVisCount(1); //add one
-        if (overlayHandler.updateAnnotations.inProgress()) {
-            wait(0) //Using Promise.resolve() didn't give time enough for rendering
-                .then(() => {
-                    if (thisVisCount==pendingVisCount()) { //if we're the last one
-                        // console.log('running delayed overlay update: ',thisVisCount,pendingVisCount());
-                        overlayHandler.updateAnnotations(annotations);
-                    }
-                    else {
-                        // console.log('skipping overlay update',thisVisCount,pendingVisCount());
-                    }
-                });
-        }
-        else {
-            // console.log('running immediate overlay update: ',thisVisCount,pendingVisCount());
-            overlayHandler.updateAnnotations(annotations);
-        }
-        
         let thisListCount=pendingListCount(1); //add one
         if (_annotationList) {
             if (_annotationList.updateData.inProgress()) {
@@ -69,6 +51,24 @@ const annotationVisuals = (function() {
         }
         else {
             console.warn("No annotation list has been set.");
+        }
+
+        let thisVisCount=pendingVisCount(1); //add one
+        if (overlayHandler.updateAnnotations.inProgress()) {
+            wait(0) //Using Promise.resolve() didn't give time enough for rendering
+                .then(() => {
+                    if (thisVisCount==pendingVisCount()) { //if we're the last one
+                        // console.log('running delayed overlay update: ',thisVisCount,pendingVisCount());
+                        overlayHandler.updateAnnotations(annotations);
+                    }
+                    else {
+                        // console.log('skipping overlay update',thisVisCount,pendingVisCount());
+                    }
+                });
+        }
+        else {
+            // console.log('running immediate overlay update: ',thisVisCount,pendingVisCount());
+            overlayHandler.updateAnnotations(annotations);
         }
 
         if (!_filterIsTrivial && _lastQueryWasValid) {
