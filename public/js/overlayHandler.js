@@ -187,6 +187,7 @@ const overlayHandler = (function (){
             c.scale.set(_markerSize()/1000);
             c.getChildByName('circle').visible=visCirc;
         });
+        _pxo.update();
     }
 
     function _resizeRegions() {
@@ -287,10 +288,10 @@ const overlayHandler = (function (){
         let pressed=false; //see also for drag vs. click: https://gist.github.com/fwindpeak/ce39d1acdd55cb37a5bcd8e01d429799
 
         function scale(obj,s) {
-            Ease.ease.add(obj,{scale:s},{duration:100});
+            return Ease.ease.add(obj,{scale:s},{duration:100});
         }
         function alpha(obj,s) {
-            Ease.ease.add(obj,{alpha:s},{duration:100});
+            return Ease.ease.add(obj,{alpha:s},{duration:100});
         }
 
         function highlight(event) {
@@ -302,7 +303,11 @@ const overlayHandler = (function (){
         function unHighlight(event) {
             if (pressed) return; //Keep highlight during drag
             scale(marker.getChildByName('square'),1);
-            marker.getChildByName('label')?.destroy(true); //We might call unHighlight several times
+            const label=marker.getChildByName('label');
+            if (label) { //We might call unHighlight several times
+                alpha(label,0) //Ease out
+                    .once('complete', (ease) => ease.elements.forEach(item=>item.destroy(true)));
+            }
             _pxo.update();
         }
 
