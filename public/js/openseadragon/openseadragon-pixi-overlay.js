@@ -88,7 +88,7 @@
         update: function() {
             if (!this._app.ticker.started) {
                 this._app.ticker.start(); // Start render loop
-                console.log('started');
+                console.log('Ticker started');
             }
             if (_tickerTimeout) {
                 clearTimeout(_tickerTimeout);
@@ -96,7 +96,7 @@
             _tickerTimeout = setTimeout(() => {
                 this._app.ticker.stop();
                 _tickerTimeout = 0;
-                console.log('paused');
+                console.log('Ticker paused');
             }, _tickerTime); // Pause render loop after a while
         },
 

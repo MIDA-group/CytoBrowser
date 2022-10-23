@@ -295,15 +295,14 @@ const overlayHandler = (function (){
 
         function highlight(event) {
             scale(marker.getChildByName('square'),1.25);
-            marker.addChild(_pixiMarkerLabel(d));
-            //alpha(marker.getChildByName('label'),1);
+            if (!marker.getChildByName('label')) //Add text if not there
+                marker.addChild(_pixiMarkerLabel(d));
             _pxo.update();
         }
         function unHighlight(event) {
             if (pressed) return; //Keep highlight during drag
             scale(marker.getChildByName('square'),1);
             marker.getChildByName('label')?.destroy(true); //We might call unHighlight several times
-            //alpha(marker.getChildByName('label'),0);
             _pxo.update();
         }
 
