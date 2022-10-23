@@ -135,6 +135,36 @@ const overlayHandler = (function (){
         return `${d.prediction.toFixed(4)}: ${d.mclass}`;
     }
 
+    /**
+     * Set marker visible if inside rectangle
+     * @param {Rectangle} rect in Screen/Web coordinates, typically _app.renderer.screen
+     */
+    let _first=true;
+    let oldUl={};
+    let oldDr={};
+    function _cullMarkers(rect = _app.renderer.screen) {
+        if (_markerContainer.children.length) {
+            rect=rect.clone().pad(50); // Pad w. 50 pixels (should rather be marker radius)
+            
+            //Check if the view actually changed
+            const ul=coordinateHelper.overlayToWeb({x:0,y:0});
+            const dr=coordinateHelper.overlayToWeb({x:1000,y:1000});
+            if (_first || ul.x!=oldUl.x || ul.y!=oldUl.y || dr.x!=oldDr.x || dr.y!=oldDr.y) {
+                _first=false;
+                oldUl=ul;
+                oldDr=dr;
+
+                let vis=0;
+                _markerContainer.children.forEach(c => {
+                    const webPos = coordinateHelper.overlayToWeb(c.position);
+                    c.visible = rect.contains(webPos.x,webPos.y);
+                    vis += c.visible;
+                });
+                console.log('Visible markers: ',vis);
+            }
+        }
+    }
+
     function _resizeMembers() {
         _cursorOverlay.selectAll("g")
             .attr("transform", _transformFunction(function() {
@@ -188,8 +218,7 @@ const overlayHandler = (function (){
                     d.points.forEach((point, i) => {
                         group.append("g")
                             .attr("transform", d => {
-                                const viewport = coordinateHelper.imageToViewport(point);
-                                const coords = coordinateHelper.viewportToOverlay(viewport);
+                                const coords = coordinateHelper.imageToOverlay(point);
                                 return `translate(${coords.x}, ${coords.y}), scale(${_regionHandleSize()})`;
                             })
                             .append("path")
@@ -468,8 +497,7 @@ const overlayHandler = (function (){
     }
 
     function _pixiMarker(d) {
-        const viewport = coordinateHelper.imageToViewport(d.points[0]);
-        const coords = coordinateHelper.viewportToOverlay(viewport);
+        const coords = coordinateHelper.imageToOverlay(d.points[0]);
 
         const color = _getAnnotationColor(d).replace('#','0x');
         const step=Math.SQRT2*_markerSquareSize*1000; //Rounding errors in Pixi for small values, thus '*1000'
@@ -969,6 +997,11 @@ const overlayHandler = (function (){
         _markerContainer = new PIXI.Container();
         _stage.addChild(_markerContainer);
         _svo=svgOverlay;
+
+        // "prerender" is fired right before the renderer draws the scene
+        _app.renderer.on('prerender', () => {
+            _cullMarkers();
+        });
     }
 
     return {

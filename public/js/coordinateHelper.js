@@ -106,6 +106,17 @@ const coordinateHelper = (function() {
         return {x: x * 1000, y: y * 1000};
     }
 
+    function overlayToViewport({x, y}){
+        return {x: x / 1000, y: y / 1000};
+    }
+    function overlayToWeb({x, y}){
+        return viewportToWeb(overlayToViewport({x, y}));
+    }
+
+    function imageToOverlay({x, y}){
+        return viewportToOverlay(imageToViewport({x, y}));
+    }
+
     /**
      * Convert from page coordinates, as acquired from pageX and pageY
      * on mouse events, to viewport coordinates.
@@ -190,19 +201,23 @@ const coordinateHelper = (function() {
     }
 
     return {
-        imageToViewport: imageToViewport,
-        viewportToImage: viewportToImage,
-        imageToWeb: imageToWeb,
-        webToImage: webToImage,
-        webToViewport: webToViewport,
-        viewportToWeb: viewportToWeb,
-        viewportToOverlay: viewportToOverlay,
-        pageToViewport: pageToViewport,
-        getMinDimension: getMinDimension,
-        pointIsInsideViewport: pointIsInsideViewport,
-        pointIsInsideWeb: pointIsInsideWeb,
-        pointIsInsideImage: pointIsInsideImage,
-        setImage: setImage,
-        clearImage: clearImage
+        imageToViewport,
+        viewportToImage,
+        imageToWeb,
+        webToImage,
+        webToViewport,
+        viewportToWeb,
+        viewportToOverlay,
+        overlayToViewport,
+        overlayToWeb,
+        imageToOverlay,
+        pageToViewport,
+
+        getMinDimension,
+        pointIsInsideViewport,
+        pointIsInsideWeb,
+        pointIsInsideImage,
+        setImage,
+        clearImage
     };
 })();
