@@ -107,6 +107,11 @@ const overlayHandler = (function (){
         return _markerScale**2*250*_maxScale*Math.pow(_scale/_maxScale, 0.4); //Let marker grow slowly as we zoom out, to keep it visible
     }
 
+    //Approx from corner to corner, in screen pixels
+    function _markerDiameter() { 
+        return 1000/Math.SQRT2*_markerSquareSize/Math.sqrt(_scale);
+    }
+
     function _regionStrokeWidth() {
         return 2 * _scale;
     }
@@ -144,7 +149,7 @@ const overlayHandler = (function (){
     let oldDr={};
     function _cullMarkers(rect = _app.renderer.screen) {
         if (_markerContainer.children.length) {
-            rect=rect.clone().pad(50); // Pad w. 50 pixels (should rather be marker radius)
+            rect=rect.clone().pad(_markerDiameter()/2); //So we see frame also when outside
             
             //Check if the view actually changed
             const ul=coordinateHelper.overlayToWeb({x:0,y:0});
@@ -502,7 +507,7 @@ const overlayHandler = (function (){
         const color = _getAnnotationColor(d).replace('#','0x');
         const step=Math.SQRT2*_markerSquareSize*1000; //Rounding errors in Pixi for small values, thus '*1000'
         
-        const graphics = new PIXI.Graphics() // Circle in base object
+        const graphics = new PIXI.Graphics() // Circle direct in base object
             .lineStyle(_markerCircleStrokeWidth*1000, "0x808080") //gray
             .drawCircle(0, 0, 3.2*_markerCircleSize*1000);                 
     
@@ -899,7 +904,7 @@ const overlayHandler = (function (){
      * @param {number} wContainer The maximum zoom level of the OSD viewport.
      */
     function setOverlayScale(zoomLevel, maxZoom, wContainer, hContainer) {
-        const windowSizeAdjustment = 1400 / wContainer;
+        const windowSizeAdjustment = 1400 / wContainer; //1000*sqrt(2)?
         _scale = windowSizeAdjustment / zoomLevel;
         _maxScale = windowSizeAdjustment / maxZoom;
         _resizeMembers();
