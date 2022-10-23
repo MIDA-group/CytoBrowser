@@ -16,6 +16,8 @@ const overlayHandler = (function (){
         _pendingRegionOverlay,
         _activeAnnotationOverlayName,
         _previousCursors,
+        _zoomLevel,
+        _wContainer,
         _scale,
         _rotation,
         _maxScale,
@@ -107,9 +109,9 @@ const overlayHandler = (function (){
         return _markerScale**2*250*_maxScale*Math.pow(_scale/_maxScale, 0.4); //Let marker grow slowly as we zoom out, to keep it visible
     }
 
-    //Approx from corner to corner, in screen pixels
+    //Approx from corner to corner (middle of line), in screen pixels
     function _markerDiameter() { 
-        return 1000/Math.SQRT2*_markerSquareSize/Math.sqrt(_scale);
+        return _markerSize()/2*_zoomLevel*_wContainer/1000;
     }
 
     function _regionStrokeWidth() {
@@ -149,8 +151,6 @@ const overlayHandler = (function (){
     let oldDr={};
     function _cullMarkers(rect = _app.renderer.screen) {
         if (_markerContainer.children.length) {
-            rect=rect.clone().pad(_markerDiameter()/2); //So we see frame also when outside
-            
             //Check if the view actually changed
             const ul=coordinateHelper.overlayToWeb({x:0,y:0});
             const dr=coordinateHelper.overlayToWeb({x:1000,y:1000});
@@ -158,6 +158,7 @@ const overlayHandler = (function (){
                 _first=false;
                 oldUl=ul;
                 oldDr=dr;
+                rect=rect.clone().pad(_markerDiameter()/2); //So we see frame also when outside
 
                 let vis=0;
                 _markerContainer.children.forEach(c => {
@@ -179,7 +180,12 @@ const overlayHandler = (function (){
 
     function _resizeMarkers() {
 //        console.log('Resize: ',_markerSize());
-        _markerContainer.children.forEach(c => c.scale.set(_markerSize()/1000));
+        //_markerContainer.children.forEach(c => c.scale.set(_markerSize()/1000));
+        const visCirc=_markerDiameter()>10; //Smaller than 10 pix and we skip the circle
+        _markerContainer.children.forEach(c => {
+            c.scale.set(_markerSize()/1000);
+            c.getChildByName('circle').visible=visCirc;
+        });
     }
 
     function _resizeRegions() {
@@ -507,10 +513,14 @@ const overlayHandler = (function (){
         const color = _getAnnotationColor(d).replace('#','0x');
         const step=Math.SQRT2*_markerSquareSize*1000; //Rounding errors in Pixi for small values, thus '*1000'
         
-        const graphics = new PIXI.Graphics() // Circle direct in base object
-            .lineStyle(_markerCircleStrokeWidth*1000, "0x808080") //gray
-            .drawCircle(0, 0, 3.2*_markerCircleSize*1000);                 
-    
+        const graphics = new PIXI.Graphics();
+        // Inner circle (not in base object, since we wish to rescale and turn it on/off)
+        const circle = new PIXI.Graphics() 
+            .lineStyle(_markerCircleStrokeWidth*100, "0x808080") //gray
+            .drawCircle(0, 0, 3.2*_markerCircleSize*100);
+        circle.scale.set(10); // Number of segments is dependent on original object size
+        circle.name="circle";
+
         // Tilted square
         const square = new PIXI.Graphics()
             .beginFill(0x000000,0.2)
@@ -519,7 +529,7 @@ const overlayHandler = (function (){
             .endFill();
         square.angle=45; 
         square.name="square";
-        graphics.addChild(square);
+        graphics.addChild(square,circle);
 
         // Global part
         graphics.position.set(coords.x,coords.y);
@@ -527,9 +537,13 @@ const overlayHandler = (function (){
         graphics.scale.set(0);
         graphics.id=d.id; //non-pixi, just data
 
+        //Works ok, but our own is faster
+        //graphics.cullable=true;
+
         _addMarkerInteraction(d,square,graphics); //mouse interface to the simplest item
         _markerContainer.addChild(graphics);
         Ease.ease.add(graphics,{scale:_markerSize()/1000},{duration:250});
+        // .once('complete', (ease) => ease.elements.forEach(item=>item.cacheAsBitmap=true));  //Doesn't really pay off
 
         return graphics;
     }
@@ -905,8 +919,10 @@ const overlayHandler = (function (){
      */
     function setOverlayScale(zoomLevel, maxZoom, wContainer, hContainer) {
         const windowSizeAdjustment = 1400 / wContainer; //1000*sqrt(2)?
+        _zoomLevel = zoomLevel;
+        _wContainer = wContainer;
         _scale = windowSizeAdjustment / zoomLevel;
-        _maxScale = windowSizeAdjustment / maxZoom;
+        _maxScale = windowSizeAdjustment / maxZoom;      
         _resizeMembers();
         _resizeMarkers();
         _resizeRegions();
@@ -997,12 +1013,11 @@ const overlayHandler = (function (){
         if (_activeAnnotationOverlayName)
             setActiveAnnotationOverlay(_activeAnnotationOverlayName);
 
-        _stage=app.stage;
         _app=app;
+        _stage=_app.stage;
         _markerContainer = new PIXI.Container();
         _stage.addChild(_markerContainer);
         _svo=svgOverlay;
-
         // "prerender" is fired right before the renderer draws the scene
         _app.renderer.on('prerender', () => {
             _cullMarkers();
