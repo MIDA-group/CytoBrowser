@@ -333,17 +333,18 @@ const tmappUI = (function(){
         $("#brightness_reset").click(function() { $('#brightness_slider').slider('setValue', 0, true, true);});
         $("#contrast_reset").click(function() { $('#contrast_slider').slider('setValue', 0, true, true);});
 
+        $("#fps_switch").prop('checked',false); // force it to false, since some browsers cache it incorrectly
         $("#fps_switch").change(function(e) {
             if (e.target.checked) {
-                let fps;
+                let fps,pixiFPS;
                 let requestTime;
                 function loop(time) {
                     if (e.target.checked) {
                         if (requestTime) {
                             fps = Math.round(1000/((performance.now() - requestTime)));
                         }
-                        // console.log('FPS:',fps);
-                        $("#fps").text(`FPS: ${fps}`);
+                        pixiFPS=Math.round(PIXI.Ticker.shared.FPS);
+                        $("#fps").text(`FPS: ${fps} (${pixiFPS})`);
                         requestTime = time;
     
                         window.requestAnimationFrame((timeRes) => loop(timeRes));
@@ -837,7 +838,7 @@ const tmappUI = (function(){
     return {
         initUI,
         updateClassSelectionButtons,
-        choice: choice,
+        choice,
         openAnnotationEditMenu,
 
         setCollabID,
