@@ -26,6 +26,7 @@ const overlayHandler = (function (){
         _app = null, //for renderer.plugins.interaction.moveWhenInside
         _markerContainer = null,
         _svo = null, //svg overlay
+        _pxo = null, //pixi overlay
         _markerList = []
 
     /**
@@ -296,12 +297,14 @@ const overlayHandler = (function (){
             scale(marker.getChildByName('square'),1.25);
             marker.addChild(_pixiMarkerLabel(d));
             //alpha(marker.getChildByName('label'),1);
+            _pxo.update();
         }
         function unHighlight(event) {
             if (pressed) return; //Keep highlight during drag
             scale(marker.getChildByName('square'),1);
             marker.getChildByName('label')?.destroy(true); //We might call unHighlight several times
             //alpha(marker.getChildByName('label'),0);
+            _pxo.update();
         }
 
         function pressHandler(event) {
@@ -325,6 +328,7 @@ const overlayHandler = (function (){
                 _app.renderer.plugins.interaction.moveWhenInside = false;
                 event.data.originalEvent.stopPropagation();
             }
+            _pxo.update();
         }
         function releaseHandler(event) {
             // event.currentTarget.releasePointerCapture(event.data.originalEvent.pointerId);
@@ -332,6 +336,7 @@ const overlayHandler = (function (){
             pressed=false;
             marker.pressed=false;
             _app.renderer.plugins.interaction.moveWhenInside = true;
+            _pxo.update();
         }
         function dragHandler(event) {
             if (!pressed) return;
@@ -356,12 +361,14 @@ const overlayHandler = (function (){
                 y: event.data.originalEvent.pageY
             });
             tmapp.setCursorStatus(viewportCoords);
+            _pxo.update();
         }
         function clickHandler(event) {
             if (event.data.originalEvent.ctrlKey) {
                 // console.log('Remove');
                 annotationHandler.remove(id);
             }
+            _pxo.update();
         }
 
         obj.interactive = true;
@@ -783,6 +790,8 @@ const overlayHandler = (function (){
     function updateAnnotations(annotations){
         console.time('updateAnnotations');
 
+        _pxo.update();
+
         updateAnnotations.inProgress(true); //No function 'self' existing
         const markers = annotations.filter(annotation =>
             annotation.points.length === 1
@@ -991,7 +1000,7 @@ const overlayHandler = (function (){
      * @param {Object} svgOverlay The return value of the OSD instance's
      * svgOverlay() method.
      */
-    function init(svgOverlay,app=null) {
+    function init(svgOverlay,pixiOverlay=null) {
         const regions = d3.select(svgOverlay.node())
             .append("g")
             .attr("id", "regions");
@@ -1013,7 +1022,8 @@ const overlayHandler = (function (){
         if (_activeAnnotationOverlayName)
             setActiveAnnotationOverlay(_activeAnnotationOverlayName);
 
-        _app=app;
+        _pxo=pixiOverlay;
+        _app=_pxo.app();
         _stage=_app.stage;
         _markerContainer = new PIXI.Container();
         _stage.addChild(_markerContainer);

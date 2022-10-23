@@ -41,8 +41,10 @@
         this._app = new PIXI.Application({
             //resizeTo: this._pixi,
             transparent: true,
-            antialias: true
+            antialias: true,
+            sharedTicker: true
         });
+        this._app.ticker.maxFPS = 30; // To reduce environmental impact
         this._app.renderer.plugins.interaction.moveWhenInside = true;
         this._app.renderer.plugins.interaction.autoPreventDefault=true;
 
@@ -64,8 +66,15 @@
             self.resize();
         });
 
+        this._viewer.addHandler('update-viewport', () => {
+            self.update();
+        });
+
         this.resize();
     };
+
+    const _tickerTime = 5 * 1000; // Run ticker for 5 seconds on updates
+    let _tickerTimeout = 0;
 
     // ----------
     Overlay.prototype = {
@@ -75,6 +84,20 @@
         },
         stage: function() {
             return this._app.stage;  
+        },
+        update: function() {
+            if (!this._app.ticker.started) {
+                this._app.ticker.start(); // Start render loop
+                console.log('started');
+            }
+            if (_tickerTimeout) {
+                clearTimeout(_tickerTimeout);
+            }
+            _tickerTimeout = setTimeout(() => {
+                this._app.ticker.stop();
+                _tickerTimeout = 0;
+                console.log('paused');
+            }, _tickerTime); // Pause render loop after a while
         },
 
         // ----------
@@ -93,16 +116,15 @@
 //            console.log(`pixiOverlay resize: ${this._containerWidth},${this._containerHeight}`);
 
 
-        //var p = this._viewer.viewport.viewerElementToViewportCoordinates(new $.Point(0, 0), true);
-        var p = this._viewer.viewport.viewportToViewerElementCoordinates(new $.Point(0, 0), true);
-        var zoom = this._viewer.viewport.getZoom(true);
-        var rotation = Math.PI/180*this._viewer.viewport.getRotation();
-        // TODO: Expose an accessor for _containerInnerSize in the OSD API so we don't have to use the private variable.
-        var scale = this._viewer.viewport._containerInnerSize.x * zoom;
-        
-        this._app.stage.scale.set(scale/1000);
-        this._app.stage.position.set(p.x,p.y);
-        this._app.stage.rotation=rotation;
+            var p = this._viewer.viewport.viewportToViewerElementCoordinates(new $.Point(0, 0), true);
+            var zoom = this._viewer.viewport.getZoom(true);
+            var rotation = Math.PI/180*this._viewer.viewport.getRotation();
+            // TODO: Expose an accessor for _containerInnerSize in the OSD API so we don't have to use the private variable.
+            var scale = this._viewer.viewport._containerInnerSize.x * zoom;
+            
+            this._app.stage.scale.set(scale/1000);
+            this._app.stage.position.set(p.x,p.y);
+            this._app.stage.rotation=rotation;
 
         // Draw a red frame around the overlay
 /*         {
@@ -112,12 +134,14 @@
             this._app.stage.addChild(graphics);
         } */
 
+
 //         // Listen for animate update
 // this._app.ticker.add((delta) => {
 //     // rotate the container!
 //     // use delta to create frame-independent transform
 //     this._app.stage.rotation -= 0.001 * delta;
 // });
+            this.update();
         },
 
         // ----------

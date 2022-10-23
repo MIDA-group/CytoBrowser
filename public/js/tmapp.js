@@ -58,6 +58,7 @@ const tmapp = (function() {
         _availableZLevels,
         _mouseHandler;
 
+    const _ticker = PIXI.Ticker.shared;
 
     function _getFocusIndex() {
         return _currState.z + Math.floor(_currentImage.zLevels.length / 2);
@@ -410,7 +411,7 @@ const tmapp = (function() {
 
         const overlay = _viewer.svgOverlay();
         const pixiOverlay = _viewer.pixiOverlay();
-        overlayHandler.init(overlay,pixiOverlay.app());
+        overlayHandler.init(overlay,pixiOverlay);
 
         //PIXI.Ticker.shared.add(() => fps.frame());
 
