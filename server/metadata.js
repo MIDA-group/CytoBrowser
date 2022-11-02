@@ -26,7 +26,10 @@ function xmlToObject(xmlData) {
 }
 
 function extractImportantMetadata(jsonData) {
-    const imageData = jsonData["OME"]["Image"].find(im => im["@_ID"] === "Image:0");
+    let imageData = jsonData["OME"]["Image"];
+    if (Array.isArray(imageData)) {
+        imageData = imageData.find(im => im["@_ID"] === "Image:0");
+    }
     const importantMetadata = {
         MicroscopeModel: jsonData["OME"]["Instrument"] && jsonData["OME"]["Instrument"]["Microscope"]["@_Model"],
         NominalMagnification: jsonData["OME"]["Instrument"] && jsonData["OME"]["Instrument"]["Objective"]["@_NominalMagnification"],
