@@ -143,7 +143,7 @@ const overlayHandler = (function (){
     }
 
     /**
-     * Set marker visible if inside rectangle
+     * Set marker visible if inside rectangle, or pressed
      * @param {Rectangle} rect in Screen/Web coordinates, typically _app.renderer.screen
      */
     let _first=true;
@@ -163,7 +163,7 @@ const overlayHandler = (function (){
                 let vis=0;
                 _markerContainer.children.forEach(c => {
                     const webPos = coordinateHelper.overlayToWeb(c.position);
-                    c.visible = rect.contains(webPos.x,webPos.y);
+                    c.visible = c.pressed || rect.contains(webPos.x,webPos.y);
                     vis += c.visible;
                 });
                 console.log('Visible markers: ',vis);
