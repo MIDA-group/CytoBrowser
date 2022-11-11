@@ -85,7 +85,7 @@
         stage: function() {
             return this._app.stage;  
         },
-        update: function() {
+        update: function() { // Call this function whenever drawing, to allow animations to run _tickerTime 
             if (!this._app.ticker.started) {
                 this._app.ticker.start(); // Start render loop
                 console.log('Ticker started');
