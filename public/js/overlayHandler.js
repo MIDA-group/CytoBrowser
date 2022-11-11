@@ -125,8 +125,7 @@ const overlayHandler = (function (){
 
     function _getRegionPath(d) {
         const stops = d.points.map(point => {
-            const viewport = coordinateHelper.imageToViewport(point);
-            const coords = coordinateHelper.viewportToOverlay(viewport);
+            const coords = coordinateHelper.imageToOverlay(point);
             return `${coords.x} ${coords.y}`;
         });
         return `M ${stops.join(" L ")} Z`;
@@ -605,8 +604,7 @@ const overlayHandler = (function (){
             // console.log('UID: ',d.id);
             let changed = false;
             const marker = _markerList[d.id];
-            const viewport = coordinateHelper.imageToViewport(d.points[0]);
-            const coords = coordinateHelper.viewportToOverlay(viewport);
+            const coords = coordinateHelper.imageToOverlay(d.points[0]);
             if (marker.position.x!==coords.x || marker.position.y!==coords.y) { 
                 marker.position.set(coords.x,coords.y);
                 changed = true;
@@ -682,8 +680,7 @@ const overlayHandler = (function (){
                         const point = d.points[i];
                         d3.select(this)
                             .attr("transform", _transformFunction(function(d) {
-                                const viewport = coordinateHelper.imageToViewport(point);
-                                const coords = coordinateHelper.viewportToOverlay(viewport);
+                                const coords = coordinateHelper.imageToOverlay(point);
                                 return {translate: [coords.x, coords.y]};
                             }));
                     })
