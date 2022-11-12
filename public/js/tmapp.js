@@ -54,6 +54,7 @@ const tmapp = (function() {
             held: false,
             inside: false
         },
+        _lastMouseMoveEvent=null,
         _disabledControls,
         _availableZLevels,
         _mouseHandler;
@@ -291,7 +292,9 @@ const tmapp = (function() {
         };
 
         // Live updates of mouse position in collaboration
+        // Store event to re-dispatch on viewport-change
         function moveHandler(event) {
+            _lastMouseMoveEvent=new MouseEvent(event.originalEvent.type, event.originalEvent);
             if (!_cursorStatus.held) {
                 const pos = coordinateHelper.webToViewport(event.position);
                 setCursorStatus({x: pos.x, y: pos.y});
@@ -388,6 +391,13 @@ const tmapp = (function() {
         // A tile failed to load
         viewer.addHandler("tile-load-failed", function(event) {
             tmappUI.displayImageError("tilefail", 1000);
+        });
+
+        viewer.addHandler('viewport-change', (event) => {
+            if (_lastMouseMoveEvent) {
+                const elem = tmapp.mouseHandler().element;
+                elem.dispatchEvent(_lastMouseMoveEvent); // Mouse moves in the image, trigger updates
+            }
         });
     }
 
