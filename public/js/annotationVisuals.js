@@ -33,16 +33,16 @@ const annotationVisuals = (function() {
         let thisListCount=pendingListCount(1); //add one
         if (_annotationList) {
             if (_annotationList.updateData.inProgress()) {
-                wait(0) 
-                .then(() => {
-                    if (thisListCount==pendingListCount()) { //if we're the last one
-                        // console.log('running delayed list update: ',thisListCount,pendingListCount());
-                        _annotationList.updateData(annotations.slice().reverse()); // No sort -> reverse order
-                    }
-                    else {
-                        // console.log('skipping list update',thisListCount,pendingListCount());
-                    }
-                });
+                wait(1) 
+                    .then(() => {
+                        if (thisListCount==pendingListCount()) { //if we're the last one
+                            // console.log('running delayed list update: ',thisListCount,pendingListCount());
+                            _annotationList.updateData(annotations.slice().reverse()); // No sort -> reverse order
+                        }
+                        else {
+                            // console.log('skipping list update',thisListCount,pendingListCount());
+                        }
+                    });
             }
             else {
                 // console.log('running immediate list update: ',thisListCount,pendingListCount());
@@ -55,7 +55,7 @@ const annotationVisuals = (function() {
 
         let thisVisCount=pendingVisCount(1); //add one
         if (overlayHandler.updateAnnotations.inProgress()) {
-            wait(0) //Using Promise.resolve() didn't give time enough for rendering
+            wait(1) //Using Promise.resolve() didn't give time enough for rendering
                 .then(() => {
                     if (thisVisCount==pendingVisCount()) { //if we're the last one
                         // console.log('running delayed overlay update: ',thisVisCount,pendingVisCount());
@@ -67,7 +67,7 @@ const annotationVisuals = (function() {
                 });
         }
         else {
-            // console.log('running immediate overlay update: ',thisVisCount,pendingVisCount());
+            //console.log('running immediate overlay update: ',thisVisCount,pendingVisCount());
             overlayHandler.updateAnnotations(annotations);
         }
 

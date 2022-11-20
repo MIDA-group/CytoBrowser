@@ -2,8 +2,11 @@
  * Functions for updating the OpenSeadragon overlay.
  * @namespace overlayHandler
  **/
+
 const overlayHandler = (function (){
     "use strict";
+
+    const timingLog = false; //Log update times
 
     const _markerSquareSize = 1/8,
         _markerCircleSize = 1/32,
@@ -789,10 +792,17 @@ const overlayHandler = (function (){
      * Resolved promises on .transition().end() => updateAnnotations.inProgress(false)
      */
     function updateAnnotations(annotations){
-        console.time('updateAnnotations');
-
         _pxo.update();
 
+        let timed=false;
+        if (timingLog) {
+            if (!updateAnnotations.inProgress()) {
+                console.time('updateAnnotations');  //lets time only the first
+                timed=true;
+            }
+        }
+
+        //Draw annotations and update list asynchronously
         updateAnnotations.inProgress(true); //No function 'self' existing
         const markers = annotations.filter(annotation =>
             annotation.points.length === 1
@@ -823,7 +833,6 @@ const overlayHandler = (function (){
                     })
                     .catch(() => {
                         // console.warn('Sometimes we get a reject, just ignore!');
-                        // reject(); 
                         resolve(); //This also indicates that we're done
                     });
             }
@@ -850,23 +859,24 @@ const overlayHandler = (function (){
                     })
                     .catch(() => {
                         // console.warn('Sometimes we get a reject, just ignore!');
-                        // reject(); 
                         resolve(); //This also indicates that we're done
                     });
             }
         });
 
         Promise.allSettled([doneMarkers,doneRegions])
-            .then(() => {
-                updateAnnotations.inProgress(false);
-                console.timeEnd('updateAnnotations');
-            })
             .catch((err) => { 
                 console.warn('Annotation rendering reported an issue: ',err); 
+            })
+            .finally(() => {
+                updateAnnotations.inProgress(false);
+                if (timed) {
+                    console.timeEnd('updateAnnotations');
+                }
             });
     }
-    // Boolean to check if we're busy rendering
-    updateAnnotations.inProgress = (function () { let flag = false; return (set=null) => { if (set!=null) flag=set; return flag; }} )();
+    // Counter to check if we're busy rendering
+    updateAnnotations.inProgress = (function () { let flag = 0; return (set=null) => { if (set!=null) flag+=set?1:-1; return flag; }} )();
 
     /**
      * Update the visuals for the pending region.
