@@ -314,12 +314,14 @@ const overlayHandler = (function (){
         }
 
         function pressHandler(event) {
-            const isRightButton = event.data.button === 2;
 //            console.log('PH: ',JSON.stringify(event.data)); //The event ages before logged
+
+            const isRightButton = event.data.button === 2;
             if (isRightButton) {
                 tmappUI.openAnnotationEditMenu(id, event.data.global);
             }
             else {
+                event.data.originalEvent.stopPropagation(); //Sometimes works, sometimes not (for touch, depending e.g., on Chrome state)
                 tmapp.setCursorStatus({held: true});
                 const mouse_pos = new OpenSeadragon.Point(event.data.global.x,event.data.global.y);
     //TODO: Use marker instead of slow looking up
@@ -332,8 +334,8 @@ const overlayHandler = (function (){
 
                 //Fire move events also when the cursor is outside of the object
                 _app.renderer.plugins.interaction.moveWhenInside = false;
-                event.data.originalEvent.stopPropagation();
             }
+            highlight(event);
             _pxo.update();
         }
         function releaseHandler(event) {
@@ -342,6 +344,7 @@ const overlayHandler = (function (){
             pressed=false;
             marker.pressed=false;
             _app.renderer.plugins.interaction.moveWhenInside = true;
+            unHighlight(event);
             _pxo.update();
         }
         function dragHandler(event) {
@@ -369,7 +372,7 @@ const overlayHandler = (function (){
             tmapp.setCursorStatus(viewportCoords);
             _pxo.update();
         }
-        function clickHandler(event) {
+        function tapHandler(event) {
             if (event.data.originalEvent.ctrlKey) {
                 // console.log('Remove');
                 annotationHandler.remove(id);
@@ -381,14 +384,15 @@ const overlayHandler = (function (){
         //obj.buttonMode = true; //Button style cursor
         obj.interactiveChildren = false; //Just in case
         obj
-            .on('pointerover', highlight)
-            .on('pointerout', unHighlight)
-            .on('pointerdown', pressHandler)
-            .on('pointerup', releaseHandler)
-            .on('pointerupoutside', (event) => {releaseHandler(event);unHighlight(event);})
+            .on('pointerover', highlight) //enter is not enough
+            .on('pointerout', unHighlight) 
+            .on('pointerdown', pressHandler) //calling highlight
+            .on('pointerup', releaseHandler) //calling unHighlight
+            .on('pointerupoutside', releaseHandler)
             .on('pointermove', dragHandler)
-            .on('click', clickHandler);
-    }
+            .on('pointertap', tapHandler) //replaces click (fired after the pointerdown and pointerup events)
+            ;
+        }
 
     /**
      * Add mouse events that should be shared between all annotations,
@@ -485,7 +489,6 @@ const overlayHandler = (function (){
                         x: event.originalEvent.pageX,
                         y: event.originalEvent.pageY
                     };
-                    console.log('RBx: ',d.id,location);
                     tmappUI.openAnnotationEditMenu(d.id, location);
                 }
             }          
@@ -645,7 +648,7 @@ const overlayHandler = (function (){
                 console.log(`EXIT: Marker #${d.id} lost before exit, probably from clearAnnotation.`);
                 return;
             }
-            Ease.ease.add(_markerList[d.id],{scale:_markerList[d.id].scale.x*2},{duration:30})
+            Ease.ease.add(_markerList[d.id],{scale:_markerList[d.id].scale.x*1.5},{duration:30})
                 .once('complete', (ease) => {
                     ease.elements.forEach(item=>item.destroy(true)); //Self destruct after animation
                 });
@@ -778,8 +781,10 @@ const overlayHandler = (function (){
             _markerList.forEach(item=>item.destroy(true));
             _markerList=[];
         }
-        if (_regionOverlay)
+        if (_regionOverlay) {
             _regionOverlay.selectAll("g").remove();
+        }
+        _pxo.update();
     }
 
 
@@ -1000,6 +1005,7 @@ const overlayHandler = (function (){
             default:
                 throw new Error("Invalid overlay name.");
         }
+        _pxo.update();
     }
     function getActiveAnnotationOverlay() {
         return _activeAnnotationOverlayName;
@@ -1030,19 +1036,22 @@ const overlayHandler = (function (){
         _markerOverlay = d3.select(markers.node());
         _cursorOverlay = d3.select(cursors.node());
         _previousCursors = d3.local();
-        if (_activeAnnotationOverlayName)
-            setActiveAnnotationOverlay(_activeAnnotationOverlayName);
 
+        _svo=svgOverlay;
         _pxo=pixiOverlay;
         _app=_pxo.app();
         _stage=_app.stage;
+    
         _markerContainer = new PIXI.Container();
         _stage.addChild(_markerContainer);
-        _svo=svgOverlay;
+    
         // "prerender" is fired right before the renderer draws the scene
         _app.renderer.on('prerender', () => {
             _cullMarkers();
         });
+
+        if (_activeAnnotationOverlayName)
+            setActiveAnnotationOverlay(_activeAnnotationOverlayName);
     }
 
     return {
