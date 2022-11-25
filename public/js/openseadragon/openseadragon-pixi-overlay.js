@@ -85,6 +85,7 @@
 
     const _tickerTime = 5 * 1000; // Run ticker for 5 seconds on updates
     let _tickerTimeout = 0;
+    let _lastUpdateTime = performance.now();
 
     // ----------
     Overlay.prototype = {
@@ -96,7 +97,11 @@
             return this._app.stage;  
         },
         update: function() { // Call this function whenever drawing, to allow animations to run _tickerTime 
-            this._app.renderer.render(this._app.stage);
+            if (performance.now()-_lastUpdateTime < 0.1) { // Ignore is less than 0.1ms since last exectuted call
+                return; // Avoid flooding
+            }
+            this._app.renderer.render(this._app.stage); // Call render directly to reduce lag
+            _lastUpdateTime = performance.now();
 
             if (!this._app.ticker.started) {
                 this._app.ticker.start(); // Start render loop
