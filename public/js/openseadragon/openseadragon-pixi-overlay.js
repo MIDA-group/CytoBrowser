@@ -21,6 +21,15 @@
         return this._pixiOverlayInfo;
     };
 
+    // Turn off TouchEvents to prevent them propagating, see also https://github.com/pixijs/pixijs/issues/8037
+    function turnOffTouchEvents(interactionManager) {
+        interactionManager.interactionDOMElement.removeEventListener('touchstart', interactionManager.onPointerDown, true);
+        interactionManager.interactionDOMElement.removeEventListener('touchcancel', interactionManager.onPointerCancel, true);
+        interactionManager.interactionDOMElement.removeEventListener('touchend', interactionManager.onPointerUp, true);
+        interactionManager.interactionDOMElement.removeEventListener('touchmove', interactionManager.onPointerMove, true);
+        interactionManager.supportsTouchEvents = false;
+    }     
+      
     // ----------
     var Overlay = function(viewer) {
         var self = this;
@@ -47,6 +56,7 @@
         this._app.ticker.maxFPS = 30; // To reduce environmental impact
         this._app.renderer.plugins.interaction.moveWhenInside = true;
         this._app.renderer.plugins.interaction.autoPreventDefault=true;
+        turnOffTouchEvents(this._app.renderer.plugins.interaction);
 
         this._pixi.appendChild(this._app.view);
         
