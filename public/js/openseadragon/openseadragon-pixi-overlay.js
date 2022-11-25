@@ -60,19 +60,19 @@
 
         this._pixi.appendChild(this._app.view);
         
-        this._viewer.addHandler('animation', function() {
+        this._viewer.addHandler('animation', () => {
             self.resize();
         });
 
-        this._viewer.addHandler('open', function() {
+        this._viewer.addHandler('open',  () => {
             self.resize();
         });
 
-        this._viewer.addHandler('rotate', function(evt) {
+        this._viewer.addHandler('rotate',  () => {
             self.resize();
         });
 
-        this._viewer.addHandler('resize', function() {
+        this._viewer.addHandler('resize',  () => {
             self.resize();
         });
 
@@ -96,6 +96,8 @@
             return this._app.stage;  
         },
         update: function() { // Call this function whenever drawing, to allow animations to run _tickerTime 
+            this._app.renderer.render(this._app.stage);
+
             if (!this._app.ticker.started) {
                 this._app.ticker.start(); // Start render loop
                 console.log('Ticker started');
@@ -112,25 +114,30 @@
 
         // ----------
         resize: function() {
+            let changed_size=false; 
             if (this._containerWidth !== this._viewer.container.clientWidth) {
                 this._containerWidth = this._viewer.container.clientWidth;
                 this._pixi.setAttribute('width', this._containerWidth);
+                changed_size=true;
             }
 
             if (this._containerHeight !== this._viewer.container.clientHeight) {
                 this._containerHeight = this._viewer.container.clientHeight;
                 this._pixi.setAttribute('height', this._containerHeight);
+                changed_size=true;
             }
 
-            this._app.renderer.resize(this._containerWidth, this._containerHeight);
-//            console.log(`pixiOverlay resize: ${this._containerWidth},${this._containerHeight}`);
+            if (changed_size) {
+                this._app.renderer.resize(this._containerWidth, this._containerHeight);
+                console.log(`pixiOverlay resize: ${this._containerWidth},${this._containerHeight}`);
+            }
 
 
-            var p = this._viewer.viewport.viewportToViewerElementCoordinates(new $.Point(0, 0), true);
-            var zoom = this._viewer.viewport.getZoom(true);
-            var rotation = Math.PI/180*this._viewer.viewport.getRotation();
+            const p = this._viewer.viewport.viewportToViewerElementCoordinates(new $.Point(0, 0), true);
+            const zoom = this._viewer.viewport.getZoom(true);
+            const rotation = Math.PI/180*this._viewer.viewport.getRotation();
             // TODO: Expose an accessor for _containerInnerSize in the OSD API so we don't have to use the private variable.
-            var scale = this._viewer.viewport._containerInnerSize.x * zoom;
+            const scale = this._viewer.viewport._containerInnerSize.x * zoom;
             
             this._app.stage.scale.set(scale/1000);
             this._app.stage.position.set(p.x,p.y);
