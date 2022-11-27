@@ -63,6 +63,9 @@ F1000Research 2021, 10:226 (https://doi.org/10.12688/f1000research.51916.1)*
 }
 ```
 
+### Issues
+We aim to support all modern browsers. Since development mostly utilizes the [Chrome](https://www.google.com/chrome/) browser, that one can be expected to give the least troublesome usage experience. Please don't be shy to report [issues](https://github.com/MIDA-group/CytoBrowser/issues) you experience.
+
 ### Acknowledgement
 
 This work is supported by: VINNOVA grants 2017-02447 and 2020-03611.
