@@ -793,7 +793,7 @@ const tmappUI = (function(){
 
     let _urlTimeout=0;
     let _overwriteURL=true; //High (from start and) for 1 second after setURL => replaceState instead of pushState
-    
+
     /**
      * If next setURL to overwrite previous history state or not
      * @param {boolean} value setURL => value?replaceState:pushState
@@ -810,12 +810,18 @@ const tmappUI = (function(){
     function setURL(url) {
         if (!history.state || history.state.page!=url.href) 
         {
-            if (_overwriteURL) {
-                history.replaceState({ "page": url.href }, "", url.href);
+            try {
+                if (_overwriteURL) {
+                    history.replaceState({ "page": url.href }, "", url.href);
+                }
+                else {
+                    history.pushState({ "page": url.href }, "", url.href);
+                }
             }
-            else {
-                history.pushState({ "page": url.href }, "", url.href);
+            catch (err) { //Firefox e.g. often reports "Too many calls to Location or History APIs within a short timeframe."
+                console.warn('setURL reported an issue: ',err); 
             }
+
             setOverwriteURL(true);
         }
         if (_urlTimeout) {
