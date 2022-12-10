@@ -59,8 +59,6 @@ const tmapp = (function() {
         _availableZLevels,
         _mouseHandler;
 
-    const _ticker = PIXI.Ticker.shared;
-
     function _getFocusIndex() {
         return _currState.z + Math.floor(_currentImage.zLevels.length / 2);
     }

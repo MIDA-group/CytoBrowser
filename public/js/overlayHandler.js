@@ -1050,8 +1050,9 @@ const overlayHandler = (function (){
             _cullMarkers();
         });
 
-        if (_activeAnnotationOverlayName)
+        if (_activeAnnotationOverlayName) {
             setActiveAnnotationOverlay(_activeAnnotationOverlayName);
+        }
     }
 
     return {
