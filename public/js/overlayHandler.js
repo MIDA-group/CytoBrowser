@@ -523,7 +523,7 @@ const overlayHandler = (function (){
         }).setTracking(true);
     }
 
-    function _pixiMarker(d) {
+    function _pixiMarker(d, duration=0) {
         const coords = coordinateHelper.imageToOverlay(d.points[0]);
 
         const color = _getAnnotationColor(d).replace('#','0x');
@@ -558,7 +558,13 @@ const overlayHandler = (function (){
 
         _addMarkerInteraction(d,square,graphics); //mouse interface to the simplest item
         _markerContainer.addChild(graphics);
-        Ease.ease.add(graphics,{scale:_markerSize()/1000},{duration:250});
+        if (duration > 0) {
+            graphics.scale.set(0);
+            Ease.ease.add(graphics,{scale:_markerSize()/1000},{duration:duration});
+        }
+        else {
+            graphics.scale.set(_markerSize()/1000);
+        }
         // .once('complete', (ease) => ease.elements.forEach(item=>item.cacheAsBitmap=true));  //Doesn't really pay off
 
         return graphics;
@@ -587,10 +593,11 @@ const overlayHandler = (function (){
 
     // New marker
     function _enterMarker(enter) {
+        const duration=Math.round(250/(1+enter.size())); //The more markers the shorter animation
         return enter.append("g")
             .each(d => {
-                // console.log('AID: ',d.id);
-                _markerList[d.id]=_pixiMarker(d);
+                //console.log('AID: ',d.id,duration);
+                _markerList[d.id]=_pixiMarker(d,duration);
             });
     }
 
