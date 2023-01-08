@@ -60,6 +60,7 @@ class SortableList {
         this._createHeaderRowAndBody();
         this.unsetSorted();
         this._unboldTimeout = 0;
+        this._maxCount = 1000; //button-click to show more rows (possibly slow)
     }
 
     _createHeaderRowAndBody() {
@@ -118,7 +119,7 @@ class SortableList {
             const old = this._data[index];
 
             const adjustedDatum = {};
-            adjustedDatum.changed = old == null; 
+            adjustedDatum.changed = old == null || old.changed; //keep changed (if not displayed, e.g., due to _maxCount
             adjustedDatum[this._idKey] = datum[this._idKey];
             adjustedDatum.changed || old[this._idKey] === adjustedDatum[this._idKey] || (adjustedDatum.changed=true);
             adjustedDatum.rawRef=datum; //reference to the original raw data
@@ -138,21 +139,25 @@ class SortableList {
         //console.log(`Made ${updates} updates in list`);
     }
 
-    _displayData(force = false, maxCount = Infinity) {
+    _displayData(force = false) {
         timingLog && console.time("dispListData");
         const list = this;
         if (list._anchor) tmapp.makeURL(); //make sure it's updatable; CROCK: only needed if we use URL-update
 
+        //Remove any overflowRow
+        this._table.select("tbody")
+            .selectAll(".overflowRow")
+            .remove();
+
         const fields = this._fields;
         const rows = this._table.select("tbody")
             .selectAll(".data-row")
-            .data(this._data.slice(0,maxCount), d => d[this._idKey])
+            .data(this._data.slice(0,this._maxCount), d => d[this._idKey])
             .join("tr")
             .attr("class", "data-row")
-            .attr("data-annotation-id", d => d[this._idKey])
-            .order((a, b) => a.a < b.a);
+            .attr("data-annotation-id", d => d[this._idKey]);
 
-        const changed = force? rows: rows.filter((d, i) => d.changed);
+        const changed = force? rows: rows.filter((d, i) => d.changed); 
         const doneChanges = new Promise((resolve, reject) => {
             if (changed.empty()) {
                 resolve();
@@ -205,6 +210,8 @@ class SortableList {
                                 d3.select(this).text(d[f.key]);
                             }
                         });
+                        
+                        d.changed=false; //set changed=false when shown
                     })
                     .transition()
                     .end()
@@ -220,10 +227,11 @@ class SortableList {
             }
         });
 
-        if (maxCount<this._data.length) {
+        //Add overflowRow last 
+        if (this._maxCount<this._data.length) {
             this._table.select("tbody")
                 .selectAll(".overflowRow")
-                .data([[`${this._data.length-maxCount} elements not shown...`]])
+                .data([[`Elements 1\u2013${this._maxCount} of ${this._data.length}`]]) //\u2013 = n-dash
                 .join("tr")
                 .attr("class","overflowRow")
                 .selectAll("td")
@@ -231,13 +239,15 @@ class SortableList {
                 .join("td")
                 .attr("colspan",fields.length)
                 .text(d => d)
-                .attr("title", "List truncated for reasons of speed. Use 'Filter' or 'Sort' to select the data you wish to display.")
+                .attr("title", "List truncated for reasons of speed. Use 'Filter' to select the data you wish to display.")
+                .selectAll("button")
+                .data(['<i class="fa fa-chevron-down pr-1"></i> SHOW MORE'])
+                .join("button")
+                .classed("btn btn-secondary mx-1 ml-2", true)
+                .html(d => d)
+                .attr("title", "Show more rows in list")
+                .on("click", () => { this._maxCount *= 10; this._displayData(force); });
         } 
-        else {
-            this._table.select("tbody")
-                .selectAll(".overflowRow")
-                .remove();
-        }
 
         doneChanges
             .then(() => {
@@ -309,7 +319,7 @@ class SortableList {
 
         const changed=this._updateDisplayStyle();
         this._setData(data);
-        this._displayData(changed,1000); //may be slow if large data, calls inProgress(false) when done
+        this._displayData(changed); //may be slow if large data, calls inProgress(false) when done
         this._reorderData();
     }
 
