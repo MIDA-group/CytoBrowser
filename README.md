@@ -3,6 +3,8 @@ Download the latest release from: https://github.com/MIDA-group/CytoBrowser/rele
 <br>
 Or alternatively from Zenodo via [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4570576.svg)](https://doi.org/10.5281/zenodo.4570576)
 
+<a href="https://www.npmjs.com/package/cytobrowser"><img src="https://upload.wikimedia.org/wikipedia/commons/d/db/Npm-logo.svg" alt="NPM" width=30px> https://www.npmjs.com/package/cytobrowser</a>
+
 [ReadMe](https://github.com/MIDA-group/CytoBrowser/blob/master/README.md), including brief usage example
 
 [Installation instructions](https://github.com/MIDA-group/CytoBrowser/blob/master/INSTALL.md)
