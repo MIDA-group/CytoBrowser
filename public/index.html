@@ -33,7 +33,7 @@
     <nav class="navbar navbar-fixed-top navbar-expand-lg navbar-dark bg-primary pl-2 pl-lg-0 py-0 py-xl-1" id="navbar">
         <div class="container-fluid">
             <a class="navbar-brand" style="padding-top:0.5vh; padding-bottom:0.5vh; outline: none;" href="https://mida-group.github.io/CytoBrowser/" target="_blank" rel="noopener noreferrer">
-                <img style="height:35px; min-height:20px; max-height:8vh;" src="misc/uulogowhiteCyBr.png">
+                <img id="logo_img" style="height:35px; min-height:20px; max-height:8vh;" src="misc/uulogowhiteCyBr.png">
             </a>
 
             <button class="navbar-toggler ml-auto" type="button" data-toggle="collapse" data-target="#navbar_items">
@@ -766,6 +766,7 @@
 <script src="js/pixi/ease.js"></script>
 <script src="js/openseadragon/openseadragon-pixi-overlay.js"></script>
 <script src="defaultClassConfig.js"></script>
+<script src="js/misc/clientVersion.js"></script>
 <script src="js/utils/classUtils.js"></script>
 <script src="js/utils/dateUtils.js"></script>
 <script src="js/utils/mathUtils.js"></script>
@@ -820,8 +821,28 @@
         tmapp.processURL(document.location);
     };
 
+    function getServerVersion() {
+        const versionReq = new XMLHttpRequest();
+        versionReq.open("GET", window.location.api + "/serverVersion", true)
+        // Turn off caching of response
+        versionReq.setRequestHeader("Cache-Control", "no-cache, no-store, must-revalidate, max-age=0"); // HTTP 1.1
+        versionReq.setRequestHeader("Pragma", "no-cache"); // HTTP 1.0
+        versionReq.setRequestHeader("Expires", "0"); // Proxies
+
+        versionReq.send();
+        versionReq.onreadystatechange = function() {
+            if (versionReq.readyState === 4 && versionReq.status === 200) {
+                const response = JSON.parse(versionReq.responseText);
+                serverVersion = response.serverVersion;
+                console.log(`Connected to Server v${serverVersion}`);
+                document.getElementById('logo_img').setAttribute('title',`Client version ${clientVersion}\nServer version ${serverVersion}`);
+            }
+        };
+    }
+
     // Start our tmapp
     $(document).ready(() => {
+        getServerVersion();
 
         // Only way I manage to get correct size navbar on vertical phone layout (due to zoom, content is wider than 100%)!
         function resizeNavbar() {

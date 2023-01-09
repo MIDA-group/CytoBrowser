@@ -30,11 +30,11 @@ if (argv.h || argv.help) {
 }
 
 // Declare required modules
-const fs = require("fs");
 const express = require("express");
 const availableImages = require("./server/availableImages")(dataDir);
 const collaboration = require("./server/collaboration")(collabDir, metadataDir);
 const open = require("open");
+const { version : serverVersion } = require("./package.json");
 
 // Initialize the server
 const app = express();
@@ -48,6 +48,12 @@ app.use(express.json());
 // Serve the index page at the root
 app.get("/", (req, res) => {
     res.sendFile(`${__dirname}/public/index.html`);
+});
+
+// Get server version string (from package.json); can hardly be a security issue
+app.get("/api/serverVersion", (req, res) => {
+    res.status(200);
+    res.json({serverVersion});
 });
 
 // Get a list of available images
@@ -68,7 +74,7 @@ app.get("/api/images", (req, res) => {
 app.get("/api/collaboration/id", (req, res) => {
     const id = collaboration.getId();
     res.status(200);
-    res.json({id: id});
+    res.json({id});
 });
 
 // Get a list of existing collaborations
@@ -76,7 +82,7 @@ app.get("/api/collaboration/available", (req, res) => {
     const image = req.query.image;
     collaboration.getAvailable(image).then(available => {
         res.status(200);
-        res.json({available: available});
+        res.json({available});
     }).catch(err => {
         console.warn(err.message);
         res.status(400);
@@ -110,7 +116,7 @@ const listener = app.listen(port, hostname, () => {
         address = `[${address}]`;
     }
 
-    console.info(`CytoBrowser server listening at http://${address}:${port}`);
+    console.info(`CytoBrowser server (v${serverVersion}) listening at http://${address}:${port}`);
     
     // Opens the URL in the default browser.
     if (argv['open-browser']) {
