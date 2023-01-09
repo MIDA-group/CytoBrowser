@@ -1,3 +1,8 @@
+#!/usr/bin/env node
+/**
+ * Server component of CytoBrowser. Run `node cytobrowser.js --help` and/or check the README.md
+ */
+
 // Catch all
 process.on('uncaughtException', function(e) {
     if (e.code === 'MODULE_NOT_FOUND') {
