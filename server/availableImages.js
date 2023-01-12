@@ -59,12 +59,15 @@ function getThumbnails(dir, image) {
 
     // Look through the middle file directory
     const fileDir = names[Math.floor(names.length / 2)];
-    fs.readdir(`${dataDir}/${fileDir}`, (err, dir) => {
+    fs.readdir(`${dataDir}/${fileDir}`, {withFileTypes: true}, (err, dir) => {
         if (err) {
             // TODO: Handle errors
             console.error(err.toString());
         }
 
+        // Directories only
+        dir = dir.filter(dirent => dirent.isDirectory())
+            .map(dirent => dirent.name);
         // Sort the directories numerically
         dir = dir.sort((a, b) => +a - +b);
 
