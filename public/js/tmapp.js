@@ -106,7 +106,7 @@ const tmapp = (function() {
             ctx.filter = 'none';
         }
         else {
-            ctx.filter = `brightness(${1.5*(_currState.brightness+1)}) contrast(${Math.pow(4,_currState.contrast)})`;
+            ctx.filter = `brightness(${Math.pow(2,_currState.brightness)}) contrast(${Math.pow(4,_currState.contrast)})`;
         }
         _viewer.world.draw();
     }
