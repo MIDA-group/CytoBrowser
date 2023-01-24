@@ -26,11 +26,18 @@
     transition: 1s ease-in-out all;
 }
 
-.collapse_rotate {
+.collapse_rotate_90 {
     transition: .3s transform ease-in-out;
 }
-.collapsed .collapse_rotate {
+.collapsed .collapse_rotate_90 {
     transform: rotate(90deg);
+}
+
+.collapse_rotate_180 {
+    transition: .3s transform ease-in-out;
+}
+.collapsed .collapse_rotate_180 {
+    transform: rotate(180deg);
 }
 
 /* Discrete links in our annotation-list */
