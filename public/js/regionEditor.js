@@ -12,6 +12,11 @@
 const regionEditor = (function() {
     let _currentlyEditedRegionId = null;
 
+    
+    function isEditingRegion() {
+        return _currentlyEditedRegionId !== null;
+    }
+
     /**
      * Stop editing any region that is currently being edited and begin
      * editing a given region.
@@ -30,7 +35,7 @@ const regionEditor = (function() {
      * @returns {boolean} Whether or not a region editing was stopped.
      */
     function stopEditingRegion() {
-        if (_currentlyEditedRegionId !== null) {
+        if (isEditingRegion()) {
             overlayHandler.stopRegionEdit(_currentlyEditedRegionId);
             _currentlyEditedRegionId = null;
             return true;
@@ -56,6 +61,7 @@ const regionEditor = (function() {
     }
 
     return {
+        isEditingRegion,
         startEditingRegion,
         stopEditingRegion,
         stopEditingRegionIfBeingEdited
