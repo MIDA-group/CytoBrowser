@@ -69,8 +69,8 @@
             </div>
        
             <!-- Right side main toolbar -->
-            <div class="col-auto flex-column pt-1 pl-1 pr-0 h-100" style="overflow-y:auto; overflow-x:hidden; flex-grow: 1; min-width: 1em;" id="rtoolbar">
-                <button type="button" class="btn btn-secondary p-0" style="overflow-y:visible; position: absolute; top: 0px; left: 0px; z-index: 2;" data-toggle="collapse" data-target="#right_toolbar_collapse">
+            <div class="col-auto flex-column pt-1 pl-1 pr-0 h-100" style="overflow-y:auto; overflow-x:hidden; flex-grow: 0; min-width: 0.8em;" id="rtoolbar">
+                <button type="button" class="btn btn-secondary p-0" style="overflow-y:visible; position: absolute; top: 0px; left: -4px; z-index: 2;" data-toggle="collapse" data-target="#right_toolbar_collapse" onclick="this.blur();">
                     <i class="collapse_rotate_180 fa fa-chevron-right p-0 px-1 m-0"></i>
                 </button>                  
                 <div class="collapse show card w-100" style="transition: 0s ;" id="right_toolbar_collapse">
@@ -104,7 +104,7 @@
                                     <h6 class="card-subtitle text-muted">Marker size</h6>
                                     <span class="m-2">
                                         &nbsp;0 <input id="marker_size_slider" type="text" data-slider-min="0" data-slider-max="2" data-slider-step="0.1" data-slider-value="1"/> &nbsp;2
-                                        <input id="marker_size_reset" class="btn btn-secondary btn-sm p-0 px-1 m-0 mb-1 ml-3" type="reset" value="Reset">
+                                        <input id="marker_size_reset" class="btn btn-secondary btn-sm p-0 px-1 m-0 mb-1 ml-3" type="reset" value="Reset" onclick="this.blur();">
                                     </span>
                                 </div>
                                 <hr class="m-2">
@@ -112,12 +112,12 @@
                                     <h6 class="card-subtitle text-muted">Brightness</h6>
                                     <span class="m-2">
                                         -1 <input id="brightness_slider" type="text" data-slider-min="-1" data-slider-max="1" data-slider-step="0.1" data-slider-value="0"/> &nbsp;1
-                                        <input id="brightness_reset" class="btn btn-secondary btn-sm p-0 px-1 m-0 mb-1 ml-3" type="reset" value="Reset">
+                                        <input id="brightness_reset" class="btn btn-secondary btn-sm p-0 px-1 m-0 mb-1 ml-3" type="reset" value="Reset" onclick="this.blur();">
                                     </span>
                                     <h6 class="card-subtitle mt-2 text-muted">Contrast</h6>
                                     <span class="m-2">
                                         -1 <input id="contrast_slider" type="text" data-slider-min="-1" data-slider-max="1" data-slider-step="0.1" data-slider-value="0"/> &nbsp;1
-                                        <input id="contrast_reset" class="btn btn-secondary btn-sm p-0 px-1 m-0 mb-1 ml-3" type="reset" value="Reset">
+                                        <input id="contrast_reset" class="btn btn-secondary btn-sm p-0 px-1 m-0 mb-1 ml-3" type="reset" value="Reset" onclick="this.blur();">
                                     </span>
                                 </div>
                                 <hr class="m-2">
