@@ -387,15 +387,32 @@ const tmappUI = (function(){
             let caught=true; //Assume we use the key (setting to false in 'default')
             switch(event.which) {
                 case 27: // esc
-                    annotationTool.reset();
-                    regionEditor.stopEditingRegion();
+                    if (annotationTool.isEditing()) {
+                        annotationTool.reset();
+                    }
+                    else if (regionEditor.isEditingRegion()) {
+                        regionEditor.stopEditingRegion();
+                    }
+                    else {
+                        caught=false;
+                    }
                     break;
                 case 8: // backspace
-                    annotationTool.revert();
+                    if (annotationTool.isEditing()) {
+                        annotationTool.revert();
+                    }
+                    else {
+                        caught=false;
+                    }
                     break;
                 case 13: // enter
-                    annotationTool.complete();
-                    break;
+                    if (annotationTool.isEditing()) {
+                        annotationTool.complete();
+                    }
+                    else {
+                        caught=false;
+                    }
+                break;
                 // ASDF...
                 case 70: // f
                     //catching 'f' to disable 'Flip' in OSD, we do not support it
