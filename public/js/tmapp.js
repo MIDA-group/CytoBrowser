@@ -46,7 +46,8 @@ const tmapp = (function() {
             rotation: 0,
             zoom: 1,
             brightness: 0,
-            contrast: 0
+            contrast: 0,
+            transparency: 0
         },
         _cursorStatus = {
             x: 0.5,
@@ -83,6 +84,11 @@ const tmapp = (function() {
         _updateURLParams();
     }
 
+    function setTransparency(t) {
+        _currState.transparency = t;
+        _updateTransparency();
+    }
+
     function setBrightness(b) {
         _currState.brightness = b;
         _updateBrightnessContrast();
@@ -108,7 +114,17 @@ const tmapp = (function() {
         else {
             ctx.filter = `brightness(${Math.pow(2,2*_currState.brightness)}) contrast(${Math.pow(4,_currState.contrast)})`;
         }
-        _viewer.world.draw();
+        //_viewer.world.draw(); //not needed
+    }
+
+    function _updateTransparency() {
+        //See comment in _updateBrightnessContrast
+        // const canvas = document.getElementById("ISS_viewer").querySelector('.openseadragon-canvas').querySelector('canvas');
+        // const ctx = canvas.getContext("2d");
+        // ctx.globalAlpha = 1-_currState.transparency; 
+
+        const ctx=document.getElementById("ISS_viewer").querySelector('.openseadragon-canvas').querySelector('canvas').style;
+        ctx.opacity = 1-_currState.transparency; 
     }
 
     function _updateZoom() {
@@ -741,20 +757,7 @@ const tmapp = (function() {
         return _availableZLevels ? _availableZLevels : [];
     }
 
-    /**
-     * Change brightness level by delta.
-     */
-    function changeBrightness(delta) {
-        setBrightness(_currState.brightness+delta);
-    }
-
-    /**
-     * Change contrast level by delta.
-     */
-    function changeContrast(delta) {
-        setContrast(_currState.contrast+delta);
-    }
-
+    
 
     /**
      * Get the name of the currently opened image.
@@ -885,8 +888,7 @@ const tmapp = (function() {
 
         setBrightness,
         setContrast,
-        changeBrightness,
-        changeContrast,
+        setTransparency,
 
         getImageName,
         updateCollabStatus,
