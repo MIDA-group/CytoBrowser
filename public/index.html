@@ -64,7 +64,9 @@
     <div id="main_content" class="container-fluid d-flex h-100 position-relative" style="min-width: 400px" tabindex="-1">
         <div id="main_row" class="row flex-fill position-absolute m-0 p-0" style="right: 0; top: 0; left: 0; bottom: 0;">
             <div class="col md-10 px-0" style="min-width: 50%; min-height: 75%; width: 100%; flex-grow: 100;"> <!-- Doesn't make sense to have overflow of the viewer -->
-                <div id="ISS_viewer" class="ISS_viewer blurrable flex-grow-1 h-100 w-100"></div>
+                <div id="viewer_container" class="blurrable">
+                    <div id="ISS_viewer_0" class="ISS_viewer blurrable flex-grow-1 h-100 w-100"></div>
+                </div>
                 <div id="alert_wrapper" style="height: 100%; width: 100%; display: flex; justify-content: center; align-items: center; position: absolute; top: 0; padding: 5%; pointer-events: none"></div>
             </div>
        
@@ -74,7 +76,7 @@
                     <i class="collapse_rotate_180 fa fa-chevron-right p-0 px-1 m-0"></i>
                 </button>                  
                 <div class="collapse show card w-100" style="transition: 0s ;" id="right_toolbar_collapse">
-                    <!-- Modal access -->
+                    <!-- Main stuff -->
                     <div class="card-body pt-1 pt-lg-2 pb-0 pb-lg-1 px-1 px-md-2">
                         <div class="row py-2 no-gutters">
                             <div class="col-5 pr-2">
@@ -93,10 +95,18 @@
                                 </button>
                             </div>
                         </div>
-                        <!-- Collapse -->
+                    </div>
+                    <hr />
+
+                    <!-- Image stuff -->
+                    <div class="card-body pb-0 pt-1 pt-lg-2 px-1 px-md-2">
+                        <!-- Collapse for image visualization -->
                         <!-- Inspired by: https://disjfa.github.io/bootstrap-tricks/card-collapse-tricks/ -->
                         <button type="button" class="btn btn-block btn-primary collapsed" data-toggle="collapse" data-target="#visualization_collapse">
-                            <div class="d-flex flex-row w-100"><div class="w-100">Visualization adjustments</div> <i class="collapse_rotate_90 fa fa-chevron-down pull-right pt-1"></i></div>
+                            <div class="d-flex flex-row w-100">
+                                <div class="w-100">Visualization adjustments</div> 
+                                <i class="collapse_rotate_90 fa fa-chevron-down pull-right pt-1"></i>
+                            </div>
                         </button>
                         <div class="m-0 my-2">
                             <div class="collapse card" id="visualization_collapse">
@@ -139,7 +149,7 @@
                         <button type="button" class="btn btn-block btn-primary collapsed" data-toggle="collapse" data-target="#comments_collapse">
                             <div class="d-flex flex-row w-100">
                                 <div class="w-100 position-relative">
-                                    <div class="position-absolute">
+                                    <div class="position-absolute"> <!-- Indicator if there are new comments -->
                                         <span class="badge bg-dark hide" id="unseen_comments" style="display: none;">0</span>
                                     </div>
                                     Global Data
@@ -212,8 +222,16 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Add image -->
+                        <div class="row my-1 my-lg-2">
+                            <div class="col-5">
+                                <button type="button" class="btn btn-dark btn-block" data-toggle="modal" data-target="#image_browser">Add image layer</button>
+                            </div>
+                        </div>
                     </div>
                     <hr />
+    
 
                     <!-- Functionality buttons -->
                     <div class="card-body pb-0 pt-1 pt-lg-2 px-1 px-md-2">
@@ -270,7 +288,7 @@
                                 <button id="points_to_json" class="btn btn-primary btn-block" type="button"> Export </button>
                             </div>
                             <div class="col-6">
-                                <button type="button" class="btn btn-dark btn-block" data-toggle="modal" data-target="#version-picker">Revert changes</btton>
+                                <button type="button" class="btn btn-dark btn-block" data-toggle="modal" data-target="#version-picker">Revert changes</button>
                             </div>
                         </div>
                     </div>
