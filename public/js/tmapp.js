@@ -8,7 +8,7 @@ const tmapp = (function() {
 
     const _imageDir = "data/";
     const _optionsOSD = {
-        id: "ISS_viewer", //cybr_viewer
+        id: "ISS_viewer_0", //cybr_viewer
         prefixUrl: "js/openseadragon/images/", //Location of button graphics
         navigatorSizeRatio: 1,
         wrapHorizontal: false,
@@ -38,7 +38,8 @@ const tmapp = (function() {
     let _currentImage,
         _images,
         _collab,
-        _viewer,
+        _viewer=null,
+        _viewers=[],
         _currState = {
             x: 0.5,
             y: 0.5,
@@ -107,7 +108,7 @@ const tmapp = (function() {
         //Since I'm not 100% sure that Safari supports the above
         // https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/filter
         //we use the css-style property instead
-        const ctx=document.getElementById("ISS_viewer").querySelector('.openseadragon-canvas').querySelector('canvas').style;
+        const ctx=document.getElementById("ISS_viewer_0").querySelector('.openseadragon-canvas').querySelector('canvas').style;
         if (_currState.contrast==0 && _currState.brightness==0) {
             ctx.filter = 'none';
         }
@@ -119,11 +120,12 @@ const tmapp = (function() {
 
     function _updateTransparency() {
         //See comment in _updateBrightnessContrast
-        // const canvas = document.getElementById("ISS_viewer").querySelector('.openseadragon-canvas').querySelector('canvas');
+        // const canvas = document.getElementById("ISS_viewer_0").querySelector('.openseadragon-canvas').querySelector('canvas');
         // const ctx = canvas.getContext("2d");
         // ctx.globalAlpha = 1-_currState.transparency; 
 
-        const ctx=document.getElementById("ISS_viewer").querySelector('.openseadragon-canvas').querySelector('canvas').style;
+        //const ctx=document.getElementById("ISS_viewer_0").querySelector('.openseadragon-canvas').querySelector('canvas').style;
+        const ctx=document.getElementById("ISS_viewer_0").style;
         ctx.opacity = 1-_currState.transparency; 
     }
 
@@ -138,6 +140,9 @@ const tmapp = (function() {
         tmappUI.setImageZoom(Math.round(zoom*10)/10);
         _currState.zoom = zoom;
 
+        //update additional viewers
+        _viewers.forEach(v => v===_viewer || v.viewport.zoomTo(zoom));
+
         // Zooming often changes the position too, based on cursor position
         _updatePosition();
     }
@@ -149,6 +154,10 @@ const tmapp = (function() {
         const position = _viewer.viewport.getCenter();
         _currState.x = position.x;
         _currState.y = position.y;
+        
+        //update additional viewers
+        _viewers.forEach(v => v===_viewer || v.viewport.panTo(position));
+
         _updateCollabPosition();
         _updateURLParams();
     }
@@ -161,6 +170,10 @@ const tmapp = (function() {
         overlayHandler.setOverlayRotation(rotation);
         tmappUI.setImageRotation(rotation);
         _currState.rotation = rotation;
+
+        //update additional viewers
+        _viewers.forEach(v => v===_viewer || v.viewport.setRotation(rotation));
+
         _updateCollabPosition();
         _updateURLParams();
     }
@@ -434,6 +447,7 @@ const tmapp = (function() {
     function _initOSD(callback) {
         //init OSD viewer
         _viewer = OpenSeadragon(_optionsOSD);
+        _viewers.push(_viewer);
         _viewer.scalebar();
         _addHandlers(_viewer, callback);
 
@@ -455,15 +469,6 @@ const tmapp = (function() {
         const svgOverlay = _viewer.svgOverlay(wrapper);
         const pixiOverlay = _viewer.pixiOverlay(wrapper);
         overlayHandler.init(svgOverlay,pixiOverlay);
-
-        //PIXI.Ticker.shared.add(() => fps.frame());
-
-        // var ticker = PIXI.Ticker.shared;
-        // ticker.autoStart = false;
-        // ticker.stop();
-
-        // renderer.plugins.interaction.destroy();
-        // renderer.plugins.interaction = null;
     }
 
     function _clearCurrentImage() {
@@ -473,7 +478,7 @@ const tmapp = (function() {
         annotationHandler.clear(false);
         metadataHandler.clear();
         _viewer && _viewer.destroy();
-        $("#ISS_viewer").empty();
+        $("#ISS_viewer_0").empty();
         coordinateHelper.clearImage();
         _disabledControls = null;
         _availableZLevels = null;
@@ -867,6 +872,56 @@ const tmapp = (function() {
         }
     }
 
+    function addImage() {
+        console.log('HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHEEEJ!');
+/*        var tileSource = {
+            Image: {
+                xmlns: 'http://schemas.microsoft.com/deepzoom/2008',
+                Url: 'http://openseadragon.github.io/example-images/highsmith/highsmith_files/',
+                Format: 'jpg',
+                Overlap: '2',
+                TileSize: '256',
+                Size: {
+                    Height: '9221',
+                    Width: '7026'
+                }
+            }
+        };
+        _viewer.addTiledImage({tileSource: tileSource, opacity: 0.2});
+        _viewer.world.draw(); //not needed        
+*/
+        var duomo = {
+            Image: {
+              xmlns: "http://schemas.microsoft.com/deepzoom/2008",
+              Url: "//openseadragon.github.io/example-images/duomo/duomo_files/",
+              Format: "jpg",
+              Overlap: "2",
+              TileSize: "256",
+              Size: {
+                Width:  "13920",
+                Height: "10200"
+              }
+            }
+        };
+
+        const next=_viewers.length;
+        const idString=`viewer_${next}`;
+
+        document.querySelector('#viewer_container').insertAdjacentHTML(
+            'afterbegin',
+            `<div id="${idString}" class="ISS_viewer blurrable flex-grow-1 h-100 w-100"></div>`
+        )
+        
+        const options={..._optionsOSD};
+        Object.assign(options,{
+            id: idString,
+            prefixUrl: "//openseadragon.github.io/openseadragon/images/",
+            tileSources: duomo
+        });
+        const new_viewer = OpenSeadragon(options);
+        _viewers.push(new_viewer);
+    }
+
     return {
         init,
         openImage,
@@ -900,6 +955,8 @@ const tmapp = (function() {
         keyDownHandler,
         mouseHandler,
 
-        updateScalebar
+        updateScalebar,
+
+        addImage
     };
 })();
