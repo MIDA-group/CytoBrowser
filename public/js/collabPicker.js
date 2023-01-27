@@ -241,6 +241,7 @@ const collabPicker = (function() {
         }
     }
 
+
     /**
      * Clear the currently displayed list of collaborations.
      */
@@ -332,9 +333,9 @@ const collabPicker = (function() {
     }
 
     return {
-        clear: clear,
-        refresh: refresh,
-        open: open,
-        init: init
+        clear,
+        refresh,
+        open,
+        init
     };
 })();
