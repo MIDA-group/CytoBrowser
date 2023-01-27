@@ -248,10 +248,10 @@ const tmappUI = (function(){
     }
 
     function _initViewerEvents() {
-        $("#ISS_viewer").bind("mousewheel DOMMouseScroll", event => {
+        $("#viewer_container").bind("mousewheel DOMMouseScroll", event => {
             event.preventDefault();
         });
-        $("#ISS_viewer").contextmenu(() => false);
+        $("#viewer_container").contextmenu(() => false);
     }
 
     function _initContextMenu() {
@@ -681,7 +681,7 @@ const tmappUI = (function(){
         alert.addClass(`alert ${errorInfo.type}`);
         alert.text(errorInfo.message);
         window.clearTimeout(_errorDisplayTimeout);
-        $("#ISS_viewer").addClass("blurred");
+        $("#viewer_container").addClass("blurred");
         $("#alert_wrapper").removeClass("fade out");
         $("#alert_wrapper").html(alert);
 
@@ -695,7 +695,7 @@ const tmappUI = (function(){
      * Fade out the currently displayed image error.
      */
     function clearImageError() {
-        $("#ISS_viewer").removeClass("blurred");
+        $("#viewer_container").removeClass("blurred");
         $("#alert_wrapper").addClass("fade out");
     }
 
