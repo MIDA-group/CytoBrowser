@@ -363,8 +363,8 @@ const tmappUI = (function(){
             }
         }); 
     
-        $("#layer_up").click( tmapp.viewerBringForward );
-        $("#layer_down").click( tmapp.viewerSendBackward );
+        $("#layer_up").click( () => tmapp.viewerBringForward(0) );
+        $("#layer_down").click( () => tmapp.viewerSendBackward(0) );
     }
 
     function _initKeyboardShortcuts() {

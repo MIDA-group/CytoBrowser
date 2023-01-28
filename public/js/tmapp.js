@@ -38,8 +38,8 @@ const tmapp = (function() {
     let _currentImage,
         _images,
         _collab,
-        _viewer=null,
-        _viewers=[],
+        _viewer=null, //This is the main viewer, with overlays
+        _viewers=[], //Array of all viewers, in z-index order, first is on top
         _currState = {
             x: 0.5,
             y: 0.5,
@@ -108,7 +108,7 @@ const tmapp = (function() {
         //Since I'm not 100% sure that Safari supports the above
         // https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/filter
         //we use the css-style property instead
-        const ctx=_viewer.element.querySelector('.openseadragon-canvas').querySelector('canvas').style;
+        const ctx=_viewers[0].element.querySelector('.openseadragon-canvas').querySelector('canvas').style;
         if (_currState.contrast==0 && _currState.brightness==0) {
             ctx.filter = 'none';
         }
@@ -120,13 +120,13 @@ const tmapp = (function() {
 
     function _updateTransparency() {
         //See comment in _updateBrightnessContrast
-        // const canvas = _viewer.element.querySelector('.openseadragon-canvas').querySelector('canvas');
+        // const canvas = _viewers[0].element.querySelector('.openseadragon-canvas').querySelector('canvas');
         // const ctx = canvas.getContext("2d");
         // ctx.globalAlpha = 1-_currState.transparency; 
 
-        //const ctx=_viewer.element.querySelector('.openseadragon-canvas').querySelector('canvas').style;
+        //const ctx=_viewers[0].element.querySelector('.openseadragon-canvas').querySelector('canvas').style;
         //Make whole viewer transparent
-        const ctx=_viewer.element.style;
+        const ctx=_viewers[0].element.style;
         ctx.opacity = 1-_currState.transparency; 
     }
 
@@ -271,6 +271,7 @@ const tmapp = (function() {
         collabClient.updateCursor(_cursorStatus);
     }
 
+    /** Filename convention hardcoded here! FIX */
     function _expandImageName(imageInfo) {
         // Get the full image names based on the data from the server
         const imageName = imageInfo.name;
@@ -408,12 +409,15 @@ const tmapp = (function() {
         ]});
     }
 
-    function _addHandlers(viewer, callback) {
-        // Change-of-Page (z-level) handler
-        viewer.addHandler("page", _updateFocus);
-        viewer.addHandler("zoom", _updateZoom);
-        viewer.addHandler("pan", _updatePosition);
-        viewer.addHandler("rotate", _updateRotation);
+    
+    function _addHandlers(viewer, callback, activeViewer=true) {
+        if (activeViewer) { 
+            // Change-of-Page (z-level) handler
+            viewer.addHandler("page", _updateFocus);
+            viewer.addHandler("zoom", _updateZoom);
+            viewer.addHandler("pan", _updatePosition);
+            viewer.addHandler("rotate", _updateRotation);
+        }
 
         // When leaving full-screen mode, update counts
         viewer.addHandler("full-screen", (event) => !event.fullScreen && annotationHandler && annotationHandler.updateAnnotationCounts());
@@ -421,7 +425,9 @@ const tmapp = (function() {
         // When we're done loading
         viewer.addHandler("open", function (event) {
             console.info("Done loading!");
-            _addMouseTracking(viewer);
+            if (activeViewer) {
+                _addMouseTracking(viewer);
+            }
             viewer.canvas.focus();
             viewer.viewport.goHome();
             _updateZoom();
@@ -485,21 +491,21 @@ const tmapp = (function() {
         Object.assign(options,{
             id: idString
         });
-        _viewer = OpenSeadragon(options);
+        const newViewer = OpenSeadragon(options);
         _nextViewerId++;
 
         //Put first
-        _viewers.unshift(_viewer);
-        //Set z-index
-        _viewers.forEach((v,i) => v.element.style.zIndex = 100-i);
+        _viewers.unshift(newViewer);
+        _viewersOrder(); //Set z-index
 
-        _viewer.scalebar();
-        _addHandlers(_viewer, callback);
+        newViewer.scalebar();
 
         //open the DZI xml file pointing to the tiles
         const imageStack = _expandImageName(image);
-        _openImages(_viewer,imageStack);
+        _openImages(newViewer,imageStack);
 
+        //don't add more handlers than needed
+        _addHandlers(newViewer, callback, withOverlay);
         if (withOverlay) {
             //Create a wrapper in which we place both overlays, s.t. we can switch with zIndex but still get Navigator and On-screen menu
             const wrapper = document.createElement('div');
@@ -514,6 +520,9 @@ const tmapp = (function() {
             const svgOverlay = _viewer.svgOverlay(wrapper);
             const pixiOverlay = _viewer.pixiOverlay(wrapper);
             overlayHandler.init(svgOverlay,pixiOverlay);
+        }
+        else {
+            newViewer.element.style.pointerEvents = "none"; //ignore mouse :-)
         }
 
         return image;
@@ -532,8 +541,7 @@ const tmapp = (function() {
 
         //Remove from list
         _viewers.shift();
-        //Set z-index of remaining
-        _viewers.forEach((v,i) => v.element.style.zIndex = 100-i);
+        _viewersOrder(); //Update z-index of remaining
 
         _disabledControls = null;
         _availableZLevels = null;
@@ -655,7 +663,7 @@ const tmapp = (function() {
             callback && callback();
         }
         else {
-            _clearCurrentImage();
+            _clearCurrentImage(); //yes, previously we checked for valid name before clearing, but...
             _currentImage = _newOSD(imageName, callback);
             tmappUI.setImageName(_currentImage.name);
             _updateURLParams();
@@ -667,15 +675,7 @@ const tmapp = (function() {
      * @param {string} imageName The name of the image being opened.
      */
     function addImage(imageName, callback) {
-        console.log('HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHEEEJ!');
-
-        if (!imageName) {
-            tmappUI.displayImageError("noimage");
-            callback && callback();
-        }
-        else {
-            _newOSD(imageName,callback,false); //no overlay
-        }
+        _newOSD(imageName,callback,false); //no overlay
     }
 
     /**
@@ -937,7 +937,9 @@ const tmapp = (function() {
         }
     }
 
-
+    function _viewersOrder() {
+        _viewers.forEach((v,i) => v.element.style.zIndex = 100-i);
+    }
     function _viewerSwap(i,j) {
         console.log(`Swap: ${i}, ${j}`);
         _viewers[i].element.style.zIndex = 100-j;
@@ -945,18 +947,16 @@ const tmapp = (function() {
         [ _viewers[j], _viewers[i] ] = [ _viewers[i], _viewers[j] ];
         _viewer=_viewers[0];
     }
-    function viewerBringForward() {
-        const current=_viewers.findIndex(v => v===_viewer);
-        console.log('SendForth',current);
-        if (current>0) {
-            _viewerSwap(current, current-1);
+    function viewerBringForward(idx) {
+        console.log('SendForth',idx);
+        if (idx>0) {
+            _viewerSwap(idx, idx-1);
         }
     }
-    function viewerSendBackward() {
-        const current=_viewers.findIndex(v => v===_viewer);
-        console.log('SendBack',current);
-        if (current<_viewers.length-1) {
-            _viewerSwap(current, current+1);
+    function viewerSendBackward(idx) {
+        console.log('SendBack',idx);
+        if (idx<_viewers.length-1) {
+            _viewerSwap(idx, idx+1);
         }
     }
 
