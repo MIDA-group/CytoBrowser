@@ -281,13 +281,13 @@ const tmapp = (function() {
         return imageStack;
     }
 
-    function _openImages(imageStack) {
+    function _openImages(viewer,imageStack) {
         const initialZ = 0;
         const offset = Math.floor(imageStack.length / 2);
         const zLevels = Array.from({length: imageStack.length}, (x, i) => i - offset);
         _availableZLevels = zLevels;
         console.info(`Opening: ${imageStack}`);
-        _viewer.openFocusLevels(imageStack, initialZ, zLevels);
+        viewer.openFocusLevels(imageStack, initialZ, zLevels);
         _currState.z = initialZ;
     }
 
@@ -408,7 +408,7 @@ const tmapp = (function() {
         ]});
     }
 
-    function _addHandlers (viewer, callback) {
+    function _addHandlers(viewer, callback) {
         // Change-of-Page (z-level) handler
         viewer.addHandler("page", _updateFocus);
         viewer.addHandler("zoom", _updateZoom);
@@ -449,27 +449,50 @@ const tmapp = (function() {
 
     /**
      * Initialize an instance of OpenSeadragon. This involves getting
-     * a full stack of image names based on the original name, loading the
+     * a full stack of image names based on the original name (_currentImage), loading the
      * images from the server, and initializing the overlay.
      * @param {Function} callback Function to call once the images have
      * been successfully loaded.
+     * @param {withOverlay} boolean, set true to associate annotation overlays
      */
-    function _initOSD(callback) {
-        //init OSD viewer
-        _viewer = OpenSeadragon(_optionsOSD);
-        _viewer.element.style.zIndex = 100;
-        _viewers.unshift(_viewer); 
-        _viewer.scalebar();
-        _addHandlers(_viewer, callback);
+    function _initOSD(callback=null, withOverlay=true) {
+        console.log(_currentImage);
+
+        const next=_viewers.length;
+        const idString=`viewer_${next}`;
+
+        //Create html element for viewer
+        document.querySelector('#viewer_container').insertAdjacentHTML(
+            'afterbegin',
+            `<div id="${idString}" class="ISS_viewer blurrable flex-grow-1 h-100 w-100"></div>`
+        )
+
+        //Create OSD viewer
+        const options={..._optionsOSD};
+        Object.assign(options,{
+            id: idString
+        });
+        const newViewer = OpenSeadragon(options);
+
+        //Put last
+        newViewer.element.style.zIndex = 100-next;
+        _viewers.push(newViewer);
+
+        newViewer.scalebar();
+        _addHandlers(newViewer, callback);
 
         //open the DZI xml file pointing to the tiles
         const imageName = _currentImage.name;
         const imageStack = _expandImageName(imageName);
-        _openImages(imageStack);
+        _openImages(newViewer,imageStack);
 
-        const overlay = _viewer.svgOverlay();
-        const pixiOverlay = _viewer.pixiOverlay();
-        overlayHandler.init(overlay,pixiOverlay);
+        _viewer=_viewers[0];
+
+        if (withOverlay) {
+            const overlay = _viewer.svgOverlay();
+            const pixiOverlay = _viewer.pixiOverlay();
+            overlayHandler.init(overlay,pixiOverlay);
+        }
     }
 
     function _clearCurrentImage() {
@@ -613,6 +636,27 @@ const tmapp = (function() {
             tmappUI.setImageName(_currentImage.name);
             _updateURLParams();
             _initOSD(callback);
+        }
+    }
+
+    /**
+     * Similar to openImage, but adding instead of replacing
+     * @param {string} imageName The name of the image being opened.
+     */
+    function addImage(imageName, callback) {
+        console.log('HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHEEEJ!');
+
+        if (!imageName) {
+            tmappUI.displayImageError("noimage");
+            callback && callback();
+        }
+        else {
+            const image = _images.find(image => image.name === imageName);
+            if (!image) {
+                tmappUI.displayImageError("badimage");
+                throw new Error(`Failed to open image ${imageName}.`);
+            }
+            _initOSD(callback,false); //no overlay
         }
     }
 
@@ -875,57 +919,6 @@ const tmapp = (function() {
         }
     }
 
-    function addImage() {
-        console.log('HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHEEEJ!');
-/*        var tileSource = {
-            Image: {
-                xmlns: 'http://schemas.microsoft.com/deepzoom/2008',
-                Url: 'http://openseadragon.github.io/example-images/highsmith/highsmith_files/',
-                Format: 'jpg',
-                Overlap: '2',
-                TileSize: '256',
-                Size: {
-                    Height: '9221',
-                    Width: '7026'
-                }
-            }
-        };
-        _viewer.addTiledImage({tileSource: tileSource, opacity: 0.2});
-        _viewer.world.draw(); //not needed        
-*/
-        var duomo = {
-            Image: {
-              xmlns: "http://schemas.microsoft.com/deepzoom/2008",
-              Url: "//openseadragon.github.io/example-images/duomo/duomo_files/",
-              Format: "jpg",
-              Overlap: "2",
-              TileSize: "256",
-              Size: {
-                Width:  "13920",
-                Height: "10200"
-              }
-            }
-        };
-
-        const next=_viewers.length;
-        const idString=`viewer_${next}`;
-
-        document.querySelector('#viewer_container').insertAdjacentHTML(
-            'afterbegin',
-            `<div id="${idString}" class="ISS_viewer blurrable flex-grow-1 h-100 w-100"></div>`
-        )
-        
-        const options={..._optionsOSD};
-        Object.assign(options,{
-            id: idString,
-            prefixUrl: "//openseadragon.github.io/openseadragon/images/",
-            tileSources: duomo
-        });
-        const new_viewer = OpenSeadragon(options);
-        new_viewer.element.style.zIndex = 100-next;
-        _viewers.push(new_viewer);
-        _addHandlers(new_viewer);
-    }
 
     function _viewerSwap(i,j) {
         console.log(`Swap: ${i}, ${j}`);
