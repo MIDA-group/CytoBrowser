@@ -362,6 +362,9 @@ const tmappUI = (function(){
                 $("#fps").text('');
             }
         }); 
+    
+        $("#layer_up").click( tmapp.viewerBringForward );
+        $("#layer_down").click( tmapp.viewerSendBackward );
     }
 
     function _initKeyboardShortcuts() {

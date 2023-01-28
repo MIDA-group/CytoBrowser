@@ -108,7 +108,7 @@ const tmapp = (function() {
         //Since I'm not 100% sure that Safari supports the above
         // https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/filter
         //we use the css-style property instead
-        const ctx=document.getElementById("ISS_viewer_0").querySelector('.openseadragon-canvas').querySelector('canvas').style;
+        const ctx=_viewer.element.querySelector('.openseadragon-canvas').querySelector('canvas').style;
         if (_currState.contrast==0 && _currState.brightness==0) {
             ctx.filter = 'none';
         }
@@ -120,19 +120,24 @@ const tmapp = (function() {
 
     function _updateTransparency() {
         //See comment in _updateBrightnessContrast
-        // const canvas = document.getElementById("ISS_viewer_0").querySelector('.openseadragon-canvas').querySelector('canvas');
+        // const canvas = _viewer.element.querySelector('.openseadragon-canvas').querySelector('canvas');
         // const ctx = canvas.getContext("2d");
         // ctx.globalAlpha = 1-_currState.transparency; 
 
-        //const ctx=document.getElementById("ISS_viewer_0").querySelector('.openseadragon-canvas').querySelector('canvas').style;
-        const ctx=document.getElementById("ISS_viewer_0").style;
+        //const ctx=_viewer.element.querySelector('.openseadragon-canvas').querySelector('canvas').style;
+        //Make whole viewer transparent
+        const ctx=_viewer.element.style;
         ctx.opacity = 1-_currState.transparency; 
     }
 
-    function _updateZoom() {
+    function _updateZoom(e) {
         if (!_viewer) {
             throw new Error("Tried to update zoom of nonexistent viewer.");
         }
+        if (e && e.eventSource!==_viewer) { //ignore events from other viewers
+            return;
+        }
+
         const zoom = _viewer.viewport.getZoom();
         const maxZoom = _viewer.viewport.getMaxZoom();
         const size = _viewer.viewport.getContainerSize();
@@ -147,10 +152,14 @@ const tmapp = (function() {
         _updatePosition();
     }
 
-    function _updatePosition() {
+    function _updatePosition(e) {
         if (!_viewer) {
             throw new Error("Tried to update position of nonexistent viewer.");
         }
+        if (e && e.eventSource!==_viewer) { //ignore events from other viewers
+            return;
+        }
+
         const position = _viewer.viewport.getCenter();
         _currState.x = position.x;
         _currState.y = position.y;
@@ -162,10 +171,14 @@ const tmapp = (function() {
         _updateURLParams();
     }
 
-    function _updateRotation() {
+    function _updateRotation(e) {
         if (!_viewer) {
             throw new Error("Tried to update rotation of nonexistent viewer.");
         }
+        if (e && e.eventSource!==_viewer) { //ignore events from other viewers
+            return;
+        }
+
         const rotation = _viewer.viewport.getRotation();
         overlayHandler.setOverlayRotation(rotation);
         tmappUI.setImageRotation(rotation);
@@ -444,7 +457,8 @@ const tmapp = (function() {
     function _initOSD(callback) {
         //init OSD viewer
         _viewer = OpenSeadragon(_optionsOSD);
-        _viewers.push(_viewer);
+        _viewer.element.style.zIndex = 100;
+        _viewers.unshift(_viewer); 
         _viewer.scalebar();
         _addHandlers(_viewer, callback);
 
@@ -464,9 +478,11 @@ const tmapp = (function() {
         }
         annotationHandler.clear(false);
         metadataHandler.clear();
-        _viewer && _viewer.destroy();
-        $("#ISS_viewer_0").empty();
         coordinateHelper.clearImage();
+        $("#"+_viewer.id).empty();
+        _viewer.destroy();
+        _viewers.shift();
+//FIX!!!
         _disabledControls = null;
         _availableZLevels = null;
     }
@@ -906,7 +922,31 @@ const tmapp = (function() {
             tileSources: duomo
         });
         const new_viewer = OpenSeadragon(options);
+        new_viewer.element.style.zIndex = 100-next;
         _viewers.push(new_viewer);
+        _addHandlers(new_viewer);
+    }
+
+    function _viewerSwap(i,j) {
+        console.log(`Swap: ${i}, ${j}`);
+        _viewers[i].element.style.zIndex = 100-j;
+        _viewers[j].element.style.zIndex = 100-i;
+        [ _viewers[j], _viewers[i] ] = [ _viewers[i], _viewers[j] ];
+        _viewer=_viewers[0];
+    }
+    function viewerBringForward() {
+        const current=_viewers.findIndex(v => v===_viewer);
+        console.log('SendForth',current);
+        if (current>0) {
+            _viewerSwap(current, current-1);
+        }
+    }
+    function viewerSendBackward() {
+        const current=_viewers.findIndex(v => v===_viewer);
+        console.log('SendBack',current);
+        if (current<_viewers.length-1) {
+            _viewerSwap(current, current+1);
+        }
     }
 
     return {
@@ -933,6 +973,7 @@ const tmapp = (function() {
         setTransparency,
 
         getImageName,
+        getViewerId:()=>_viewer.id,
         updateCollabStatus,
         setCursorStatus,
         enableControls,
@@ -944,6 +985,8 @@ const tmapp = (function() {
 
         updateScalebar,
 
-        addImage
+        addImage,
+        viewerBringForward,
+        viewerSendBackward
     };
 })();
