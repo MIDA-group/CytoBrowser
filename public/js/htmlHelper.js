@@ -422,7 +422,7 @@ const htmlHelper = (function() {
                 entry.closest(".modal").modal("hide");
 
             if (event.ctrlKey) {
-                tmapp.addImage();
+                tmapp.addImage(image.name);
             }
             else {
                 collabPicker.open(image.name);
