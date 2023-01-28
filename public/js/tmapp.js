@@ -271,10 +271,10 @@ const tmapp = (function() {
         collabClient.updateCursor(_cursorStatus);
     }
 
-    function _expandImageName() {
+    function _expandImageName(imageInfo) {
         // Get the full image names based on the data from the server
-        const imageName = _currentImage.name;
-        const zLevels = _currentImage.zLevels;
+        const imageName = imageInfo.name;
+        const zLevels = imageInfo.zLevels;
         const imageStack = zLevels.map(zLevel => {
             return `${_imageDir}${imageName}_z${zLevel}.dzi`;
         });
@@ -448,18 +448,28 @@ const tmapp = (function() {
     }
 
     /**
-     * Initialize an instance of OpenSeadragon. This involves getting
-     * a full stack of image names based on the original name (_currentImage), loading the
-     * images from the server, and initializing the overlay.
+     * Initialize an instance of OpenSeadragon. 
+     * Creating the DOM node for the viewer.
+     * Getting a full stack of image names based on the original imageName, 
+     * loading the images from the server, and initializing the overlay.
+     * 
+     * @param {string} imageName Name of the image to open.
      * @param {Function} callback Function to call once the images have
      * been successfully loaded.
-     * @param {withOverlay} boolean, set true to associate annotation overlays
+     * @param {boolean} withOverlay, set true to associate annotation overlays
+     * 
+     * @returns {object} image object to store in _currentImage.
      */
-    function _initOSD(callback=null, withOverlay=true) {
-        console.log(_currentImage);
+    let _nextViewerId=0; // Running index of OSD-viewers
+    function _newOSD(imageName, callback=null, withOverlay=true) {
+        const image = _images.find(image => image.name === imageName);
+        if (!image) {
+            tmappUI.displayImageError("badimage");
+            throw new Error(`Failed to open image ${imageName}.`);
+        }
 
-        const next=_viewers.length;
-        const idString=`viewer_${next}`;
+        console.log(`Opening ${image.name} -> image #${_nextViewerId}`);
+        const idString=`viewer_${_nextViewerId}`;
 
         //Create html element for viewer
         document.querySelector('#viewer_container').insertAdjacentHTML(
@@ -472,27 +482,28 @@ const tmapp = (function() {
         Object.assign(options,{
             id: idString
         });
-        const newViewer = OpenSeadragon(options);
+        _viewer = OpenSeadragon(options);
+        _nextViewerId++;
 
-        //Put last
-        newViewer.element.style.zIndex = 100-next;
-        _viewers.push(newViewer);
+        //Put first
+        _viewers.unshift(_viewer);
+        //Set z-index
+        _viewers.forEach((v,i) => v.element.style.zIndex = 100-i);
 
-        newViewer.scalebar();
-        _addHandlers(newViewer, callback);
+        _viewer.scalebar();
+        _addHandlers(_viewer, callback);
 
         //open the DZI xml file pointing to the tiles
-        const imageName = _currentImage.name;
-        const imageStack = _expandImageName(imageName);
-        _openImages(newViewer,imageStack);
-
-        _viewer=_viewers[0];
+        const imageStack = _expandImageName(image);
+        _openImages(_viewer,imageStack);
 
         if (withOverlay) {
             const overlay = _viewer.svgOverlay();
             const pixiOverlay = _viewer.pixiOverlay();
             overlayHandler.init(overlay,pixiOverlay);
         }
+
+        return image;
     }
 
     function _clearCurrentImage() {
@@ -502,10 +513,15 @@ const tmapp = (function() {
         annotationHandler.clear(false);
         metadataHandler.clear();
         coordinateHelper.clearImage();
-        $("#"+_viewer.id).empty();
+        $("#"+_viewer.id).empty(); //remove descendants of DOM node (alt. while (foo.firstChild) foo.removeChild(foo.firstChild); )
+        _viewer.element.remove(); //remove DOM node
         _viewer.destroy();
+
+        //Remove from list
         _viewers.shift();
-//FIX!!!
+        //Set z-index of remaining
+        _viewers.forEach((v,i) => v.element.style.zIndex = 100-i);
+
         _disabledControls = null;
         _availableZLevels = null;
     }
@@ -626,16 +642,10 @@ const tmapp = (function() {
             callback && callback();
         }
         else {
-            const image = _images.find(image => image.name === imageName);
-            if (!image) {
-                tmappUI.displayImageError("badimage");
-                throw new Error(`Failed to open image ${imageName}.`);
-            }
             _clearCurrentImage();
-            _currentImage = image;
+            _currentImage = _newOSD(imageName, callback);
             tmappUI.setImageName(_currentImage.name);
             _updateURLParams();
-            _initOSD(callback);
         }
     }
 
@@ -651,12 +661,7 @@ const tmapp = (function() {
             callback && callback();
         }
         else {
-            const image = _images.find(image => image.name === imageName);
-            if (!image) {
-                tmappUI.displayImageError("badimage");
-                throw new Error(`Failed to open image ${imageName}.`);
-            }
-            _initOSD(callback,false); //no overlay
+            _newOSD(imageName,callback,false); //no overlay
         }
     }
 
