@@ -520,21 +520,21 @@ const tmapp = (function() {
             _viewer.canvas.appendChild(wrapper);
 
 /*  
-* Together with pixiOverlay(element) below, in multi. To look at!
+* Together with pixi/svgOverlay(element) below, in multi. To look at!
             const element = document.getElementById('annotation_layer');
             element.style.zIndex = 200;
-            
+
             //forward all events from annotation_layer to _viewer.canvas
             //https://stackoverflow.com/questions/27321672/listen-for-all-events-in-javascript
             const target = _viewer.canvas;
             const source = element;
             const clone = e => new e.constructor(e.type, e);
-            const forward = (e) => { target.dispatchEvent(clone(e)); };
+            const forward = (e) => { target.dispatchEvent(clone(e)); e.preventDefault(); };
             // element.addEventListener('pointerdown', forward);
             for (const key in source) {
                 if(/^on/.test(key)) {
                     const eventType = key.substr(2);
-                    target.addEventListener(eventType, forward);
+                    source.addEventListener(eventType, forward);
                 }
             }
             // _viewer.canvas.addEventListener('pointerdown', console.log('x'));
@@ -542,6 +542,7 @@ const tmapp = (function() {
             const svgOverlay = _viewer.svgOverlay(wrapper);
             const pixiOverlay = _viewer.pixiOverlay(wrapper);
 //            const pixiOverlay = _viewer.pixiOverlay(element);
+//            const svgOverlay = _viewer.svgOverlay(element);
             overlayHandler.init(svgOverlay,pixiOverlay);
         }
         else {
