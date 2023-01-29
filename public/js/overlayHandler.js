@@ -277,9 +277,8 @@ const overlayHandler = (function (){
         }
     }
 
-    /* Same as MouseEvents but with Pixi Interaction */
     /**
-     * 
+     * Same as MouseEvents but with Pixi Interaction
      * @param {annotation object} d 
      * @param {pixi graphics object} obj The (simple) object we set as interactive
      * @param {pixi graphics object} marker The whole marker object
@@ -308,7 +307,7 @@ const overlayHandler = (function (){
             const label=marker.getChildByName('label');
             if (label) { //We might call unHighlight several times
                 alpha(label,0) //Ease out
-                    .once('complete', (ease) => ease.elements.forEach(item=>item.destroy(true)));
+                    .once('complete', (ease) => ease.elements.forEach(item=>item.destroyed || item.destroy(true)));
             }
             _pxo.update();
         }

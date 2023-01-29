@@ -29,6 +29,7 @@
 
 .blurrable > * {
     transition: 1s ease-in-out all;
+    transition: 0s opacity;
 }
 
 .collapse_rotate_90 {

@@ -12,12 +12,12 @@
     }
 
     // ----------
-    $.Viewer.prototype.pixiOverlay = function() {
+    $.Viewer.prototype.pixiOverlay = function(element) {
         if (this._pixiOverlayInfo) {
             return this._pixiOverlayInfo;
         }
 
-        this._pixiOverlayInfo = new Overlay(this);
+        this._pixiOverlayInfo = new Overlay(this, element);
         return this._pixiOverlayInfo;
     };
 
@@ -31,7 +31,7 @@
     }     
       
     // ----------
-    var Overlay = function(viewer) {
+    var Overlay = function(viewer, element=viewer.canvas) {
         var self = this;
 
         this._viewer = viewer;
@@ -44,7 +44,8 @@
         this._pixi.style.top = 0;
         this._pixi.style.width = '100%';
         this._pixi.style.height = '100%';
-        this._viewer.canvas.appendChild(this._pixi);
+        element.appendChild(this._pixi);
+
 
         // Create the application helper and add its render target to the page
         this._app = new PIXI.Application({
