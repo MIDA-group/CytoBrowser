@@ -508,23 +508,23 @@ const tmapp = (function() {
 
             const element = document.getElementById('annotation_layer');
             element.style.zIndex = 200;
-            
+
             //forward all events from annotation_layer to _viewer.canvas
             //https://stackoverflow.com/questions/27321672/listen-for-all-events-in-javascript
             const target = _viewer.canvas;
             const source = element;
             const clone = e => new e.constructor(e.type, e);
-            const forward = (e) => { target.dispatchEvent(clone(e)); };
+            const forward = (e) => { target.dispatchEvent(clone(e)); e.preventDefault(); };
             // element.addEventListener('pointerdown', forward);
             for (const key in source) {
                 if(/^on/.test(key)) {
                     const eventType = key.substr(2);
-                    target.addEventListener(eventType, forward);
+                    source.addEventListener(eventType, forward);
                 }
             }
             // _viewer.canvas.addEventListener('pointerdown', console.log('x'));
 
-            const overlay = _viewer.svgOverlay();
+            const overlay = _viewer.svgOverlay(element);
             const pixiOverlay = _viewer.pixiOverlay(element);
             overlayHandler.init(overlay,pixiOverlay);
         }
