@@ -10,11 +10,9 @@ const tmapp = (function() {
     const _optionsOSD = {
         id: "ISS_viewer_0", //cybr_viewer
         prefixUrl: "js/openseadragon/images/", //Location of button graphics
-        navigatorSizeRatio: 1,
         wrapHorizontal: false,
         showNavigator: true,
-        navigatorPosition: "BOTTOM_LEFT",
-        navigatorSizeRatio: 0.25,
+        navigatorId: "navigator_div",
         animationTime: 0.0,
         blendTime: 0,
         maxImageCacheCount: 800, //need more for z-stacks
@@ -263,7 +261,24 @@ const tmapp = (function() {
         tmappUI.setURL(makeURL(_currState));
     }
 
+    const _navigatorTime = 10 * 1000; //10s
+    let _navigatorTimeout = 0;
+    function _unhideNavigator(inside) {
+        _viewer.navigator.element.style.transitionDuration = "200ms";
+        _viewer.navigator.element.style.opacity = 1;
+        if (_navigatorTimeout) {
+            clearTimeout(_navigatorTimeout);
+        }
+        if (!inside) {
+            _navigatorTimeout = setTimeout(() => { 
+                _viewer.navigator.element.style.transitionDuration = "2s";
+                _viewer.navigator.element.style.opacity = 0; 
+            }, _navigatorTime );    
+        }
+    }
+    
     function _updateCollabPosition() {
+        _unhideNavigator();
         collabClient.updatePosition(_currState);
     }
 
@@ -361,6 +376,9 @@ const tmapp = (function() {
         // Live update of whether or not the mouse is in the viewport
         function insideHandler(inside) {
             return function(event) {
+                if (!inside && !_cursorStatus.held) {
+                    _lastMouseMoveEvent=null; //Otherwise glitchy Navigator navigation
+                }
                 setCursorStatus({inside: inside});
             };
         }
@@ -486,11 +504,13 @@ const tmapp = (function() {
         //Create OSD viewer
         const options={..._optionsOSD};
         Object.assign(options,{
-            id: idString
+            id: idString,
+            showNavigator: withOverlay //For the moment we don't support multiple navigators
         });
         const newViewer = OpenSeadragon(options);
         _nextViewerId++;
-
+                
+        
         //Put first
         _viewers.unshift(newViewer);
         _viewersOrder(); //Set z-index
@@ -506,10 +526,15 @@ const tmapp = (function() {
         if (withOverlay) {
             _viewer=newViewer; 
 
+            document.getElementById("navigator_div").addEventListener("pointerenter", () => _unhideNavigator(true));
+            document.getElementById("navigator_div").addEventListener("pointerleave", () => _unhideNavigator(false));
+
             const element = document.getElementById('annotation_layer');
             element.style.zIndex = 200;
 
-            //forward all events from annotation_layer to _viewer.canvas
+            //            element.style.pointerEvents = "none"; //ignore mouse :-)
+
+             //forward all events from annotation_layer to _viewer.canvas
             //https://stackoverflow.com/questions/27321672/listen-for-all-events-in-javascript
             const target = _viewer.canvas;
             const source = element;
