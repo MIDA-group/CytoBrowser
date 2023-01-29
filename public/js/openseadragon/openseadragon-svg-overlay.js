@@ -14,17 +14,17 @@
     var svgNS = 'http://www.w3.org/2000/svg';
 
     // ----------
-    $.Viewer.prototype.svgOverlay = function() {
+    $.Viewer.prototype.svgOverlay = function(element) {
         if (this._svgOverlayInfo) {
             return this._svgOverlayInfo;
         }
 
-        this._svgOverlayInfo = new Overlay(this);
+        this._svgOverlayInfo = new Overlay(this, element);
         return this._svgOverlayInfo;
     };
 
     // ----------
-    var Overlay = function(viewer) {
+    var Overlay = function(viewer, element=viewer.canvas) {
         var self = this;
 
         this._viewer = viewer;
@@ -37,7 +37,7 @@
         this._svg.style.top = 0;
         this._svg.style.width = '100%';
         this._svg.style.height = '100%';
-        this._viewer.canvas.appendChild(this._svg);
+        element.appendChild(this._svg);
 
         this._node = document.createElementNS(svgNS, 'g');
         this._svg.appendChild(this._node);
