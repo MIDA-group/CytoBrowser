@@ -282,9 +282,8 @@ const overlayHandler = (function (){
         }
     }
 
-    /* Same as MouseEvents but with Pixi Interaction */
     /**
-     * 
+     * Same as MouseEvents but with Pixi Interaction
      * @param {annotation object} d 
      * @param {pixi graphics object} obj The (simple) object we set as interactive
      * @param {pixi graphics object} marker The whole marker object
