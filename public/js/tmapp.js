@@ -474,13 +474,13 @@ const tmapp = (function() {
             throw new Error(`Failed to open image ${imageName}.`);
         }
 
-        console.log(`Opening ${image.name} -> image #${_nextViewerId}`);
+        console.log(`Opening ${image.name} -> image #${_nextViewerId} of ${_viewers.length+1}`);
         const idString=`viewer_${_nextViewerId}`;
 
         //Create html element for viewer
         document.querySelector('#viewer_container').insertAdjacentHTML(
             'afterbegin',
-            `<div id="${idString}" class="ISS_viewer blurrable flex-grow-1 h-100 w-100"></div>`
+            `<div id="${idString}" class="ISS_viewer flex-grow-1 h-100 w-100"></div>`
         )
 
         //Create OSD viewer
@@ -505,8 +505,27 @@ const tmapp = (function() {
         _addHandlers(newViewer, callback, withOverlay);
         if (withOverlay) {
             _viewer=newViewer; 
+
+            const element = document.getElementById('annotation_layer');
+            element.style.zIndex = 200;
+            
+            //forward all events from annotation_layer to _viewer.canvas
+            //https://stackoverflow.com/questions/27321672/listen-for-all-events-in-javascript
+            const target = _viewer.canvas;
+            const source = element;
+            const clone = e => new e.constructor(e.type, e);
+            const forward = (e) => { target.dispatchEvent(clone(e)); };
+            // element.addEventListener('pointerdown', forward);
+            for (const key in source) {
+                if(/^on/.test(key)) {
+                    const eventType = key.substr(2);
+                    target.addEventListener(eventType, forward);
+                }
+            }
+            // _viewer.canvas.addEventListener('pointerdown', console.log('x'));
+
             const overlay = _viewer.svgOverlay();
-            const pixiOverlay = _viewer.pixiOverlay();
+            const pixiOverlay = _viewer.pixiOverlay(element);
             overlayHandler.init(overlay,pixiOverlay);
         }
         else {
@@ -516,6 +535,14 @@ const tmapp = (function() {
         return image;
     }
 
+    function _clearAllViewers() {
+        while (_viewers.length) {
+            const v = _viewers.pop();
+            $("#"+v.id).empty(); //remove descendants of DOM node (alt. while (foo.firstChild) foo.removeChild(foo.firstChild); )
+            v.element.remove(); //remove DOM node
+            v.destroy();
+        }
+    }
     function _clearCurrentImage() {
         if (!_viewer) {
             return;
@@ -523,14 +550,8 @@ const tmapp = (function() {
         annotationHandler.clear(false);
         metadataHandler.clear();
         coordinateHelper.clearImage();
-        $("#"+_viewer.id).empty(); //remove descendants of DOM node (alt. while (foo.firstChild) foo.removeChild(foo.firstChild); )
-        _viewer.element.remove(); //remove DOM node
-        _viewer.destroy();
 
-        //Remove from list
-        _viewers.shift();
-        _viewersOrder(); //Update z-index of remaining
-
+        _clearAllViewers(); //currently not supporting partial clear
         _disabledControls = null;
         _availableZLevels = null;
     }
@@ -929,20 +950,16 @@ const tmapp = (function() {
         _viewers.forEach((v,i) => v.element.style.zIndex = 100-i);
     }
     function _viewerSwap(i,j) {
-        console.log(`Swap: ${i}, ${j}`);
         _viewers[i].element.style.zIndex = 100-j;
         _viewers[j].element.style.zIndex = 100-i;
         [ _viewers[j], _viewers[i] ] = [ _viewers[i], _viewers[j] ];
-        _viewer=_viewers[0];
     }
     function viewerBringForward(idx) {
-        console.log('SendForth',idx);
         if (idx>0) {
             _viewerSwap(idx, idx-1);
         }
     }
     function viewerSendBackward(idx) {
-        console.log('SendBack',idx);
         if (idx<_viewers.length-1) {
             _viewerSwap(idx, idx+1);
         }

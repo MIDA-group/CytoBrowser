@@ -65,6 +65,7 @@
         <div id="main_row" class="row flex-fill position-absolute m-0 p-0" style="right: 0; top: 0; left: 0; bottom: 0;">
             <div class="col md-10 px-0" style="min-width: 50%; min-height: 75%; width: 100%; flex-grow: 100; background-color: #676767;"> <!-- Doesn't make sense to have overflow of the viewer -->
                 <div id="viewer_container" class="blurrable">
+                    <div id="annotation_layer" class="ISS_viewer flex-grow-1 h-100 w-100"></div>
                     <!-- Space for viewer_0,1,2... -->
                 </div>
                 <div id="alert_wrapper" style="height: 100%; width: 100%; display: flex; justify-content: center; align-items: center; position: absolute; top: 0; padding: 5%; pointer-events: none"></div>
@@ -131,7 +132,7 @@
                                     </span>
                                     <h6 class="card-subtitle mt-2 text-muted">Transparency</h6>
                                     <span class="m-2">
-                                        &nbsp;0 &nbsp;<input id="transparency_slider" type="text" data-slider-min="0" data-slider-max="1" data-slider-step="0.1" data-slider-value="0"/> &nbsp;1
+                                        &nbsp;0 &nbsp;<input id="transparency_slider" type="text" data-slider-min="0" data-slider-max="1" data-slider-step="0.05" data-slider-value="0"/> &nbsp;1
                                         <input id="transparency_reset" class="btn btn-secondary btn-sm p-0 px-1 m-0 mb-1 ml-3" type="reset" value="Reset" onclick="this.blur();">
                                     </span>
                                 </div>
