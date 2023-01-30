@@ -12,7 +12,7 @@ const tmapp = (function() {
         prefixUrl: "js/openseadragon/images/", //Location of button graphics
         wrapHorizontal: false,
         showNavigator: true,
-        navigatorId: "navigator_div",
+        navigatorId: "navigator_div", //Navigator postition doesn't matter here
         animationTime: 0.0,
         blendTime: 0,
         maxImageCacheCount: 800, //need more for z-stacks
@@ -302,7 +302,6 @@ const tmapp = (function() {
         const offset = Math.floor(imageStack.length / 2);
         const zLevels = Array.from({length: imageStack.length}, (x, i) => i - offset);
         _availableZLevels = zLevels;
-        console.info(`Opening: ${imageStack}`);
         viewer.openFocusLevels(imageStack, initialZ, zLevels);
         _currState.z = initialZ;
     }
@@ -577,6 +576,7 @@ const tmapp = (function() {
         coordinateHelper.clearImage();
 
         _clearAllViewers(); //currently not supporting partial clear
+        $("#navigator_div").empty(); //not cleaned up by OSD destroy it seems
         _disabledControls = null;
         _availableZLevels = null;
     }
