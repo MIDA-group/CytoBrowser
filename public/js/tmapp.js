@@ -170,19 +170,21 @@ const tmapp = (function() {
         const position = _viewer.viewport.getCenter();
         _currState.x = position.x;
         _currState.y = position.y;
-        
+
         //update additional viewers
         const plus = (a,b) => ({x:a.x+b.x, y:a.y+b.y});
         const minus = (a,b) => ({x:a.x-b.x, y:a.y-b.y});
+        const scale = (a,b) => ({x:a.x*b, y:a.y*b});
         _viewers.forEach(v => {
             if (v===_viewer) {
                 return;
             }
+            const scaledPosition=scale(position,1/v.transform.scale);
             if (v.freeze) {
-                v.transform.position=minus(v.viewport.getCenter(),position);
+                v.transform.position=minus(v.viewport.getCenter(),scaledPosition);
                 console.log('Position: ',v.transform.position);
             }
-            v.viewport.panTo(plus(position,v.transform.position)); //NOP if frozen
+            v.viewport.panTo(plus(scaledPosition,v.transform.position)); //NOP if frozen
         });
 
         _updateCollabPosition();
