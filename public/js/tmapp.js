@@ -12,7 +12,7 @@ const tmapp = (function() {
         prefixUrl: "js/openseadragon/images/", //Location of button graphics
         showNavigator: true,
         navigatorId: "navigator_div", //Navigator postition doesn't matter here
-        toolbar: "toolbar_div",
+        toolbar: "toolbar_div", //This is somehow lost in the OSD docs
         animationTime: 0.0,
         blendTime: 0.4,
         maxImageCacheCount: 800, //need more for z-stacks
@@ -30,9 +30,7 @@ const tmapp = (function() {
         sequenceMode: false, // true,
         preserveViewport: true,
         preserveOverlays: true,
-        preload: true,
-        showRotationControl: true,
-        rotationIncrement: 15
+        preload: true
     };
 
     let _currentImage,
@@ -264,11 +262,11 @@ const tmapp = (function() {
         tmappUI.setURL(makeURL(_currState));
     }
 
-    const _navigatorTime = 10 * 1000; //10s
     let _navigatorTimeout = 0;
     function _unhideNavigator(inside) {
-        _viewer.navigator.element.style.transitionDuration = "200ms";
-        _viewer.navigator.element.style.opacity = 1;
+        const _navigatorTime = 10 * 1000; //10s
+        _viewer.navigator.element.style.transitionDuration = "100ms";
+        _viewer.navigator.element.style.opacity = _viewer.navigatorOpacity;
         if (_navigatorTimeout) {
             clearTimeout(_navigatorTimeout);
         }
@@ -277,6 +275,22 @@ const tmapp = (function() {
                 _viewer.navigator.element.style.transitionDuration = "2s";
                 _viewer.navigator.element.style.opacity = 0; 
             }, _navigatorTime );    
+        }
+    }
+
+    let _toolbarTimeout = 0;
+    function _unhideToolbar(inside) {
+        const _toolbarTime = _viewer.controlsFadeDelay;
+        _viewer.toolbar.element.style.transitionDuration = "100ms";
+        _viewer.toolbar.element.style.opacity = 1;
+        if (_toolbarTimeout) {
+            clearTimeout(_toolbarTimeout);
+        }
+        if (!inside) {
+            _toolbarTimeout = setTimeout(() => { 
+                _viewer.toolbar.element.style.transitionDuration = `${_viewer.controlsFadeLength}ms`;
+                _viewer.toolbar.element.style.opacity = 0; 
+            }, _toolbarTime );    
         }
     }
     
@@ -542,24 +556,16 @@ const tmapp = (function() {
             navigatorDiv.addEventListener("pointerleave", () => _unhideNavigator(false));
 
             const element = document.getElementById('annotation_layer');
+            if (_viewer.autoHideControls) {
+                element.addEventListener("pointerenter", () => _unhideToolbar(true));
+                element.addEventListener("pointerleave", () => _unhideToolbar(false));
+            }
             element.style.zIndex = 200;
 
             // element.style.pointerEvents = "none"; //ignore mouse :-)
-
             //forward all events from annotation_layer to _viewer.canvas
             htmlUtils.forwardEvents(element, _viewer.canvas);
 
-/*          //forcefully moving the controls element, not needed with 'toolbar' option
-            const viewerContainer = document.getElementById("viewer_container")
-            console.log(_viewer)
-            _viewer.controls.forEach(c => {
-                if (c.element !== navigatorDiv) { //assume that the not-navigatorDiv is the controlDiv 
-                    viewerContainer.prepend(c.wrapper); //put it first
-                    c.wrapper.style.zIndex=300; //above the annotation layer
-                    c.wrapper.style.position="relative";
-                }
-            });
- */
             const overlay = _viewer.svgOverlay(element);
             const pixiOverlay = _viewer.pixiOverlay(element);
             overlayHandler.init(overlay,pixiOverlay);
