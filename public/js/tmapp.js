@@ -10,11 +10,11 @@ const tmapp = (function() {
     const _optionsOSD = {
         id: "ISS_viewer_0", //cybr_viewer
         prefixUrl: "js/openseadragon/images/", //Location of button graphics
-        wrapHorizontal: false,
         showNavigator: true,
         navigatorId: "navigator_div", //Navigator postition doesn't matter here
+        toolbar: "toolbar_div",
         animationTime: 0.0,
-        blendTime: 0,
+        blendTime: 0.4,
         maxImageCacheCount: 800, //need more for z-stacks
         minZoomImageRatio: 1,
         maxZoomPixelRatio: 4,
@@ -30,7 +30,9 @@ const tmapp = (function() {
         sequenceMode: false, // true,
         preserveViewport: true,
         preserveOverlays: true,
-        preload: true
+        preload: true,
+        showRotationControl: true,
+        rotationIncrement: 15
     };
 
     let _currentImage,
@@ -144,7 +146,7 @@ const tmapp = (function() {
         _currState.zoom = zoom;
 
         //update additional viewers
-        _viewers.forEach(v => v===_viewer || v.viewport.zoomTo(zoom));
+        _viewers.forEach(v => v===_viewer || v.freeze || v.viewport.zoomTo(zoom*v.transform.scale));
 
         // Zooming often changes the position too, based on cursor position
         _updatePosition();
@@ -163,7 +165,8 @@ const tmapp = (function() {
         _currState.y = position.y;
         
         //update additional viewers
-        _viewers.forEach(v => v===_viewer || v.viewport.panTo(position));
+        const plus = (a,b) => ({x:a.x+b.x, y:a.y+b.y});
+        _viewers.forEach(v => v===_viewer || v.freeze || v.viewport.panTo(plus(position,v.transform.position)));
 
         _updateCollabPosition();
         _updateURLParams();
@@ -183,7 +186,7 @@ const tmapp = (function() {
         _currState.rotation = rotation;
 
         //update additional viewers
-        _viewers.forEach(v => v===_viewer || v.viewport.setRotation(rotation));
+        _viewers.forEach(v => v===_viewer || v.freeze || v.viewport.setRotation(rotation+v.transform.rotation));
 
         _updateCollabPosition();
         _updateURLParams();
@@ -394,8 +397,9 @@ const tmapp = (function() {
             releaseHandler: heldHandler(false)
         }).setTracking(true);
 
-        // Add hook to scroll without zooming, didn't seem possible without
+        // Add hook to scroll without zooming
         function scrollHook(event){
+            console.assert(event.scroll); //scroll without scroll?!
             if (event.originalEvent.ctrlKey) {
                 event.preventDefaultAction = true;
                 if (event.scroll > 0) {
@@ -405,15 +409,21 @@ const tmapp = (function() {
                     decrementFocus();
                 }
             }
-            if (event.originalEvent.shiftKey) {
+            else if (event.originalEvent.shiftKey) {
                 event.preventDefaultAction = true;
-                const rotation = _currState.rotation;
-                if (event.scroll > 0) {
-                    _viewer.viewport.setRotation(rotation + 15);
-                }
-                else if (event.scroll < 0) {
-                    _viewer.viewport.setRotation(rotation - 15);
-                }
+                let rotation = _currState.rotation;
+                const rotationPerScroll = event.originalEvent.altKey? 0.1: 15; //ALT for small rotation
+                rotation += (event.scroll>0? 1:-1) * rotationPerScroll;
+                rotation = mathUtils.roundDecimals(rotation%360,2); //avoid long floating point .9999999 situations
+                _viewer.viewport.setRotation(rotation);
+
+                // _viewer.viewport.rotateBy(event.scroll>0? +15: -15); //needs newer OSD!
+            }
+            else if (event.originalEvent.altKey) {
+                viewer.zoomPerScroll = 1.01;
+            }
+            else {
+                viewer.zoomPerScroll = 1.2;
             }
         };
 
@@ -507,9 +517,11 @@ const tmapp = (function() {
         const options={..._optionsOSD};
         Object.assign(options,{
             id: idString,
-            showNavigator: withOverlay //For the moment we don't support multiple navigators
+            showNavigator: withOverlay, //For the moment we don't support multiple navigators
+            showNavigationControl: withOverlay //For the moment we don't support multiple controls
         });
         const newViewer = OpenSeadragon(options);
+        newViewer.transform = {scale:1, position:{x:0, y:0}, rotation:0}; // Rigid 
         _nextViewerId++;
                 
         
@@ -541,26 +553,28 @@ const tmapp = (function() {
 /*  
 * Together with pixi/svgOverlay(element) below, in multi. To look at!
 * Perhaps not needed (pray) with 1.3.1
-            document.getElementById("navigator_div").addEventListener("pointerenter", () => _unhideNavigator(true));
-            document.getElementById("navigator_div").addEventListener("pointerleave", () => _unhideNavigator(false));
+            const navigatorDiv = document.getElementById("navigator_div");
+            navigatorDiv.addEventListener("pointerenter", () => _unhideNavigator(true));
+            navigatorDiv.addEventListener("pointerleave", () => _unhideNavigator(false));
 
             const element = document.getElementById('annotation_layer');
             element.style.zIndex = 200;
 
-            //            element.style.pointerEvents = "none"; //ignore mouse :-)
+            // element.style.pointerEvents = "none"; //ignore mouse :-)
 
-             //forward all events from annotation_layer to _viewer.canvas
-            //https://stackoverflow.com/questions/27321672/listen-for-all-events-in-javascript
-            const target = _viewer.canvas;
-            const source = element;
-            const clone = e => new e.constructor(e.type, e);
-            const forward = (e) => { target.dispatchEvent(clone(e)); e.preventDefault(); };
-            // element.addEventListener('pointerdown', forward);
-            for (const key in source) {
-                if(/^on/.test(key)) {
-                    const eventType = key.substr(2);
-                    source.addEventListener(eventType, forward);
+            //forward all events from annotation_layer to _viewer.canvas
+            htmlUtils.forwardEvents(element, _viewer.canvas);
+
+/*          //forcefully moving the controls element, not needed with 'toolbar' option
+            const viewerContainer = document.getElementById("viewer_container")
+            console.log(_viewer)
+            _viewer.controls.forEach(c => {
+                if (c.element !== navigatorDiv) { //assume that the not-navigatorDiv is the controlDiv 
+                    viewerContainer.prepend(c.wrapper); //put it first
+                    c.wrapper.style.zIndex=300; //above the annotation layer
+                    c.wrapper.style.position="relative";
                 }
+<<<<<<< HEAD
             }
             // _viewer.canvas.addEventListener('pointerdown', console.log('x'));
  */    
@@ -569,6 +583,13 @@ const tmapp = (function() {
 //            const pixiOverlay = _viewer.pixiOverlay(element);
 //            const svgOverlay = _viewer.svgOverlay(element);
             overlayHandler.init(svgOverlay,pixiOverlay);
+=======
+            });
+ */
+            const overlay = _viewer.svgOverlay(element);
+            const pixiOverlay = _viewer.pixiOverlay(element);
+            overlayHandler.init(overlay,pixiOverlay);
+>>>>>>> da0696e (toolbar_div for Navigation controls with zIndex)
         }
         else {
             newViewer.element.style.pointerEvents = "none"; //ignore mouse :-)
@@ -1007,6 +1028,9 @@ const tmapp = (function() {
             _viewerSwap(idx, idx+1);
         }
     }
+    function viewerFreeze(val) {
+        _viewers[0].freeze=val;
+    }
 
     return {
         init,
@@ -1046,6 +1070,7 @@ const tmapp = (function() {
 
         addImage,
         viewerBringForward,
-        viewerSendBackward
+        viewerSendBackward,
+        viewerFreeze
     };
 })();
