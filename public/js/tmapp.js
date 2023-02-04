@@ -144,7 +144,16 @@ const tmapp = (function() {
         _currState.zoom = zoom;
 
         //update additional viewers
-        _viewers.forEach(v => v===_viewer || v.freeze || v.viewport.zoomTo(zoom*v.transform.scale));
+        _viewers.forEach(v => {
+            if (v===_viewer) {
+                return;
+            }
+            if (v.freeze) {
+                v.transform.scale=v.viewport.getZoom()/zoom;
+                console.log('Scale: ',v.transform.scale);
+            }
+            v.viewport.zoomTo(zoom*v.transform.scale); //NOP if frozen
+        });
 
         // Zooming often changes the position too, based on cursor position
         _updatePosition();
@@ -164,7 +173,17 @@ const tmapp = (function() {
         
         //update additional viewers
         const plus = (a,b) => ({x:a.x+b.x, y:a.y+b.y});
-        _viewers.forEach(v => v===_viewer || v.freeze || v.viewport.panTo(plus(position,v.transform.position)));
+        const minus = (a,b) => ({x:a.x-b.x, y:a.y-b.y});
+        _viewers.forEach(v => {
+            if (v===_viewer) {
+                return;
+            }
+            if (v.freeze) {
+                v.transform.position=minus(v.viewport.getCenter(),position);
+                console.log('Position: ',v.transform.position);
+            }
+            v.viewport.panTo(plus(position,v.transform.position)); //NOP if frozen
+        });
 
         _updateCollabPosition();
         _updateURLParams();
@@ -184,7 +203,16 @@ const tmapp = (function() {
         _currState.rotation = rotation;
 
         //update additional viewers
-        _viewers.forEach(v => v===_viewer || v.freeze || v.viewport.setRotation(rotation+v.transform.rotation));
+        _viewers.forEach(v => {
+            if (v===_viewer) {
+                return;
+            }
+            if (v.freeze) {
+                v.transform.rotation=v.viewport.getRotation()-rotation;
+                console.log('Rotation: ',v.transform.rotation);
+            }
+            v.viewport.setRotation(rotation+v.transform.rotation); //NOP if frozen
+        });
 
         _updateCollabPosition();
         _updateURLParams();
