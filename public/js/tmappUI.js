@@ -362,7 +362,10 @@ const tmappUI = (function(){
                 $("#fps").text('');
             }
         }); 
-    
+
+        $("#layer_freeze").prop('checked',false); // force it to false, since some browsers cache it incorrectly
+        $("#layer_freeze").change( (e) => tmapp.viewerFreeze(e.target.checked) );
+
         $("#layer_up").click( () => tmapp.viewerBringForward(0) );
         $("#layer_down").click( () => tmapp.viewerSendBackward(0) );
     }

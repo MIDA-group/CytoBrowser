@@ -15,8 +15,25 @@
         return unsafe.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#039;');
     }
 
+    /** 
+     * forward all events from one DOM element to another
+     * See: https://stackoverflow.com/questions/27321672/listen-for-all-events-in-javascript
+    */
+    function forwardEvents(source, target) {
+        const clone = e => new e.constructor(e.type, e);
+        const forward = (e) => { target.dispatchEvent(clone(e)); e.preventDefault(); };
+
+        for (const key in source) {
+            if(/^on/.test(key)) {
+                const eventType = key.substr(2);
+                source.addEventListener(eventType, forward);
+            }
+        }
+    }
+
     return {
-        escapeHtml
+        escapeHtml,
+        forwardEvents
     };
 })();
 
