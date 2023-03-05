@@ -178,6 +178,7 @@ const collabClient = (function(){
      * the collaboration.
      * @param {number} msg.requesterId The id assigned to the local member
      * by the server.
+     * @param {Object} msg.metadata Image metadata properties
      */
     function _handleSummary(msg) {
         if (msg.image !== tmapp.getImageName()) {
