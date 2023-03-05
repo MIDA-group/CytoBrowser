@@ -128,6 +128,34 @@ const tmapp = (function() {
         ctx.opacity = 1-_currState.transparency; 
     }
 
+    function _setWarp(v,transform) {
+        //update additional viewers
+        const plus = (a,b) => ({x:a.x+b.x, y:a.y+b.y});
+        const minus = (a,b) => ({x:a.x-b.x, y:a.y-b.y});
+        const scale = (a,b) => ({x:a.x*b, y:a.y*b});
+
+        new Promise(resolve => setTimeout(resolve, 1000))
+         .then(() => {
+        console.log('WARP: ',v.transform,v.viewport.getZoom(),v,_viewer);
+        const width0 = _viewer.world.getItemAt(0).source.dimensions.x;
+        const width1 = v.world.getItemAt(0).source.dimensions.x;
+        console.log(width0,':',width1,':',width1/width0);
+
+        v.transform.scale = transform.scale*width1/width0; //Scale around upper left corner (before translation)
+
+        //v.transform.position = coordinateHelper.imageToViewport(scale(transform.position,-1));
+        v.transform.position = scale(transform.position,-1/width0/v.transform.scale);
+        //v.transform.position={x: -0.0026180219960755258, y: 0.013377241423963737};
+        //v.transform.position={x:-0.5, y:0}; //In its own coordinates
+        //v.transform.position=scale(v.transform.position,1/v.transform.scale); //In its own coordinates
+
+        v.transform.rotation = transform.rotation; //Rotation around top left of _viewer (after scale and translate) 
+
+        console.log(v.transform);
+        _updateRotation();
+        _updateZoom();});
+    }
+
     function _updateZoom(e) {
         if (!_viewer) {
             throw new Error("Tried to update zoom of nonexistent viewer.");
@@ -142,6 +170,8 @@ const tmapp = (function() {
         overlayHandler.setOverlayScale(zoom, maxZoom, size.x, size.y);
         tmappUI.setImageZoom(Math.round(zoom*10)/10);
         _currState.zoom = zoom;
+
+console.log('zoom',zoom);
 
         //update additional viewers
         _viewers.forEach(v => {
@@ -171,15 +201,20 @@ const tmapp = (function() {
         _currState.x = position.x;
         _currState.y = position.y;
 
+console.log('pos',position);
+
         //update additional viewers
         const plus = (a,b) => ({x:a.x+b.x, y:a.y+b.y});
         const minus = (a,b) => ({x:a.x-b.x, y:a.y-b.y});
-        const scale = (a,b) => ({x:a.x*b, y:a.y*b});
+        const scale = (a,s) => ({x:a.x*s, y:a.y*s});
+        const deg2rad = (r) => (r*Math.PI/180);
+        const rotate = (a,r) => ({x:a.x*Math.cos(r)+a.y*Math.sin(r), y:-a.x*Math.sin(r)+a.y*Math.cos(r)});
         _viewers.forEach(v => {
             if (v===_viewer) {
                 return;
             }
-            const scaledPosition=scale(position,1/v.transform.scale);
+            let scaledPosition=scale(position,1/v.transform.scale);
+            scaledPosition=rotate(scaledPosition,deg2rad(v.transform.rotation));
             if (v.freeze) {
                 v.transform.position=minus(v.viewport.getCenter(),scaledPosition);
                 console.log('Position: ',v.transform.position);
@@ -209,7 +244,7 @@ const tmapp = (function() {
             if (v===_viewer) {
                 return;
             }
-            if (v.freeze) {
+            if (v.freeze) { //This bugs, need to update position as well
                 v.transform.rotation=v.viewport.getRotation()-rotation;
                 console.log('Rotation: ',v.transform.rotation);
             }
@@ -342,6 +377,10 @@ const tmapp = (function() {
             return `${_imageDir}${imageName}_z${zLevel}.dzi`;
         });
         return imageStack;
+    }
+
+    function _imageWarpName(imageInfo) {
+        return `${_imageDir}${imageInfo.name}_warp.json`;
     }
 
     function _openImages(viewer,imageStack) {
@@ -562,10 +601,16 @@ const tmapp = (function() {
             showNavigationControl: withOverlay //For the moment we don't support multiple controls
         });
         const newViewer = OpenSeadragon(options);
-        newViewer.transform = {scale:1, position:{x:0, y:0}, rotation:0}; // Rigid 
+        newViewer.transform = {scale:1, position:{x:0, y:0}, rotation:0}; // Similarity transform 
+
+        //Load warp if existing
+        const warpName=_imageWarpName(image);
+        promiseHttpRequest("GET", warpName)
+            .then(JSON.parse)
+            .then(result=>_setWarp(newViewer,result))
+            .catch((e)=>console.log('Warp: ',e));
         _nextViewerId++;
-                
-        
+
         //Put first
         _viewers.unshift(newViewer);
         _viewersOrder(); //Set z-index
