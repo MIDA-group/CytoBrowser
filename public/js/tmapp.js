@@ -12,7 +12,7 @@ const tmapp = (function() {
         prefixUrl: "js/openseadragon/images/", //Location of button graphics
         showNavigator: true,
         navigatorId: "navigator_div", //Navigator postition doesn't matter here
-        toolbar: "toolbar_div", //This is somehow lost in the OSD docs
+        toolbar: "toolbar_subdiv", //This is somehow lost in the OSD docs
         animationTime: 0.0,
         blendTime: 0.4,
         maxImageCacheCount: 800, //need more for z-stacks
@@ -345,16 +345,19 @@ console.log('pos',position);
 
     let _toolbarTimeout = 0;
     function _unhideToolbar(inside) {
+        //const elem=_viewer.toolbar.element;
+        //Cannot set opacity<1 on "toolbar_div" due to z-index stacking context
+        const elem=[document.getElementById("toolbar_subdiv"),document.getElementById("toolbar_sliderdiv")];
         const _toolbarTime = _viewer.controlsFadeDelay;
-        _viewer.toolbar.element.style.transitionDuration = "100ms";
-        _viewer.toolbar.element.style.opacity = 1;
+        for (const e of elem) e.style.transitionDuration = "100ms";
+        for (const e of elem) e.style.opacity = 1;
         if (_toolbarTimeout) {
             clearTimeout(_toolbarTimeout);
         }
         if (!inside) {
             _toolbarTimeout = setTimeout(() => { 
-                _viewer.toolbar.element.style.transitionDuration = `${_viewer.controlsFadeLength}ms`;
-                _viewer.toolbar.element.style.opacity = 0; 
+                for (const e of elem) e.style.transitionDuration = `${_viewer.controlsFadeLength}ms`;
+                for (const e of elem) e.style.opacity = 0; 
             }, _toolbarTime );    
         }
     }
@@ -612,18 +615,19 @@ console.log('pos',position);
             .then(JSON.parse)
             .then(result=>_setWarp(newViewer,result))
             .catch((e)=>console.log('Warp: ',e));
-        _nextViewerId++;
 
         //Put first
         _viewers.unshift(newViewer);
         _viewersOrder(); //Set z-index
 
-        newViewer.scalebar();
-
+        newViewer.scalebar(); //Todo: Does each viewer have its own scalebar?
+        htmlHelper.addFocusSlider($("#toolbar_sliderdiv"),_nextViewerId);
+        _nextViewerId++;
+        
         //open the DZI xml file pointing to the tiles
         const imageStack = _expandImageName(image);
         _openImages(newViewer,imageStack);
-
+    
         //don't add more handlers than needed
         _addHandlers(newViewer, callback, withOverlay);
         if (withOverlay) {
@@ -647,6 +651,8 @@ console.log('pos',position);
             navigatorDiv.addEventListener("pointerleave", () => _unhideNavigator(false));
 
             const element = document.getElementById('annotation_layer');
+            //const element = document.getElementById('viewer_container');
+            //const element = _viewer.element;
             if (_viewer.autoHideControls) {
                 element.addEventListener("pointerenter", () => _unhideToolbar(true));
                 element.addEventListener("pointerleave", () => _unhideToolbar(false));
