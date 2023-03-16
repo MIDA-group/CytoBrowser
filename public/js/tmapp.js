@@ -63,6 +63,15 @@ const tmapp = (function() {
         return _currState.z + Math.floor(_currentImage.zLevels.length / 2);
     }
 
+    //0..count-1
+    function setFocusLevel0(z0) {
+        const ofs = Math.floor(_currentImage.zLevels.length / 2);
+        _setFocusLevel(z0-ofs);
+    }
+    function getFocusLevel0() {
+        const ofs = Math.floor(_currentImage.zLevels.length / 2);
+        return _currState.z+ofs;
+    }
     function _setFocusLevel(z) {
         const count = _viewer.world.getItemCount();
         const ofs = Math.floor(_currentImage.zLevels.length / 2);
@@ -134,7 +143,7 @@ const tmapp = (function() {
         const minus = (a,b) => ({x:a.x-b.x, y:a.y-b.y});
         const scale = (a,b) => ({x:a.x*b, y:a.y*b});
 
-        new Promise(resolve => setTimeout(resolve, 1000))
+        new Promise(resolve => setTimeout(resolve, 1000)) //Crock! Fixme!
          .then(() => {
         console.log('WARP: ',v.transform,v.viewport.getZoom(),v,_viewer);
         const width0 = _viewer.world.getItemAt(0).source.dimensions.x;
@@ -618,13 +627,17 @@ console.log('pos',position);
         _viewersOrder(); //Set z-index
 
         newViewer.scalebar(); //Todo: Does each viewer have its own scalebar?
-        htmlHelper.addFocusSlider($("#toolbar_sliderdiv"),_nextViewerId);
-        _nextViewerId++;
         
         //open the DZI xml file pointing to the tiles
         const imageStack = _expandImageName(image);
-        _openImages(newViewer,imageStack);
-    
+        _openImages(newViewer,imageStack); //sets _availableZLevels
+
+        new Promise(resolve => setTimeout(resolve, 1000)) //Crock! Fixme!
+        .then(() => {
+            htmlHelper.addFocusSlider($("#toolbar_sliderdiv"),_nextViewerId,image.zLevels);
+        });
+        _nextViewerId++;
+
         //don't add more handlers than needed
         _addHandlers(newViewer, callback, withOverlay);
         if (withOverlay) {
@@ -676,6 +689,7 @@ console.log('pos',position);
 
         _clearAllViewers(); //currently not supporting partial clear
         $("#navigator_div").empty(); //not cleaned up by OSD destroy it seems
+        $("#toolbar_sliderdiv").empty();
         _disabledControls = null;
         _availableZLevels = null;
     }
@@ -1110,6 +1124,8 @@ console.log('pos',position);
         incrementFocus,
         decrementFocus,
         getZLevels,
+        setFocusLevel0,
+        getFocusLevel0,
 
         setBrightness,
         setContrast,
