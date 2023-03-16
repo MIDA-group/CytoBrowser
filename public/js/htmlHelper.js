@@ -10,7 +10,7 @@ const htmlHelper = (function() {
           ('0' + Math.min(255, Math.max(0, Math.round(parseInt(color, 16) * scale))).toString(16)).substr(-2));
     }
 
-    function addFocusSlider(elem,i) {
+    function addFocusSlider(elem,i,zLevels) {
         const divElem = document.createElement("span");
         divElem.style.position = "relative";
         divElem.style.left = "0";
@@ -18,10 +18,21 @@ const htmlHelper = (function() {
         divElem.style.margin = "7px";
         divElem.style.opacity = "0.5";
 
-        const slider = `<input class="focus_slider" id="focus_slider${i}" data-slider-id="focus_slider${i}_internal" type="text" data-slider-min="1" data-slider-max="10" data-slider-step="0.1" data-slider-value="1" data-slider-orientation="vertical"/>`
+        console.log('Slider: ',zLevels);
+        const slider = `<input class="focus_slider" id="focus_slider${i}" data-slider-id="focus_slider${i}_internal" type="text" data-slider-orientation="vertical"/>`
         divElem.innerHTML=slider;
         elem.append(divElem);
-        $(`#focus_slider${i}`).slider({reversed:true,focus: true});
+        $(`#focus_slider${i}`).slider({
+            reversed:true,
+            focus: true,
+            min:0,
+            max:zLevels.length-1,
+            value:tmapp.getFocusLevel0(),
+            formatter: (val) => zLevels[val]
+        })
+        .on('change', (data) => {
+            tmapp.setFocusLevel0(data.value.newValue);
+        });
         $(`#focus_slider${i}_internal`).addClass("focus_slider_internal");
     }
 
