@@ -59,27 +59,45 @@ const tmapp = (function() {
         _mouseHandler,
         _currentMouseUpdateFun=null;
 
+    //0..count-1
     function _getFocusIndex() {
         return _currState.z + Math.floor(_currentImage.zLevels.length / 2);
     }
 
     //0..count-1
-    function setFocusLevel0(z0) {
-        const ofs = Math.floor(_currentImage.zLevels.length / 2);
-        _setFocusLevel(z0-ofs);
-    }
     function getFocusLevel0() {
-        const ofs = Math.floor(_currentImage.zLevels.length / 2);
+        const ofs = Math.floor(_viewer.world.getItemCount()/ 2);
         return _currState.z+ofs;
+    }
+    function setFocusLevel0(z0) {
+        const ofs = Math.floor(_viewer.world.getItemCount()/ 2);
+        _setFocusLevel(z0-ofs);
     }
     function _setFocusLevel(z) {
         const count = _viewer.world.getItemCount();
-        const ofs = Math.floor(_currentImage.zLevels.length / 2);
+        const ofs = Math.floor(count / 2);
         z = Math.min(Math.max(z,-ofs),count-1-ofs);
         _viewer.setFocusLevel(z);
         _currState.z = z;
         _updateFocus();
     }
+
+    function getViewerFocusLevel0(v) {
+        const ofs = Math.floor(v.world.getItemCount()/ 2);
+        return v.getFocusLevel()+ofs;
+    }
+    function setViewerFocusLevel0(v,z0) {
+        const ofs = Math.floor(v.world.getItemCount()/ 2);
+        _setViewerFocusLevel(v,z0-ofs);
+    }
+    function _setViewerFocusLevel(v,z) {
+        const count = v.world.getItemCount();
+        const ofs = Math.floor(count / 2);
+        z = Math.min(Math.max(z,-ofs),count-1-ofs);
+        v.setFocusLevel(z);
+    }
+
+
 
     function _updateFocus() {
         if (!_viewer) {
@@ -88,6 +106,7 @@ const tmapp = (function() {
         const index = _getFocusIndex();
         tmappUI.setImageZLevel(_currentImage.zLevels[index]);
         coordinateHelper.setImage(_viewer.world.getItemAt(index));
+        htmlHelper.updateFocusSlider(_viewer,index);
         _updateCollabPosition();
         _updateURLParams();
     }
@@ -356,7 +375,7 @@ console.log('pos',position);
     function _unhideToolbar(inside) {
         //const elem=_viewer.toolbar.element;
         //Cannot set opacity<1 on "toolbar_div" due to z-index stacking context
-        const elem=[document.getElementById("toolbar_subdiv"),document.getElementById("toolbar_sliderdiv")];
+        const elem=[document.getElementById("toolbar_subdiv")]; //,document.getElementById("toolbar_sliderdiv")];
         const _toolbarTime = _viewer.controlsFadeDelay;
         for (const e of elem) e.style.transitionDuration = "100ms";
         for (const e of elem) e.style.opacity = 1;
@@ -613,8 +632,9 @@ console.log('pos',position);
             showNavigationControl: withOverlay //For the moment we don't support multiple controls
         });
         const newViewer = OpenSeadragon(options);
+        _nextViewerId++;
         newViewer.transform = {scale:1, position:{x:0, y:0}, rotation:0}; // Similarity transform 
-
+        
         //Load warp if existing
         const warpName=_imageWarpName(image);
         promiseHttpRequest("GET", warpName)
@@ -634,9 +654,8 @@ console.log('pos',position);
 
         new Promise(resolve => setTimeout(resolve, 1000)) //Crock! Fixme!
         .then(() => {
-            htmlHelper.addFocusSlider($("#toolbar_sliderdiv"),_nextViewerId,image.zLevels);
+            htmlHelper.addFocusSlider($("#toolbar_sliderdiv"),image.zLevels,newViewer);
         });
-        _nextViewerId++;
 
         //don't add more handlers than needed
         _addHandlers(newViewer, callback, withOverlay);
@@ -1126,6 +1145,8 @@ console.log('pos',position);
         getZLevels,
         setFocusLevel0,
         getFocusLevel0,
+        setViewerFocusLevel0,
+        getViewerFocusLevel0,
 
         setBrightness,
         setContrast,
