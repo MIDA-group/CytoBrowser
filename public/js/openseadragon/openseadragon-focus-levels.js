@@ -123,6 +123,13 @@
     }
 
     /**
+     * Get the focus level of the of the OSD viewer, assuming the images
+     * were opened using openFocusLevels().
+     */
+    $.Viewer.prototype.getFocusLevel = function() {
+        return this._currentZ;
+    }
+    /**
      * Set the focus level of the of the OSD viewer, assuming the images
      * were opened using openFocusLevels().
      * @param {number} z The new focus level. The value used should
