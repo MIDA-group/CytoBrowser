@@ -63,17 +63,3 @@
     user-select:none;
     -webkit-tap-highlight-color:rgba(0,0,0,0);
 }
-
-/* Changing width doesn't work :-( */
-#focus_slider0_internal.slider, #focus_slider1_internal.slider, #focus_slider2_internal.slider { 
-    height: 100px;
-}
-
-/*
-#zoom_slider_internal .slider-selection,#zoom_slider_internal .slider-track-high {
-    background: red;
-}
-#zoom_slider_internal .slider-handle {
-    background: green;
-}
-*/
