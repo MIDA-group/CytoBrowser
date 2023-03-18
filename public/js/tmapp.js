@@ -33,6 +33,13 @@ const tmapp = (function() {
         preload: true
     };
 
+    //Just default values
+    const _visState = {
+        brightness: 0,
+        contrast: 0,
+        transparency: 0
+    }
+
     let _currentImage,
         _images,
         _collab,
@@ -43,11 +50,9 @@ const tmapp = (function() {
             y: 0.5,
             z: 0,
             rotation: 0,
-            zoom: 1,
-            brightness: 0,
-            contrast: 0,
-            transparency: 0
+            zoom: 1
         },
+        _visStates=[], //Array of _visState
         _cursorStatus = {
             x: 0.5,
             y: 0.5,
@@ -112,18 +117,26 @@ const tmapp = (function() {
     }
 
     function setTransparency(t) {
-        _currState.transparency = t;
+        _visStates[0].transparency = t;
         _updateTransparency();
     }
 
     function setBrightness(b) {
-        _currState.brightness = b;
+        _visStates[0].brightness = b;
         _updateBrightnessContrast();
     }
 
     function setContrast(c) {
-        _currState.contrast = c;
+        _visStates[0].contrast = c;
         _updateBrightnessContrast();
+    }
+
+    // This function should move elsewhere
+    function _updateStateSliders() {
+        console.log(_visStates[0]);
+        $("#transparency_slider").slider('setValue', _visStates[0].transparency);
+        $("#brightness_slider").slider('setValue', _visStates[0].brightness);
+        $("#contrast_slider").slider('setValue', _visStates[0].contrast);
     }
 
     /**
@@ -135,11 +148,11 @@ const tmapp = (function() {
         // https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/filter
         //we use the css-style property instead
         const ctx=_viewers[0].element.querySelector('.openseadragon-canvas').querySelector('canvas').style;
-        if (_currState.contrast==0 && _currState.brightness==0) {
+        if (_visStates[0].contrast==0 && _visStates[0].brightness==0) {
             ctx.filter = 'none';
         }
         else {
-            ctx.filter = `brightness(${Math.pow(2,2*_currState.brightness)}) contrast(${Math.pow(4,_currState.contrast)})`;
+            ctx.filter = `brightness(${Math.pow(2,2*_visStates[0].brightness)}) contrast(${Math.pow(4,_visStates[0].contrast)})`;
         }
         //_viewer.world.draw(); //not needed
     }
@@ -153,7 +166,7 @@ const tmapp = (function() {
         //const ctx=_viewers[0].element.querySelector('.openseadragon-canvas').querySelector('canvas').style;
         //Make whole viewer transparent
         const ctx=_viewers[0].element.style;
-        ctx.opacity = 1-_currState.transparency; 
+        ctx.opacity = 1-_visStates[0].transparency; 
     }
 
     function _setWarp(v,transform) {
@@ -199,7 +212,7 @@ const tmapp = (function() {
         tmappUI.setImageZoom(Math.round(zoom*10)/10);
         _currState.zoom = zoom;
 
-console.log('zoom',zoom);
+//console.log('zoom',zoom);
 
         //update additional viewers
         _viewers.forEach(v => {
@@ -242,7 +255,7 @@ console.log('zoom',zoom);
         _currState.x = position.x;
         _currState.y = position.y;
 
-console.log('pos',position);
+//console.log('pos',position);
 
         //update additional viewers
         const plus = (a,b) => ({x:a.x+b.x, y:a.y+b.y});
@@ -664,6 +677,8 @@ console.log('pos',position);
         //Put first
         _viewers.unshift(newViewer);
         _viewersOrder(); //Set z-index
+        _visStates.unshift({..._visState}); //Add new default state
+        _updateStateSliders();
 
         newViewer.scalebar(); //Todo: Does each viewer have its own scalebar?
         
@@ -1153,6 +1168,8 @@ console.log('pos',position);
         _viewers[i].element.style.zIndex = 100-j;
         _viewers[j].element.style.zIndex = 100-i;
         [ _viewers[j], _viewers[i] ] = [ _viewers[i], _viewers[j] ];
+        [ _visStates[j], _visStates[i] ] = [ _visStates[i], _visStates[j] ];
+        _updateStateSliders();
     }
     function viewerBringForward(idx) {
         if (idx>0) {
