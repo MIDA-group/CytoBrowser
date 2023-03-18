@@ -34,109 +34,101 @@ const tmapp = (function() {
     };
 
     //Just default values
-    const _visState = {
+    const _imageState = {
+        z: 0, // stepsize 1, zero in the middle (rounded down)
         brightness: 0,
         contrast: 0,
         transparency: 0
     }
 
     let _currentImage,
-        _images,
+        _images, //All images in the data directory
         _collab,
         _viewer=null, //This is the main viewer, with overlays
         _viewers=[], //Array of all viewers, in z-index order, first is on top
-        _currState = {
+        _imageStates=[], //Array of _imageState
+        _lastMouseMoveEvent=null,
+        _disabledControls,
+        _availableZLevels,
+        _mouseHandler;
+
+    const _currState = {
             x: 0.5,
             y: 0.5,
-            z: 0,
+            z: 0, //copied from _imageStates[_viewerIndex()].z
             rotation: 0,
             zoom: 1
         },
-        _visStates=[], //Array of _visState
         _cursorStatus = {
             x: 0.5,
             y: 0.5,
             held: false,
             inside: false
-        },
-        _disabledControls,
-        _availableZLevels,
-        _mouseHandler,
         _currentMouseUpdateFun=null;
+        }
 
-    //0..count-1
-    function _getFocusIndex() {
-        return _currState.z + Math.floor(_currentImage.zLevels.length / 2);
-    }
 
-    //0..count-1
-    function getFocusLevel0() {
-        const ofs = Math.floor(_viewer.world.getItemCount()/ 2);
-        return _currState.z+ofs;
-    }
-    function setFocusLevel0(z0) {
-        const ofs = Math.floor(_viewer.world.getItemCount()/ 2);
-        _setFocusLevel(z0-ofs);
-    }
-    function _setFocusLevel(z) {
-        const count = _viewer.world.getItemCount();
-        const ofs = Math.floor(count / 2);
-        z = Math.min(Math.max(z,-ofs),count-1-ofs);
-        _viewer.setFocusLevel(z);
-        _currState.z = z;
-        _updateFocus();
+    //Index of _viewer
+    function _viewerIndex() {
+        return _viewers.findIndex(v => v === _viewer);
     }
 
-    function getViewerFocusLevel0(v) {
-        const ofs = Math.floor(v.world.getItemCount()/ 2);
-        return v.getFocusLevel()+ofs;
-    }
-    function setViewerFocusLevel0(v,z0) {
-        const ofs = Math.floor(v.world.getItemCount()/ 2);
-        _setViewerFocusLevel(v,z0-ofs);
-    }
-    function _setViewerFocusLevel(v,z) {
+    //z = index-ofs
+    function _setFocusLevel(z,v=_viewers[0]) {
         const count = v.world.getItemCount();
         const ofs = Math.floor(count / 2);
         z = Math.min(Math.max(z,-ofs),count-1-ofs);
-        v.setFocusLevel(z);
+        setFocusIndex(z+ofs,v);
+    }
+    function getFocusIndex(v=_viewers[0]) {
+        return v? v.getFocusIndex(): 0;
+    }
+    function setFocusIndex(z0,v=_viewers[0]) {
+        v && v.setFocusIndex(z0);
+        _updateFocus(v);
     }
 
-
-
-    function _updateFocus() {
+    function _updateFocus(viewer=_viewers[0]) {
         if (!_viewer) {
             throw new Error("Tried to update focus of nonexistent viewer.");
         }
-        const index = _getFocusIndex();
-        tmappUI.setImageZLevel(_currentImage.zLevels[index]);
-        coordinateHelper.setImage(_viewer.world.getItemAt(index));
-        htmlHelper.updateFocusSlider(_viewer,index);
-        _updateCollabPosition();
-        _updateURLParams();
+        const vi=_viewerIndex();
+        _viewers.forEach((v,i) => {
+            const ofs = Math.floor(v.world.getItemCount() / 2);
+            const index = getFocusIndex(v);
+            _imageStates[i].z = index-ofs;
+            htmlHelper.updateFocusSlider(v,index); 
+
+            if (i==vi) {
+                _currState.z = index-ofs;
+                tmappUI.setImageZLevel(_currentImage.zLevels[index]); //Write in UI
+                coordinateHelper.setImage(_viewer.world.getItemAt(index)); 
+                _updateCollabPosition();
+                _updateURLParams();
+            }
+        });
     }
 
     function setTransparency(t) {
-        _visStates[0].transparency = t;
+        _imageStates[0].transparency = t;
         _updateTransparency();
     }
 
     function setBrightness(b) {
-        _visStates[0].brightness = b;
+        _imageStates[0].brightness = b;
         _updateBrightnessContrast();
     }
 
     function setContrast(c) {
-        _visStates[0].contrast = c;
+        _imageStates[0].contrast = c;
         _updateBrightnessContrast();
     }
 
     // This function should move elsewhere
     function _updateStateSliders() {
-        console.log(_visStates[0]);
-        $("#transparency_slider").slider('setValue', _visStates[0].transparency);
-        $("#brightness_slider").slider('setValue', _visStates[0].brightness);
-        $("#contrast_slider").slider('setValue', _visStates[0].contrast);
+        $("#transparency_slider").slider('setValue', _imageStates[0].transparency);
+        $("#brightness_slider").slider('setValue', _imageStates[0].brightness);
+        $("#contrast_slider").slider('setValue', _imageStates[0].contrast);
     }
 
     /**
@@ -148,11 +140,11 @@ const tmapp = (function() {
         // https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/filter
         //we use the css-style property instead
         const ctx=_viewers[0].element.querySelector('.openseadragon-canvas').querySelector('canvas').style;
-        if (_visStates[0].contrast==0 && _visStates[0].brightness==0) {
+        if (_imageStates[0].contrast==0 && _imageStates[0].brightness==0) {
             ctx.filter = 'none';
         }
         else {
-            ctx.filter = `brightness(${Math.pow(2,2*_visStates[0].brightness)}) contrast(${Math.pow(4,_visStates[0].contrast)})`;
+            ctx.filter = `brightness(${Math.pow(2,2*_imageStates[0].brightness)}) contrast(${Math.pow(4,_imageStates[0].contrast)})`;
         }
         //_viewer.world.draw(); //not needed
     }
@@ -166,7 +158,7 @@ const tmapp = (function() {
         //const ctx=_viewers[0].element.querySelector('.openseadragon-canvas').querySelector('canvas').style;
         //Make whole viewer transparent
         const ctx=_viewers[0].element.style;
-        ctx.opacity = 1-_visStates[0].transparency; 
+        ctx.opacity = 1-_imageStates[0].transparency; 
     }
 
     function _setWarp(v,transform) {
@@ -274,7 +266,6 @@ const tmapp = (function() {
                 console.log('Position: ',v.transform.position);
             }
             const newPos = plus(scaledPosition,v.transform.position);
-            //console.log('posx',newPos);
             v.viewport.panTo(newPos); //NOP if frozen
         });
 
@@ -448,6 +439,7 @@ const tmapp = (function() {
         const zLevels = Array.from({length: imageStack.length}, (x, i) => i - offset);
         _availableZLevels = zLevels;
         viewer.openFocusLevels(imageStack, initialZ, zLevels);
+        _imageStates[0].z = initialZ;
         _currState.z = initialZ;
     }
 
@@ -472,7 +464,7 @@ const tmapp = (function() {
                 const position = {
                     x: coords.x,
                     y: coords.y,
-                    z: _currState.z
+                    z: _imageStates[0].z
                 };
                 setCursorStatus(position);
                 annotationTool.click(position);
@@ -486,7 +478,7 @@ const tmapp = (function() {
                 const position = {
                     x: coords.x,
                     y: coords.y,
-                    z: _currState.z
+                    z: _imageStates[0].z
                 };
                 setCursorStatus(position);
                 annotationTool.dblClick(position);
@@ -677,7 +669,7 @@ const tmapp = (function() {
         //Put first
         _viewers.unshift(newViewer);
         _viewersOrder(); //Set z-index
-        _visStates.unshift({..._visState}); //Add new default state
+        _imageStates.unshift({..._imageState}); //Add new default state
         _updateStateSliders();
 
         newViewer.scalebar(); //Todo: Does each viewer have its own scalebar?
@@ -1030,7 +1022,7 @@ const tmapp = (function() {
      */
     function incrementFocus() {
         if (!_disabledControls) {
-            _setFocusLevel(_currState.z + 1);
+            _setFocusLevel(_imageStates[0].z + 1);
         }
     }
 
@@ -1039,7 +1031,7 @@ const tmapp = (function() {
      */
     function decrementFocus() {
         if (!_disabledControls) {
-            _setFocusLevel(_currState.z - 1);
+            _setFocusLevel(_imageStates[0].z - 1);
         }
     }
 
@@ -1090,7 +1082,7 @@ const tmapp = (function() {
         const position = {
             x: _cursorStatus.x,
             y: _cursorStatus.y,
-            z: _currState.z
+            z: _imageStates[0].z
         };
         annotationTool.updateMousePosition(position);
         _updateCollabCursor();
@@ -1168,7 +1160,7 @@ const tmapp = (function() {
         _viewers[i].element.style.zIndex = 100-j;
         _viewers[j].element.style.zIndex = 100-i;
         [ _viewers[j], _viewers[i] ] = [ _viewers[i], _viewers[j] ];
-        [ _visStates[j], _visStates[i] ] = [ _visStates[i], _visStates[j] ];
+        [ _imageStates[j], _imageStates[i] ] = [ _imageStates[i], _imageStates[j] ];
         _updateStateSliders();
     }
     function viewerBringForward(idx) {
@@ -1203,10 +1195,8 @@ const tmapp = (function() {
         incrementFocus,
         decrementFocus,
         getZLevels,
-        setFocusLevel0,
-        getFocusLevel0,
-        setViewerFocusLevel0,
-        getViewerFocusLevel0,
+        setFocusIndex,
+        getFocusIndex,
 
         setBrightness,
         setContrast,
