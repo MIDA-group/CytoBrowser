@@ -585,6 +585,11 @@ const tmapp = (function() {
                         
             if (activeViewer) {
                 _addMouseTracking(viewer);
+
+                const imageFL = _images.find(image => image.name === _currentImage.name+'_FL');
+                if (imageFL) {
+                    addImage(imageFL.name);
+                }
             }
             viewer.canvas.focus();
             viewer.viewport.goHome();
@@ -656,9 +661,11 @@ const tmapp = (function() {
         newViewer.transform = {scale:1, position:{x:0, y:0}, rotation:0}; // Similarity transform 
         
         //Put first
-        _viewers.unshift(newViewer);
+        //_viewers.unshift(newViewer);
+        _viewers.push(newViewer);
         _viewersOrder(); //Set z-index
-        _imageStates.unshift({..._imageState}); //Add new default state
+        //_imageStates.unshift({..._imageState}); //Add new default state
+        _imageStates.push({..._imageState}); //Add new default state
         _updateStateSliders();
 
         //open the DZI xml file pointing to the tiles
@@ -728,6 +735,11 @@ const tmapp = (function() {
         _availableZLevels = null;
     }
 
+    function _filterImages(images) {
+        console.log(images);
+        return images.filter(img => !img.name.includes('_FL'));
+    }
+
     /**
      * Initiate tmapp by fetching a list of images from the server,
      * filling the image browser, and going to the image specified
@@ -767,7 +779,10 @@ const tmapp = (function() {
                     const response = JSON.parse(imageReq.responseText);
                     const missingDataDir = response.missingDataDir;
                     const images = response.images;
-                    tmappUI.updateImageBrowser(images);
+                    
+                    const filteredImages = _filterImages(images);
+                    
+                    tmappUI.updateImageBrowser(filteredImages);
                     _images = images;
 
                     // Go to the initial image and/or join the collab
