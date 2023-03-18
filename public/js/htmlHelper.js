@@ -17,8 +17,8 @@ const htmlHelper = (function() {
         divElem.style.top = "50px";
         divElem.style.margin = "7px";
         divElem.style.opacity = "0.5";
+        divElem.style.zIndex = 100-elem.children().length;
 
-        console.log('Slider: ',zLevels);
         const slider = `<input class="focus_slider" id="focus_slider_${viewer.id}" data-slider-id="focus_slider_${viewer.id}_internal" type="text" data-slider-orientation="vertical"/>`
         divElem.innerHTML=slider;
         elem.append(divElem);
