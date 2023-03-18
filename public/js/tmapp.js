@@ -1168,9 +1168,25 @@ const tmapp = (function() {
             _viewerSwap(idx, idx-1);
         }
     }
+    function viewerBringToFront(idx) {
+        if (idx>0) {
+            _viewers.unshift(_viewers.splice(idx,1)[0]);
+            _imageStates.unshift(_imageStates.splice(idx,1)[0]);
+            _viewersOrder();
+            _updateStateSliders();
+        }
+    }
     function viewerSendBackward(idx) {
         if (idx<_viewers.length-1) {
             _viewerSwap(idx, idx+1);
+        }
+    }
+    function viewerSendToBack(idx) {
+        if (idx<_viewers.length-1) {
+            _viewers.push(_viewers.splice(idx,1)[0]);
+            _imageStates.push(_imageStates.splice(idx,1)[0]);
+            _viewersOrder();
+            _updateStateSliders();
         }
     }
     function viewerFreeze(val) {
@@ -1216,8 +1232,12 @@ const tmapp = (function() {
         updateScalebar,
 
         addImage,
+
         viewerBringForward,
+        viewerBringToFront,
         viewerSendBackward,
+        viewerSendToBack,
+
         viewerFreeze
     };
 })();
