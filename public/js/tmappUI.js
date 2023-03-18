@@ -442,6 +442,9 @@ const tmappUI = (function(){
                 case 66: // b
                     $("#tool_poly").click();
                     break;
+                case 32: // ' ' space
+                    tmapp.viewerSendToBack(0); //Put current top at the bottom
+                    break;
                 default:
                     caught=false; //Assume we miss the key
                     // Handle digit keys being pressed for classes
