@@ -27,11 +27,11 @@ const htmlHelper = (function() {
             focus: true,
             min:0,
             max:zLevels.length-1,
-            value:tmapp.getViewerFocusLevel0(viewer),
+            value:tmapp.getFocusIndex(viewer),
             formatter: (val) => zLevels[val]
         })
         .on('change', (data) => {
-            tmapp.setViewerFocusLevel0(viewer,data.value.newValue);
+            tmapp.setFocusIndex(data.value.newValue,viewer);
         });
         $(`#focus_slider_${viewer.id}_internal`)
             .addClass("focus_slider_internal")
@@ -150,7 +150,7 @@ const htmlHelper = (function() {
             </div>
         `);
         const select = container.find("select");
-        const zLevels = tmapp.getZLevels();
+        const zLevels = tmapp.getZLevels(); //of _viewer
         zLevels.forEach(z => {
             const selected = annotation.z === z;
             const option = $(`
