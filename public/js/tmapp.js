@@ -217,6 +217,19 @@ console.log('zoom',zoom);
         _updatePosition();
     }
 
+    function _updateResize(e) {
+        if (!_viewer) {
+            throw new Error("Tried to update position of nonexistent viewer.");
+        }
+        if (e && e.eventSource!==_viewer) { //ignore events from other viewers
+            return;
+        }
+        new Promise(resolve => setTimeout(resolve, 0)) //Crock! Fixme!
+        .then(() => {
+            _updatePosition(e);
+        });
+    }
+
     function _updatePosition(e) {
         if (!_viewer) {
             throw new Error("Tried to update position of nonexistent viewer.");
@@ -247,7 +260,9 @@ console.log('pos',position);
                 v.transform.position=minus(v.viewport.getCenter(),scaledPosition);
                 console.log('Position: ',v.transform.position);
             }
-            v.viewport.panTo(plus(scaledPosition,v.transform.position)); //NOP if frozen
+            const newPos = plus(scaledPosition,v.transform.position);
+            //console.log('posx',newPos);
+            v.viewport.panTo(newPos); //NOP if frozen
         });
 
         _updateCollabPosition();
@@ -558,6 +573,7 @@ console.log('pos',position);
             viewer.addHandler("zoom", _updateZoom);
             viewer.addHandler("pan", _updatePosition);
             viewer.addHandler("rotate", _updateRotation);
+            viewer.addHandler("resize", _updateResize);
         }
 
         // When we're done loading
