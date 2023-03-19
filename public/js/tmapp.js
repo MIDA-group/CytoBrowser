@@ -706,6 +706,9 @@ const tmapp = (function() {
             v.element.remove(); //remove DOM node
             v.destroy();
         }
+        _imageStates=[];
+        _viewer=null;
+        _mouseHandler.destroy();
     }
     function _clearCurrentImage() {
         if (!_viewer) {
