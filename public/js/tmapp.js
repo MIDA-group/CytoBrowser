@@ -464,7 +464,7 @@ const tmapp = (function() {
                 const position = {
                     x: coords.x,
                     y: coords.y,
-                    z: _imageStates[0].z
+                    z: _currState.z
                 };
                 setCursorStatus(position);
                 annotationTool.click(position);
@@ -478,7 +478,7 @@ const tmapp = (function() {
                 const position = {
                     x: coords.x,
                     y: coords.y,
-                    z: _imageStates[0].z
+                    z: _currState.z
                 };
                 setCursorStatus(position);
                 annotationTool.dblClick(position);
@@ -1082,7 +1082,7 @@ const tmapp = (function() {
         const position = {
             x: _cursorStatus.x,
             y: _cursorStatus.y,
-            z: _imageStates[0].z
+            z: _currState.z
         };
         annotationTool.updateMousePosition(position);
         _updateCollabCursor();
