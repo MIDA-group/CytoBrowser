@@ -161,32 +161,23 @@ const tmapp = (function() {
         ctx.opacity = 1-_imageStates[0].transparency; 
     }
 
+    // Must wait for "open" event
     function _setWarp(v,transform) {
         //update additional viewers
-        const plus = (a,b) => ({x:a.x+b.x, y:a.y+b.y});
-        const minus = (a,b) => ({x:a.x-b.x, y:a.y-b.y});
         const scale = (a,b) => ({x:a.x*b, y:a.y*b});
 
-        new Promise(resolve => setTimeout(resolve, 1000)) //Crock! Fixme!
-         .then(() => {
         console.log('WARP: ',v.transform,v.viewport.getZoom(),v,_viewer);
         const width0 = _viewer.world.getItemAt(0).source.dimensions.x;
         const width1 = v.world.getItemAt(0).source.dimensions.x;
         console.log(width0,':',width1,':',width1/width0);
 
         v.transform.scale = transform.scale*width1/width0; //Scale around upper left corner (before translation)
-
-        //v.transform.position = coordinateHelper.imageToViewport(scale(transform.position,-1));
         v.transform.position = scale(transform.position,-1/width0/v.transform.scale);
-        //v.transform.position={x: -0.0026180219960755258, y: 0.013377241423963737};
-        //v.transform.position={x:-0.5, y:0}; //In its own coordinates
-        //v.transform.position=scale(v.transform.position,1/v.transform.scale); //In its own coordinates
-
         v.transform.rotation = transform.rotation; //Rotation around top left of _viewer (after scale and translate) 
 
         console.log(v.transform);
         _updateRotation();
-        _updateZoom();});
+        _updateZoom();
     }
 
     function _updateZoom(e) {
@@ -429,8 +420,8 @@ const tmapp = (function() {
         return imageStack;
     }
 
-    function _imageWarpName(imageInfo) {
-        return `${_imageDir}${imageInfo.name}_warp.json`;
+    function _imageWarpName(imageName) {
+        return `${_imageDir}${imageName}_warp.json`;
     }
 
     function _openImages(viewer,imageStack) {
@@ -571,7 +562,7 @@ const tmapp = (function() {
     }
 
     
-    function _addHandlers(viewer, callback, activeViewer=true) {
+    function _addHandlers(viewer, imageName, callback, activeViewer=true) {
         if (activeViewer) { 
             // Change-of-Page (z-level) handler
             viewer.addHandler("page", _updateFocus);
@@ -587,6 +578,14 @@ const tmapp = (function() {
         // When we're done loading
         viewer.addHandler("open", function (event) {
             console.info("Done loading!");
+
+            //Load warp if existing
+            const warpName=_imageWarpName(imageName);
+            promiseHttpRequest("GET", warpName)
+                .then(JSON.parse)
+                .then(result=>_setWarp(viewer,result))
+                .catch((e)=>console.log('Warp: ',e));
+
             if (activeViewer) {
                 _addMouseTracking(viewer);
             }
@@ -659,13 +658,6 @@ const tmapp = (function() {
         _nextViewerId++;
         newViewer.transform = {scale:1, position:{x:0, y:0}, rotation:0}; // Similarity transform 
         
-        //Load warp if existing
-        const warpName=_imageWarpName(image);
-        promiseHttpRequest("GET", warpName)
-            .then(JSON.parse)
-            .then(result=>_setWarp(newViewer,result))
-            .catch((e)=>console.log('Warp: ',e));
-
         //Put first
         _viewers.unshift(newViewer);
         _viewersOrder(); //Set z-index
@@ -684,7 +676,7 @@ const tmapp = (function() {
         });
 
         //don't add more handlers than needed
-        _addHandlers(newViewer, callback, withOverlay);
+        _addHandlers(newViewer, image.name, callback, withOverlay);
         if (withOverlay) {
             _viewer=newViewer; 
 
