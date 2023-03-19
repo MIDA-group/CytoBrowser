@@ -85,10 +85,10 @@ const tmapp = (function() {
     }
     function setFocusIndex(z0,v=_viewers[0]) {
         v && v.setFocusIndex(z0);
-        _updateFocus(v);
+        _updateFocus();
     }
 
-    function _updateFocus(viewer=_viewers[0]) {
+    function _updateFocus() {
         if (!_viewer) {
             throw new Error("Tried to update focus of nonexistent viewer.");
         }
@@ -98,6 +98,7 @@ const tmapp = (function() {
             const index = getFocusIndex(v);
             _imageStates[i].z = index-ofs;
             htmlHelper.updateFocusSlider(v,index); 
+            htmlHelper.setFocusSliderOpacity(v,i==0?0.8:0.5);
 
             if (i==vi) {
                 _currState.z = index-ofs;
@@ -562,7 +563,7 @@ const tmapp = (function() {
     }
 
     
-    function _addHandlers(viewer, imageName, callback, activeViewer=true) {
+    function _addHandlers(viewer, image, callback, activeViewer=true) {
         if (activeViewer) { 
             // Change-of-Page (z-level) handler
             viewer.addHandler("page", _updateFocus);
@@ -577,12 +578,15 @@ const tmapp = (function() {
             console.info("Done loading!");
 
             //Load warp if existing
-            const warpName=_imageWarpName(imageName);
+            const warpName=_imageWarpName(image.name);
             promiseHttpRequest("GET", warpName)
                 .then(JSON.parse)
                 .then(result=>_setWarp(viewer,result))
                 .catch((e)=>console.log('Warp: ',e));
 
+            //Focus slider
+            htmlHelper.addFocusSlider($("#toolbar_sliderdiv"),image.zLevels,viewer);
+                        
             if (activeViewer) {
                 _addMouseTracking(viewer);
             }
@@ -667,13 +671,8 @@ const tmapp = (function() {
         const imageStack = _expandImageName(image);
         _openImages(newViewer,imageStack); //sets _availableZLevels
 
-        new Promise(resolve => setTimeout(resolve, 1000)) //Crock! Fixme!
-        .then(() => {
-            htmlHelper.addFocusSlider($("#toolbar_sliderdiv"),image.zLevels,newViewer);
-        });
-
         //don't add more handlers than needed
-        _addHandlers(newViewer, image.name, callback, withOverlay);
+        _addHandlers(newViewer, image, callback, withOverlay);
         if (withOverlay) {
             _viewer=newViewer; 
 
@@ -1127,6 +1126,7 @@ const tmapp = (function() {
         [ _viewers[j], _viewers[i] ] = [ _viewers[i], _viewers[j] ];
         [ _imageStates[j], _imageStates[i] ] = [ _imageStates[i], _imageStates[j] ];
         _updateStateSliders();
+        _updateFocus();
     }
     function viewerBringForward(idx) {
         if (idx>0) {
@@ -1139,6 +1139,7 @@ const tmapp = (function() {
             _imageStates.unshift(_imageStates.splice(idx,1)[0]);
             _viewersOrder();
             _updateStateSliders();
+            _updateFocus();
         }
     }
     function viewerSendBackward(idx) {
@@ -1152,6 +1153,7 @@ const tmapp = (function() {
             _imageStates.push(_imageStates.splice(idx,1)[0]);
             _viewersOrder();
             _updateStateSliders();
+            _updateFocus();
         }
     }
     function viewerFreeze(val) {
