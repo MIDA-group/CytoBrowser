@@ -665,8 +665,6 @@ const tmapp = (function() {
         _imageStates.unshift({..._imageState}); //Add new default state
         _updateStateSliders();
 
-        newViewer.scalebar(); //Todo: Does each viewer have its own scalebar?
-        
         //open the DZI xml file pointing to the tiles
         const imageStack = _expandImageName(image);
         _openImages(newViewer,imageStack); //sets _availableZLevels
@@ -675,7 +673,7 @@ const tmapp = (function() {
         _addHandlers(newViewer, image, callback, withOverlay);
         if (withOverlay) {
             _viewer=newViewer; 
-
+    
             const navigatorDiv = document.getElementById("navigator_div");
             navigatorDiv.addEventListener("pointerenter", () => _unhideNavigator(true));
             navigatorDiv.addEventListener("pointerleave", () => _unhideNavigator(false));
@@ -688,6 +686,10 @@ const tmapp = (function() {
                 element.addEventListener("pointerleave", () => _unhideToolbar(false));
             }
             element.style.zIndex = 200;
+
+            _viewer.scalebar(); 
+            //https://github.com/usnistgov/OpenSeadragonScalebar/blob/master/openseadragon-scalebar.js
+            element.append(_viewer.container.lastChild); //Relying on being added last!
 
             // element.style.pointerEvents = "none"; //ignore mouse :-)
             //forward all events from annotation_layer to _viewer.canvas
