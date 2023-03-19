@@ -549,7 +549,7 @@ const tmapp = (function() {
                 viewer.zoomPerScroll = 1.01;
             }
             else {
-                viewer.zoomPerScroll = 1.2;
+                viewer.zoomPerScroll = 1.3;
             }
         };
 
