@@ -16,7 +16,6 @@ const htmlHelper = (function() {
         divElem.style.left = "0";
         divElem.style.top = "50px";
         divElem.style.margin = "7px";
-        divElem.style.opacity = "0.5";
         divElem.style.zIndex = 100-elem.children().length;
 
         const slider = `<input class="focus_slider" id="focus_slider_${viewer.id}" data-slider-id="focus_slider_${viewer.id}_internal" type="text" data-slider-orientation="vertical"/>`
@@ -38,9 +37,12 @@ const htmlHelper = (function() {
             .css("height","max(100px,10%)");
     }
 
-
     function updateFocusSlider(viewer,val0) {
         $(`#focus_slider_${viewer.id}`).slider('setValue', val0);
+    }
+
+    function setFocusSliderOpacity(viewer, opacity) {
+        $(`#focus_slider_${viewer.id}_internal`).css('opacity', opacity);
     }
 
     function _annotationButtonRow(id, closeFun) {
@@ -634,6 +636,7 @@ const htmlHelper = (function() {
         buildImageBrowser,
 
         addFocusSlider,
-        updateFocusSlider
+        updateFocusSlider,
+        setFocusSliderOpacity
     };
 })();
