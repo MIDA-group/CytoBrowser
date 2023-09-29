@@ -68,4 +68,4 @@ We aim to support all modern browsers. Since development mostly utilizes the [Ch
 
 ### Acknowledgement
 
-This work is supported by: VINNOVA grants 2017-02447 and 2020-03611.
+This work is supported by: VINNOVA grants 2017-02447, 2020-03611 and 2021-01420, and Swedish Research Council proj. 2017-04385. 
