@@ -48,13 +48,13 @@ node cytobrowser.js [hostname] [port]
 
 ### Branches
 Current list of branches:
-* master - Main stable branch, official releases
-* devel - Main development branch, less stable but more up-to-date
-* devel/multi-image - Work in progress to support multiple layers of images (for correlative multimodal analysis)
-* devel/multi-image-autoload-hack - Small add-on to hide images with suffix '_FL', and autoload them together with corresp. non-hidden images
+* **master** - Main stable branch, official releases are from this branch;
+* devel - Main development branch, less stable but more up-to-date;
+* devel/multi-image - Work in progress to support multiple layers of images (for correlative multimodal analysis);
+* devel/multi-image-autoload-hack - Small add-on to hide images with suffix '_FL', and autoload them together with corresponding non-hidden images with same prefix.
 
 ### Issues
-We aim to support all modern browsers. Since development mostly utilizes the [Chrome](https://www.google.com/chrome/) browser, that one can be expected to give the least troublesome usage experience. Please don't be shy to report [issues](https://github.com/MIDA-group/CytoBrowser/issues) you experience.
+We aim to support all modern browsers. Since development mostly utilizes the [Chrome](https://www.google.com/chrome/) browser, that one can be expected to give the least troublesome usage experience. Please don't be shy to report [issues](https://github.com/MIDA-group/CytoBrowser/issues) that you experience.
 
 ### Citing
 If you find the CytoBrowser software useful in your research, please consider citing the following article:
