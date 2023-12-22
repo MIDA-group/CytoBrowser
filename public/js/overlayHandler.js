@@ -30,7 +30,8 @@ const overlayHandler = (function (){
         _markerContainer = null,
         _svo = null, //svg overlay
         _pxo = null, //pixi overlay
-        _markerList = []
+        _markerList = [],
+        _currentMouseUpdateFun = null;
 
     /**
      * Edit a string with stored in the transform attribute of a node.
@@ -223,6 +224,7 @@ const overlayHandler = (function (){
         }
     }
 
+    // Used when editing (path-nodes of) an existing region
     function _createRegionEditControls(d, node) {
         const selection = d3.select(node);
         if (!selection.attr("data-being-edited")) {
@@ -244,31 +246,34 @@ const overlayHandler = (function (){
                             .transition("appear").duration(250)
                             .attr("transform", "scale(1)")
                             .call(path => {
+                                let mouse_pos; //retain last used mouse_pos (global) s.t. we may update locations when keyboard panning etc.
                                 let mouse_offset; //offset (in webCoords) between mouse click and vertex
+                                function updateMousePos() {
+                                    // Use a clone of the annotation to make sure the edit is permitted
+                                    const dClone = annotationHandler.getAnnotationById(d.id);
+                                    const pointClone = dClone.points[i];
+                                    const vertex_new_pos = coordinateHelper.webToImage(mouse_pos.minus(mouse_offset));
+                                    Object.assign(pointClone,vertex_new_pos);
+                                    annotationHandler.update(d.id, dClone, "image");
+                                    const viewportCoords = coordinateHelper.webToViewport(mouse_pos);
+                                    tmapp.setCursorStatus(viewportCoords);
+                                }
                                 new OpenSeadragon.MouseTracker({
                                     element: path.node(),
                                     pressHandler: function(event) {
                                         tmapp.setCursorStatus({held: true});
-                                        const mouse_pos = new OpenSeadragon.Point(event.originalEvent.offsetX,event.originalEvent.offsetY);
+                                        mouse_pos = new OpenSeadragon.Point(event.originalEvent.offsetX,event.originalEvent.offsetY);
                                         const vertex_pos = coordinateHelper.imageToWeb(annotationHandler.getAnnotationById(d.id).points[i]);
                                         mouse_offset = mouse_pos.minus(vertex_pos);
+                                        _currentMouseUpdateFun=updateMousePos;
                                     },
                                     releaseHandler: function(event) {
                                         tmapp.setCursorStatus({held: false});
+                                        _currentMouseUpdateFun=null;
                                     },
                                     dragHandler: function(event) {
-                                        // Use a clone of the annotation to make sure the edit is permitted
-                                        const dClone = annotationHandler.getAnnotationById(d.id);
-                                        const pointClone = dClone.points[i];
-                                        const mouse_pos = new OpenSeadragon.Point(event.originalEvent.offsetX,event.originalEvent.offsetY);
-                                        const vertex_new_pos = coordinateHelper.webToImage(mouse_pos.minus(mouse_offset));
-                                        Object.assign(pointClone,vertex_new_pos);
-                                        annotationHandler.update(d.id, dClone, "image");
-                                        const viewportCoords = coordinateHelper.pageToViewport({
-                                            x: event.originalEvent.pageX,
-                                            y: event.originalEvent.pageY
-                                        });
-                                        tmapp.setCursorStatus(viewportCoords);
+                                        mouse_pos = new OpenSeadragon.Point(event.originalEvent.offsetX,event.originalEvent.offsetY);
+                                        updateMousePos();
                                     }
                                 }).setTracking(true);
                             });
@@ -286,6 +291,7 @@ const overlayHandler = (function (){
      */
     function _addMarkerInteraction(d, obj, marker) {
         const id = d.id;
+        let mouse_pos; //retain last used mouse_pos (global) s.t. we may update locations when keyboard panning etc.
         let mouse_offset; //offset (in webCoords) between mouse click and object
         let pressed=false; //see also for drag vs. click: https://gist.github.com/fwindpeak/ce39d1acdd55cb37a5bcd8e01d429799
 
@@ -323,7 +329,7 @@ const overlayHandler = (function (){
             else {
                 event.data.originalEvent.stopPropagation(); //Sometimes works, sometimes not (for touch, depending e.g., on Chrome state)
                 tmapp.setCursorStatus({held: true});
-                const mouse_pos = new OpenSeadragon.Point(event.data.global.x,event.data.global.y);
+                mouse_pos = new OpenSeadragon.Point(event.data.global.x,event.data.global.y);
     //TODO: Use marker instead of slow looking up
                 // console.log('pressid: ',id);
     //            const object_pos = new OpenSeadragon.Point(marker.position.x,marker.position.y);
@@ -331,6 +337,7 @@ const overlayHandler = (function (){
                 mouse_offset = mouse_pos.minus(object_pos);
                 pressed=true;
                 marker.pressed=true;
+                _currentMouseUpdateFun=updateMousePos;
 
                 //Fire move events also when the cursor is outside of the object
                 _app.renderer.plugins.interaction.moveWhenInside = false;
@@ -343,6 +350,7 @@ const overlayHandler = (function (){
             tmapp.setCursorStatus({held: false});
             pressed=false;
             marker.pressed=false;
+            _currentMouseUpdateFun=null;
             _app.renderer.plugins.interaction.moveWhenInside = true;
             unHighlight(event);
             _pxo.update();
@@ -350,8 +358,11 @@ const overlayHandler = (function (){
         function dragHandler(event) {
             if (!pressed) return;
             regionEditor.stopEditingRegion();
-
-            const mouse_pos = new OpenSeadragon.Point(event.data.global.x,event.data.global.y);
+            mouse_pos = new OpenSeadragon.Point(event.data.global.x,event.data.global.y);
+            updateMousePos();
+        }
+        function updateMousePos() {
+            if (!pressed) return;
             const object_new_pos = coordinateHelper.webToImage(mouse_pos.minus(mouse_offset)); //imageCoords
 
             // Use a clone of the annotation to make sure the edit is permitted
@@ -365,10 +376,7 @@ const overlayHandler = (function (){
             });
             annotationHandler.update(id, dClone, "image");
 
-            const viewportCoords = coordinateHelper.pageToViewport({
-                x: event.data.originalEvent.pageX,
-                y: event.data.originalEvent.pageY
-            });
+            const viewportCoords = coordinateHelper.webToViewport(mouse_pos);
             tmapp.setCursorStatus(viewportCoords);
             _pxo.update();
         }
@@ -392,7 +400,7 @@ const overlayHandler = (function (){
             .on('pointermove', dragHandler)
             .on('pointertap', tapHandler) //replaces click (fired after the pointerdown and pointerup events)
             ;
-        }
+    }
 
     /**
      * Add mouse events that should be shared between all annotations,
@@ -403,6 +411,7 @@ const overlayHandler = (function (){
      * @param {Object} node The node for the annotation.
      */
     function _addAnnotationMouseEvents(d, node) {
+        let mouse_pos; //retain last used mouse_pos (global) s.t. we may update locations when keyboard panning etc.
         let mouse_offset; //offset (in webCoords) between mouse click and object
 
         function toggleEditing(d, node) {
@@ -413,6 +422,23 @@ const overlayHandler = (function (){
             else {
                 regionEditor.startEditingRegion(d.id);
             }
+        }
+        function updateMousePos() {
+            const object_new_pos = coordinateHelper.webToImage(mouse_pos.minus(mouse_offset)); //imageCoords
+
+            // Use a clone of the annotation to make sure the edit is permitted
+            const dClone = annotationHandler.getAnnotationById(d.id);
+            const object_pos = dClone.centroid; //current pos imageCoords
+
+            const delta = object_new_pos.minus(object_pos);
+            dClone.points.forEach(point => {
+                point.x += delta.x;
+                point.y += delta.y;
+            });
+            annotationHandler.update(d.id, dClone, "image");
+
+            const viewportCoords = coordinateHelper.webToViewport(mouse_pos);
+            tmapp.setCursorStatus(viewportCoords);
         }
         new OpenSeadragon.MouseTracker({
             element: node,
@@ -453,35 +479,19 @@ const overlayHandler = (function (){
             },
             pressHandler: function(event) {
                 tmapp.setCursorStatus({held: true});
-                const mouse_pos = new OpenSeadragon.Point(event.originalEvent.offsetX,event.originalEvent.offsetY);
+                mouse_pos = new OpenSeadragon.Point(event.originalEvent.offsetX,event.originalEvent.offsetY);
                 const object_pos = coordinateHelper.imageToWeb(annotationHandler.getAnnotationById(d.id).centroid);
                 mouse_offset = mouse_pos.minus(object_pos);
+                _currentMouseUpdateFun=updateMousePos;
             },
             releaseHandler: function(event) {
                 tmapp.setCursorStatus({held: false});
+                _currentMouseUpdateFun=null;
             },
             dragHandler: function(event) {
                 regionEditor.stopEditingRegion();
-
-                const mouse_pos = new OpenSeadragon.Point(event.originalEvent.offsetX,event.originalEvent.offsetY);
-                const object_new_pos = coordinateHelper.webToImage(mouse_pos.minus(mouse_offset)); //imageCoords
-
-                // Use a clone of the annotation to make sure the edit is permitted
-                const dClone = annotationHandler.getAnnotationById(d.id);
-                const object_pos = dClone.centroid; //current pos imageCoords
-
-                const delta = object_new_pos.minus(object_pos);
-                dClone.points.forEach(point => {
-                    point.x += delta.x;
-                    point.y += delta.y;
-                });
-                annotationHandler.update(d.id, dClone, "image");
-
-                const viewportCoords = coordinateHelper.pageToViewport({
-                    x: event.originalEvent.pageX,
-                    y: event.originalEvent.pageY
-                });
-                tmapp.setCursorStatus(viewportCoords);
+                mouse_pos = new OpenSeadragon.Point(event.originalEvent.offsetX,event.originalEvent.offsetY);
+                updateMousePos();
             },
             nonPrimaryReleaseHandler: function(event) {
                 if (event.button === 2) { // If right click
@@ -1049,6 +1059,11 @@ const overlayHandler = (function (){
         _app=_pxo.app();
         _stage=_app.stage;
     
+        //Same as _svo._viewer
+        _pxo._viewer.addHandler('update-viewport', () => {
+            _currentMouseUpdateFun && _currentMouseUpdateFun(); //set cursor position if view-port changed by external source
+        });
+
         _markerContainer = new PIXI.Container();
         _stage.addChild(_markerContainer);
     

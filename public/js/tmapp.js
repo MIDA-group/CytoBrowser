@@ -54,10 +54,10 @@ const tmapp = (function() {
             held: false,
             inside: false
         },
-        _lastMouseMoveEvent=null,
         _disabledControls,
         _availableZLevels,
-        _mouseHandler;
+        _mouseHandler,
+        _currentMouseUpdateFun=null;
 
     function _getFocusIndex() {
         return _currState.z + Math.floor(_currentImage.zLevels.length / 2);
@@ -257,6 +257,8 @@ const tmapp = (function() {
      * scrolling to change focus and rotation.
      */
     function _addMouseTracking(viewer) {
+        let mouse_pos; //retain last used mouse_pos (global) s.t. we may update locations when keyboard panning etc.
+        
         // Handle quick and slow clicks
         function clickHandler(event) {
             let regionWasBeingEdited = true;
@@ -289,14 +291,20 @@ const tmapp = (function() {
             }
         };
 
+        // Similar naming convention as in overlayHandler
+        function updateMousePos() {
+            if (!_cursorStatus.held) { // Drag does not change location in image
+                const pos = coordinateHelper.webToViewport(mouse_pos);
+                setCursorStatus({x: pos.x, y: pos.y});
+            }
+        }
+
         // Live updates of mouse position in collaboration
         // Store event to re-dispatch on viewport-change
         function moveHandler(event) {
-            _lastMouseMoveEvent=new MouseEvent(event.originalEvent.type, event.originalEvent);
-            if (!_cursorStatus.held) {
-                const pos = coordinateHelper.webToViewport(event.position);
-                setCursorStatus({x: pos.x, y: pos.y});
-            }
+            mouse_pos = event.position;
+            updateMousePos();
+            _currentMouseUpdateFun = updateMousePos;
         }
 
         // Live updates of whether or not the mouse is held down
@@ -391,11 +399,9 @@ const tmapp = (function() {
             tmappUI.displayImageError("tilefail", 1000);
         });
 
+        // What is the difference between 'update-viewport' and 'viewport-change' ?
         viewer.addHandler('viewport-change', (event) => {
-            if (_lastMouseMoveEvent) {
-                const elem = tmapp.mouseHandler().element;
-                elem.dispatchEvent(_lastMouseMoveEvent); // Mouse moves in the image, trigger updates
-            }
+            _currentMouseUpdateFun && _currentMouseUpdateFun(); //set cursor position if view-port changed by external source
         });
     }
 
