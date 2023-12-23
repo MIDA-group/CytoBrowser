@@ -314,7 +314,7 @@ const overlayHandler = (function (){
             const label=marker.getChildByName('label');
             if (label) { //We might call unHighlight several times
                 alpha(label,0) //Ease out
-                    .once('complete', (ease) => ease.elements.forEach(item=>item.destroy(true)));
+                    .once('complete', (ease) => ease.elements.forEach(item=>{ if (!item.destroyed) item.destroy(true);}));
             }
             _pxo.update();
         }
