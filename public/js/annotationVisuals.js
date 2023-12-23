@@ -1,5 +1,6 @@
 /**
  * Namespace for handling any local visual representation of annotations.
+ * I.e., updating overlayHandler and _annotationList
  * @namespace annotationVisuals
  */
 const annotationVisuals = (function() {
@@ -29,9 +30,32 @@ const annotationVisuals = (function() {
         //Draw annotations and update list asynchronously
         const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
 
+        let thisListCount=pendingListCount(1); //add one
+        if (_annotationList) {
+            if (_annotationList.updateData.inProgress()) {
+                wait(1) 
+                    .then(() => {
+                        if (thisListCount==pendingListCount()) { //if we're the last one
+                            // console.log('running delayed list update: ',thisListCount,pendingListCount());
+                            _annotationList.updateData(annotations.slice().reverse()); // No sort -> reverse order
+                        }
+                        else {
+                            // console.log('skipping list update',thisListCount,pendingListCount());
+                        }
+                    });
+            }
+            else {
+                // console.log('running immediate list update: ',thisListCount,pendingListCount());
+                _annotationList.updateData(annotations.slice().reverse()); // No sort -> reverse order
+            }
+        }
+        else {
+            console.warn("No annotation list has been set.");
+        }
+
         let thisVisCount=pendingVisCount(1); //add one
         if (overlayHandler.updateAnnotations.inProgress()) {
-            wait(0) //Using Promise.resolve() didn't give time enough for rendering
+            wait(1) //Using Promise.resolve() didn't give time enough for rendering
                 .then(() => {
                     if (thisVisCount==pendingVisCount()) { //if we're the last one
                         // console.log('running delayed overlay update: ',thisVisCount,pendingVisCount());
@@ -43,31 +67,8 @@ const annotationVisuals = (function() {
                 });
         }
         else {
-            // console.log('running immediate overlay update: ',thisVisCount,pendingVisCount());
+            //console.log('running immediate overlay update: ',thisVisCount,pendingVisCount());
             overlayHandler.updateAnnotations(annotations);
-        }
-        
-        let thisListCount=pendingListCount(1); //add one
-        if (_annotationList) {
-            if (_annotationList.updateData.inProgress()) {
-                wait(0) 
-                .then(() => {
-                    if (thisListCount==pendingListCount()) { //if we're the last one
-                        // console.log('running delayed list update: ',thisListCount,pendingListCount());
-                        _annotationList.updateData(annotations.slice().reverse()); // No sort -> reverse order
-                    }
-                    else {
-                        // console.log('skipping list update',thisListCount,pendingListCount());
-                    }
-                });
-            }
-            else {
-                // console.log('running immediate list update: ',thisListCount,pendingListCount());
-                _annotationList.updateData(annotations.slice().reverse()); // No sort -> reverse order
-            }
-        }
-        else {
-            console.warn("No annotation list has been set.");
         }
 
         if (!_filterIsTrivial && _lastQueryWasValid) {
@@ -138,13 +139,13 @@ const annotationVisuals = (function() {
     /**
      * Clear all annotations from the overlay. This function should
      * be called whenever annotations are to be quickly cleared and
-     * readded, e.g. when loading annotations from a collab summary.
+     * re-added, e.g. when loading annotations from a collab summary.
      * Since the annotation elements will remain until their animation
      * has finished when removing them, d3 will think that they
      * still exist when calling update() before calling this function.
      */
     function clear(){
-    	// TODO: This function shouldn't have to exist, update() should be enough
+    	// TODO: This function shouldn't have to exist, update() should be enough (beware of filters though)
     	overlayHandler.clearAnnotations();
     }
 

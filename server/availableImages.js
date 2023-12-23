@@ -12,6 +12,7 @@
 
 // Declare required modules
 const fs = require("fs");
+const fsPromises = fs.promises;
 
 // Directory where the data can be found
 let dataDir;
@@ -51,20 +52,21 @@ function getZLevels(dir, image) {
  * @param {Array<string>} dir The content of the data directory.
  * @param {Object} image The image data of the image for which thumbnails
  * should be found.
- */
-function getThumbnails(dir, image) {
+ * Thumbnails are returned in image.thumbnails={overview: string, detail: string}
+ * @returns {Promise} Promise that resolves once the data is stored.
+*/
+async function getThumbnails(dir, image) {
     // Find the file directories for the image name
     const nameFilter = RegExp(`^${image.name}.*_files$`);
     const names = dir.filter(name => nameFilter.test(name));
 
     // Look through the middle file directory
     const fileDir = names[Math.floor(names.length / 2)];
-    fs.readdir(`${dataDir}/${fileDir}`, (err, dir) => {
-        if (err) {
-            // TODO: Handle errors
-            console.error(err.toString());
-        }
-
+    return fsPromises.readdir(`${dataDir}/${fileDir}`, {withFileTypes: true})
+    .then((dir)=>{
+        // Directories only
+        dir = dir.filter(dirent => dirent.isDirectory())
+            .map(dirent => dirent.name);
         // Sort the directories numerically
         dir = dir.sort((a, b) => +a - +b);
 
@@ -74,48 +76,53 @@ function getThumbnails(dir, image) {
         const maxTiles = 200;
         const thumbnails = {overview: null, detail: null};
         image.thumbnails = thumbnails;
-        function findThumbnails(){
+
+        async function findThumbnails(){
             if (idx === dir.length) {
                 return;
             }
             const path = `${dataDir}/${fileDir}/${dir[idx]}`;
             const outpath = `${dataOutDir}/${fileDir}/${dir[idx]}`;
-            fs.readdir(path, (err, dir) => {
-                if (err) {
+            return fsPromises.readdir(path)
+                .then( (dir) => {
+                    // Store suitable thumbnails
+                    if (dir.length === 1) {
+                        thumbnails.overview = `${outpath}/${dir[0]}`;
+                        thumbnails.detail = thumbnails.overview;
+                    }
+                    else if (dir.length > 1) {
+                        remainingZooms--;
+                        const rows = [];
+                        const cols = [];
+                        dir.map(name => {
+                            const nums = name.split(/[_\.]/);
+                            rows.push(+nums[0]);
+                            cols.push(+nums[1]);
+                        });
+                        const row = rows.sort((a,b) => a - b)[Math.floor(rows.length / 2)];
+                        const col = cols.sort((a,b) => a - b)[Math.floor(cols.length / 2)];
+                        const choice = dir.find(file => RegExp(`${row}[^0-9]+${col}`).test(file));
+                        thumbnails.detail = `${outpath}/${choice}`;
+                    }
+
+                    // Check if all thumbnails have been found
+                    if (!(thumbnails.overview && thumbnails.detail)
+                        || remainingZooms > 0
+                        && dir.length < maxTiles) {
+                        idx++;
+                        return findThumbnails();
+                    }
+                })
+                .catch( (err) => { //failure to read subdir
                     // TODO: Handle errors
                     console.error(err.toString());
-                }
-
-                // Store suitable thumbnails
-                if (dir.length === 1) {
-                    thumbnails.overview = `${outpath}/${dir[0]}`;
-                    thumbnails.detail = thumbnails.overview;
-                }
-                else if (dir.length > 1) {
-                    remainingZooms--;
-                    const rows = [];
-                    const cols = [];
-                    dir.map(name => {
-                        const nums = name.split(/[_\.]/);
-                        rows.push(+nums[0]);
-                        cols.push(+nums[1]);
-                    });
-                    const row = rows.sort((a,b) => a - b)[Math.floor(rows.length / 2)];
-                    const col = cols.sort((a,b) => a - b)[Math.floor(cols.length / 2)];
-                    const choice = dir.find(file => RegExp(`${row}[^0-9]+${col}`).test(file));
-                    thumbnails.detail = `${outpath}/${choice}`;
-                }
-
-                // Check if all thumbnails have been found
-                if (!(thumbnails.overview && thumbnails.detail)
-                    || remainingZooms > 0
-                    && dir.length < maxTiles) {
-                    idx++;
-                    findThumbnails();
-                }
-            });
+                });
         }
-        findThumbnails();
+        return findThumbnails();
+    })
+    .catch((err) => { //failure to read main dir
+        // TODO: Handle errors
+        console.error(err.toString());
     });
 }
 
@@ -136,25 +143,23 @@ function handleDirError(err) {
  * about the existing images in availableImages, which can be retrieved
  * multiple times without having to call this function again.
  */
-function updateImages() {
-    fs.readdir(dataDir, (err, dir) => {
-        if (err) {
-            handleDirError(err);
-            return;
-        }
-
+async function updateImages() {
+    return fsPromises.readdir(dataDir)
+    .then( (dir) => {
         let names = dir.map(name => name.match(nameEx)).flat();
         names = names.filter(name => name !== null);
         const uniqueNames = [... new Set(names)];
 
         const images = [];
         uniqueNames.map(name => images.push({name: name}));
-        images.map(image => {
+        Promise.all(images.map(image => {
             getZLevels(dir, image);
-            getThumbnails(dir, image);
-        });
-
+            return getThumbnails(dir, image);
+        }))
         availableImages = {images: images};
+    })
+    .catch( (err) => {
+        handleDirError(err);
     });
 }
 

@@ -56,8 +56,8 @@ const tmapp = (function() {
         },
         _disabledControls,
         _availableZLevels,
-        _mouseHandler;
-
+        _mouseHandler,
+        _currentMouseUpdateFun=null;
 
     function _getFocusIndex() {
         return _currState.z + Math.floor(_currentImage.zLevels.length / 2);
@@ -106,7 +106,7 @@ const tmapp = (function() {
             ctx.filter = 'none';
         }
         else {
-            ctx.filter = `brightness(${_currState.brightness+1}) contrast(${Math.pow(4,_currState.contrast)})`;
+            ctx.filter = `brightness(${Math.pow(2,2*_currState.brightness)}) contrast(${Math.pow(4,_currState.contrast)})`;
         }
         _viewer.world.draw();
     }
@@ -257,6 +257,8 @@ const tmapp = (function() {
      * scrolling to change focus and rotation.
      */
     function _addMouseTracking(viewer) {
+        let mouse_pos; //retain last used mouse_pos (global) s.t. we may update locations when keyboard panning etc.
+        
         // Handle quick and slow clicks
         function clickHandler(event) {
             let regionWasBeingEdited = true;
@@ -289,17 +291,26 @@ const tmapp = (function() {
             }
         };
 
-        // Live updates of mouse position in collaboration
-        function moveHandler(event) {
-            if (!_cursorStatus.held) {
-                const pos = coordinateHelper.webToViewport(event.position);
+        // Similar naming convention as in overlayHandler
+        function updateMousePos() {
+            if (!_cursorStatus.held) { // Drag does not change location in image
+                const pos = coordinateHelper.webToViewport(mouse_pos);
                 setCursorStatus({x: pos.x, y: pos.y});
             }
+        }
+
+        // Live updates of mouse position in collaboration
+        // Store event to re-dispatch on viewport-change
+        function moveHandler(event) {
+            mouse_pos = event.position;
+            updateMousePos();
+            _currentMouseUpdateFun = updateMousePos;
         }
 
         // Live updates of whether or not the mouse is held down
         function heldHandler(held) {
             return function(event) {
+//                console.log('OSD: ',event.originalEvent.defaultPrevented, event);
                 setCursorStatus({held: held});
             };
         }
@@ -387,6 +398,11 @@ const tmapp = (function() {
         viewer.addHandler("tile-load-failed", function(event) {
             tmappUI.displayImageError("tilefail", 1000);
         });
+
+        // What is the difference between 'update-viewport' and 'viewport-change' ?
+        viewer.addHandler('viewport-change', (event) => {
+            _currentMouseUpdateFun && _currentMouseUpdateFun(); //set cursor position if view-port changed by external source
+        });
     }
 
     /**
@@ -407,9 +423,18 @@ const tmapp = (function() {
         const imageStack = _expandImageName(imageName);
         _openImages(imageStack);
 
-        //Create svgOverlay(); so that anything like D3, or any canvas library can act upon. https://d3js.org/
-        const overlay =  _viewer.svgOverlay();
-        overlayHandler.init(overlay);
+        const overlay = _viewer.svgOverlay();
+        const pixiOverlay = _viewer.pixiOverlay();
+        overlayHandler.init(overlay,pixiOverlay);
+
+        //PIXI.Ticker.shared.add(() => fps.frame());
+
+        // var ticker = PIXI.Ticker.shared;
+        // ticker.autoStart = false;
+        // ticker.stop();
+
+        // renderer.plugins.interaction.destroy();
+        // renderer.plugins.interaction = null;
     }
 
     function _clearCurrentImage() {

@@ -1,4 +1,3 @@
-
 const timingLog = false; //Log add/update times
 class SortableList {
     "use strict";

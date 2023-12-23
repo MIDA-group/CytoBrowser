@@ -398,32 +398,49 @@ const htmlHelper = (function() {
     }
 
     function _imageBrowserEntry(image) {
-        const entry = $(`
+        let entry;
+        if (image.thumbnails && image.thumbnails.overview && image.thumbnails.detail) {
+            entry = $(`
             <div class="col-3 d-flex">
                 <div class="card w-100">
                     <img src="${image.thumbnails.overview}" class="card-img-top position-absolute"
                     style="height: 130px; object-fit: cover;">
                     <img src="${image.thumbnails.detail}" class="card-img-top fade hide"
                     style="z-index: 9000; pointer-events: none; height: 130px; object-fit: cover;">
-                    <div class="card-body text-center" style="padding:0" >
+                    <div class="card-body text-center" style="padding:0;" >
                         <a class="card-link stretched-link" href="?image=${image.name}">
                             ${image.name}
                         </a>
                     </div>
                 </div>
             </div>
-        `);
-        const anchor = entry.find("a");
-        const detail = entry.find("img:eq(1)");
-        anchor.click(event => {
-            event.preventDefault();
-            entry.closest(".modal").modal("hide");
-            collabPicker.open(image.name);
-        });
-        anchor.hover(
-            () => detail.addClass("show").removeClass("hide"),
-            () => detail.addClass("hide").removeClass("show")
-        );
+            `);
+            const anchor = entry.find("a");
+            const detail = entry.find("img:eq(1)");
+            anchor.click(event => {
+                event.preventDefault();
+                entry.closest(".modal").modal("hide");
+                collabPicker.open(image.name);
+            });
+            anchor.hover(
+                () => detail.addClass("show").removeClass("hide"),
+                () => detail.addClass("hide").removeClass("show")
+            );
+        }
+        else {
+            entry = $(`
+            <div class="col-3 d-flex">
+                <div class="card w-100">
+                    <img src="data:," alt="&nbsp;Broken image path" class="card-img-top position-absolute m-1 m-xl-4">
+                    <div class="card-body text-center" style="padding:0;padding-top:130px;" >
+                        <a class="card-link stretched-link" href="?image=${image.name}">
+                            ${image.name}
+                        </a>
+                    </div>
+                </div>
+            </div>
+            `);
+        }
         return entry;
     }
 

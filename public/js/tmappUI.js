@@ -332,6 +332,33 @@ const tmappUI = (function(){
         $("#marker_size_reset").click(function() { $('#marker_size_slider').slider('setValue', 1, true, true);});
         $("#brightness_reset").click(function() { $('#brightness_slider').slider('setValue', 0, true, true);});
         $("#contrast_reset").click(function() { $('#contrast_slider').slider('setValue', 0, true, true);});
+
+        $("#fps_switch").prop('checked',false); // force it to false, since some browsers cache it incorrectly
+        $("#fps_switch").change(function(e) {
+            if (e.target.checked) {
+                let fps,pixiFPS;
+                let requestTime;
+                function loop(time) {
+                    if (e.target.checked) {
+                        if (requestTime) {
+                            fps = Math.round(1000/((performance.now() - requestTime)));
+                        }
+                        pixiFPS=Math.round(PIXI.Ticker.shared.FPS);
+                        $("#fps").text(`FPS: ${fps} (${pixiFPS})`);
+                        requestTime = time;
+    
+                        window.requestAnimationFrame((timeRes) => loop(timeRes));
+                    }
+                    else {
+                        $("#fps").text('');
+                    }
+                }
+                window.requestAnimationFrame((timeRes) => loop(timeRes));        
+            }
+            else {
+                $("#fps").text('');
+            }
+        }); 
     }
 
     function _initKeyboardShortcuts() {
@@ -360,15 +387,32 @@ const tmappUI = (function(){
             let caught=true; //Assume we use the key (setting to false in 'default')
             switch(event.which) {
                 case 27: // esc
-                    annotationTool.reset();
-                    regionEditor.stopEditingRegion();
+                    if (annotationTool.isEditing()) {
+                        annotationTool.reset();
+                    }
+                    else if (regionEditor.isEditingRegion()) {
+                        regionEditor.stopEditingRegion();
+                    }
+                    else {
+                        caught=false;
+                    }
                     break;
                 case 8: // backspace
-                    annotationTool.revert();
+                    if (annotationTool.isEditing()) {
+                        annotationTool.revert();
+                    }
+                    else {
+                        caught=false;
+                    }
                     break;
                 case 13: // enter
-                    annotationTool.complete();
-                    break;
+                    if (annotationTool.isEditing()) {
+                        annotationTool.complete();
+                    }
+                    else {
+                        caught=false;
+                    }
+                break;
                 // ASDF...
                 case 70: // f
                     //catching 'f' to disable 'Flip' in OSD, we do not support it
@@ -766,7 +810,7 @@ const tmappUI = (function(){
 
     let _urlTimeout=0;
     let _overwriteURL=true; //High (from start and) for 1 second after setURL => replaceState instead of pushState
-    
+
     /**
      * If next setURL to overwrite previous history state or not
      * @param {boolean} value setURL => value?replaceState:pushState
@@ -783,12 +827,18 @@ const tmappUI = (function(){
     function setURL(url) {
         if (!history.state || history.state.page!=url.href) 
         {
-            if (_overwriteURL) {
-                history.replaceState({ "page": url.href }, "", url.href);
+            try {
+                if (_overwriteURL) {
+                    history.replaceState({ "page": url.href }, "", url.href);
+                }
+                else {
+                    history.pushState({ "page": url.href }, "", url.href);
+                }
             }
-            else {
-                history.pushState({ "page": url.href }, "", url.href);
+            catch (err) { //Firefox e.g. often reports "Too many calls to Location or History APIs within a short timeframe."
+                console.warn('setURL reported an issue: ',err); 
             }
+
             setOverwriteURL(true);
         }
         if (_urlTimeout) {
@@ -811,7 +861,7 @@ const tmappUI = (function(){
     return {
         initUI,
         updateClassSelectionButtons,
-        choice: choice,
+        choice,
         openAnnotationEditMenu,
 
         setCollabID,
