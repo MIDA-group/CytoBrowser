@@ -47,11 +47,11 @@ const tmapp = (function() {
         _viewer=null, //This is the main viewer, with overlays
         _viewers=[], //Array of all viewers, in z-index order, first is on top
         _imageStates=[], //Array of _imageState
-        _lastMouseMoveEvent=null,
         _disabledControls,
         _availableZLevels,
-        _mouseHandler;
-
+        _mouseHandler,
+        _currentMouseUpdateFun=null;
+        
     const _currState = {
             x: 0.5,
             y: 0.5,
@@ -64,7 +64,6 @@ const tmapp = (function() {
             y: 0.5,
             held: false,
             inside: false
-        _currentMouseUpdateFun=null;
         }
 
 
@@ -505,7 +504,7 @@ const tmapp = (function() {
         function insideHandler(inside) {
             return function(event) {
                 if (!inside && !_cursorStatus.held) {
-                    _lastMouseMoveEvent=null; //Otherwise glitchy Navigator navigation
+                    _currentMouseUpdateFun=null; //Otherwise glitchy Navigator navigation
                 }
                 setCursorStatus({inside: inside});
             };
