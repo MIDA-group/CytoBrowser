@@ -503,9 +503,6 @@ const tmapp = (function() {
         // Live update of whether or not the mouse is in the viewport
         function insideHandler(inside) {
             return function(event) {
-                if (!inside && !_cursorStatus.held) {
-                    _currentMouseUpdateFun=null; //Otherwise glitchy Navigator navigation
-                }
                 setCursorStatus({inside: inside});
             };
         }
