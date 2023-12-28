@@ -6,7 +6,13 @@
   "directories": {
     "example": "examples"
   },
+  "bin": {
+    "cytobrowser": "cytobrowser.js"
+  },
   "scripts": {
+    "start": "cytobrowser.js",
+    "server": "cytobrowser.js",
+    "cytobrowser": "cytobrowser.js",
     "version-update": "node -p 'const { version } = require(\"./package.json\"); `const clientVersion = \"${version}\";`' >| ./public/js/misc/clientVersion.js"
   },
   "repository": {
