@@ -1,7 +1,7 @@
 # Installation
-Before the server can be run, make sure Node.js is installed. The current latest version of Node.js can be downloaded from [here](https://nodejs.org/en/download/). This includes the Node package manager (npm), which is required to install the required modules. The latest version of Node.js that CytoBrowser has been tested with is v14.15.4, which can be downloaded from [here](https://nodejs.org/download/release/v14.15.4/) in case the most recent release becomes incompatible.
+Before the server can be run, make sure Node.js is installed. The current latest version of Node.js can be downloaded from [here](https://nodejs.org/en/download/). This includes the Node package manager (npm), which is required to install the required modules. 
 
-Once Node.js and npm are installed, enter the top-level directory of CytoBrowser and run the following command to download and install the required modules:
+Once Node.js and npm are installed, enter the top-level directory of CytoBrowser (following `git clone`) and run the following command to download and install the required modules:
 
 ```bash
 npm install
