@@ -373,6 +373,9 @@ const tmapp = (function() {
         viewer.addHandler("pan", _updatePosition);
         viewer.addHandler("rotate", _updateRotation);
 
+        // When leaving full-screen mode, update counts
+        viewer.addHandler("full-screen", (event) => !event.fullScreen && annotationHandler && annotationHandler.updateAnnotationCounts());
+
         // When we're done loading
         viewer.addHandler("open", function (event) {
             console.info("Done loading!");

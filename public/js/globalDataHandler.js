@@ -39,6 +39,8 @@ const globalDataHandler = (function() {
     * The object contains key-value pairs where the keys are the class
     * names and the values are the number of annotation for the corresponding
     * class.
+    * 
+    * No change when objects are not visible (e.g. in FullScreen mode)
     */
    function updateAnnotationCounts(nMarkers, nRegions, classCounts) {
        $("#global_data_nmarkers").text(nMarkers);

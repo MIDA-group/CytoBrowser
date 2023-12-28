@@ -41,7 +41,7 @@ const annotationHandler = (function (){
      * Representation of the OpenSeadragon coordinate system used to
      * represent a point. Should take on the values of "web", "viewport"
      * or "image". See more information about the different coordinate
-     * systems {@link https://openseadragon.github.io/examples/viewport-coordinates/|here.}
+     * systems {@link https://openseadragon.github.io/examples/viewport-coordinates/ |here.}
      * @typedef {string} CoordSystem
      */
     const _annotations = [];
@@ -58,7 +58,7 @@ const annotationHandler = (function (){
 
 
     // Updates visuals
-    function _updateAnnotationCounts() {
+    function updateAnnotationCounts() {
         globalDataHandler.updateAnnotationCounts(_nMarkers, _nRegions, _classCounts);
     }
 
@@ -331,7 +331,7 @@ const annotationHandler = (function (){
             transmit && collabClient.addAnnotation(addedAnnotation);
         });
 
-        _updateAnnotationCounts();
+        updateAnnotationCounts();
         timingLog && console.timeEnd('addAnnotation');
 
         // Add a graphical representation of the annotation
@@ -388,7 +388,7 @@ const annotationHandler = (function (){
         if (annotation.mclass !== undefined && annotation.mclass !== updatedAnnotation.mclass) {
             _classCounts[updatedAnnotation.mclass]--;
             _classCounts[annotation.mclass]++;
-            _updateAnnotationCounts();
+            updateAnnotationCounts();
         }
 
         // Update _hasPrediction
@@ -503,7 +503,7 @@ const annotationHandler = (function (){
         });
 
         _hasPrediction = _checkPrediction();
-        _updateAnnotationCounts();
+        updateAnnotationCounts();
 
         // Remove the annotation from the graphics
         _updateVisuals();
@@ -571,10 +571,8 @@ const annotationHandler = (function (){
         return _hasPrediction;
     }
 
-    /**
-     * Call private function to restart annotation counts.
-     */
     function updateClassConfig(classConfig, transmit = true) {
+        // Call private function to restart annotation counts.
         _restartAnnotationCounts();
 
         // Send the update to collaborators
@@ -592,6 +590,7 @@ const annotationHandler = (function (){
         getAnnotationById,
         isEmpty,
         hasPrediction,
-        updateClassConfig
+        updateClassConfig,
+        updateAnnotationCounts
     };
 })();
