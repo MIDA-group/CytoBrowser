@@ -1,7 +1,7 @@
 {
   "name": "cytobrowser",
   "description": "CytoBrowser, a JavaScript and Node.js driven environment for fast and accessible collaborative online visualization, assessment, and annotation of very large microscopy images.",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "main": "cytobrowser.js",
   "directories": {
     "example": "examples"
