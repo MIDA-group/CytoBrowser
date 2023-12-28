@@ -855,7 +855,10 @@
 
         // Only way I manage to get correct size navbar on vertical phone layout (due to zoom, content is wider than 100%)!
         function resizeNavbar() {
-            document.getElementById("navbar").style.width = `${Math.max(document.getElementById("main_row").clientWidth,document.body.clientWidth)}px`;
+            const navbar = document.getElementById("navbar");
+            if (navbar) {
+                navbar.style.width = `${Math.max(document.getElementById("main_row").clientWidth,document.body.clientWidth)}px`;
+            }
             // console.log(`${Math.max(document.getElementById("main_row").clientWidth,document.body.clientWidth)}px`);
         }
         window.addEventListener('resize', resizeNavbar);
