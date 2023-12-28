@@ -686,6 +686,8 @@ const tmapp = (function() {
 /*  
 * Together with pixi/svgOverlay(element) below, in multi. To look at!
 * Perhaps not needed (pray) with 1.3.1
+* TODO: The scalebar seems in need of merging
+
             const navigatorDiv = document.getElementById("navigator_div");
             navigatorDiv.addEventListener("pointerenter", () => _unhideNavigator(true));
             navigatorDiv.addEventListener("pointerleave", () => _unhideNavigator(false));
@@ -707,7 +709,6 @@ const tmapp = (function() {
             //forward all events from annotation_layer to _viewer.canvas
             htmlUtils.forwardEvents(element, _viewer.canvas);
 
-<<<<<<< HEAD
             }
             // _viewer.canvas.addEventListener('pointerdown', console.log('x'));
  */    
@@ -716,11 +717,6 @@ const tmapp = (function() {
 //            const pixiOverlay = _viewer.pixiOverlay(element);
 //            const svgOverlay = _viewer.svgOverlay(element);
             overlayHandler.init(svgOverlay,pixiOverlay);
-=======
-            const overlay = _viewer.svgOverlay(element);
-            const pixiOverlay = _viewer.pixiOverlay(element);
-            overlayHandler.init(overlay,pixiOverlay);
->>>>>>> da0696e (toolbar_div for Navigation controls with zIndex)
         }
         else {
             newViewer.element.style.pointerEvents = "none"; //ignore mouse :-)
