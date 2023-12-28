@@ -11,8 +11,18 @@ Origintating as a fork[^1] of [TissUUmaps](https://github.com/wahlby-lab/TissUUm
 4. Point and region annotations with class label and textual comments
 5. Automatic server side storage of annotations; import/export of annotations in JSON format
 
+#### Express setup
+1. Install [Node.js](https://nodejs.org/en/download) 
+2. Run `npx cytobrowser --open-browser`[^2]
+[^2]: If (on Windows) you get `ENOENT: no such file or directory...`, the try running `npm install -g npm`
 
-#### Example
+Done! 😊
+
+You may now populate your `./data` directory, see below for further info.  
+&nbsp;
+
+
+#### Slightly longer example, cloning the latest sources from GitHub (instead of using npx)
 <pre>
 #Clone from github
 git clone https://github.com/MIDA-group/CytoBrowser.git
@@ -20,6 +30,7 @@ cd CytoBrowser
 
 #Install the necessary dependencies
 npm install
+#Optionally switch to develop version `git switch develop`
 
 
 #Put your OpenSeadragon compatible images in the 'data/' directory
@@ -34,13 +45,14 @@ npm install
 node cytobrowser.js --open-browser
 
 
-
-
-#Optionally open an ssh-pipe from your local machine to the web server
-ssh -L 8080:localhost:8080 remote.host
-
 #More generally, to start the web server on a specified port
-node cytobrowser.js [hostname] [port]
+# node cytobrowser.js [hostname] [port]
+# node cytobrowser.js --help
+
+  
+#Optionally open an ssh-pipe from your local machine to the web server
+ssh -L 8080:localhost:8080 remote.host  
+
 
 
 #Enjoy! =)
