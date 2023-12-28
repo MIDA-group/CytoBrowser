@@ -423,9 +423,19 @@ const tmapp = (function() {
         const imageStack = _expandImageName(imageName);
         _openImages(imageStack);
 
-        const overlay = _viewer.svgOverlay();
-        const pixiOverlay = _viewer.pixiOverlay();
-        overlayHandler.init(overlay,pixiOverlay);
+        //Create a wrapper in which we place both overlays, s.t. we can switch with zIndex but still get Navigator and On-screen menu
+        const wrapper = document.createElement('div');
+        wrapper.style.position = 'absolute';
+        wrapper.style.left = 0;
+        wrapper.style.top = 0;
+        wrapper.style.width = '100%';
+        wrapper.style.height = '100%';
+        wrapper.style.zIndex = 0; //We use zIndex inside
+        _viewer.canvas.appendChild(wrapper);
+
+        const svgOverlay = _viewer.svgOverlay(wrapper);
+        const pixiOverlay = _viewer.pixiOverlay(wrapper);
+        overlayHandler.init(svgOverlay,pixiOverlay);
 
         //PIXI.Ticker.shared.add(() => fps.frame());
 

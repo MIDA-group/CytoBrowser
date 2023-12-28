@@ -14,17 +14,18 @@
     var svgNS = 'http://www.w3.org/2000/svg';
 
     // ----------
-    $.Viewer.prototype.svgOverlay = function() {
+    $.Viewer.prototype.svgOverlay = function(container=this.canvas) {
         if (this._svgOverlayInfo) {
             return this._svgOverlayInfo;
         }
 
-        this._svgOverlayInfo = new Overlay(this);
+        this._svgOverlayInfo = new Overlay(this, container);
         return this._svgOverlayInfo;
     };
 
     // ----------
-    var Overlay = function(viewer) {
+    // Option to use other container than viewer.canvas, e.g. for internal z-stacking
+    var Overlay = function(viewer, container=viewer.canvas) {
         var self = this;
 
         this._viewer = viewer;
@@ -37,7 +38,7 @@
         this._svg.style.top = 0;
         this._svg.style.width = '100%';
         this._svg.style.height = '100%';
-        this._viewer.canvas.appendChild(this._svg);
+        container.appendChild(this._svg);
 
         this._node = document.createElementNS(svgNS, 'g');
         this._svg.appendChild(this._node);

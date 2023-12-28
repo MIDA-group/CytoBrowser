@@ -407,6 +407,9 @@ const overlayHandler = (function (){
      * both markers and regions. These include handlers for dragging an
      * annotation, ctrl-clicking to remove, and right clicking for
      * options.
+     *
+     * This is for SVG version, creating a MouseTracker for each object; the PixiJS version is elsewhere.
+     *
      * @param {Object} d The data object given by d3.
      * @param {Object} node The node for the annotation.
      */

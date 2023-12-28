@@ -12,12 +12,12 @@
     }
 
     // ----------
-    $.Viewer.prototype.pixiOverlay = function() {
+    $.Viewer.prototype.pixiOverlay = function(container=this.canvas) {
         if (this._pixiOverlayInfo) {
             return this._pixiOverlayInfo;
         }
 
-        this._pixiOverlayInfo = new Overlay(this);
+        this._pixiOverlayInfo = new Overlay(this, container);
         return this._pixiOverlayInfo;
     };
 
@@ -31,7 +31,8 @@
     }     
       
     // ----------
-    var Overlay = function(viewer) {
+    // Option to use other container than viewer.canvas, e.g. for internal z-stacking
+    var Overlay = function(viewer, container=viewer.canvas) {
         var self = this;
 
         this._viewer = viewer;
@@ -44,7 +45,7 @@
         this._pixi.style.top = 0;
         this._pixi.style.width = '100%';
         this._pixi.style.height = '100%';
-        this._viewer.canvas.appendChild(this._pixi);
+        container.appendChild(this._pixi);
 
         // Create the application helper and add its render target to the page
         this._app = new PIXI.Application({
