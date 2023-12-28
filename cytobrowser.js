@@ -41,7 +41,11 @@ const app = express();
 const expressWs = require("express-ws")(app);
 
 // Serve static files
-app.use(express.static("public"));
+const publicPath = `${__dirname}/public/`;
+console.info('Serving resources from: ',publicPath);
+app.use(express.static(publicPath));
+
+console.info('Serving image data from: ',dataDir);
 app.use("/data", express.static(dataDir));
 app.use(express.json());
 
@@ -117,7 +121,7 @@ const listener = app.listen(port, hostname, () => {
     }
 
     console.info(`CytoBrowser server (v${serverVersion}) listening at http://${address}:${port}`);
-    
+
     // Opens the URL in the default browser.
     if (argv['open-browser']) {
         open(`http://${address}:${port}`);  
