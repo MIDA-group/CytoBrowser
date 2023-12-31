@@ -1,9 +1,9 @@
 /**
- * Functions for updating the OpenSeadragon overlay.
- * @namespace overlayHandler
+ * Functions for updating the marker annotation overlay.
+ * @namespace markerLayer
  **/
 
-const overlayHandler = (function (){
+const markerLayer = (function (){
     "use strict";
 
     const timingLog = false; //Log update times

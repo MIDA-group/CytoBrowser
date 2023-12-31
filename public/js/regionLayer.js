@@ -1,9 +1,9 @@
 /**
- * Functions for updating the OpenSeadragon overlay.
- * @namespace overlayHandler
+ * Functions for updating the region annotation overlay.
+ * @namespace regionLayer
  **/
 
-const overlayHandler = (function (){
+const regionLayer = (function (){
     "use strict";
 
     const timingLog = false; //Log update times
