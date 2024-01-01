@@ -19,12 +19,12 @@ const layerHandler = (function (){
         _markerScale;
 
 
-    function _forEachLayer(funStr, param) {
-        _layers.forEach(item => typeof item[funStr] === 'function' && item[Str](param) );
+    function _forEachLayer(funStr, ...args) {
+        _layers.forEach(item => typeof item[funStr] === 'function' && item[Str](...args) );
     }
-    function _forCurrentLayer(funStr, param) {
+    function _forCurrentLayer(funStr, ...args) {
         const item = _layers[0];
-        typeof item[funStr] === 'function' && item[Str](param);
+        typeof item[funStr] === 'function' && item[Str](...args);
     }
 
 
@@ -49,6 +49,7 @@ const layerHandler = (function (){
         _scale = windowSizeAdjustment / zoomLevel;
         _maxScale = windowSizeAdjustment / maxZoom;   
 
+        _forEachLayer("setZoom", zoomLevel, maxZoom, wContainer, hContainer);
         _setScale();   
     }
 

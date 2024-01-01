@@ -438,8 +438,10 @@ const tmapp = (function() {
 
         const svgOverlay = _viewer.svgOverlay(wrapper);
         const pixiOverlay = _viewer.pixiOverlay(wrapper);
-        layerHandler.addLayer(svgOverlay,"region");
-        layerHandler.addLayer(pixiOverlay,"marker");
+        regionLayer.init(svgOverlay);
+        layerHandler.addLayer(regionLayer,"region");
+        markerLayer.init(pixiOverlay);
+        layerHandler.addLayer(markerLayer,"marker");
 
         //PIXI.Ticker.shared.add(() => fps.frame());
 
