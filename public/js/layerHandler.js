@@ -20,11 +20,11 @@ const layerHandler = (function (){
 
 
     function _forEachLayer(funStr, ...args) {
-        _layers.forEach(item => typeof item[funStr] === 'function' && item[Str](...args) );
+        _layers.forEach(item => typeof item[funStr] === 'function' && item[funStr](...args) );
     }
     function _forCurrentLayer(funStr, ...args) {
         const item = _layers[0];
-        typeof item[funStr] === 'function' && item[Str](...args);
+        typeof item[funStr] === 'function' && item[funStr](...args);
     }
 
 
@@ -135,23 +135,24 @@ const layerHandler = (function (){
      * "marker".
      */
     function setTopLayer(name) {
+        if (!_layers.length) return;
         _layers[0].blur();
         _putLayerFirst(name)
         _layers[0].focus();
     }
 
-    function updateAnnotations() {
-        _forEachLayer("updateAnnotations");
+    function updateAnnotations(annotations) {
+        _forEachLayer("updateAnnotations", annotations);
     }
     // Counter to check if we're busy rendering
-    updateAnnotations.inProgress = (() => _layers.some(updateAnnotations.inProgress) );
+    updateAnnotations.inProgress = (() => _layers.some((elem) => elem.updateAnnotations.inProgress()) );
 
     return {
 
         clearAnnotations:clearAllLayers,
-        setOverlayScale:setZoom,
+        setZoom,
         setMarkerScale:setMarkerScale,
-        setOverlayRotation:setRotation,
+        setRotation,
         setActiveAnnotationOverlay:setTopLayer,
 
         addLayer,

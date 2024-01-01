@@ -478,8 +478,7 @@ const markerLayer = (function (){
      * svgOverlay() method.
      */
     function init(pixiOverlay) {
-        const markers = d3.select(svgOverlay.node()) //Fix
-            .append("g")
+        const markers = d3.create('g')
             .attr("id", "markers");
         _markerOverlay = d3.select(markers.node());
         _pxo=pixiOverlay;
@@ -502,7 +501,7 @@ const markerLayer = (function (){
 
 
     function setZ(level) {
-        _svo._svg.style.zIndex=level;
+        //_svo._svg.style.zIndex=level;
     }
 
     function _alpha(obj,s) {
