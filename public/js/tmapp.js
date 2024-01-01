@@ -118,7 +118,7 @@ const tmapp = (function() {
         const zoom = _viewer.viewport.getZoom();
         const maxZoom = _viewer.viewport.getMaxZoom();
         const size = _viewer.viewport.getContainerSize();
-        overlayHandler.setOverlayScale(zoom, maxZoom, size.x, size.y);
+        layerHandler.setZoom(zoom, maxZoom, size.x, size.y);
         tmappUI.setImageZoom(Math.round(zoom*10)/10);
         _currState.zoom = zoom;
 
@@ -142,7 +142,7 @@ const tmapp = (function() {
             throw new Error("Tried to update rotation of nonexistent viewer.");
         }
         const rotation = _viewer.viewport.getRotation();
-        overlayHandler.setOverlayRotation(rotation);
+        layerHandler.setRotation(rotation);
         tmappUI.setImageRotation(rotation);
         _currState.rotation = rotation;
         _updateCollabPosition();
@@ -291,7 +291,7 @@ const tmapp = (function() {
             }
         };
 
-        // Similar naming convention as in overlayHandler
+        // Similar naming convention as in layerHandlers
         function updateMousePos() {
             if (!_cursorStatus.held) { // Drag does not change location in image
                 const pos = coordinateHelper.webToViewport(mouse_pos);
@@ -438,7 +438,8 @@ const tmapp = (function() {
 
         const svgOverlay = _viewer.svgOverlay(wrapper);
         const pixiOverlay = _viewer.pixiOverlay(wrapper);
-        overlayHandler.init(svgOverlay,pixiOverlay);
+        layerHandler.addLayer(svgOverlay,"region");
+        layerHandler.addLayer(pixiOverlay,"marker");
 
         //PIXI.Ticker.shared.add(() => fps.frame());
 
