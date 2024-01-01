@@ -258,7 +258,7 @@ const collabClient = (function(){
         _localMember = null;
         _ws = null;
         _collabId  = null;
-        overlayHandler.updateMembers([]);
+        regionHandler.updateMembers([]);
         tmappUI.clearCollaborators();
         tmapp.clearCollab();
         versionRevert.clear();
@@ -313,7 +313,7 @@ const collabClient = (function(){
         if (hardUpdate) {
             tmappUI.updateCollaborators(_localMember, _members);
         }
-        overlayHandler.updateMembers(_members.filter(member => member !== _localMember));
+        regionHandler.updateMembers(_members.filter(member => member !== _localMember));
 
         if (_followedMember) {
             if (_followedMember.updated) {

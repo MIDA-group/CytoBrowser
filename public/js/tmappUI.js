@@ -231,18 +231,18 @@ const tmappUI = (function(){
 
     function _initToolSelectionButtons() {
         $("#tool_marker").addClass("active");
-        overlayHandler.setActiveAnnotationOverlay("marker");
+        layerHandler.setActiveAnnotationOverlay("marker");
         annotationTool.setTool("marker");
         $("#tool_marker").click(() => {
-            overlayHandler.setActiveAnnotationOverlay("marker");
+            layerHandler.setActiveAnnotationOverlay("marker");
             annotationTool.setTool("marker");
         });
         $("#tool_rect").click(() => {
-            overlayHandler.setActiveAnnotationOverlay("region");
+            layerHandler.setActiveAnnotationOverlay("region");
             annotationTool.setTool("rect");
         });
         $("#tool_poly").click(() => {
-            overlayHandler.setActiveAnnotationOverlay("region");
+            layerHandler.setActiveAnnotationOverlay("region");
             annotationTool.setTool("poly");
         });
     }
@@ -325,7 +325,7 @@ const tmappUI = (function(){
     }
 
     function _initVisualizationSliders() {
-        $("#marker_size_slider").slider().on('change', function(e) {overlayHandler.setMarkerScale(e.value.newValue);});
+        $("#marker_size_slider").slider().on('change', function(e) {layerHandler.setMarkerScale(e.value.newValue);});
         $("#brightness_slider").slider().on('change', function(e) {tmapp.setBrightness(e.value.newValue);});
         $("#contrast_slider").slider().on('change', function(e) {tmapp.setContrast(e.value.newValue);});
     

@@ -80,9 +80,9 @@ const layerHandler = (function (){
      * Everything which should be called for new layers
      */
     function _setLayerParams(layer) {
-        layer.setScale.?(_scale);
-        layer.setRotation.?(_rotation);
-        layer.setMarkerScale.?(_rotation);
+        layer.setScale?.(_scale);
+        layer.setRotation?.(_rotation);
+        layer.setMarkerScale?.(_rotation);
     }
 
     /**
@@ -140,6 +140,12 @@ const layerHandler = (function (){
         _layers[0].focus();
     }
 
+    function updateAnnotations() {
+        _forEachLayer("updateAnnotations");
+    }
+    // Counter to check if we're busy rendering
+    updateAnnotations.inProgress = (() => _layers.some(updateAnnotations.inProgress) );
+
     return {
 
         clearAnnotations:clearAllLayers,
@@ -149,6 +155,6 @@ const layerHandler = (function (){
         setActiveAnnotationOverlay:setTopLayer,
 
         addLayer,
-
+        updateAnnotations
     };
 })();
