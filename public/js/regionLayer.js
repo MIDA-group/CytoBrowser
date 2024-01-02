@@ -265,7 +265,7 @@ const regionLayer = (function (){
                 if (event.originalEvent.ctrlKey) {
                     annotationHandler.remove(d.id);
                 }
-                else if (getActiveAnnotationOverlay()==="region") {
+                else if (layerHandler.topLayer().name==="region") {
                     const rect1 = event.eventSource.element.getBoundingClientRect(); //There must be an easier way
                     const rect2 = tmapp.mouseHandler().element.getBoundingClientRect(); //Possibly OSD 2.5 
                     event.position.x+=rect1.left-rect2.left; //https://github.com/openseadragon/openseadragon/issues/1652

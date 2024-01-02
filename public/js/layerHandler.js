@@ -148,6 +148,7 @@ const layerHandler = (function (){
     updateAnnotations.inProgress = (() => _layers.some((elem) => elem.updateAnnotations.inProgress()) );
 
     return {
+        topLayer: () => _layers[0],
 
         clearAnnotations:clearAllLayers,
         setZoom,
