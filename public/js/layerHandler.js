@@ -106,6 +106,8 @@ const layerHandler = (function (){
         }
         _setZOrder();
         _layers[0].focus();
+
+        console.log(_layers);
     }
 
     /**

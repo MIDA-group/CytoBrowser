@@ -440,6 +440,8 @@ const tmapp = (function() {
         const pixiOverlay = _viewer.pixiOverlay(wrapper);
         regionLayer.init(svgOverlay);
         layerHandler.addLayer(regionLayer,"region");
+        
+        const markerLayer = new MarkerLayer("marker");
         markerLayer.init(pixiOverlay);
         layerHandler.addLayer(markerLayer,"marker");
 
