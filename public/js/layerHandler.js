@@ -16,7 +16,7 @@ const layerHandler = (function (){
         _scale,
         _maxScale,
         _rotation,
-        _markerScale;
+        _markerScale = 1; //Modifcation factor
 
 
     function _forEachLayer(funStr, ...args) {
@@ -71,8 +71,8 @@ const layerHandler = (function (){
      * Adjusting the global marker scale
      * @param {number} mScale 
      */
-    function setMarkerScale(mScale) {
-        _markerScale = mScale;
+    function setMarkerScale(markerScale) {
+        _markerScale = markerScale;
         _forEachLayer("setMarkerScale",_markerScale);
     }
 
@@ -82,7 +82,7 @@ const layerHandler = (function (){
     function _setLayerParams(layer) {
         layer.setScale?.(_scale);
         layer.setRotation?.(_rotation);
-        layer.setMarkerScale?.(_rotation);
+        layer.setMarkerScale?.(_markerScale);
     }
 
     /**
@@ -152,7 +152,7 @@ const layerHandler = (function (){
 
         clearAnnotations:clearAllLayers,
         setZoom,
-        setMarkerScale:setMarkerScale,
+        setMarkerScale,
         setRotation,
         setActiveAnnotationOverlay:setTopLayer,
 

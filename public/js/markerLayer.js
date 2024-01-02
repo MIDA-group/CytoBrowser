@@ -452,7 +452,7 @@ const markerLayer = (function (){
         _zoomLevel = zoomLevel;
         _wContainer = wContainer;
         _scale = windowSizeAdjustment / zoomLevel;
-        _maxScale = windowSizeAdjustment / maxZoom;      
+        _maxScale = windowSizeAdjustment / maxZoom;
         _resizeMarkers();
     }
 
