@@ -1,21 +1,26 @@
+"use strict";
 /**
- * Functions for updating the region annotation overlay.
- * @namespace regionLayer
+ * Class for the region annotation overlay.
  **/
 
-const regionLayer = (function (){
-    "use strict";
+class RegionLayer extends OverlayLayer {
+    #timingLog = false; //Log update times
 
-    const timingLog = false; //Log update times
+    #cursorOverlay;
+    #regionOverlay;
+    #pendingRegionOverlay;
+    #previousCursors;
+    #scale;
 
-    let _cursorOverlay,
-        _regionOverlay,
-        _pendingRegionOverlay,
-        _previousCursors,
-        _scale,
+    #svo = null; //svg overlay
+    #currentMouseUpdateFun = null;
 
-        _svo = null, //svg overlay
-        _currentMouseUpdateFun = null;
+    constructor(name) {
+        super(name);
+
+        // Counter to check if we're busy rendering; Immediate function returning a function
+        this.updateAnnotations.inProgress = (function () { let flag = 0; return (set=null) => { if (set!=null) flag+=set?1:-1; return flag; }} )();
+    }
 
     /**
      * Edit a string with stored in the transform attribute of a node.
@@ -31,7 +36,7 @@ const regionLayer = (function (){
      * are run on the old values to produce new values.
      * @returns {string} The resulting transform string.
      */
-    function _editTransform(transformString, changes) {
+    #editTransform(transformString, changes) {
         // Turn the transform string into an object
         // Start by finding all the transforms
         const transforms = transformString.match(/[^\s,]+\([^)]*\)/g);
@@ -74,8 +79,8 @@ const regionLayer = (function (){
      * @param {Object} transform The transform that should be applied
      * with the returned function.
      */
-    function _transformFunction(transform) {
-        function f(d, i) {
+    #transformFunction(transform) {
+        return (d, i) => {
             let appliedTransform;
             if (typeof transform === "function") {
                 appliedTransform = transform.call(this, d, i);
@@ -84,25 +89,24 @@ const regionLayer = (function (){
                 appliedTransform = transform;
             }
             const currTransform = this.getAttribute("transform");
-            return _editTransform(currTransform, appliedTransform);
+            return this.#editTransform(currTransform, appliedTransform);   //SOMETHING HERE WILL NOT WORK!
         }
-        return f;
     }
 
-    function _cursorSize(cursor) {
+    #cursorSize(cursor) {
         const normalSize = cursor.inside || cursor.held;
-        return (normalSize ? 15 : 12) * _scale;
+        return (normalSize ? 15 : 12) * this.#scale;
     }
 
-    function _regionStrokeWidth() {
-        return 2 * _scale;
+    #regionStrokeWidth() {
+        return 2 * this.#scale;
     }
 
-    function _regionHandleSize() {
-        return 0.5 * _scale;
+    #regionHandleSize() {
+        return 0.5 * this.#scale;
     }
 
-    function _getRegionPath(d) {
+    #getRegionPath(d) {
         const stops = d.points.map(point => {
             const coords = coordinateHelper.imageToOverlay(point);
             return `${coords.x} ${coords.y}`;
@@ -110,41 +114,31 @@ const regionLayer = (function (){
         return `M ${stops.join(" L ")} Z`;
     }
 
-    function _getAnnotationColor(d) {
+    #getAnnotationColor(d) {
         return classUtils.classColor(d.mclass);
     }
 
-/*  Not used for Regions
-
-    function _getAnnotationText(d) {
-        if (d.prediction == null) { //null or undef
-            return `${d.mclass}`;
-        }
-        return `${d.prediction.toFixed(4)}: ${d.mclass}`;
-    }
- */
-   
-    function _resizeMembers() {
-        _cursorOverlay.selectAll("g")
-            .attr("transform", _transformFunction(function() {
-                return {scale: _cursorSize(_previousCursors.get(this))};
+    #resizeMembers() {
+        this.#cursorOverlay.selectAll("g")
+            .attr("transform", this.#transformFunction(function() {
+                return {scale: this.#cursorSize(this.#previousCursors.get(this))};
             }));
     }
 
-    function _resizeRegions() {
-        _regionOverlay.selectAll("g")
+    #resizeRegions() {
+        this.#regionOverlay.selectAll("g")
             .call(group =>
                 group.select(".region-area")
-                    .attr("stroke-width", _regionStrokeWidth())
+                    .attr("stroke-width", this.#regionStrokeWidth())
             )
             .selectAll(".region-edit-handles g")
-            .attr("transform", _transformFunction({scale: _regionHandleSize()}));
-        _pendingRegionOverlay.selectAll("path")
-            .attr("stroke-width", _regionStrokeWidth())
-            .attr("stroke-dasharray", _regionStrokeWidth());
+            .attr("transform", this.#transformFunction({scale: this.#regionHandleSize()}));
+        this.#pendingRegionOverlay.selectAll("path")
+            .attr("stroke-width", this.#regionStrokeWidth())
+            .attr("stroke-dasharray", this.#regionStrokeWidth());
     }
 
-    function _removeRegionEditControls(d, node) {
+    #removeRegionEditControls(d, node) {
         const selection = d3.select(node);
         if (selection.attr("data-being-edited")) {
             selection.selectAll(".region-edit-handles g path")
@@ -159,7 +153,7 @@ const regionLayer = (function (){
     }
 
     // Used when editing (path-nodes of) an existing region
-    function _createRegionEditControls(d, node) {
+    #createRegionEditControls(d, node) {
         const selection = d3.select(node);
         if (!selection.attr("data-being-edited")) {
             selection.attr("data-being-edited", true)
@@ -170,12 +164,12 @@ const regionLayer = (function (){
                         group.append("g")
                             .attr("transform", d => {
                                 const coords = coordinateHelper.imageToOverlay(point);
-                                return `translate(${coords.x}, ${coords.y}), scale(${_regionHandleSize()})`;
+                                return `translate(${coords.x}, ${coords.y}), scale(${this.#regionHandleSize()})`;
                             })
                             .append("path")
                             .attr("d", d3.symbol().size(500).type(d3.symbolCircle))
                             .attr("transform", "scale(0)")
-                            .style("fill", _getAnnotationColor)
+                            .style("fill", this.#getAnnotationColor)
                             .style("cursor", "move")
                             .transition("appear").duration(250)
                             .attr("transform", "scale(1)")
@@ -199,11 +193,11 @@ const regionLayer = (function (){
                                         mouse_pos = new OpenSeadragon.Point(event.originalEvent.offsetX,event.originalEvent.offsetY);
                                         const vertex_pos = coordinateHelper.imageToWeb(annotationHandler.getAnnotationById(d.id).points[i]);
                                         mouse_offset = mouse_pos.minus(vertex_pos);
-                                        _currentMouseUpdateFun=updateMousePos;
+                                        this.#currentMouseUpdateFun=updateMousePos;
                                     },
                                     releaseHandler: function(event) {
                                         tmapp.setCursorStatus({held: false});
-                                        _currentMouseUpdateFun=null;
+                                        this.#currentMouseUpdateFun=null;
                                     },
                                     dragHandler: function(event) {
                                         mouse_pos = new OpenSeadragon.Point(event.originalEvent.offsetX,event.originalEvent.offsetY);
@@ -228,7 +222,7 @@ const regionLayer = (function (){
      * @param {Object} d The data object given by d3.
      * @param {Object} node The node for the annotation.
      */
-    function _addAnnotationMouseEvents(d, node) {
+    #addAnnotationMouseEvents(d, node) {
         let mouse_pos; //retain last used mouse_pos (global) s.t. we may update locations when keyboard panning etc.
         let mouse_offset; //offset (in webCoords) between mouse click and object
 
@@ -300,11 +294,11 @@ const regionLayer = (function (){
                 mouse_pos = new OpenSeadragon.Point(event.originalEvent.offsetX,event.originalEvent.offsetY);
                 const object_pos = coordinateHelper.imageToWeb(annotationHandler.getAnnotationById(d.id).centroid);
                 mouse_offset = mouse_pos.minus(object_pos);
-                _currentMouseUpdateFun=updateMousePos;
+                this.#currentMouseUpdateFun=updateMousePos;
             },
             releaseHandler: function(event) {
                 tmapp.setCursorStatus({held: false});
-                _currentMouseUpdateFun=null;
+                this.#currentMouseUpdateFun=null;
             },
             dragHandler: function(event) {
                 regionEditor.stopEditingRegion();
@@ -323,15 +317,15 @@ const regionLayer = (function (){
         }).setTracking(true);
     }
 
-    function _addRegionMouseEvents(d, node) {
-        _addAnnotationMouseEvents(d, node);
+    #addRegionMouseEvents(d, node) {
+        this.#addAnnotationMouseEvents(d, node);
 
         function highlight() {
             d3.select(node)
                 .selectAll(".region-area")
                 .transition("highlight").duration(200)
-                .attr("stroke", _getAnnotationColor)
-                .attr("fill", _getAnnotationColor)
+                .attr("stroke", this.#getAnnotationColor)
+                .attr("fill", this.#getAnnotationColor)
                 .attr("fill-opacity", 0.4);
         }
 
@@ -339,8 +333,8 @@ const regionLayer = (function (){
             d3.select(node)
                 .selectAll(".region-area")
                 .transition("highlight").duration(200)
-                .attr("stroke", _getAnnotationColor)
-                .attr("fill", _getAnnotationColor)
+                .attr("stroke", this.#getAnnotationColor)
+                .attr("fill", this.#getAnnotationColor)
                 .attr("fill-opacity", 0.2);
         }
 
@@ -352,58 +346,58 @@ const regionLayer = (function (){
     }
 
 
-    function _enterRegion(enter) {
+    #enterRegion(enter) {
         return enter.append("g")
             .attr("class", "region")
             .call(group =>
                 group.append("path")
-                    .attr("d", _getRegionPath)
-                    .attr("stroke", _getAnnotationColor)
-                    .attr("stroke-width", _regionStrokeWidth())
-                    .attr("fill", _getAnnotationColor)
+                    .attr("d", this.#getRegionPath)
+                    .attr("stroke", this.#getAnnotationColor)
+                    .attr("stroke-width", this.#regionStrokeWidth())
+                    .attr("fill", this.#getAnnotationColor)
                     .attr("fill-opacity", 0.2)
                     .attr("class", "region-area")
             )
             .attr("opacity", 1)
-            .each(function(d) {_addRegionMouseEvents(d, this);});
+            .each(function(d) {this.#addRegionMouseEvents(d, this);});
     }
 
-    function _updateRegion(update) {
+    #updateRegion(update) {
         return update.call(update =>
                 update.select(".region-area")
-                    .attr("d", _getRegionPath)
+                    .attr("d", this.#getRegionPath)
                     .transition("changeColor").duration(500)
-                    .attr("stroke", _getAnnotationColor)
-                    .attr("fill", _getAnnotationColor)
+                    .attr("stroke", this.#getAnnotationColor)
+                    .attr("fill", this.#getAnnotationColor)
             )
             .call(update =>
                 update.selectAll(".region-edit-handles g")
                     .each(function(d, i) {
                         const point = d.points[i];
                         d3.select(this)
-                            .attr("transform", _transformFunction(function(d) {
+                            .attr("transform", this.#transformFunction(function(d) {
                                 const coords = coordinateHelper.imageToOverlay(point);
                                 return {translate: [coords.x, coords.y]};
                             }));
                     })
                     .select("path")
                     .transition("changeColor").duration(500)
-                    .style("fill", _getAnnotationColor)
+                    .style("fill", this.#getAnnotationColor)
             );
     }
 
-    function _exitRegion(exit) {
+    #exitRegion(exit) {
         return exit.transition("appear").duration(200)
             .attr("opacity", 0)
             .remove();
     }
 
 
-    function _enterMember(enter) {
+    #enterMember(enter) {
         enter.append("g")
             .attr("transform", d => {
                 const coords = coordinateHelper.viewportToOverlay(d.cursor);
-                return `translate(${coords.x}, ${coords.y}), rotate(-30), scale(${_cursorSize(d.cursor)})`
+                return `translate(${coords.x}, ${coords.y}), rotate(-30), scale(${this.#cursorSize(d.cursor)})`
             })
             .attr("opacity", 0.0)
             .style("fill", d => d.color)
@@ -423,19 +417,19 @@ const regionLayer = (function (){
             .attr("opacity", 1.0);
     }
 
-    function _updateMember(update) {
-        update.attr("transform", _transformFunction(function(d) {
+    #updateMember(update) {
+        update.attr("transform", this.#transformFunction(function(d) {
                 const coords = coordinateHelper.viewportToOverlay(d.cursor);
                 return {translate: [coords.x, coords.y]};
             }))
             .call(group =>
-                group.filter(function(d) {return _previousCursors.get(this).inside !== d.cursor.inside;})
+                group.filter(function(d) {return this.#previousCursors.get(this).inside !== d.cursor.inside;})
                     .transition("changeColor").duration(500)
                     .style("opacity", d => d.cursor.inside ? 1.0 : 0.2)
             )
             .select(".caret")
             .filter(function(d) {
-                return _previousCursors.get(this).held !== d.cursor.held;
+                return this.#previousCursors.get(this).held !== d.cursor.held;
             })
             .transition("highlight").duration(150)
             .attr("transform", d => `translate(0, ${d.cursor.held ? 0.05 : 0.15})`);
@@ -447,8 +441,8 @@ const regionLayer = (function (){
      * @param {Array} nonLocalMembers An array of members, excluding the
      * local member.
      */
-    function updateMembers(nonLocalMembers) {
-        if (!_cursorOverlay) {
+    updateMembers(nonLocalMembers) {
+        if (!this.#cursorOverlay) {
             return;
         }
 
@@ -456,15 +450,15 @@ const regionLayer = (function (){
             return member.cursor;
         });
 
-        _cursorOverlay.selectAll("g")
+        this.#cursorOverlay.selectAll("g")
             .data(visibleMembers, d => d.id)
             .join(
-                _enterMember,
-                _updateMember
+                enter => this.#enterMember(enter),
+                update => this.#updateMember(update)
             );
 
-        _cursorOverlay.selectAll("g")
-            .property(_previousCursors, d => d.cursor);
+        this.#cursorOverlay.selectAll("g")
+            .property(this.#previousCursors, d => d.cursor);
     }
 
 
@@ -472,9 +466,9 @@ const regionLayer = (function (){
      * Clear all annotations currently in the overlay, in case you need to quickly replace them.
      * (Presumably to replace with just update.)
      */
-    function clear() {
-        if (_regionOverlay) {
-            _regionOverlay.selectAll("g").remove();
+    clear() {
+        if (this.#regionOverlay) {
+            this.#regionOverlay.selectAll("g").remove();
         }
     }
 
@@ -487,9 +481,9 @@ const regionLayer = (function (){
     /**
      * Resolved promises on .transition().end() => updateAnnotations.inProgress(false)
      */
-    function updateAnnotations(annotations){
+    updateAnnotations(annotations){
         let timed=false;
-        if (timingLog) {
+        if (this.#timingLog) {
             if (!updateAnnotations.inProgress()) {
                 console.time('updateAnnotations');  //lets time only the first
                 timed=true;
@@ -497,18 +491,18 @@ const regionLayer = (function (){
         }
 
         //Draw annotations and update list asynchronously
-        updateAnnotations.inProgress(true); //No function 'self' existing
+        this.updateAnnotations.inProgress(true); //No function 'self' existing
         const regions = annotations.filter(annotation =>
             annotation.points.length > 1
         );
 
         const doneRegions = new Promise((resolve, reject) => {
-            const regs = _regionOverlay.selectAll(".region")
+            const regs = this.#regionOverlay.selectAll(".region")
                 .data(regions, d => d.id)
                 .join(
-                    _enterRegion,
-                    _updateRegion,
-                    _exitRegion
+                    enter => this.#enterRegion(enter),
+                    udpate => this.#updateRegion(update),
+                    exit => this.#exitRegion(exit)
                 );
 
             if (regs.empty()) { //required even though end() should resolve directly on empty selection
@@ -534,37 +528,35 @@ const regionLayer = (function (){
                 console.warn('Region annotation rendering reported an issue: ',err); 
             })
             .finally(() => {
-                updateAnnotations.inProgress(false);
+                this.updateAnnotations.inProgress(false);
                 if (timed) {
                     console.timeEnd('updateRegionAnnotations');
                 }
             });
     }
-    // Counter to check if we're busy rendering
-    updateAnnotations.inProgress = (function () { let flag = 0; return (set=null) => { if (set!=null) flag+=set?1:-1; return flag; }} )();
 
     /**
      * Update the visuals for the pending region.
      * @param {Object} annotation The current state of the pending region,
      * expressed in image coordinates.
      */
-    function updatePendingRegion(annotation) {
+    updatePendingRegion(annotation) {
         let data = [];
         if (annotation)
             data = [annotation];
-        _pendingRegionOverlay.selectAll("path")
+        this.#pendingRegionOverlay.selectAll("path")
             .data(data)
             .join(
                 enter => enter.append("path")
-                    .attr("d", _getRegionPath)
-                    .attr("stroke", _getAnnotationColor)
-                    .attr("stroke-width", _regionStrokeWidth())
-                    .attr("stroke-dasharray", _regionStrokeWidth())
-                    .attr("fill", _getAnnotationColor)
+                    .attr("d", this.#getRegionPath)
+                    .attr("stroke", this.#getAnnotationColor)
+                    .attr("stroke-width", this.#regionStrokeWidth())
+                    .attr("stroke-dasharray", this.#regionStrokeWidth())
+                    .attr("fill", this.#getAnnotationColor)
                     .attr("fill-opacity", 0.05),
-                update => update.attr("d", _getRegionPath)
-                    .attr("stroke", _getAnnotationColor)
-                    .attr("fill", _getAnnotationColor)
+                update => update.attr("d", this.#getRegionPath)
+                    .attr("stroke", this.#getAnnotationColor)
+                    .attr("fill", this.#getAnnotationColor)
             );
     }
 
@@ -573,13 +565,13 @@ const regionLayer = (function (){
      * @param {number} id The id of the annotation corresponding to
      * the region.
      */
-    function startRegionEdit(id) {
-        if (!_regionOverlay) {
+    startRegionEdit(id) {
+        if (!this.#regionOverlay) {
             return;
         }
-        _regionOverlay.selectAll(".region")
+        this.#regionOverlay.selectAll(".region")
             .filter(d => d.id === id)
-            .each(function(d) { _createRegionEditControls(d, this); });
+            .each(function(d) { this.#createRegionEditControls(d, this); });
     }
 
     /**
@@ -587,13 +579,13 @@ const regionLayer = (function (){
      * @param {number} id The id of the annotation corresponding to
      * the region.
      */
-    function stopRegionEdit(id) {
-        if (!_regionOverlay) {
+    stopRegionEdit(id) {
+        if (!this.#regionOverlay) {
             return;
         }
-        _regionOverlay.selectAll(".region")
+        this.#regionOverlay.selectAll(".region")
             .filter(d => d.id === id)
-            .each(function(d) { _removeRegionEditControls(d, this); });
+            .each(function(d) { this.#removeRegionEditControls(d, this); });
     }
 
     /**
@@ -602,11 +594,11 @@ const regionLayer = (function (){
      * @param {number} zoomLevel The current zoom level of the OSD viewport.
      * @param {number} wContainer The maximum zoom level of the OSD viewport.
      */
-    function setZoom(zoomLevel, maxZoom, wContainer) {
+    setZoom(zoomLevel, maxZoom, wContainer) {
         const windowSizeAdjustment = 1400 / wContainer; //1000*sqrt(2)?
-        _scale = windowSizeAdjustment / zoomLevel;
-        _resizeMembers();
-        _resizeRegions();
+        this.#scale = windowSizeAdjustment / zoomLevel;
+        this.#resizeMembers();
+        this.#resizeRegions();
     }
 
 
@@ -617,7 +609,7 @@ const regionLayer = (function (){
      * @param {Object} svgOverlay The return value of the OSD instance's
      * svgOverlay() method.
      */
-    function init(svgOverlay) {
+    init(svgOverlay) {
         const regions = d3.select(svgOverlay.node())
             .append("g")
             .attr("id", "regions");
@@ -631,28 +623,28 @@ const regionLayer = (function (){
         const cursors = d3.select(svgOverlay.node())
             .append("g")
             .attr("id", "cursors");
-        _regionOverlay = d3.select(regions.node());
-        _pendingRegionOverlay = d3.select(pendingRegion.node());
+        this.#regionOverlay = d3.select(regions.node());
+        this.#pendingRegionOverlay = d3.select(pendingRegion.node());
         
-        _cursorOverlay = d3.select(cursors.node());
-        _previousCursors = d3.local();
+        this.#cursorOverlay = d3.select(cursors.node());
+        this.#previousCursors = d3.local();
 
-        _svo=svgOverlay;
-        _svo._viewer.addHandler('update-viewport', () => {
-            _currentMouseUpdateFun && _currentMouseUpdateFun(); //set cursor position if view-port changed by external source
+        this.#svo=svgOverlay;
+        this.#svo._viewer.addHandler('update-viewport', () => {
+            this.#currentMouseUpdateFun && this.#currentMouseUpdateFun(); //set cursor position if view-port changed by external source
         });
     }
 
 
-    function setZ(level) {
-        _svo._svg.style.zIndex=level;
+    setZ(level) {
+        this.#svo._svg.style.zIndex=level;
     }
 
     /**
      * Called when layer is lowered away from top
      */
-    function blur() {
-        _regionOverlay.style("pointer-events", "none")
+    blur() {
+        this.#regionOverlay.style("pointer-events", "none")
                     .transition("highlight").duration(500)
                     .style("opacity", 0.4);
     }
@@ -660,13 +652,13 @@ const regionLayer = (function (){
     /**
      * Called when layer is raised to top
      */
-    function focus() {
-        _regionOverlay.style("pointer-events", "fill")
+    focus() {
+        this.#regionOverlay.style("pointer-events", "fill")
                     .transition("highlight").duration(500)
                     .style("opacity", 1);
     }
 
-    return {
+    /* return {
         name: "region",
         clear,
         setZoom,
@@ -681,5 +673,5 @@ const regionLayer = (function (){
         updatePendingRegion,
         startRegionEdit,
         stopRegionEdit
-    };
-})();
+    }; */
+}

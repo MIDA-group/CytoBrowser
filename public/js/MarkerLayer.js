@@ -1,6 +1,6 @@
 "use strict";
 /**
- * Class for updating the marker annotation overlay.
+ * Class for the marker annotation overlay.
  **/
 
 // Hack to do color change, https://www.html5gamedevs.com/topic/9374-change-the-style-of-line-that-is-already-drawn/page/2/

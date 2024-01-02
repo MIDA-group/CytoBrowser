@@ -21,6 +21,9 @@ const layerHandler = (function (){
     function _forEachLayer(funStr, ...args) {
         _layers.forEach(item => typeof item[funStr] === 'function' && item[funStr](...args) );
     }
+    function _forEachNamedLayer(name,funStr, ...args) {
+        _layers.forEach(item => item.name === name && typeof item[funStr] === 'function' && item[funStr](...args) );
+    }
     function _forCurrentLayer(funStr, ...args) {
         const item = _layers[0];
         typeof item[funStr] === 'function' && item[funStr](...args);
@@ -145,6 +148,10 @@ const layerHandler = (function (){
     // Counter to check if we're busy rendering
     updateAnnotations.inProgress = (() => _layers.some((elem) => elem.updateAnnotations.inProgress()) );
 
+    function updateMembers(nonLocalMembers) {
+        _forEachNamedLayer("region","updateMembers", nonLocalMembers);
+    }
+    
     return {
         topLayer: () => _layers[0],
 
@@ -156,6 +163,7 @@ const layerHandler = (function (){
         setActiveAnnotationOverlay:setTopLayer,
 
         addLayer,
-        updateAnnotations
+        updateAnnotations,
+        updateMembers
     };
 })();

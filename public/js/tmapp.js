@@ -437,10 +437,11 @@ const tmapp = (function() {
         _viewer.canvas.appendChild(wrapper);
 
         const svgOverlay = _viewer.svgOverlay(wrapper);
-        const pixiOverlay = _viewer.pixiOverlay(wrapper);
+        const regionLayer = new RegionLayer("region");
         regionLayer.init(svgOverlay);
         layerHandler.addLayer(regionLayer,"region");
         
+        const pixiOverlay = _viewer.pixiOverlay(wrapper);
         const markerLayer = new MarkerLayer("marker");
         markerLayer.init(pixiOverlay);
         layerHandler.addLayer(markerLayer,"marker");
