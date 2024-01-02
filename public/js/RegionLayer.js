@@ -80,7 +80,8 @@ class RegionLayer extends OverlayLayer {
      * with the returned function.
      */
     #transformFunction(transform) {
-        return (d, i) => {
+        const _this=this; //See also: https://riptutorial.com/d3-js/example/27637/using--this--with-an-arrow-function
+        return function(d, i) {
             let appliedTransform;
             if (typeof transform === "function") {
                 appliedTransform = transform.call(this, d, i);
@@ -89,8 +90,8 @@ class RegionLayer extends OverlayLayer {
                 appliedTransform = transform;
             }
             const currTransform = this.getAttribute("transform");
-            return this.#editTransform(currTransform, appliedTransform);   //SOMETHING HERE WILL NOT WORK!
-        }
+            return _this.#editTransform(currTransform, appliedTransform);   //SOMETHING HERE WILL NOT WORK!
+        };
     }
 
     #cursorSize(cursor) {
@@ -119,9 +120,10 @@ class RegionLayer extends OverlayLayer {
     }
 
     #resizeMembers() {
-        this.#cursorOverlay.selectAll("g")
-            .attr("transform", this.#transformFunction(function() {
-                return {scale: this.#cursorSize(this.#previousCursors.get(this))};
+        const _this=this;
+        _this.#cursorOverlay.selectAll("g")
+            .attr("transform", _this.#transformFunction(function() {
+                return {scale: _this.#cursorSize(_svgthis.#previousCursors.get(this))};
             }));
     }
 
@@ -188,18 +190,18 @@ class RegionLayer extends OverlayLayer {
                                 }
                                 new OpenSeadragon.MouseTracker({
                                     element: path.node(),
-                                    pressHandler: function(event) {
+                                    pressHandler: (event) => {
                                         tmapp.setCursorStatus({held: true});
                                         mouse_pos = new OpenSeadragon.Point(event.originalEvent.offsetX,event.originalEvent.offsetY);
                                         const vertex_pos = coordinateHelper.imageToWeb(annotationHandler.getAnnotationById(d.id).points[i]);
                                         mouse_offset = mouse_pos.minus(vertex_pos);
                                         this.#currentMouseUpdateFun=updateMousePos;
                                     },
-                                    releaseHandler: function(event) {
+                                    releaseHandler: (event) => {
                                         tmapp.setCursorStatus({held: false});
                                         this.#currentMouseUpdateFun=null;
                                     },
-                                    dragHandler: function(event) {
+                                    dragHandler: (event) => {
                                         mouse_pos = new OpenSeadragon.Point(event.originalEvent.offsetX,event.originalEvent.offsetY);
                                         updateMousePos();
                                     }
@@ -254,7 +256,7 @@ class RegionLayer extends OverlayLayer {
         }
         new OpenSeadragon.MouseTracker({
             element: node,
-            clickHandler: function(event) {
+            clickHandler: (event) => {
                 regionEditor.stopEditingRegion();
                 if (event.originalEvent.ctrlKey) {
                     annotationHandler.remove(d.id);
@@ -267,7 +269,7 @@ class RegionLayer extends OverlayLayer {
                     tmapp.mouseHandler().clickHandler( event );
                 }
             },
-            dblClickHandler: function(event) { 
+            dblClickHandler: (event) => { 
                 // If we just created a new object in the 1st click of our dblClick, then kill it
                 annotationTool.resetIfYounger(event.eventSource.dblClickTimeThreshold); 
 
@@ -289,23 +291,23 @@ class RegionLayer extends OverlayLayer {
                     toggleEditing(d, node);
                 }        
             },
-            pressHandler: function(event) {
+            pressHandler: (event) => {
                 tmapp.setCursorStatus({held: true});
                 mouse_pos = new OpenSeadragon.Point(event.originalEvent.offsetX,event.originalEvent.offsetY);
                 const object_pos = coordinateHelper.imageToWeb(annotationHandler.getAnnotationById(d.id).centroid);
                 mouse_offset = mouse_pos.minus(object_pos);
                 this.#currentMouseUpdateFun=updateMousePos;
             },
-            releaseHandler: function(event) {
+            releaseHandler: (event) => {
                 tmapp.setCursorStatus({held: false});
                 this.#currentMouseUpdateFun=null;
             },
-            dragHandler: function(event) {
+            dragHandler: (event) => {
                 regionEditor.stopEditingRegion();
                 mouse_pos = new OpenSeadragon.Point(event.originalEvent.offsetX,event.originalEvent.offsetY);
                 updateMousePos();
             },
-            nonPrimaryReleaseHandler: function(event) {
+            nonPrimaryReleaseHandler: (event) => {
                 if (event.button === 2) { // If right click
                     const location = {
                         x: event.originalEvent.pageX,
@@ -320,7 +322,7 @@ class RegionLayer extends OverlayLayer {
     #addRegionMouseEvents(d, node) {
         this.#addAnnotationMouseEvents(d, node);
 
-        function highlight() {
+        const highlight=() => {
             d3.select(node)
                 .selectAll(".region-area")
                 .transition("highlight").duration(200)
@@ -329,7 +331,7 @@ class RegionLayer extends OverlayLayer {
                 .attr("fill-opacity", 0.4);
         }
 
-        function unHighlight() {
+        const unHighlight=() => {
             d3.select(node)
                 .selectAll(".region-area")
                 .transition("highlight").duration(200)
@@ -347,42 +349,44 @@ class RegionLayer extends OverlayLayer {
 
 
     #enterRegion(enter) {
+        const _this = this;
         return enter.append("g")
             .attr("class", "region")
             .call(group =>
                 group.append("path")
-                    .attr("d", this.#getRegionPath)
-                    .attr("stroke", this.#getAnnotationColor)
-                    .attr("stroke-width", this.#regionStrokeWidth())
-                    .attr("fill", this.#getAnnotationColor)
+                    .attr("d", _this.#getRegionPath)
+                    .attr("stroke", _this.#getAnnotationColor)
+                    .attr("stroke-width", _this.#regionStrokeWidth())
+                    .attr("fill", _this.#getAnnotationColor)
                     .attr("fill-opacity", 0.2)
                     .attr("class", "region-area")
             )
             .attr("opacity", 1)
-            .each(function(d) {this.#addRegionMouseEvents(d, this);});
+            .each(function(d) {_this.#addRegionMouseEvents(d, this);});
     }
 
     #updateRegion(update) {
+        const _this = this;
         return update.call(update =>
                 update.select(".region-area")
-                    .attr("d", this.#getRegionPath)
+                    .attr("d", _this.#getRegionPath)
                     .transition("changeColor").duration(500)
-                    .attr("stroke", this.#getAnnotationColor)
-                    .attr("fill", this.#getAnnotationColor)
+                    .attr("stroke", _this.#getAnnotationColor)
+                    .attr("fill", _this.#getAnnotationColor)
             )
             .call(update =>
                 update.selectAll(".region-edit-handles g")
                     .each(function(d, i) {
                         const point = d.points[i];
                         d3.select(this)
-                            .attr("transform", this.#transformFunction(function(d) {
+                            .attr("transform", _this.#transformFunction(function(d) {
                                 const coords = coordinateHelper.imageToOverlay(point);
                                 return {translate: [coords.x, coords.y]};
                             }));
                     })
                     .select("path")
                     .transition("changeColor").duration(500)
-                    .style("fill", this.#getAnnotationColor)
+                    .style("fill", _this.#getAnnotationColor)
             );
     }
 
@@ -418,18 +422,19 @@ class RegionLayer extends OverlayLayer {
     }
 
     #updateMember(update) {
-        update.attr("transform", this.#transformFunction(function(d) {
+        const _this=this;
+        update.attr("transform", _this.#transformFunction(function(d) {
                 const coords = coordinateHelper.viewportToOverlay(d.cursor);
                 return {translate: [coords.x, coords.y]};
             }))
             .call(group =>
-                group.filter(function(d) {return this.#previousCursors.get(this).inside !== d.cursor.inside;})
+                group.filter(function(d) {return _this.#previousCursors.get(this).inside !== d.cursor.inside;})
                     .transition("changeColor").duration(500)
                     .style("opacity", d => d.cursor.inside ? 1.0 : 0.2)
             )
             .select(".caret")
             .filter(function(d) {
-                return this.#previousCursors.get(this).held !== d.cursor.held;
+                return _this.#previousCursors.get(this).held !== d.cursor.held;
             })
             .transition("highlight").duration(150)
             .attr("transform", d => `translate(0, ${d.cursor.held ? 0.05 : 0.15})`);
@@ -501,7 +506,7 @@ class RegionLayer extends OverlayLayer {
                 .data(regions, d => d.id)
                 .join(
                     enter => this.#enterRegion(enter),
-                    udpate => this.#updateRegion(update),
+                    update => this.#updateRegion(update),
                     exit => this.#exitRegion(exit)
                 );
 
@@ -569,9 +574,10 @@ class RegionLayer extends OverlayLayer {
         if (!this.#regionOverlay) {
             return;
         }
+        const _this=this;
         this.#regionOverlay.selectAll(".region")
             .filter(d => d.id === id)
-            .each(function(d) { this.#createRegionEditControls(d, this); });
+            .each(function(d) { _this.#createRegionEditControls(d, this); });
     }
 
     /**
@@ -583,9 +589,10 @@ class RegionLayer extends OverlayLayer {
         if (!this.#regionOverlay) {
             return;
         }
+        const _this=this;
         this.#regionOverlay.selectAll(".region")
             .filter(d => d.id === id)
-            .each(function(d) { this.#removeRegionEditControls(d, this); });
+            .each(function(d) { _this.#removeRegionEditControls(d, this); });
     }
 
     /**

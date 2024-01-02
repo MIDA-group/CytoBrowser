@@ -26,7 +26,7 @@ const regionEditor = (function() {
     function startEditingRegion(id) {
         stopEditingRegion();
         _currentlyEditedRegionId = id;
-        regionLayer.startRegionEdit(id);
+        layerHandler.topLayer().startRegionEdit(id);
     }
 
     /**
@@ -36,7 +36,7 @@ const regionEditor = (function() {
      */
     function stopEditingRegion() {
         if (isEditingRegion()) {
-            regionLayer.stopRegionEdit(_currentlyEditedRegionId);
+            layerHandler.topLayer().stopRegionEdit(_currentlyEditedRegionId);
             _currentlyEditedRegionId = null;
             return true;
         }
