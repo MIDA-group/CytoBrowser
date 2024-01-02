@@ -596,9 +596,15 @@ const regionLayer = (function (){
             .each(function(d) { _removeRegionEditControls(d, this); });
     }
 
-
-    function setScale(scale) {
-        _scale = scale;
+    /**
+     * Let the overlay handler know the current zoom level and maximum
+     * zoom level of the viewer in order to properly scale elements.
+     * @param {number} zoomLevel The current zoom level of the OSD viewport.
+     * @param {number} wContainer The maximum zoom level of the OSD viewport.
+     */
+    function setZoom(zoomLevel, maxZoom, wContainer) {
+        const windowSizeAdjustment = 1400 / wContainer; //1000*sqrt(2)?
+        _scale = windowSizeAdjustment / zoomLevel;
         _resizeMembers();
         _resizeRegions();
     }
@@ -660,7 +666,7 @@ const regionLayer = (function (){
     return {
         name: "region",
         clear,
-        setScale,
+        setZoom,
         setZ,
         blur,
         focus,

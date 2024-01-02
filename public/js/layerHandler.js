@@ -13,8 +13,7 @@ const layerHandler = (function (){
         //Keeping these layer properties, to suitably initialize new layers
         _zoomLevel,
         _wContainer,
-        _scale,
-        _maxScale,
+        _maxZoom,
         _rotation,
         _markerScale = 1; //Modifcation factor
 
@@ -42,19 +41,12 @@ const layerHandler = (function (){
      * @param {number} zoomLevel The current zoom level of the OSD viewport.
      * @param {number} wContainer The maximum zoom level of the OSD viewport.
      */
-    function setZoom(zoomLevel, maxZoom, wContainer, hContainer) {
+    function setZoom(zoomLevel, maxZoom, wContainer) {
         const windowSizeAdjustment = 1400 / wContainer; //1000*sqrt(2)?
         _zoomLevel = zoomLevel;
+        _maxZoom = maxZoom;
         _wContainer = wContainer;
-        _scale = windowSizeAdjustment / zoomLevel;
-        _maxScale = windowSizeAdjustment / maxZoom;   
-
-        _forEachLayer("setZoom", zoomLevel, maxZoom, wContainer, hContainer);
-        _setScale();   
-    }
-
-    function _setScale() {
-        _forEachLayer("setScale",_scale);
+        _forEachLayer("setZoom", _zoomLevel, _maxZoom, _wContainer);
     }
 
     /**
@@ -80,7 +72,7 @@ const layerHandler = (function (){
      * Everything which should be called for new layers
      */
     function _setLayerParams(layer) {
-        layer.setScale?.(_scale);
+        layer.setZoom(_zoomLevel,_maxZoom,_wContainer);
         layer.setRotation?.(_rotation);
         layer.setMarkerScale?.(_markerScale);
     }
@@ -103,6 +95,7 @@ const layerHandler = (function (){
     function addLayer(layer, name, first=true) {
         layer.name = name;
         _setLayerParams(layer);
+        _layers[0]?.blur();
         if (first) {
             _layers.unshift(layer);
         }
@@ -110,6 +103,7 @@ const layerHandler = (function (){
             _layers.push(layer);
         }
         _setZOrder();
+        _layers[0].focus();
     }
 
     /**

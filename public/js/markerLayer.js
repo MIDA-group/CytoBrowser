@@ -447,7 +447,7 @@ const markerLayer = (function (){
      * @param {number} zoomLevel The current zoom level of the OSD viewport.
      * @param {number} wContainer The maximum zoom level of the OSD viewport.
      */
-    function setZoom(zoomLevel, maxZoom, wContainer, hContainer) {
+    function setZoom(zoomLevel, maxZoom, wContainer) {
         const windowSizeAdjustment = 1400 / wContainer; //1000*sqrt(2)?
         _zoomLevel = zoomLevel;
         _wContainer = wContainer;
