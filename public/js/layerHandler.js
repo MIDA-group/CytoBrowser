@@ -30,10 +30,12 @@ const layerHandler = (function (){
     function clearCurrentLayer() {
         _forCurrentLayer("clear");
     }
-    function clearAllLayers() {
+    function clearEachLayer() {
         _forEachLayer("clear");
     }
-
+    function clear() {
+        _layers=[];
+    }
 
     /**
      * Let the layers know the current zoom level and maximum
@@ -144,7 +146,8 @@ const layerHandler = (function (){
     return {
         topLayer: () => _layers[0],
 
-        clearAnnotations:clearAllLayers,
+        clearAnnotations:clearEachLayer,
+        clear,
         setZoom,
         setMarkerScale,
         setRotation,
