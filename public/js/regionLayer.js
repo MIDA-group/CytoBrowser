@@ -638,6 +638,9 @@ const regionLayer = (function (){
         _previousCursors = d3.local();
 
         _svo=svgOverlay;
+        _svo._viewer.addHandler('update-viewport', () => {
+            _currentMouseUpdateFun && _currentMouseUpdateFun(); //set cursor position if view-port changed by external source
+        });
     }
 
 

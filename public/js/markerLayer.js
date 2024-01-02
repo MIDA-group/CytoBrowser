@@ -485,7 +485,6 @@ const markerLayer = (function (){
         _app=_pxo.app();
         _stage=_app.stage;
     
-        //Same as _svo._viewer
         _pxo._viewer.addHandler('update-viewport', () => {
             _currentMouseUpdateFun && _currentMouseUpdateFun(); //set cursor position if view-port changed by external source
         });
