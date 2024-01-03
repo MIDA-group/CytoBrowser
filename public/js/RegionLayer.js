@@ -469,7 +469,7 @@ class RegionLayer extends OverlayLayer {
 
 
     setZ(level) {
-        // console.log(this.name,level);
+        super.setZ(level);
         this.#element.style.zIndex=level; //In SVG, z-index is defined by the order the element appears in the document
     }
 

@@ -77,7 +77,7 @@ const layerHandler = (function (){
      * Everything which should be called for new layers
      */
     function _setLayerParams(layer) {
-        layer.setZoom(_zoomLevel,_maxZoom,_wContainer);
+        layer.setZoom?.(_zoomLevel,_maxZoom,_wContainer);
         layer.setRotation?.(_rotation);
         layer.setMarkerScale?.(_markerScale);
     }

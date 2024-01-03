@@ -498,7 +498,7 @@ class MarkerLayer extends OverlayLayer {
 
 
     setZ(level) {
-        // console.log(this.name,level);
+        super.setZ(level);
         this.#element.style.zIndex=level;
     }
 

@@ -448,9 +448,11 @@ const tmapp = (function() {
         const markerLayer = new MarkerLayer("marker",pixiOverlay);
         layerHandler.addLayer(markerLayer,"marker");
 
-
-        const fabricjsOverlay = _viewer.fabricjsOverlay({scale: 1000});
-         
+        const fabricjsOverlay = _viewer.fabricjsOverlay({scale: 1000, container: overlayDiv});
+        const paintLayer = new PaintLayer("paint",fabricjsOverlay);
+        layerHandler.addLayer(paintLayer,"paint");
+        
+        
         // Add fabric rectangle
         var rect = new fabric.Rect({
             left: 0,

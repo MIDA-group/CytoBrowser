@@ -120,7 +120,7 @@ class CollabLayer extends OverlayLayer {
 
 
     setZ(level) {
-        // console.log(this.name,level);
+        super.setZ(level);
         //this.#cursorOverlay.style("zIndex",level);
     }
 

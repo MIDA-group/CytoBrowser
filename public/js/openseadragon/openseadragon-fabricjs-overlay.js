@@ -19,11 +19,14 @@
      * @param {Number} options.scale
      *     Fabric 'virtual' canvas size, for creating objects
      *
+     * @param {Object} options.container
+     *     Container element to use, instead of Viewer.canvas
+     *
      * @returns {Overlay}
      */
     OpenSeadragon.Viewer.prototype.fabricjsOverlay = function (options) {
 
-        this._fabricjsOverlayInfo = new Overlay(this, options.static);
+        this._fabricjsOverlayInfo = new Overlay(this, options.container, options.static);
         if (options && options.scale) {
             this._fabricjsOverlayInfo._scale = options.scale; // arbitrary scale for created fabric canvas
         }
@@ -51,7 +54,7 @@
      * @param viewer
      * @constructor
      */
-    let Overlay = function (viewer, staticCanvas, fabricCanvasOptions = {}) {
+    let Overlay = function (viewer, container=viewer.canvas, staticCanvas, fabricCanvasOptions = {}) {
         fabricCanvasOptions.enablePointerEvents = window.PointerEvent != null;
         let self = this;
 
@@ -66,7 +69,7 @@
         this._canvasdiv.style.top = "0px";
         this._canvasdiv.style.width = '100%';
         this._canvasdiv.style.height = '100%';
-        this._viewer.canvas.appendChild(this._canvasdiv);
+        container.appendChild(this._canvasdiv);
 
         this._canvas = document.createElement('canvas');
 

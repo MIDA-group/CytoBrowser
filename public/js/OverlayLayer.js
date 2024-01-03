@@ -1,5 +1,5 @@
 /**
- * Base class for overlay layers in CyBr
+ * Base class for overlay layers in CytoBrowser
  */
 
 class OverlayLayer {
@@ -19,6 +19,11 @@ class OverlayLayer {
 
         this.name = name;
     }
+
+    setZ(level) {
+        console.log(this.name,level);
+    }
+
 
     _getAnnotationColor(d) {
         return classUtils.classColor(d.mclass);
