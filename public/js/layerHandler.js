@@ -96,8 +96,7 @@ const layerHandler = (function (){
      * @param {string} name - duplicate names allowed (but not recommended)  
      * @param {boolean} first - put layer on top, otherwise last
      */
-    function addLayer(layer, name, first=true) {
-        layer.name = name;
+    function addLayer(layer, first=true) {
         _setLayerParams(layer);
         _layers[0]?.blur();
         if (first) {

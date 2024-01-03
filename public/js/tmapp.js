@@ -439,18 +439,18 @@ const tmapp = (function() {
 
         const svgOverlay = _viewer.svgOverlay(overlayDiv); //Shared for regions and collab (for the moment)
         const collabLayer = new CollabLayer("collab",svgOverlay);
-        layerHandler.addLayer(collabLayer,"collab");
+        layerHandler.addLayer(collabLayer);
         
         const regionLayer = new RegionLayer("region",svgOverlay);
-        layerHandler.addLayer(regionLayer,"region");
+        layerHandler.addLayer(regionLayer);
         
         const pixiOverlay = _viewer.pixiOverlay(overlayDiv);
         const markerLayer = new MarkerLayer("marker",pixiOverlay);
-        layerHandler.addLayer(markerLayer,"marker");
+        layerHandler.addLayer(markerLayer);
 
         const fabricjsOverlay = _viewer.fabricjsOverlay({scale: 1000, container: overlayDiv});
         const paintLayer = new PaintLayer("paint",fabricjsOverlay);
-        layerHandler.addLayer(paintLayer,"paint");
+        layerHandler.addLayer(paintLayer);
         
         
         // Add fabric rectangle
