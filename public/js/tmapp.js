@@ -448,6 +448,32 @@ const tmapp = (function() {
         const markerLayer = new MarkerLayer("marker",pixiOverlay);
         layerHandler.addLayer(markerLayer,"marker");
 
+
+        const fabricjsOverlay = _viewer.fabricjsOverlay({scale: 1000});
+         
+        // Add fabric rectangle
+        var rect = new fabric.Rect({
+            left: 0,
+            top: 0,
+            fill: 'red',
+            width: 200,
+            height: 200
+        });
+        fabricjsOverlay.fabricCanvas().add(rect);
+
+        // Add fabric circle
+        var circle = new fabric.Circle({
+            left: 500,
+            top: 0,
+            fill: 'green',
+            radius: 100,
+            selectable: true,
+            action: 'gravity'
+        });
+        fabricjsOverlay.fabricCanvas().add(circle);
+        
+        
+        
         //PIXI.Ticker.shared.add(() => fps.frame());
 
         // var ticker = PIXI.Ticker.shared;
