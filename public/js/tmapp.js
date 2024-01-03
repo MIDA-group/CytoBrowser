@@ -426,24 +426,26 @@ const tmapp = (function() {
         const imageStack = _expandImageName(imageName);
         _openImages(imageStack);
 
-        //Create a wrapper in which we place both overlays, s.t. we can switch with zIndex but still get Navigator and On-screen menu
-        const wrapper = document.createElement('div');
-        wrapper.style.position = 'absolute';
-        wrapper.style.left = 0;
-        wrapper.style.top = 0;
-        wrapper.style.width = '100%';
-        wrapper.style.height = '100%';
-        wrapper.style.zIndex = 0; //We use zIndex inside
-        _viewer.canvas.appendChild(wrapper);
+        //Create a wrapper in which we place all overlays, s.t. we can switch with zIndex but still get Navigator and On-screen menu
+        const overlayDiv = document.createElement('div');
+        overlayDiv.id = 'overlay_div';
+        overlayDiv.style.position = 'absolute';
+        overlayDiv.style.left = 0;
+        overlayDiv.style.top = 0;
+        overlayDiv.style.width = '100%';
+        overlayDiv.style.height = '100%';
+        overlayDiv.style.zIndex = 0; //We use zIndex inside
+        _viewer.canvas.appendChild(overlayDiv);
 
-        const svgOverlay = _viewer.svgOverlay(wrapper);
-        const regionLayer = new RegionLayer("region");
-        regionLayer.init(svgOverlay);
+        const svgOverlay = _viewer.svgOverlay(overlayDiv); //Shared for regions and collab (for the moment)
+        const collabLayer = new CollabLayer("collab",svgOverlay);
+        layerHandler.addLayer(collabLayer,"collab");
+        
+        const regionLayer = new RegionLayer("region",svgOverlay);
         layerHandler.addLayer(regionLayer,"region");
         
-        const pixiOverlay = _viewer.pixiOverlay(wrapper);
-        const markerLayer = new MarkerLayer("marker");
-        markerLayer.init(pixiOverlay);
+        const pixiOverlay = _viewer.pixiOverlay(overlayDiv);
+        const markerLayer = new MarkerLayer("marker",pixiOverlay);
         layerHandler.addLayer(markerLayer,"marker");
 
         //PIXI.Ticker.shared.add(() => fps.frame());

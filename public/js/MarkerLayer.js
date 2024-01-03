@@ -21,7 +21,6 @@ class MarkerLayer extends OverlayLayer {
     #markerSquareStrokeWidth = 0.03;
     #markerCircleStrokeWidth = 0.01;
 
-    #markerOverlay;
     #zoomLevel;
     #wContainer;
     #scale;
@@ -29,51 +28,73 @@ class MarkerLayer extends OverlayLayer {
     #maxScale;
     #markerScale = 1; //Modifcation factor
 
-    #stage = null; //Pixi
-    #app = null; //for renderer.plugins.interaction.moveWhenInside
-    #markerContainer = null;
-    #pxo = null; //pixi overlay
-    #markerList = [];
-    #currentMouseUpdateFun = null;
+    #viewer = null; //OSD viewer
+    #element = null; //DOM element 
+    #stage = null; //Pixi stage
+    #renderer = null; //Pixi renderer (for interaction manipulation)
+    #drawUpdate = null; //Rendring update function
     
-    constructor(name) {
+    #markerOverlay;
+    #markerContainer = null;
+    #markerList = [];
+
+    #currentMouseUpdateFun = null;
+
+    /**
+     * @param {string} name - Typically "marker"
+     * @param {Object} pixiOverlay - pixiOverlay of the OSD
+     */
+    constructor(name,pixiOverlay) {
         super(name);
         
+        this.#viewer=pixiOverlay._viewer;
+        this.#element=pixiOverlay._pixi;
+        this.#stage=pixiOverlay._app.stage;
+        this.#renderer=pixiOverlay._app.renderer; 
+
+        //this.#drawUpdate=pixiOverlay.update; // Call this function when drawing anything, see pixi-overlay
+        this.#drawUpdate=() => pixiOverlay.update(); // Aaargh, the 'this' functionality in JS is just... sigh!
+
         // Counter to check if we're busy rendering; Immediate function returning a function
         this.updateAnnotations.inProgress = (function () { let flag = 0; return (set=null) => { if (set!=null) flag+=set?1:-1; return flag; }} )();
+    
+        // D3 node just for keeping track, no rendering, to be removed in due time
+        this.#markerOverlay = d3.create('g')
+            .attr("id", "markers");
+    
+        // Pixi container for rendering
+        this.#markerContainer = new PIXI.Container();
+        this.#stage.addChild(this.#markerContainer);
+
+        this.#viewer.addHandler('update-viewport', () => {
+            this.#currentMouseUpdateFun && this.#currentMouseUpdateFun(); //set cursor position if view-port changed by external source
+        });
+
+        // "prerender" is fired right before the renderer draws the scene
+        this.#renderer.on('prerender', () => {
+            this.#cullMarkers();
+        });
     }
 
-    //TODO: getter/setters
-    #markerSize() {
-        return this.#markerScale**2*250*this.#maxScale*Math.pow(this.#scale/this.#maxScale, 0.4); //Let marker grow slowly as we zoom out, to keep it visible
+
+    get #markerSize() {
+        return this.#markerScale**2*0.25*this.#maxScale*Math.pow(this.#scale/this.#maxScale, 0.4); //Let marker grow slowly as we zoom out, to keep it visible
     }
 
     //Approx from corner to corner (middle of line), in screen pixels
-    #markerDiameter() { 
-        return this.#markerSize()/2*this.#zoomLevel*this.#wContainer/1000;
-    }
-
-    
-    #getAnnotationColor(d) {
-        return classUtils.classColor(d.mclass);
-    }
-
-    #getAnnotationText(d) {
-        if (d.prediction == null) { //null or undef
-            return `${d.mclass}`;
-        }
-        return `${d.prediction.toFixed(4)}: ${d.mclass}`;
+    get #markerDiameter() { 
+        return this.#markerSize/2*this.#zoomLevel*this.#wContainer;
     }
 
     
     /**
      * Set marker visible if inside rectangle, or pressed
-     * @param {Rectangle} rect in Screen/Web coordinates, typically this.#app.renderer.screen
+     * @param {Rectangle} rect in Screen/Web coordinates, typically this.#renderer.screen
      */
     #first=true;
     #oldUl={};
     #oldDr={};
-    #cullMarkers(rect = this.#app.renderer.screen) {
+    #cullMarkers(rect = this.#renderer.screen) {
         if (this.#markerContainer.children.length) {
             //Check if the view actually changed
             const ul=coordinateHelper.overlayToWeb({x:0,y:0});
@@ -82,7 +103,7 @@ class MarkerLayer extends OverlayLayer {
                 this.#first=false;
                 this.#oldUl=ul;
                 this.#oldDr=dr;
-                rect=rect.clone().pad(this.#markerDiameter()/2); //So we see frame also when outside
+                rect=rect.clone().pad(this.#markerDiameter/2); //So we see frame also when outside
 
                 let vis=0;
                 this.#markerContainer.children.forEach(c => {
@@ -97,14 +118,13 @@ class MarkerLayer extends OverlayLayer {
 
     
     #resizeMarkers() {
-//        console.log('Resize: ',this.#markerSize());
-        //this.#markerContainer.children.forEach(c => c.scale.set(this.#markerSize()/1000));
-        const visCirc=this.#markerDiameter()>10; //Smaller than 10 pix and we skip the circle
+//        console.log('Resize: ',this.#markerSize);
+        const visCirc=this.#markerDiameter>10; //Smaller than 10 pix and we skip the circle
         this.#markerContainer.children.forEach(c => {
-            c.scale.set(this.#markerSize()/1000);
+            c.scale.set(this.#markerSize);
             c.getChildByName('circle').visible=visCirc;
         });
-        this.#pxo.update();
+        this.#drawUpdate();
     }
 
     #rotateMarkers() {
@@ -137,7 +157,7 @@ class MarkerLayer extends OverlayLayer {
             scale(marker.getChildByName('square'),1.25);
             if (!marker.getChildByName('label')) //Add text if not there
                 marker.addChild(this.#pixiMarkerLabel(d));
-            this.#pxo.update();
+            this.#drawUpdate();
         }
         const unHighlight = (event) => {
             if (pressed) return; //Keep highlight during drag
@@ -147,7 +167,7 @@ class MarkerLayer extends OverlayLayer {
                 alpha(label,0) //Ease out
                     .once('complete', (ease) => ease.elements.forEach(item=>{ if (!item.destroyed) item.destroy(true);}));
             }
-            this.#pxo.update();
+            this.#drawUpdate();
         }
 
         const pressHandler=(event) => {
@@ -171,10 +191,10 @@ class MarkerLayer extends OverlayLayer {
                 this.#currentMouseUpdateFun=updateMousePos;
 
                 //Fire move events also when the cursor is outside of the object
-                this.#app.renderer.plugins.interaction.moveWhenInside = false;
+                this.#renderer.plugins.interaction.moveWhenInside = false;
             }
             highlight(event);
-            this.#pxo.update();
+            this.#drawUpdate();
         }
         const releaseHandler=(event) => {
             // event.currentTarget.releasePointerCapture(event.data.originalEvent.pointerId);
@@ -182,9 +202,9 @@ class MarkerLayer extends OverlayLayer {
             pressed=false;
             marker.pressed=false;
             this.#currentMouseUpdateFun=null;
-            this.#app.renderer.plugins.interaction.moveWhenInside = true;
+            this.#renderer.plugins.interaction.moveWhenInside = true;
             unHighlight(event);
-            this.#pxo.update();
+            this.#drawUpdate();
         }
         const dragHandler=(event) => {
             if (!pressed) return;
@@ -209,14 +229,14 @@ class MarkerLayer extends OverlayLayer {
 
             const viewportCoords = coordinateHelper.webToViewport(mouse_pos);
             tmapp.setCursorStatus(viewportCoords);
-            this.#pxo.update();
+            this.#drawUpdate();
         }
         const tapHandler=(event) => {
             if (event.data.originalEvent.ctrlKey) {
                 // console.log('Remove');
                 annotationHandler.remove(id);
             }
-            this.#pxo.update();
+            this.#drawUpdate();
         }
 
         obj.interactive = true;
@@ -237,7 +257,7 @@ class MarkerLayer extends OverlayLayer {
     #pixiMarker(d, duration=0) {
         const coords = coordinateHelper.imageToOverlay(d.points[0]);
 
-        const color = this.#getAnnotationColor(d).replace('#','0x');
+        const color = this._getAnnotationColor(d).replace('#','0x');
         const step=Math.SQRT2*this.#markerSquareSize*1000; //Rounding errors in Pixi for small values, thus '*1000'
         
         const graphics = new PIXI.Graphics();
@@ -271,10 +291,10 @@ class MarkerLayer extends OverlayLayer {
         this.#markerContainer.addChild(graphics);
         if (duration > 0) {
             graphics.scale.set(0);
-            Ease.ease.add(graphics,{scale:this.#markerSize()/1000},{duration:duration});
+            Ease.ease.add(graphics,{scale:this.#markerSize},{duration:duration});
         }
         else {
-            graphics.scale.set(this.#markerSize()/1000);
+            graphics.scale.set(this.#markerSize);
         }
         // .once('complete', (ease) => ease.elements.forEach(item=>item.cacheAsBitmap=true));  //Doesn't really pay off
 
@@ -287,10 +307,10 @@ class MarkerLayer extends OverlayLayer {
      */
     #pixiMarkerLabel(d) {
         // Text label
-        const label = new PIXI.Text(this.#getAnnotationText(d), {
+        const label = new PIXI.Text(this._getAnnotationText(d), {
             fontSize: 26,
             fontWeight: 700,
-            fill: this.#getAnnotationColor(d)
+            fill: this._getAnnotationColor(d)
         });
         label.name="label";
         label.roundPixels = true;
@@ -324,7 +344,7 @@ class MarkerLayer extends OverlayLayer {
             }
 
             const square = marker.getChildByName('square');
-            const color = this.#getAnnotationColor(d).replace('#','0x');
+            const color = this._getAnnotationColor(d).replace('#','0x');
             if (color !== square.line.color) { //alternatively use square._lineStyle.color
                 square.line.color = color;
                 square.updateLineStyle({color});
@@ -369,13 +389,14 @@ class MarkerLayer extends OverlayLayer {
      * (Presumably to replace with just update.)
      */
     clear() {
-        if (this.#markerOverlay) {
-            this.#markerOverlay.selectAll("g").remove(); //d3 still used as container
+        this.#markerOverlay.selectAll("g").remove(); //d3 still used as container
 
-            this.#markerList.forEach(item=>item.destroy(true));
-            this.#markerList=[];
-        }
-        this.#pxo.update();
+        this.#markerList.forEach(item=>item.destroy(true));
+        this.#markerList=[];
+        
+        this.#markerContainer.removeChildren(); //Without this, we get an error in cullMarkers
+      
+        this.#drawUpdate();
     }
 
 
@@ -388,7 +409,7 @@ class MarkerLayer extends OverlayLayer {
      * Resolved promises on .transition().end() => updateAnnotations.inProgress(false)
      */
     updateAnnotations(annotations){
-        this.#pxo.update();
+        this.#drawUpdate();
 
         let timed=false;
         if (this.#timingLog) {
@@ -444,6 +465,7 @@ class MarkerLayer extends OverlayLayer {
             });
     }
 
+
     /**
      * Let the overlay handler know the current zoom level and maximum
      * zoom level of the viewer in order to properly scale elements.
@@ -474,37 +496,12 @@ class MarkerLayer extends OverlayLayer {
         this.#rotateMarkers();
     }
 
-    /**
-     * Initialize the overlay handler. Should be called whenever OSD is
-     * initialized.
-     * @param {Object} svgOverlay The return value of the OSD instance's
-     * svgOverlay() method.
-     */
-    init(pixiOverlay) {
-        const markers = d3.create('g')
-            .attr("id", "markers");
-        this.#markerOverlay = d3.select(markers.node());
-        this.#pxo=pixiOverlay;
-        this.#app=this.#pxo.app();
-        this.#stage=this.#app.stage;
-    
-        this.#pxo._viewer.addHandler('update-viewport', () => {
-            this.#currentMouseUpdateFun && this.#currentMouseUpdateFun(); //set cursor position if view-port changed by external source
-        });
-
-        this.#markerContainer = new PIXI.Container();
-        this.#stage.addChild(this.#markerContainer);
-    
-        // "prerender" is fired right before the renderer draws the scene
-        this.#app.renderer.on('prerender', () => {
-            this.#cullMarkers();
-        });
-    }
-
 
     setZ(level) {
-        //this.#svo._svg.style.zIndex=level;
+        // console.log(this.name,level);
+        this.#element.style.zIndex=level;
     }
+
 
     #alpha(obj,s) {
         Ease.ease.add(obj,{alpha:s},{duration:200});
@@ -517,7 +514,7 @@ class MarkerLayer extends OverlayLayer {
         if (this.#markerContainer) {
             this.#alpha(this.#markerContainer,0.4);
         }
-        this.#pxo.update();
+        this.#drawUpdate();
     }
 
     /**
@@ -527,22 +524,8 @@ class MarkerLayer extends OverlayLayer {
         if (this.#markerContainer) {
             this.#alpha(this.#markerContainer,1);
         }
-        this.#pxo.update();
+        this.#drawUpdate();
     }
-
-    /* return {
-        name: "marker",
-        clear,
-        setZoom,
-        setMarkerScale,
-        setRotation,
-        setZ,
-        blur,
-        focus,
-        init,
-
-        updateAnnotations
-    }; */
 }
 
 

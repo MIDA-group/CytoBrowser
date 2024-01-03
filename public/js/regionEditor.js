@@ -12,8 +12,12 @@
 const regionEditor = (function() {
     let _currentlyEditedRegionId = null;
 
-    
-    function isEditingRegion() {
+    /**
+     * @param {number} [id] 
+     * @returns {boolean} - if currently edting any/given region
+     */
+    function isEditingRegion(id=null) {
+        if (id) return _currentlyEditedRegionId === id;
         return _currentlyEditedRegionId !== null;
     }
 

@@ -86,9 +86,8 @@ const layerHandler = (function (){
      * Set z-index, with last layer at z=0 (avoiding z<0 due to various reported issues)
      */
     function _setZOrder() {
-        for (let index = _layers.length-1, z=0; index >= 0; index--) {
-            _layers[index].setZ(z++);
-        }    
+        const top=_layers.length-1;
+        _layers.forEach( (item,idx) => item.setZ(top-idx) );
     }
 
     /**
@@ -109,8 +108,6 @@ const layerHandler = (function (){
         }
         _setZOrder();
         _layers[0].focus();
-
-        console.log(_layers);
     }
 
     /**
@@ -146,10 +143,10 @@ const layerHandler = (function (){
         _forEachLayer("updateAnnotations", annotations);
     }
     // Counter to check if we're busy rendering
-    updateAnnotations.inProgress = (() => _layers.some((elem) => elem.updateAnnotations.inProgress()) );
+    updateAnnotations.inProgress = (() => _layers.some((elem) => elem.updateAnnotations?.inProgress()) );
 
     function updateMembers(nonLocalMembers) {
-        _forEachNamedLayer("region","updateMembers", nonLocalMembers);
+        _forEachNamedLayer("collab","updateMembers", nonLocalMembers);
     }
     
     return {

@@ -5,105 +5,49 @@
 
 class RegionLayer extends OverlayLayer {
     #timingLog = false; //Log update times
+    #scale = 1;
 
-    #cursorOverlay;
+    #viewer = null; //OSD viewer
+    #element = null; //DOM element 
+
     #regionOverlay;
     #pendingRegionOverlay;
-    #previousCursors;
-    #scale;
-
-    #svo = null; //svg overlay
+    
     #currentMouseUpdateFun = null;
 
-    constructor(name) {
+    /**
+     * @param {string} name - Typically "region"
+     * @param {Object} svgOverlay - svgOverlay() of the OSD
+     */
+    constructor(name, svgOverlay) {
         super(name);
 
+        this.#viewer=svgOverlay._viewer;
+        this.#element=svgOverlay._svg;
+        
         // Counter to check if we're busy rendering; Immediate function returning a function
         this.updateAnnotations.inProgress = (function () { let flag = 0; return (set=null) => { if (set!=null) flag+=set?1:-1; return flag; }} )();
+
+        // Create SVG nodes for rendering
+        this.#regionOverlay = d3.select(svgOverlay.node())
+            .append("g")
+            .attr("id", "regions");
+        this.#pendingRegionOverlay = d3.select(svgOverlay.node())
+            .append("g")
+            .attr("id", "regions")
+            .style("pointer-events", "none");
+
+        this.#viewer.addHandler('update-viewport', () => {
+            this.#currentMouseUpdateFun && this.#currentMouseUpdateFun(); //set cursor position if view-port changed by external source
+        });    
     }
 
-    /**
-     * Edit a string with stored in the transform attribute of a node.
-     * This function only edits properties already stored in the string,
-     * it does not add any. This is because of the fact that the order of
-     * transform properties changes the final result. If a property is not
-     * specified by the changes argument, it retains its old value.
-     * @param {string} transformString The original transform string.
-     * @param {Object} changes Key-value pairs of transforms and their
-     * changed properties. The keys are the names of the transforms, and
-     * the values can either be numbers, Arrays, or Functions. Numbers
-     * and Arrays simply assign new values to the transforms. Functions
-     * are run on the old values to produce new values.
-     * @returns {string} The resulting transform string.
-     */
-    #editTransform(transformString, changes) {
-        // Turn the transform string into an object
-        // Start by finding all the transforms
-        const transforms = transformString.match(/[^\s,]+\([^)]*\)/g);
-        // Structure the transform as an object
-        const transObj = {};
-        const names = transforms.map(transform => transform.match(/.+(?=\()/g)[0]);
-        transforms.forEach(transform => {
-            const name = transform.match(/.+(?=\()/g);
-            const values = transform.match(/[-+]?[0-9]*\.?[0-9]+/g);
-            transObj[name] = values;
-        });
 
-        // Assign the changes
-        let result = "";
-        names.forEach(name => {
-            const value = changes[name];
-            if (value !== undefined) {
-                if (Array.isArray(value)) {
-                    transObj[name] = value;
-                }
-                else if (typeof value === "function") {
-                    transObj[name] = transObj[name].map(value);
-                }
-                else if (typeof value !== "object") {
-                    transObj[name] = [value];
-                }
-                else {
-                    throw new Error("Invalid transform change.");
-                }
-            }
-            result += `${name}(${transObj[name].toString()}) `;
-        });
-
-        return result;
-    }
-
-    /**
-     * Convenience function for creating a function that can be run
-     * to edit transforms with d3.
-     * @param {Object} transform The transform that should be applied
-     * with the returned function.
-     */
-    #transformFunction(transform) {
-        const _this=this; //See also: https://riptutorial.com/d3-js/example/27637/using--this--with-an-arrow-function
-        return function(d, i) {
-            let appliedTransform;
-            if (typeof transform === "function") {
-                appliedTransform = transform.call(this, d, i);
-            }
-            else {
-                appliedTransform = transform;
-            }
-            const currTransform = this.getAttribute("transform");
-            return _this.#editTransform(currTransform, appliedTransform);   //SOMETHING HERE WILL NOT WORK!
-        };
-    }
-
-    #cursorSize(cursor) {
-        const normalSize = cursor.inside || cursor.held;
-        return (normalSize ? 15 : 12) * this.#scale;
-    }
-
-    #regionStrokeWidth() {
+    get #regionStrokeWidth() {
         return 2 * this.#scale;
     }
 
-    #regionHandleSize() {
+    get #regionHandleSize() {
         return 0.5 * this.#scale;
     }
 
@@ -115,45 +59,35 @@ class RegionLayer extends OverlayLayer {
         return `M ${stops.join(" L ")} Z`;
     }
 
-    #getAnnotationColor(d) {
-        return classUtils.classColor(d.mclass);
+ 
+    #highlight(node) {
+        d3.select(node)
+            .selectAll(".region-area")
+            .transition("highlight").duration(200)
+            .attr("fill-opacity", 0.4);
     }
 
-    #resizeMembers() {
-        const _this=this;
-        _this.#cursorOverlay.selectAll("g")
-            .attr("transform", _this.#transformFunction(function() {
-                return {scale: _this.#cursorSize(_svgthis.#previousCursors.get(this))};
-            }));
+    #unHighlight(node) {
+        d3.select(node)
+            .selectAll(".region-area")
+            .transition("highlight").duration(200)
+            .attr("fill-opacity", 0.2);
     }
 
     #resizeRegions() {
         this.#regionOverlay.selectAll("g")
             .call(group =>
                 group.select(".region-area")
-                    .attr("stroke-width", this.#regionStrokeWidth())
+                    .attr("stroke-width", this.#regionStrokeWidth)
             )
             .selectAll(".region-edit-handles g")
-            .attr("transform", this.#transformFunction({scale: this.#regionHandleSize()}));
+            .attr("transform", RegionLayer.transformFunction({scale: this.#regionHandleSize}));
         this.#pendingRegionOverlay.selectAll("path")
-            .attr("stroke-width", this.#regionStrokeWidth())
-            .attr("stroke-dasharray", this.#regionStrokeWidth());
+            .attr("stroke-width", this.#regionStrokeWidth)
+            .attr("stroke-dasharray", this.#regionStrokeWidth);
     }
 
-    #removeRegionEditControls(d, node) {
-        const selection = d3.select(node);
-        if (selection.attr("data-being-edited")) {
-            selection.selectAll(".region-edit-handles g path")
-                .transition("appear").duration(250)
-                .attr("transform", "scale(0)")
-                .on("end", () =>
-                    selection.attr("data-being-edited", null)
-                        .select(".region-edit-handles")
-                        .remove()
-                );
-        }
-    }
-
+    
     // Used when editing (path-nodes of) an existing region
     #createRegionEditControls(d, node) {
         const selection = d3.select(node);
@@ -166,12 +100,12 @@ class RegionLayer extends OverlayLayer {
                         group.append("g")
                             .attr("transform", d => {
                                 const coords = coordinateHelper.imageToOverlay(point);
-                                return `translate(${coords.x}, ${coords.y}), scale(${this.#regionHandleSize()})`;
+                                return `translate(${coords.x}, ${coords.y}), scale(${this.#regionHandleSize})`;
                             })
                             .append("path")
                             .attr("d", d3.symbol().size(500).type(d3.symbolCircle))
                             .attr("transform", "scale(0)")
-                            .style("fill", this.#getAnnotationColor)
+                            .style("fill", this._getAnnotationColor)
                             .style("cursor", "move")
                             .transition("appear").duration(250)
                             .attr("transform", "scale(1)")
@@ -212,19 +146,27 @@ class RegionLayer extends OverlayLayer {
         }
     }
 
+    #removeRegionEditControls(d, node) {
+        const selection = d3.select(node);
+        if (selection.attr("data-being-edited")) {
+            selection.selectAll(".region-edit-handles g path")
+                .transition("appear").duration(250)
+                .attr("transform", "scale(0)")
+                .on("end", () =>
+                    selection.attr("data-being-edited", null)
+                        .select(".region-edit-handles")
+                        .remove()
+                );
+        }
+    }
+
 
     /**
-     * Add mouse events that should be shared between all annotations,
-     * both markers and regions. These include handlers for dragging an
-     * annotation, ctrl-clicking to remove, and right clicking for
-     * options.
-     *
-     * This is for SVG version, creating a MouseTracker for each object; the PixiJS version is elsewhere.
-     *
+     * Add region mouse events, one MouseTracker per region. 
      * @param {Object} d The data object given by d3.
      * @param {Object} node The node for the annotation.
      */
-    #addAnnotationMouseEvents(d, node) {
+    #addRegionMouseEvents(d, node) {
         let mouse_pos; //retain last used mouse_pos (global) s.t. we may update locations when keyboard panning etc.
         let mouse_offset; //offset (in webCoords) between mouse click and object
 
@@ -254,10 +196,13 @@ class RegionLayer extends OverlayLayer {
             const viewportCoords = coordinateHelper.webToViewport(mouse_pos);
             tmapp.setCursorStatus(viewportCoords);
         }
+
         new OpenSeadragon.MouseTracker({
             element: node,
             clickHandler: (event) => {
                 regionEditor.stopEditingRegion();
+                this.#unHighlight(node);
+
                 if (event.originalEvent.ctrlKey) {
                     annotationHandler.remove(d.id);
                 }
@@ -273,7 +218,7 @@ class RegionLayer extends OverlayLayer {
                 // If we just created a new object in the 1st click of our dblClick, then kill it
                 annotationTool.resetIfYounger(event.eventSource.dblClickTimeThreshold); 
 
-                 if (annotationTool.isEditing()) { //If editing, allow dblClick->complete
+                if (annotationTool.isEditing()) { //If editing, allow dblClick->complete
                     const rect1 = event.eventSource.element.getBoundingClientRect();
                     const rect2 = tmapp.mouseHandler().element.getBoundingClientRect();
                     event.position.x+=rect1.left-rect2.left;
@@ -315,39 +260,17 @@ class RegionLayer extends OverlayLayer {
                     };
                     tmappUI.openAnnotationEditMenu(d.id, location);
                 }
-            }          
+            },          
+            enterHandler: (event) => {
+                regionEditor.isEditingRegion() || annotationTool.isEditing() || this.#highlight(node);
+            },
+            exitHandler: (event) => {
+                regionEditor.isEditingRegion() || annotationTool.isEditing() || this.#unHighlight(node);
+            }
         }).setTracking(true);
     }
 
-    #addRegionMouseEvents(d, node) {
-        this.#addAnnotationMouseEvents(d, node);
-
-        const highlight=() => {
-            d3.select(node)
-                .selectAll(".region-area")
-                .transition("highlight").duration(200)
-                .attr("stroke", this.#getAnnotationColor)
-                .attr("fill", this.#getAnnotationColor)
-                .attr("fill-opacity", 0.4);
-        }
-
-        const unHighlight=() => {
-            d3.select(node)
-                .selectAll(".region-area")
-                .transition("highlight").duration(200)
-                .attr("stroke", this.#getAnnotationColor)
-                .attr("fill", this.#getAnnotationColor)
-                .attr("fill-opacity", 0.2);
-        }
-
-        new OpenSeadragon.MouseTracker({
-            element: node,
-            enterHandler: highlight,
-            exitHandler: unHighlight
-        }).setTracking(true);
-    }
-
-
+    
     #enterRegion(enter) {
         const _this = this;
         return enter.append("g")
@@ -355,9 +278,9 @@ class RegionLayer extends OverlayLayer {
             .call(group =>
                 group.append("path")
                     .attr("d", _this.#getRegionPath)
-                    .attr("stroke", _this.#getAnnotationColor)
-                    .attr("stroke-width", _this.#regionStrokeWidth())
-                    .attr("fill", _this.#getAnnotationColor)
+                    .attr("stroke", _this._getAnnotationColor)
+                    .attr("stroke-width", _this.#regionStrokeWidth)
+                    .attr("fill", _this._getAnnotationColor)
                     .attr("fill-opacity", 0.2)
                     .attr("class", "region-area")
             )
@@ -371,22 +294,22 @@ class RegionLayer extends OverlayLayer {
                 update.select(".region-area")
                     .attr("d", _this.#getRegionPath)
                     .transition("changeColor").duration(500)
-                    .attr("stroke", _this.#getAnnotationColor)
-                    .attr("fill", _this.#getAnnotationColor)
+                    .attr("stroke", _this._getAnnotationColor)
+                    .attr("fill", _this._getAnnotationColor)
             )
             .call(update =>
                 update.selectAll(".region-edit-handles g")
                     .each(function(d, i) {
                         const point = d.points[i];
                         d3.select(this)
-                            .attr("transform", _this.#transformFunction(function(d) {
+                            .attr("transform", RegionLayer.transformFunction(function(d) {
                                 const coords = coordinateHelper.imageToOverlay(point);
                                 return {translate: [coords.x, coords.y]};
                             }));
                     })
                     .select("path")
                     .transition("changeColor").duration(500)
-                    .style("fill", _this.#getAnnotationColor)
+                    .style("fill", _this._getAnnotationColor)
             );
     }
 
@@ -394,76 +317,6 @@ class RegionLayer extends OverlayLayer {
         return exit.transition("appear").duration(200)
             .attr("opacity", 0)
             .remove();
-    }
-
-
-    #enterMember(enter) {
-        enter.append("g")
-            .attr("transform", d => {
-                const coords = coordinateHelper.viewportToOverlay(d.cursor);
-                return `translate(${coords.x}, ${coords.y}), rotate(-30), scale(${this.#cursorSize(d.cursor)})`
-            })
-            .attr("opacity", 0.0)
-            .style("fill", d => d.color)
-            .call(group =>
-                group.append("path")
-                    .attr("d", "M 0 0 L -0.4 1.0 L 0 0.7 L 0.4 1.0 Z")
-                    .attr("class", "pointer")
-            )
-            .call(group =>
-                group.append("path")
-                    .attr("d", "M -0.4 1.0 L -0.36 1.2 L 0.36 1.2 L 0.4 1.0 L 0 0.7 Z")
-                    .attr("class", "caret")
-                    .transition("appear").duration(500)
-                    .attr("transform", "translate(0, 0.15)")
-            )
-            .transition("appear").duration(100)
-            .attr("opacity", 1.0);
-    }
-
-    #updateMember(update) {
-        const _this=this;
-        update.attr("transform", _this.#transformFunction(function(d) {
-                const coords = coordinateHelper.viewportToOverlay(d.cursor);
-                return {translate: [coords.x, coords.y]};
-            }))
-            .call(group =>
-                group.filter(function(d) {return _this.#previousCursors.get(this).inside !== d.cursor.inside;})
-                    .transition("changeColor").duration(500)
-                    .style("opacity", d => d.cursor.inside ? 1.0 : 0.2)
-            )
-            .select(".caret")
-            .filter(function(d) {
-                return _this.#previousCursors.get(this).held !== d.cursor.held;
-            })
-            .transition("highlight").duration(150)
-            .attr("transform", d => `translate(0, ${d.cursor.held ? 0.05 : 0.15})`);
-    }
-
-    /**
-     * Use d3 to update the collaboration cursors, adding new ones and
-     * removing old ones.
-     * @param {Array} nonLocalMembers An array of members, excluding the
-     * local member.
-     */
-    updateMembers(nonLocalMembers) {
-        if (!this.#cursorOverlay) {
-            return;
-        }
-
-        const visibleMembers = nonLocalMembers.filter(member => {
-            return member.cursor;
-        });
-
-        this.#cursorOverlay.selectAll("g")
-            .data(visibleMembers, d => d.id)
-            .join(
-                enter => this.#enterMember(enter),
-                update => this.#updateMember(update)
-            );
-
-        this.#cursorOverlay.selectAll("g")
-            .property(this.#previousCursors, d => d.cursor);
     }
 
 
@@ -554,14 +407,14 @@ class RegionLayer extends OverlayLayer {
             .join(
                 enter => enter.append("path")
                     .attr("d", this.#getRegionPath)
-                    .attr("stroke", this.#getAnnotationColor)
-                    .attr("stroke-width", this.#regionStrokeWidth())
-                    .attr("stroke-dasharray", this.#regionStrokeWidth())
-                    .attr("fill", this.#getAnnotationColor)
+                    .attr("stroke", this._getAnnotationColor)
+                    .attr("stroke-width", this.#regionStrokeWidth)
+                    .attr("stroke-dasharray", this.#regionStrokeWidth)
+                    .attr("fill", this._getAnnotationColor)
                     .attr("fill-opacity", 0.05),
                 update => update.attr("d", this.#getRegionPath)
-                    .attr("stroke", this.#getAnnotationColor)
-                    .attr("fill", this.#getAnnotationColor)
+                    .attr("stroke", this._getAnnotationColor)
+                    .attr("fill", this._getAnnotationColor)
             );
     }
 
@@ -577,7 +430,10 @@ class RegionLayer extends OverlayLayer {
         const _this=this;
         this.#regionOverlay.selectAll(".region")
             .filter(d => d.id === id)
-            .each(function(d) { _this.#createRegionEditControls(d, this); });
+            .each(function(d) { 
+                _this.#createRegionEditControls(d, this); 
+                _this.#highlight(this);
+            });
     }
 
     /**
@@ -592,7 +448,10 @@ class RegionLayer extends OverlayLayer {
         const _this=this;
         this.#regionOverlay.selectAll(".region")
             .filter(d => d.id === id)
-            .each(function(d) { _this.#removeRegionEditControls(d, this); });
+            .each(function(d) { 
+                _this.#removeRegionEditControls(d, this); 
+                _this.#unHighlight(this); // todo: don't fire if inside region
+            });
     }
 
     /**
@@ -604,47 +463,14 @@ class RegionLayer extends OverlayLayer {
     setZoom(zoomLevel, maxZoom, wContainer) {
         const windowSizeAdjustment = 1400 / wContainer; //1000*sqrt(2)?
         this.#scale = windowSizeAdjustment / zoomLevel;
-        this.#resizeMembers();
         this.#resizeRegions();
     }
 
 
 
-    /**
-     * Initialize the overlay handler. Should be called whenever OSD is
-     * initialized.
-     * @param {Object} svgOverlay The return value of the OSD instance's
-     * svgOverlay() method.
-     */
-    init(svgOverlay) {
-        const regions = d3.select(svgOverlay.node())
-            .append("g")
-            .attr("id", "regions");
-        const pendingRegion = d3.select(svgOverlay.node())
-            .append("g")
-            .attr("id", "regions")
-            .style("pointer-events", "none");
-        const markers = d3.select(svgOverlay.node())
-            .append("g")
-            .attr("id", "markers");
-        const cursors = d3.select(svgOverlay.node())
-            .append("g")
-            .attr("id", "cursors");
-        this.#regionOverlay = d3.select(regions.node());
-        this.#pendingRegionOverlay = d3.select(pendingRegion.node());
-        
-        this.#cursorOverlay = d3.select(cursors.node());
-        this.#previousCursors = d3.local();
-
-        this.#svo=svgOverlay;
-        this.#svo._viewer.addHandler('update-viewport', () => {
-            this.#currentMouseUpdateFun && this.#currentMouseUpdateFun(); //set cursor position if view-port changed by external source
-        });
-    }
-
-
     setZ(level) {
-        this.#svo._svg.style.zIndex=level;
+        // console.log(this.name,level);
+        this.#element.style.zIndex=level; //In SVG, z-index is defined by the order the element appears in the document
     }
 
     /**
@@ -664,21 +490,4 @@ class RegionLayer extends OverlayLayer {
                     .transition("highlight").duration(500)
                     .style("opacity", 1);
     }
-
-    /* return {
-        name: "region",
-        clear,
-        setZoom,
-        setZ,
-        blur,
-        focus,
-        init,
-
-
-        updateMembers,
-        updateAnnotations,
-        updatePendingRegion,
-        startRegionEdit,
-        stopRegionEdit
-    }; */
 }
