@@ -4,13 +4,16 @@
 
 class OverlayLayer {
     name = "unnamed";
-    #requiredFunctions = ["setZ","blur","focus"];
+    #requiredFunctions = ["blur","focus"];
     
-    constructor(name) {
+    _viewer = null; //OSD viewer
+    _element = null; //DOM element 
+    
+    constructor(name,viewer,element) {
         if (this.constructor === OverlayLayer) {
             throw new Error("Cannot instatiate abstract class!");
         }
-    
+        
         this.#requiredFunctions.forEach(fun => {
                 if (typeof this[fun] !== "function") {
                     throw new Error(`Function "${fun}" must be implemented in derived class`);
@@ -18,10 +21,17 @@ class OverlayLayer {
             });
 
         this.name = name;
+        this._viewer = viewer;
+        this._element = element;
     }
 
+    /**
+     * Default set z-level function
+     * @param {number} level 
+     */
     setZ(level) {
         console.log(this.name,level);
+        this._element.style.zIndex=level;
     }
 
 

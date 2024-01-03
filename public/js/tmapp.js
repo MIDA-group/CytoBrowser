@@ -437,6 +437,10 @@ const tmapp = (function() {
         overlayDiv.style.zIndex = 0; //We use zIndex inside
         _viewer.canvas.appendChild(overlayDiv);
 
+        const fabricjsOverlay = _viewer.fabricjsOverlay({scale: 1000, container: overlayDiv, static: true});
+        const attentionLayer = new AttentionLayer("attention",fabricjsOverlay);
+        layerHandler.addLayer(attentionLayer);
+    
         const svgOverlay = _viewer.svgOverlay(overlayDiv); //Shared for regions and collab (for the moment)
         const collabLayer = new CollabLayer("collab",svgOverlay);
         layerHandler.addLayer(collabLayer);
@@ -448,9 +452,6 @@ const tmapp = (function() {
         const markerLayer = new MarkerLayer("marker",pixiOverlay);
         layerHandler.addLayer(markerLayer);
 
-        const fabricjsOverlay = _viewer.fabricjsOverlay({scale: 1000, container: overlayDiv});
-        const paintLayer = new PaintLayer("paint",fabricjsOverlay);
-        layerHandler.addLayer(paintLayer);
         
         
         // Add fabric rectangle
@@ -463,18 +464,18 @@ const tmapp = (function() {
         });
         fabricjsOverlay.fabricCanvas().add(rect);
 
-        // Add fabric circle
-        var circle = new fabric.Circle({
+        //Bugger doesn't support rotation!
+        // Add fabric rectangle
+        var rect = new fabric.Rect({
             left: 500,
             top: 0,
-            fill: 'green',
-            radius: 100,
-            selectable: true,
-            action: 'gravity'
+            fill: 'red',
+            width: 200,
+            height: 200
         });
-        fabricjsOverlay.fabricCanvas().add(circle);
-        
-        
+        fabricjsOverlay.fabricCanvas().add(rect);
+
+
         
         //PIXI.Ticker.shared.add(() => fps.frame());
 

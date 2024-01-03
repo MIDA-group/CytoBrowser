@@ -28,8 +28,6 @@ class MarkerLayer extends OverlayLayer {
     #maxScale;
     #markerScale = 1; //Modifcation factor
 
-    #viewer = null; //OSD viewer
-    #element = null; //DOM element 
     #stage = null; //Pixi stage
     #renderer = null; //Pixi renderer (for interaction manipulation)
     #drawUpdate = null; //Rendring update function
@@ -45,10 +43,8 @@ class MarkerLayer extends OverlayLayer {
      * @param {Object} pixiOverlay - pixiOverlay of the OSD
      */
     constructor(name,pixiOverlay) {
-        super(name);
+        super(name,pixiOverlay._viewer,pixiOverlay._pixi);
         
-        this.#viewer=pixiOverlay._viewer;
-        this.#element=pixiOverlay._pixi;
         this.#stage=pixiOverlay._app.stage;
         this.#renderer=pixiOverlay._app.renderer; 
 
@@ -66,7 +62,7 @@ class MarkerLayer extends OverlayLayer {
         this.#markerContainer = new PIXI.Container();
         this.#stage.addChild(this.#markerContainer);
 
-        this.#viewer.addHandler('update-viewport', () => {
+        this._viewer.addHandler('update-viewport', () => {
             this.#currentMouseUpdateFun && this.#currentMouseUpdateFun(); //set cursor position if view-port changed by external source
         });
 
@@ -496,11 +492,6 @@ class MarkerLayer extends OverlayLayer {
         this.#rotateMarkers();
     }
 
-
-    setZ(level) {
-        super.setZ(level);
-        this.#element.style.zIndex=level;
-    }
 
 
     #alpha(obj,s) {

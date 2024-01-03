@@ -7,9 +7,6 @@ class RegionLayer extends OverlayLayer {
     #timingLog = false; //Log update times
     #scale = 1;
 
-    #viewer = null; //OSD viewer
-    #element = null; //DOM element 
-
     #regionOverlay;
     #pendingRegionOverlay;
     
@@ -20,11 +17,8 @@ class RegionLayer extends OverlayLayer {
      * @param {Object} svgOverlay - svgOverlay() of the OSD
      */
     constructor(name, svgOverlay) {
-        super(name);
+        super(name,svgOverlay._viewer,svgOverlay._svg);
 
-        this.#viewer=svgOverlay._viewer;
-        this.#element=svgOverlay._svg;
-        
         // Counter to check if we're busy rendering; Immediate function returning a function
         this.updateAnnotations.inProgress = (function () { let flag = 0; return (set=null) => { if (set!=null) flag+=set?1:-1; return flag; }} )();
 
@@ -37,7 +31,7 @@ class RegionLayer extends OverlayLayer {
             .attr("id", "regions")
             .style("pointer-events", "none");
 
-        this.#viewer.addHandler('update-viewport', () => {
+        this._viewer.addHandler('update-viewport', () => {
             this.#currentMouseUpdateFun && this.#currentMouseUpdateFun(); //set cursor position if view-port changed by external source
         });    
     }
@@ -467,11 +461,6 @@ class RegionLayer extends OverlayLayer {
     }
 
 
-
-    setZ(level) {
-        super.setZ(level);
-        this.#element.style.zIndex=level; //In SVG, z-index is defined by the order the element appears in the document
-    }
 
     /**
      * Called when layer is lowered away from top

@@ -6,9 +6,6 @@
 class CollabLayer extends OverlayLayer {
     #scale;
 
-    // #viewer = null; //OSD viewer
-    // #element = null; //DOM element 
-
     #cursorOverlay;
     #previousCursors;
 
@@ -18,10 +15,7 @@ class CollabLayer extends OverlayLayer {
      */
     constructor(name, svgOverlay) {
         super(name);
-    
-        // this.#viewer=svgOverlay._viewer;
-        // this.#element=svgOverlay._svg;
-    
+     
         this.#cursorOverlay = d3.select(svgOverlay.node())
             .append("g")
             .attr("id", "cursors")
@@ -120,8 +114,7 @@ class CollabLayer extends OverlayLayer {
 
 
     setZ(level) {
-        super.setZ(level);
-        //this.#cursorOverlay.style("zIndex",level);
+        //Do nothing, since sharing overlay with regions
     }
 
     /**

@@ -3,7 +3,7 @@
  * In order to use the functions, the active image first has to be set
  * with the {@link setImage} function. The different coordinate systems
  * that the functions convert between are described in more detail
- * {@link https://openseadragon.github.io/examples/viewport-coordinates/|here.}
+ * {@link https://openseadragon.github.io/examples/viewport-coordinates/ |here.}
  * A function for coversion with so-called overlay coordinates is also
  * included as a workaround for a bug with mouse events in the overlay.
  * @namespace coordinateHelper
@@ -79,7 +79,7 @@ const coordinateHelper = (function() {
      * @returns {Object} The same point in viewport coordinates.
      */
     function webToViewport({x, y}){
-        return imageToViewport(webToImage({x, y}));
+        return imageToViewport(webToImage({x, y})); //viewer.viewport.pointFromPixel(webPoint);
     }
 
     /**
@@ -115,6 +115,9 @@ const coordinateHelper = (function() {
 
     function imageToOverlay({x, y}){
         return viewportToOverlay(imageToViewport({x, y}));
+    }
+    function webToOverlay({x, y}){
+        return viewportToOverlay(webToViewport({x, y}));
     }
 
     /**
@@ -203,13 +206,19 @@ const coordinateHelper = (function() {
     return {
         imageToViewport,
         viewportToImage,
+
         imageToWeb,
         webToImage,
+
         webToViewport,
         viewportToWeb,
+
         viewportToOverlay,
         overlayToViewport,
+
         overlayToWeb,
+        webToOverlay,
+
         imageToOverlay,
         pageToViewport,
 
