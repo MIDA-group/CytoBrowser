@@ -31,9 +31,12 @@ class OverlayLayer {
      */
     setZ(level) {
         console.log(this.name,level);
-        this._element.style.zIndex=level;
+        this.style.zIndex=level;
     }
 
+    get style() {
+        return this._element.style; 
+    }
 
     _getAnnotationColor(d) {
         return classUtils.classColor(d.mclass);

@@ -208,33 +208,44 @@
                             </div>
                         </div>
                     </div>
-                    <hr />
-
+                    <hr class="py-0 my-0" />
                     <!-- Functionality buttons -->
                     <div class="card-body pb-0 pt-1 pt-lg-2 px-1 px-md-2">
                         <div class="card-block pb-4">
+                            <div class="row mb-2" style="margin-top:-5px;">
+                                <div class="col">
+                                    <div class="custom-control custom-switch">
+                                        <input type="checkbox" class="custom-control-input" id="attention_view_switch">
+                                        <label class="custom-control-label px-1" for="attention_view_switch">Show attention map</label>
+                                    </div>
+                                </div>
+                            </div>
                             <div class="row">
                                 <!-- Annotation tools -->
                                 <div class="col-8">
-                                    <h6 class="card-subtitle mb-2 text-muted">Annotation tool</h6>
-                                    <div class="btn-group btn-group-toggle d-flex" data-toggle="buttons" role="group" onkeydown="noArrows()">
-                                        <label id="tool_marker" type="button" class="btn btn-primary">
-                                            <input name="tool_selection" type="radio" autocomplete="off">
-                                            Marker
-                                        </label>
-                                        <label id="tool_rect" type="button" class="btn btn-primary">
-                                            <input name="tool_selection" type="radio" autocomplete="off">
-                                            Rectangle
-                                        </label>
-                                        <label id="tool_poly" type="button" class="btn btn-primary">
-                                            <input name="tool_selection" type="radio" autocomplete="off">
-                                            Polygon
-                                        </label>
+                                    <h6 class="card-subtitle mb-1 text-muted">Annotation tool</h6>
+                                    <div class="btn-toolbar" role="toolbar" aria-label="Toolbar with annotation button groups">
+                                        <div class="btn-group btn-group-toggle d-flex mr-1" data-toggle="buttons" role="group" onkeydown="noArrows()">
+                                            <label id="tool_marker" type="button" class="btn btn-primary">
+                                                <input name="tool_selection" type="radio" autocomplete="off">
+                                                Marker
+                                            </label>
+                                        </div>
+                                        <div class="btn-group btn-group-toggle d-flex" data-toggle="buttons" role="group" onkeydown="noArrows()">
+                                            <label id="tool_rect" type="button" class="btn btn-primary">
+                                                <input name="tool_selection" type="radio" autocomplete="off">
+                                                Rectangle
+                                            </label>
+                                            <label id="tool_poly" type="button" class="btn btn-primary">
+                                                <input name="tool_selection" type="radio" autocomplete="off">
+                                                Polygon
+                                            </label>
+                                        </div>
                                     </div>
                                 </div>
                                 <!-- Focus up/down --> <!-- TODO, move elsewhere -->
                                 <div class="col-4 ml-auto">
-                                    <h6 class="card-subtitle mb-2 text-muted">Change focus</h6>
+                                    <h6 class="card-subtitle mb-1 text-muted">Change focus</h6>
                                     <div class="btn-group d-flex" role="group" onkeydown="noArrows()">
                                         <button id="focus_next" type="button" class="btn btn-primary">Up</button>
                                         <button id="focus_prev" type="button" class="btn btn-primary">Down</button>
@@ -246,7 +257,7 @@
                             <div class="row">
                                 <!-- Annotation class buttons -->
                                 <div class="col">
-                                    <h6 class="card-subtitle mb-2 text-muted">Annotation class</h6>
+                                    <h6 class="card-subtitle mb-1 text-muted">Annotation class</h6>
                                     <div id="class_buttons" class="btn-group btn-group-toggle d-flex" data-toggle="buttons" role="group" onkeydown="noArrows()">
                                     </div>
                                 </div>

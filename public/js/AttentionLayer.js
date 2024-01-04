@@ -15,6 +15,11 @@ class AttentionLayer extends PaintLayer {
         this._viewer.addHandler('update-viewport', (event) => {
             this.#storeViewport();
         });
+
+        this.style.visibility = $("#attention_view_switch").checked? "visible":"hidden";
+        $("#attention_view_switch").change((e) => {
+            this.style.visibility=e.target.checked? "visible":"hidden";
+        });
     } 
 
     #paintViewport(ul,dr,opacity) {
@@ -43,7 +48,7 @@ class AttentionLayer extends PaintLayer {
         if (!this.#start || ul.x!=this.#oldUl.x || ul.y!=this.#oldUl.y || dr.x!=this.#oldDr.x || dr.y!=this.#oldDr.y) {
             const stop = Date.now();
             let viewPause =  (stop - this.#start)/1000; //In seconds
-            viewPause = Math.min(60,viewPause); //No more than 60s staring
+            viewPause = Math.min(60,viewPause); //No more than 60s staring at the same spot
             const opacity = viewPause/10 * this.#zoomRatio;
             if (opacity > 0.01) {
                 this.#paintViewport(this.#oldUl,this.#oldDr,opacity);

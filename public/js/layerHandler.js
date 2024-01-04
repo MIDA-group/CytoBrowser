@@ -117,6 +117,14 @@ const layerHandler = (function (){
         return _layers.findIndex((elem) => elem.name===name);
     }
 
+    /**
+     * Lookup layer (O(N))
+     * @param {string} name 
+     */
+    function getLayer(name) {
+        return _layers.find((elem) => elem.name===name);   
+    }
+
     function _putLayerFirst(name) {
         const idx=_getLayerIndex(name);
         const layer=_layers.splice(idx,1)[0];
@@ -159,6 +167,7 @@ const layerHandler = (function (){
         setActiveAnnotationOverlay:setTopLayer,
 
         addLayer,
+        getLayer,
         updateAnnotations,
         updateMembers
     };
