@@ -1,3 +1,7 @@
+html {
+    font-size: 15px;
+} 
+
 .ISS_viewer{
     height: 100%;
 	background-color: #676767;
