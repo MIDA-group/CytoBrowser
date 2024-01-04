@@ -453,30 +453,6 @@ const tmapp = (function() {
         layerHandler.addLayer(markerLayer);
 
         
-        
-        // Add fabric rectangle
-        var rect = new fabric.Rect({
-            left: 0,
-            top: 0,
-            fill: 'red',
-            width: 200,
-            height: 200
-        });
-        fabricjsOverlay.fabricCanvas().add(rect);
-
-        //Bugger doesn't support rotation!
-        // Add fabric rectangle
-        var rect = new fabric.Rect({
-            left: 500,
-            top: 0,
-            fill: 'red',
-            width: 200,
-            height: 200
-        });
-        fabricjsOverlay.fabricCanvas().add(rect);
-
-
-        
         //PIXI.Ticker.shared.add(() => fps.frame());
 
         // var ticker = PIXI.Ticker.shared;

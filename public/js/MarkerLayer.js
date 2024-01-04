@@ -103,7 +103,7 @@ class MarkerLayer extends OverlayLayer {
 
                 let vis=0;
                 this.#markerContainer.children.forEach(c => {
-                    const webPos = coordinateHelper.overlayToWeb(c.position);
+                    const webPos = coordinateHelper.overlayToWeb(c.position); //Todo: Avoid per marker coordinate transform
                     c.visible = c.pressed || rect.contains(webPos.x,webPos.y);
                     vis += c.visible;
                 });
