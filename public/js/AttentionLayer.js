@@ -55,6 +55,7 @@ class AttentionLayer extends PaintLayer {
             return (dri.x-uli.x)*(dri.y-uli.y);
         }
 
+        if (!coordinateHelper.hasImage()) return;
         const ul=coordinateHelper.webToOverlay({x:0,y:0});
         const dr=coordinateHelper.webToOverlay(this._viewer.viewport._containerInnerSize);
         //Check if the view actually changed

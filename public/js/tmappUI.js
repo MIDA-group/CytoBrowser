@@ -325,9 +325,9 @@ const tmappUI = (function(){
     }
 
     function _initVisualizationSliders() {
-        $("#marker_size_slider").slider().on('change', function(e) {layerHandler.setMarkerScale(e.value.newValue);});
-        $("#brightness_slider").slider().on('change', function(e) {tmapp.setBrightness(e.value.newValue);});
-        $("#contrast_slider").slider().on('change', function(e) {tmapp.setContrast(e.value.newValue);});
+        $("#marker_size_slider").slider({focus: true}).on('change', function(e) {layerHandler.setMarkerScale(e.value.newValue);});
+        $("#brightness_slider").slider({focus: true}).on('change', function(e) {tmapp.setBrightness(e.value.newValue);});
+        $("#contrast_slider").slider({focus: true}).on('change', function(e) {tmapp.setContrast(e.value.newValue);});
     
         $("#marker_size_reset").click(function() { $('#marker_size_slider').slider('setValue', 1, true, true);});
         $("#brightness_reset").click(function() { $('#brightness_slider').slider('setValue', 0, true, true);});

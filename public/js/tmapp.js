@@ -63,12 +63,18 @@ const tmapp = (function() {
         return _currState.z + Math.floor(_currentImage.zLevels.length / 2);
     }
 
+    //z = index-ofs
     function _setFocusLevel(z) {
         const count = _viewer.world.getItemCount();
-        const ofs = Math.floor(_currentImage.zLevels.length / 2);
+        const ofs = Math.floor(count / 2);
         z = Math.min(Math.max(z,-ofs),count-1-ofs);
-        _viewer.setFocusLevel(z);
-        _currState.z = z;
+        setFocusIndex(z+ofs);
+    }
+    function getFocusIndex() {
+        return  _viewer.getFocusIndex();
+    }
+    function setFocusIndex(z0) {
+        _viewer.setFocusIndex(z0);
         _updateFocus();
     }
 
@@ -76,9 +82,13 @@ const tmapp = (function() {
         if (!_viewer) {
             throw new Error("Tried to update focus of nonexistent viewer.");
         }
-        const index = _getFocusIndex();
-        tmappUI.setImageZLevel(_currentImage.zLevels[index]);
-        coordinateHelper.setImage(_viewer.world.getItemAt(index));
+        const ofs = Math.floor(_viewer.world.getItemCount() / 2);
+        const index = getFocusIndex();
+        _currState.z = index-ofs;
+    
+        htmlHelper.updateFocusSlider(_viewer,index); 
+        tmappUI.setImageZLevel(_currentImage.zLevels[index]); //Write in UI
+        coordinateHelper.setImage(_viewer.world.getItemAt(index)); 
         _updateCollabPosition();
         _updateURLParams();
     }
@@ -366,7 +376,7 @@ const tmapp = (function() {
         ]});
     }
 
-    function _addHandlers (viewer, callback) {
+    function _addHandlers(viewer, callback) {
         // Change-of-Page (z-level) handler
         viewer.addHandler("page", _updateFocus);
         viewer.addHandler("zoom", _updateZoom);
@@ -389,6 +399,7 @@ const tmapp = (function() {
             _updateBrightnessContrast();
             tmappUI.clearImageError();
             callback && callback();
+            viewer.canvas.focus(); //Focus again after the callback
         });
 
         // Error message if we fail to load
@@ -419,12 +430,14 @@ const tmapp = (function() {
         //init OSD viewer
         _viewer = OpenSeadragon(_optionsOSD);
         _viewer.scalebar();
-        _addHandlers(_viewer, callback);
-
+        
         //open the DZI xml file pointing to the tiles
         const imageName = _currentImage.name;
         const imageStack = _expandImageName(imageName);
-        _openImages(imageStack);
+        _openImages(imageStack); //sets _availableZLevels
+        _addHandlers(_viewer, callback);
+        
+        htmlHelper.buildFocusSlider(_viewer, _currentImage.zLevels);
 
         //Create a wrapper in which we place all overlays, s.t. we can switch with zIndex but still get Navigator and On-screen menu
         const overlayDiv = document.createElement('div');
@@ -894,6 +907,8 @@ const tmapp = (function() {
         incrementFocus,
         decrementFocus,
         getZLevels,
+        setFocusIndex,
+        getFocusIndex,
 
         setBrightness,
         setContrast,

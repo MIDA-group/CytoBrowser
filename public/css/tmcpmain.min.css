@@ -12,6 +12,13 @@ html {
 	height:90vh;
 }
 
+.focus_slider_internal {
+    opacity: 0.6;
+}
+.focus_slider_internal:hover {
+    opacity: 0.8;
+}
+
 .nav-tabs > li > a.active, .nav-tabs > li > a.active:hover, .nav-tabs > li > a.active:focus {
     color: #555555;
     background-color: #ffffff;

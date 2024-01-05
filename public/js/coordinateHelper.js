@@ -197,7 +197,9 @@ const coordinateHelper = (function() {
         const height = bounds.height * width;
         _minDimension = Math.min(width, height); //in image coords
     }
-
+    function hasImage() {
+        return _activeImage != null;
+    }
     /**
      * Clear information about the current image.
      */
@@ -232,6 +234,7 @@ const coordinateHelper = (function() {
         pointIsInsideWeb,
         pointIsInsideImage,
         setImage,
+        hasImage,
         clearImage
     };
 })();
