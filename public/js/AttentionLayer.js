@@ -22,7 +22,7 @@ class AttentionLayer extends PaintLayer {
             this.style.visibility=e.target.checked? "visible":"hidden";
         });
 
-        //One for the navigator as well
+        //One copy for the navigator as well
         const navigatorOverlay = this._viewer.fabricjsOverlay({scale: 1000, viewer: this._viewer.navigator, static: true});
         this.#navigatorCanvas = navigatorOverlay.fabricCanvas();
     } 

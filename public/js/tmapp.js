@@ -54,7 +54,7 @@ const tmapp = (function() {
             held: false,
             inside: false
         },
-        _disabledControls,
+        _disabledControls=false,
         _availableZLevels,
         _mouseHandler,
         _currentMouseUpdateFun=null;
@@ -474,7 +474,7 @@ const tmapp = (function() {
         _viewer && _viewer.destroy();
         $("#ISS_viewer").empty();
         coordinateHelper.clearImage();
-        _disabledControls = null;
+        _disabledControls = false;
         _availableZLevels = null;
     }
 
@@ -822,10 +822,8 @@ const tmapp = (function() {
             return;
         }
         _viewer.setMouseNavEnabled(true);
-        _disabledControls.forEach(control => {
-            _viewer.addControl(control.element, control);
-        });
-        _disabledControls = null;
+        _viewer.controls.forEach(e => e.element.style.visibility="visible");
+        _disabledControls = false;
     }
 
     /**
@@ -837,10 +835,9 @@ const tmapp = (function() {
         }
         _viewer.setMouseNavEnabled(false);
 
-        // Store a copy of the current control buttons
-        // API docs suggest setControlsEnabled(), doesn't seem to work
-        _disabledControls = Array.from(_viewer.controls);
-        _viewer.clearControls();
+        // API docs suggest setControlsEnabled(false), doesn't seem to work
+        _viewer.controls.forEach(e => e.element.style.visibility="hidden");
+        _disabledControls=true;
     }
 
     /**
