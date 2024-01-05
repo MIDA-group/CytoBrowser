@@ -4,6 +4,7 @@
  **/
 
 class AttentionLayer extends PaintLayer {
+    #tracking=null; //on/off
     #fabricCanvas;
     #navigatorCanvas;
     
@@ -13,11 +14,19 @@ class AttentionLayer extends PaintLayer {
         //Where to paint
         this.#fabricCanvas=fabricjsOverlay.fabricCanvas();
 
-        this._viewer.addHandler('update-viewport', (event) => {
-            this.#storeViewport();
+        $("#attention_track_switch").change((e) => {
+            this.#tracking = e.target.checked;
         });
 
-        this.style.visibility = $("#attention_view_switch").checked? "visible":"hidden";
+        this._viewer.addHandler('update-viewport', (event) => {
+            if (this.#tracking == null) {
+                this.#tracking = document.getElementById("attention_track_switch")?.checked; //jQuery fails!
+            }
+            this.#tracking && this.#storeViewport();
+            console.log('Tracking: ',this.#tracking);
+        });
+
+        this.style.visibility = document.getElementById("attention_view_switch").checked? "visible":"hidden";
         $("#attention_view_switch").change((e) => {
             this.style.visibility=e.target.checked? "visible":"hidden";
         });
@@ -27,14 +36,17 @@ class AttentionLayer extends PaintLayer {
         this.#navigatorCanvas = navigatorOverlay.fabricCanvas();
     } 
 
+    //Skip 10% close to edge
     #paintViewport(ul,dr,opacity) {
         // Add fabric rectangle
+        const w=dr.x-ul.x;
+        const h=dr.y-ul.y;
         var rect = new fabric.Rect({
-            left: ul.x,
-            top: ul.y,
+            left: ul.x+0.1*w,
+            top: ul.y+0.1*h,
             fill: 'green',
-            width: dr.x-ul.x,
-            height: dr.y-ul.y,
+            width: 0.8*w,
+            height: 0.8*h,
             opacity: opacity
         });
         this.#fabricCanvas.add(rect);
@@ -64,8 +76,8 @@ class AttentionLayer extends PaintLayer {
             let viewPause =  (stop - this.#start)/1000; //In seconds
             viewPause = Math.min(60,viewPause); //No more than 60s staring at the same spot
             const area = pixArea(this.#oldUl,this.#oldDr)/1_000_000; //Mpx
-            console.log('Visible area [Mpx]: ',area.toPrecision(1));
-            const opacity = 0.5*viewPause / area;
+            console.log('Visible area [Mpx]: ',area.toPrecision(2));
+            const opacity = 0.2*Math.sqrt(viewPause) / Math.pow(area,1.5);
             if (opacity > 0.01) {
                 this.#paintViewport(this.#oldUl,this.#oldDr,opacity);
             }
