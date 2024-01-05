@@ -437,6 +437,7 @@ const tmapp = (function() {
         overlayDiv.style.zIndex = 0; //We use zIndex inside
         _viewer.canvas.appendChild(overlayDiv);
 
+        //Since scale < image.size, it is not pixel-perfect
         const fabricjsOverlay = _viewer.fabricjsOverlay({scale: 1000, container: overlayDiv, static: true});
         const attentionLayer = new AttentionLayer("attention",fabricjsOverlay);
         layerHandler.addLayer(attentionLayer);
@@ -452,7 +453,7 @@ const tmapp = (function() {
         const markerLayer = new MarkerLayer("marker",pixiOverlay);
         layerHandler.addLayer(markerLayer);
 
-        
+
         //PIXI.Ticker.shared.add(() => fps.frame());
 
         // var ticker = PIXI.Ticker.shared;

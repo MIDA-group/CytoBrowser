@@ -105,9 +105,12 @@ const coordinateHelper = (function() {
     function viewportToOverlay({x, y}){
         return {x: x * 1000, y: y * 1000};
     }
-
     function overlayToViewport({x, y}){
         return {x: x / 1000, y: y / 1000};
+    }
+
+    function webToOverlay({x, y}){
+        return viewportToOverlay(webToViewport({x, y}));
     }
     function overlayToWeb({x, y}){
         return viewportToWeb(overlayToViewport({x, y}));
@@ -116,10 +119,10 @@ const coordinateHelper = (function() {
     function imageToOverlay({x, y}){
         return viewportToOverlay(imageToViewport({x, y}));
     }
-    function webToOverlay({x, y}){
-        return viewportToOverlay(webToViewport({x, y}));
+    function overlayToImage({x, y}){
+        return viewportToImage(overlayToViewport({x, y}));
     }
-
+    
     /**
      * Convert from page coordinates, as acquired from pageX and pageY
      * on mouse events, to viewport coordinates.
@@ -189,10 +192,10 @@ const coordinateHelper = (function() {
      */
     function setImage(image) {
         _activeImage = image;
-        const bounds = image.getBounds();
+        const bounds = image.getBounds(); //in viewport coords
         const width = viewportToImage({x: 1, y: 0}).x;
         const height = bounds.height * width;
-        _minDimension = Math.min(width, height);
+        _minDimension = Math.min(width, height); //in image coords
     }
 
     /**
@@ -220,6 +223,8 @@ const coordinateHelper = (function() {
         webToOverlay,
 
         imageToOverlay,
+        overlayToImage,
+
         pageToViewport,
 
         getMinDimension,
