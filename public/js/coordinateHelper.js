@@ -196,6 +196,8 @@ const coordinateHelper = (function() {
         const width = viewportToImage({x: 1, y: 0}).x;
         const height = bounds.height * width;
         _minDimension = Math.min(width, height); //in image coords
+
+        //how about image.getContentSize() ?
     }
     function hasImage() {
         return _activeImage != null;

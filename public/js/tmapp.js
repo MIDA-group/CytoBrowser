@@ -10,7 +10,6 @@ const tmapp = (function() {
     const _optionsOSD = {
         id: "ISS_viewer", //cybr_viewer
         prefixUrl: "js/openseadragon/images/", //Location of button graphics
-        navigatorSizeRatio: 1,
         wrapHorizontal: false,
         showNavigator: true,
         navigatorPosition: "BOTTOM_LEFT",
@@ -35,10 +34,10 @@ const tmapp = (function() {
         preload: true
     };
 
-    let _currentImage,
-        _images,
+    let _currentImage = null, //a focus stack
+        _images, //list of images from image browser
         _collab,
-        _viewer,
+        _viewer, //the OSD-viewer
         _currState = {
             x: 0.5,
             y: 0.5,
@@ -54,14 +53,11 @@ const tmapp = (function() {
             held: false,
             inside: false
         },
-        _disabledControls=false,
-        _availableZLevels,
+        _disabledControls=false, //showing controls and navigator
+        _availableZLevels, //how is this different from _currentImage.zLevels?
         _mouseHandler,
         _currentMouseUpdateFun=null;
 
-    function _getFocusIndex() {
-        return _currState.z + Math.floor(_currentImage.zLevels.length / 2);
-    }
 
     //z = index-ofs
     function _setFocusLevel(z) {
@@ -71,7 +67,7 @@ const tmapp = (function() {
         setFocusIndex(z+ofs);
     }
     function getFocusIndex() {
-        return  _viewer.getFocusIndex();
+        return  _viewer.getFocusIndex(); //From the focus-levels plugin
     }
     function setFocusIndex(z0) {
         _viewer.setFocusIndex(z0);
@@ -82,16 +78,20 @@ const tmapp = (function() {
         if (!_viewer) {
             throw new Error("Tried to update focus of nonexistent viewer.");
         }
-        const ofs = Math.floor(_viewer.world.getItemCount() / 2);
+        const ofs = Math.floor(_viewer.nFocusLevels / 2);
         const index = getFocusIndex();
         _currState.z = index-ofs;
-    
+
         htmlHelper.updateFocusSlider(_viewer,index); 
         tmappUI.setImageZLevel(_currentImage.zLevels[index]); //Write in UI
         coordinateHelper.setImage(_viewer.world.getItemAt(index)); 
         _updateCollabPosition();
         _updateURLParams();
     }
+
+    // function getImage() {
+    //     return _currentImage && _viewer.world.getItemAt(getFocusIndex());
+    // }
 
     function setBrightness(b) {
         _currState.brightness = b;
@@ -461,10 +461,14 @@ const tmapp = (function() {
         
         const regionLayer = new RegionLayer("region",svgOverlay);
         layerHandler.addLayer(regionLayer);
-        
+  
         const pixiOverlay = _viewer.pixiOverlay(overlayDiv);
         const markerLayer = new MarkerLayer("marker",pixiOverlay);
         layerHandler.addLayer(markerLayer);
+
+        const pixiOverlay2 = _viewer.pixiOverlay(overlayDiv);
+        const canvasLayer = new CanvasLayer("canvas",pixiOverlay2);
+        layerHandler.addLayer(canvasLayer);
 
 
         //PIXI.Ticker.shared.add(() => fps.frame());
@@ -915,6 +919,7 @@ const tmapp = (function() {
         changeBrightness,
         changeContrast,
 
+        //getImage,
         getImageName,
         updateCollabStatus,
         setCursorStatus,
