@@ -4,30 +4,40 @@
  **/
 
 class CanvasLayer extends OverlayLayer {
-    #stage;
-    #container;
+    #canvas;
     #drawUpdate;
 
     constructor(name,pixiOverlay) {
         super(name,pixiOverlay._viewer,pixiOverlay._pixi);
-        
-        this.#stage=pixiOverlay._app.stage;
 
-        //this.#drawUpdate=pixiOverlay.update; // Call this function when drawing anything, see pixi-overlay
-        this.#drawUpdate=() => pixiOverlay.update(); // Aaargh, the 'this' functionality in JS is just... sigh!
+        //Drawing canvas
+        this.#canvas = document.createElement('canvas');
+        this.#canvas.height = 1000; //arb. resolution
+        this.#canvas.width = 1000;
+        
+        //Pixi texture and sprite
+        const texture = PIXI.Texture.from(this.#canvas);
+        const sprite = new PIXI.Sprite(texture);
+        sprite.height = 1000; //Overlay coordinates
+        sprite.width = 1000;
 
+        pixiOverlay._app.stage.addChild(sprite);
         
-        // Pixi container for rendering
-        this.#container = new PIXI.Container();
-        this.#stage.addChild(this.#container);
-    
-        const texture = PIXI.Texture.from('https://pixijs.com/assets/bunny.png');
-        const bunny = new PIXI.Sprite(texture);
-        this.#container.addChild(bunny);
-        
-        //In overlay coords
-        bunny.height = 1000;
-        bunny.width = 1000;
+        this.#drawUpdate=() => {
+            texture.update();
+            pixiOverlay.update();
+        }
+    }
+
+    getContext(...args) {
+        return this.#canvas.getContext(...args);
+    }
+
+    /**
+     * Call after drawing
+     */
+    update() {
+        this.#drawUpdate();
     }
 
     /**

@@ -470,6 +470,10 @@ const tmapp = (function() {
         const canvasLayer = new CanvasLayer("canvas",pixiOverlay2);
         layerHandler.addLayer(canvasLayer);
 
+        const ctx = canvasLayer.getContext("2d");
+        ctx.fillStyle = "rgba(0, 0, 200, 0.5)";
+        ctx.fillRect(30, 30, 50, 50)
+        canvasLayer.update();
 
         //PIXI.Ticker.shared.add(() => fps.frame());
 
