@@ -144,6 +144,10 @@
         return this.setFocusLevel(this._zLevels[zIndex]); //Crock
     }    
     /**
+     * Convenience getter
+     */
+    Object.defineProperty($.Viewer.prototype,"nFocusLevels", { get: function() { return this._nFocusLevels; }});
+    /**
      * Set the focus level of the of the OSD viewer, assuming the images
      * were opened using openFocusLevels().
      * @param {number} z The new focus level. The value used should
