@@ -13,7 +13,8 @@ const tmapp = (function() {
         wrapHorizontal: false,
         showNavigator: true,
         navigatorPosition: "BOTTOM_LEFT",
-        navigatorSizeRatio: 0.25,
+        navigatorSizeRatio: 0.3,
+        navigatorMaintainSizeRatio: true, 
         animationTime: 0.0,
         blendTime: 0,
         maxImageCacheCount: 800, //need more for z-stacks
@@ -89,9 +90,9 @@ const tmapp = (function() {
         _updateURLParams();
     }
 
-    // function getImage() {
-    //     return _currentImage && _viewer.world.getItemAt(getFocusIndex());
-    // }
+    function _getImage() {
+         return _currentImage && _viewer.world.getItemAt(getFocusIndex());
+    }
 
     function setBrightness(b) {
         _currState.brightness = b;
@@ -393,10 +394,33 @@ const tmapp = (function() {
             viewer.canvas.focus();
             viewer.viewport.goHome();
             _updateZoom();
-            _updateFocus();
+            _updateFocus(); //coordinateHelper.setImage
             _updatePosition();
             _updateRotation();
             _updateBrightnessContrast();
+
+            //Set better aspect ratio of navigator
+            function setNavSize() {
+                viewer.navigator._resizeWithViewer = false;
+                var $ = window.OpenSeadragon;
+                const viewerSize = $.getElementSize( viewer.element ); //Relying on OSD's fun
+
+                const newWidth  = viewerSize.x * viewer.navigator.sizeRatio;
+                let newHeight = viewerSize.y * viewer.navigator.sizeRatio;
+                const image=_getImage();
+                if (image) {
+                    newHeight = image.getBounds().height * newWidth; //Aspect ratio based on image, not viewer
+                }
+                
+                viewer.navigator.element.style.width  = Math.round( newWidth ) + 'px';
+                viewer.navigator.element.style.height = Math.round( newHeight ) + 'px';
+
+                viewer.navigator.update( viewer.viewport );
+            }
+            setNavSize();
+            viewer.addHandler("update-viewport", setNavSize);
+            viewer.navigator.addHandler("resize", setNavSize);
+
             tmappUI.clearImageError();
             callback && callback();
             viewer.canvas.focus(); //Focus again after the callback
@@ -915,7 +939,6 @@ const tmapp = (function() {
         changeBrightness,
         changeContrast,
 
-        //getImage,
         getImageName,
         updateCollabStatus,
         setCursorStatus,
