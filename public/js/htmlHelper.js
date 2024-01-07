@@ -307,7 +307,7 @@ const htmlHelper = (function() {
     function _commentInputAlt(inputFun) {
         const container = $(`
             <div class="input-group">
-                <textarea class="form-control" rows="1" style="resize: vertical;"></textarea>
+                <textarea name="comment" class="form-control" rows="1" style="resize: vertical;"></textarea>
                 <div class="input-group-append">
                     <button type="button" class="btn btn-primary">Add comment</button>
                 </div>
@@ -317,11 +317,11 @@ const htmlHelper = (function() {
         submitButton.click(() => {
             const textarea = container.find("textarea");
             const body = textarea.val();
-	    if (body.length > 0) {
-                textarea.val("");
-                inputFun(body);
-            }
-        });
+            if (body.length > 0) {
+                    textarea.val("");
+                    inputFun(body);
+                }
+            });
         container.keypress(e => e.stopPropagation());
         container.keyup(e => e.stopPropagation());
         container.keydown(e => {
@@ -346,7 +346,7 @@ const htmlHelper = (function() {
                 </div>
             </div>
         `);
-	 const submitButton = container.find("button");
+	    const submitButton = container.find("button");
         submitButton.click(() => {
             const textarea = container.find("textarea");
             const body = textarea.val();
@@ -359,7 +359,7 @@ const htmlHelper = (function() {
             e.stopPropagation();
             if ((e.code === "Enter" || e.code === "NumpadEnter") && !e.shiftKey) {
                 e.preventDefault();
-		submitButton.click();
+		        submitButton.click();
             }
             else if (e.code === "Escape") {
                 container.parent().parent().focus();
@@ -633,7 +633,7 @@ const htmlHelper = (function() {
     }
 
     return {
-        buildCommentSection,
+        //buildCommentSection,  //Seemingly not in use 
         buildCommentSectionAlt,
         buildAnnotationSettingsMenu,
         buildClassSelectionButtons,

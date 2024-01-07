@@ -18,7 +18,7 @@ class AttentionLayer extends CanvasLayer {
                 this.#tracking = document.getElementById("attention_track_switch")?.checked; //jQuery fails!
             }
             this.#tracking && this.#storeViewport();
-            console.log('Tracking: ',this.#tracking);
+            //console.log('Tracking: ',this.#tracking);
         });
 
         this.style.visibility = document.getElementById("attention_view_switch").checked? "visible":"hidden";

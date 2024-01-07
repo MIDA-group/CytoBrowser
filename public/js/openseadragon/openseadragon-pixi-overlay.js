@@ -33,7 +33,6 @@
     // ----------
     // Option to use other container than viewer.canvas, e.g. for internal z-stacking
     var Overlay = function(viewer, container=viewer.canvas) {
-        console.log(viewer);
         var self = this;
 
         this._viewer = viewer;
