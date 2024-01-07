@@ -401,7 +401,10 @@ const tmapp = (function() {
 
             //Set better aspect ratio of navigator
             function setNavSize() {
+                if (!viewer.element) return;
+                
                 viewer.navigator._resizeWithViewer = false;
+                
                 var $ = window.OpenSeadragon;
                 const viewerSize = $.getElementSize( viewer.element ); //Relying on OSD's fun
 
