@@ -5,8 +5,8 @@
 
 class CanvasLayer extends OverlayLayer {
     #canvas;
-    #drawUpdate;
-
+    #texture; //Can be used for several sprites
+    
     constructor(name,pixiOverlay) {
         super(name,pixiOverlay._viewer,pixiOverlay._pixi);
 
@@ -16,28 +16,27 @@ class CanvasLayer extends OverlayLayer {
         this.#canvas.width = 1000;
         
         //Pixi texture and sprite
-        const texture = PIXI.Texture.from(this.#canvas);
-        const sprite = new PIXI.Sprite(texture);
+        this.#texture = PIXI.Texture.from(this.#canvas);
+        
+        const sprite = new PIXI.Sprite(this.#texture);
         sprite.height = 1000; //Overlay coordinates
         sprite.width = 1000;
 
-        pixiOverlay._app.stage.addChild(sprite);
+        pixiOverlay.stage().addChild(sprite);
         
-        this.#drawUpdate=() => {
-            texture.update();
+        /**
+         * Call this to show changes on screen
+         */
+        CanvasLayer.prototype.update = () => { //prototype, otherwise super doesn't work
+            this.#texture.update();
             pixiOverlay.update();
         }
     }
 
+    get texture() { return this.#texture; }
+
     getContext(...args) {
         return this.#canvas.getContext(...args);
-    }
-
-    /**
-     * Call after drawing
-     */
-    update() {
-        this.#drawUpdate();
     }
 
     /**

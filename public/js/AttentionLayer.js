@@ -3,17 +3,12 @@
  * Overlay class for visualizing attention.
  **/
 
-class AttentionLayer extends PaintLayer {
+class AttentionLayer extends CanvasLayer {
     #tracking=null; //on/off
-    #fabricCanvas;
-    #navigatorCanvas;
-    
-    constructor(name,fabricjsOverlay) {
-        super(name,fabricjsOverlay);
-        
-        //Where to paint
-        this.#fabricCanvas=fabricjsOverlay.fabricCanvas();
 
+    constructor(name,pixiOverlay) {
+        super(name,pixiOverlay);
+        
         $("#attention_track_switch").change((e) => {
             this.#tracking = e.target.checked;
         });
@@ -31,27 +26,34 @@ class AttentionLayer extends PaintLayer {
             this.style.visibility=e.target.checked? "visible":"hidden";
         });
 
-        //One copy for the navigator as well
-        const navigatorOverlay = this._viewer.fabricjsOverlay({scale: 1000, viewer: this._viewer.navigator, static: true});
-        this.#navigatorCanvas = navigatorOverlay.fabricCanvas();
+        //Copy for navigator
+        const navigatorOverlay = this._viewer.pixiOverlay(this._viewer.navigator.canvas,{viewer:this._viewer.navigator});
+        const sprite = new PIXI.Sprite(this.texture);
+        sprite.height = 1000; //Overlay coordinates
+        sprite.width = 1000;
+        navigatorOverlay.stage().addChild(sprite);
+        
+        /**
+         * Call this to show changes on screen
+         */
+        AttentionLayer.prototype.update = () => {
+            super.update();
+            navigatorOverlay.update();
+        }
+
     } 
 
-    //Skip 10% close to edge
     #paintViewport(ul,dr,opacity) {
-        // Add fabric rectangle
+        // Paint rectangle
         const w=dr.x-ul.x;
         const h=dr.y-ul.y;
-        var rect = new fabric.Rect({
-            left: ul.x+0.1*w,
-            top: ul.y+0.1*h,
-            fill: 'green',
-            width: 0.8*w,
-            height: 0.8*h,
-            opacity: opacity
-        });
-        this.#fabricCanvas.add(rect);
-        this.#navigatorCanvas.add(rect);
-
+        
+        const ctx = this.getContext("2d");
+        ctx.fillStyle = `rgba(0, 200, 0, ${opacity})`;
+        //Skip 10% close to edge
+        ctx.fillRect(ul.x+0.1*w, ul.y+0.1*h, 0.8*w, 0.8*h);
+        this.update();
+        
         console.log('Opacity: ',opacity);
     }
 

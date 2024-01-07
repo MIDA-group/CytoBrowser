@@ -12,12 +12,12 @@
     }
 
     // ----------
-    $.Viewer.prototype.pixiOverlay = function(container=this.canvas) {
-        if (this._pixiOverlayInfo) {
+    $.Viewer.prototype.pixiOverlay = function(container=this.canvas,options) {
+        /*if (this._pixiOverlayInfo) {
             return this._pixiOverlayInfo;
-        }
+        }*/
 
-        this._pixiOverlayInfo = new Overlay(this, container);
+        this._pixiOverlayInfo = new Overlay(options?.viewer ?? this, container);
         return this._pixiOverlayInfo;
     };
 
@@ -33,6 +33,7 @@
     // ----------
     // Option to use other container than viewer.canvas, e.g. for internal z-stacking
     var Overlay = function(viewer, container=viewer.canvas) {
+        console.log(viewer);
         var self = this;
 
         this._viewer = viewer;

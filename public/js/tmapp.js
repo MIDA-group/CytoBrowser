@@ -451,8 +451,8 @@ const tmapp = (function() {
         _viewer.canvas.appendChild(overlayDiv);
 
         //Since scale < image.size, it is not pixel-perfect
-        const fabricjsOverlay = _viewer.fabricjsOverlay({scale: 1000, container: overlayDiv, static: true});
-        const attentionLayer = new AttentionLayer("attention",fabricjsOverlay);
+        //const fabricjsOverlay = _viewer.fabricjsOverlay({scale: 1000, container: overlayDiv, static: true});
+        const attentionLayer = new AttentionLayer("attention", _viewer.pixiOverlay(overlayDiv));
         layerHandler.addLayer(attentionLayer);
     
         const svgOverlay = _viewer.svgOverlay(overlayDiv); //Shared for regions and collab (for the moment)
@@ -462,18 +462,11 @@ const tmapp = (function() {
         const regionLayer = new RegionLayer("region",svgOverlay);
         layerHandler.addLayer(regionLayer);
   
-        const pixiOverlay = _viewer.pixiOverlay(overlayDiv);
-        const markerLayer = new MarkerLayer("marker",pixiOverlay);
+        const markerLayer = new MarkerLayer("marker", _viewer.pixiOverlay(overlayDiv));
         layerHandler.addLayer(markerLayer);
 
-        const pixiOverlay2 = _viewer.pixiOverlay(overlayDiv);
-        const canvasLayer = new CanvasLayer("canvas",pixiOverlay2);
-        layerHandler.addLayer(canvasLayer);
 
-        const ctx = canvasLayer.getContext("2d");
-        ctx.fillStyle = "rgba(0, 0, 200, 0.5)";
-        ctx.fillRect(30, 30, 50, 50)
-        canvasLayer.update();
+
 
         //PIXI.Ticker.shared.add(() => fps.frame());
 
