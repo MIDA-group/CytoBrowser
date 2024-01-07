@@ -27,7 +27,7 @@ class AttentionLayer extends CanvasLayer {
         });
 
         //Copy for navigator
-        const navigatorOverlay = this._viewer.pixiOverlay(this._viewer.navigator.canvas,{viewer:this._viewer.navigator});
+        const navigatorOverlay = this._viewer.pixiOverlay({viewer:this._viewer.navigator});
         const sprite = new PIXI.Sprite(this.texture);
         sprite.height = 1000; //Overlay coordinates
         sprite.width = 1000;

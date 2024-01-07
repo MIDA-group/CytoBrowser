@@ -11,13 +11,23 @@
         }
     }
 
-    // ----------
-    $.Viewer.prototype.pixiOverlay = function(container=this.canvas,options) {
-        /*if (this._pixiOverlayInfo) {
-            return this._pixiOverlayInfo;
-        }*/
-
-        this._pixiOverlayInfo = new Overlay(options?.viewer ?? this, container);
+    /**
+     * Adds pixi.js overlay capability to your OpenSeadragon Viewer
+     *
+     * @param {Object} options
+     *     Allows configurable properties to be entirely specified by passing
+     *     an options object to the constructor.
+     *
+     * @param {Object} options.container
+     *     Container element to use, instead of Viewer.canvas
+     * 
+     * @param {Object} options.viewer
+     *     Use other viewer than 'this'
+     * 
+     * @returns {Overlay}
+     */
+    $.Viewer.prototype.pixiOverlay = function(options) {
+        this._pixiOverlayInfo = new Overlay(options?.viewer ?? this, options?.container);
         return this._pixiOverlayInfo;
     };
 
@@ -60,7 +70,7 @@
         turnOffTouchEvents(this._app.renderer.plugins.interaction);
 
         this._pixi.appendChild(this._app.view);
-        
+
         this._viewer.addHandler('animation', () => {
             self.resize();
         });

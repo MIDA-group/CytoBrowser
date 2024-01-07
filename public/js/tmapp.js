@@ -451,8 +451,7 @@ const tmapp = (function() {
         _viewer.canvas.appendChild(overlayDiv);
 
         //Since scale < image.size, it is not pixel-perfect
-        //const fabricjsOverlay = _viewer.fabricjsOverlay({scale: 1000, container: overlayDiv, static: true});
-        const attentionLayer = new AttentionLayer("attention", _viewer.pixiOverlay(overlayDiv));
+        const attentionLayer = new AttentionLayer("attention", _viewer.pixiOverlay({container:overlayDiv}));
         layerHandler.addLayer(attentionLayer);
     
         const svgOverlay = _viewer.svgOverlay(overlayDiv); //Shared for regions and collab (for the moment)
@@ -462,7 +461,7 @@ const tmapp = (function() {
         const regionLayer = new RegionLayer("region",svgOverlay);
         layerHandler.addLayer(regionLayer);
   
-        const markerLayer = new MarkerLayer("marker", _viewer.pixiOverlay(overlayDiv));
+        const markerLayer = new MarkerLayer("marker", _viewer.pixiOverlay({container:overlayDiv}));
         layerHandler.addLayer(markerLayer);
 
 

@@ -21,6 +21,12 @@
      *
      * @param {Object} options.container
      *     Container element to use, instead of Viewer.canvas
+     * 
+     * @param {Object} options.viewer
+     *     Use other viewer than 'this'
+     * 
+     * @param {boolean} options.static
+     *     Make the canvas static if specified, ordinary otherwise
      *
      * @returns {Overlay}
      */
