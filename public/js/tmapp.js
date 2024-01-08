@@ -408,11 +408,18 @@ const tmapp = (function() {
                 var $ = window.OpenSeadragon;
                 const viewerSize = $.getElementSize( viewer.element ); //Relying on OSD's fun
 
-                const newWidth  = viewerSize.x * viewer.navigator.sizeRatio;
+                let newWidth  = viewerSize.x * viewer.navigator.sizeRatio;
                 let newHeight = viewerSize.y * viewer.navigator.sizeRatio;
                 const image=_getImage();
-                if (image) {
-                    newHeight = image.getBounds().height * newWidth; //Aspect ratio based on image, not viewer
+                if (image) { //Aspect ratio based on image, not viewer
+                    const viewAspect = newHeight/newWidth;
+                    const imAspect = image.getBounds().height;
+                    if (imAspect < viewAspect) { //Pick the smallest
+                        newHeight = imAspect * newWidth;
+                    }
+                    else {
+                        newWidth = newHeight / imAspect;
+                    }
                 }
                 
                 viewer.navigator.element.style.width  = Math.round( newWidth ) + 'px';
