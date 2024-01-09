@@ -363,7 +363,7 @@ const tmappUI = (function(){
 
     function _initKeyboardShortcuts() {
         // Shortcuts for the pop-up context menu
-        $("#context_menu").keydown(function(){
+        $("#context_menu").keydown(function(event){
             switch(event.which) {
                 case 27: // esc
                     _closeContextMenu();
@@ -372,13 +372,13 @@ const tmappUI = (function(){
         });
 
         // Propagate keypress events to OSD (also when not focused)
-        $("#main_content").keypress(function(){
+        $("#main_content").keypress(function(event){
             tmapp.keyHandler(event);
         });
 
         //1,2,... for class selection
         //z,x for focus up down
-        $("#main_content").keydown(function(){
+        $("#main_content").keydown(function(event){
             // Prevent the keyboard shortcuts from being used when the ctrl key is down
             // This is just a simple way of letting people copy and paste, could be refined
             if (event.ctrlKey) {

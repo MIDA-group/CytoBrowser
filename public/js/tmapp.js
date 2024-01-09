@@ -378,14 +378,19 @@ const tmapp = (function() {
     }
 
     function _addHandlers(viewer, callback) {
+        var context_menu_node = null;
         // Change-of-Page (z-level) handler
         viewer.addHandler("page", _updateFocus);
         viewer.addHandler("zoom", _updateZoom);
         viewer.addHandler("pan", _updatePosition);
         viewer.addHandler("rotate", _updateRotation);
 
-        // When leaving full-screen mode, update counts
-        viewer.addHandler("full-screen", (event) => !event.fullScreen && annotationHandler && annotationHandler.updateAnnotationCounts());
+        // Store and add #context_menu element, s.t. we can use it in full-page/screen mode
+        viewer.addHandler("pre-full-page", (event) => {context_menu_node = document.getElementById("context_menu"); console.log('stored');});
+        viewer.addHandler("full-page", (event) => event.fullPage && context_menu_node && document.body.appendChild( context_menu_node ));
+        
+        // When leaving full-page mode, update counts
+        viewer.addHandler("full-page", (event) => !event.fullPage && annotationHandler && annotationHandler.updateAnnotationCounts());
 
         // When we're done loading
         viewer.addHandler("open", function (event) {
