@@ -477,11 +477,11 @@ class MarkerLayer extends OverlayLayer {
         this.#resizeMarkers();
     }
 
-    setMarkerScale(scale) {
-        this.#markerScale=scale;
+    setMarkerScale(scale, delta=false) {
+        this.#markerScale=delta?this.#markerScale+scale:scale;
         this.#resizeMarkers();
     }
-
+    
     /**
      * Let the overlay handler know the rotation of the viewport in order
      * to properly adjust any elements that need to be rotated.

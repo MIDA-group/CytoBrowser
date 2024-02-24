@@ -68,9 +68,9 @@ const layerHandler = (function (){
      * Adjusting the global marker scale
      * @param {number} mScale 
      */
-    function setMarkerScale(markerScale) {
+    function setMarkerScale(markerScale, delta=false) {
         _markerScale = markerScale;
-        _forEachLayer("setMarkerScale",_markerScale);
+        _forEachLayer("setMarkerScale",_markerScale, delta);
     }
 
     /**

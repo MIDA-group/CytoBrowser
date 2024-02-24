@@ -347,6 +347,7 @@ const tmapp = (function() {
 
         // Add hook to scroll without zooming, didn't seem possible without
         function scrollHook(event){
+            // Ctrl scroll -> Focus change
             if (event.originalEvent.ctrlKey) {
                 event.preventDefaultAction = true;
                 if (event.scroll > 0) {
@@ -356,15 +357,18 @@ const tmapp = (function() {
                     decrementFocus();
                 }
             }
+            // Alt scroll -> MarkerSize change
+            if (event.originalEvent.altKey) {
+                event.preventDefaultAction = true;
+                const slider = $('#marker_size_slider');
+                const markerScale = slider.slider('getValue');
+                slider.slider('setValue',markerScale+0.1*Math.sign(event.scroll),true,true);
+            }
+            // Shift scroll -> Rotate
             if (event.originalEvent.shiftKey) {
                 event.preventDefaultAction = true;
                 const rotation = _currState.rotation;
-                if (event.scroll > 0) {
-                    _viewer.viewport.setRotation(rotation + 15);
-                }
-                else if (event.scroll < 0) {
-                    _viewer.viewport.setRotation(rotation - 15);
-                }
+                _viewer.viewport.setRotation(rotation + 15*Math.sign(event.scroll));
             }
         };
 
