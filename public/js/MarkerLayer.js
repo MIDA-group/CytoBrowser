@@ -28,6 +28,7 @@ class MarkerLayer extends OverlayLayer {
     #maxScale;
     #markerScale = 1; //Modifcation factor
 
+    #overlayObject = null; //For destroy
     #stage = null; //Pixi stage
     #renderer = null; //Pixi renderer (for interaction manipulation)
     #drawUpdate = null; //Rendring update function
@@ -44,6 +45,7 @@ class MarkerLayer extends OverlayLayer {
      */
     constructor(name,pixiOverlay) {
         super(name,pixiOverlay._viewer,pixiOverlay._pixi);
+        this.overlayObject=pixiOverlay;
         
         this.#stage=pixiOverlay._app.stage;
         this.#renderer=pixiOverlay._app.renderer; 
@@ -72,6 +74,12 @@ class MarkerLayer extends OverlayLayer {
         });
     }
 
+    destroy(destroyOverlay = false) {
+        if (destroyOverlay && this.overlayObject) {
+            this.overlayObject.destroy();
+            this.overlayObject=null;
+        }
+    }
 
     get #markerSize() {
         return this.#markerScale**2*0.25*this.#maxScale*Math.pow(this.#scale/this.#maxScale, 0.4); //Let marker grow slowly as we zoom out, to keep it visible

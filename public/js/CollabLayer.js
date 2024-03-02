@@ -23,6 +23,10 @@ class CollabLayer extends OverlayLayer {
         this.#previousCursors = d3.local();
     }
 
+    destroy()
+    {
+    }
+
     #cursorSize(cursor) {
         const normalSize = cursor.inside || cursor.held;
         return (normalSize ? 15 : 12) * this.#scale;

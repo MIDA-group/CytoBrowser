@@ -13,13 +13,14 @@ class AttentionLayer extends CanvasLayer {
             this.#tracking = e.target.checked;
         });
 
-        this._viewer.addHandler('update-viewport', (event) => {
+        const trackHandler = (event) => {
             if (this.#tracking == null) {
                 this.#tracking = document.getElementById("attention_track_switch")?.checked; //jQuery fails!
             }
             this.#tracking && this.#storeViewport();
             //console.log('Tracking: ',this.#tracking);
-        });
+        }
+        this._viewer.addHandler('update-viewport', trackHandler);
 
         this.style.visibility = document.getElementById("attention_view_switch").checked? "visible":"hidden";
         $("#attention_view_switch").change((e) => {
@@ -41,6 +42,11 @@ class AttentionLayer extends CanvasLayer {
             navigatorOverlay.update();
         }
 
+        AttentionLayer.prototype.destroy = (destroyOverlay = false) => {
+            this._viewer.removeHandler('update-viewport', trackHandler);
+            navigatorOverlay.destroy();
+            super.destroy(destroyOverlay);
+        }
     } 
 
     #paintViewport(ul,dr,opacity) {

@@ -37,6 +37,10 @@ const layerHandler = (function (){
         _forEachLayer("clear");
     }
     function clear() {
+        _layers=[]; //Do we wish to clearEachLayer first?
+    }
+    function destroy() {
+        _layers.forEach(item => item.destroy(true));
         _layers=[];
     }
 
@@ -161,6 +165,7 @@ const layerHandler = (function (){
 
         clearAnnotations:clearEachLayer,
         clear,
+        destroy,
         setZoom,
         setMarkerScale,
         setRotation,

@@ -526,8 +526,8 @@ const tmapp = (function() {
         }
         annotationHandler.clear(false);
         metadataHandler.clear();
-        layerHandler.clear();
         _viewer && _viewer.destroy();
+        layerHandler.destroy();
         $("#ISS_viewer").empty();
         coordinateHelper.clearImage();
         _disabledControls = false;

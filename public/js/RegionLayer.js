@@ -36,6 +36,10 @@ class RegionLayer extends OverlayLayer {
         });    
     }
 
+    destroy()
+    {
+    }
+
 
     get #regionStrokeWidth() {
         return 2 * this.#scale;

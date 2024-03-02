@@ -58,6 +58,9 @@
         container.appendChild(this._pixi);
 
         // Create the application helper and add its render target to the page
+        // TODO: This will lead to running out of WebGL context, better to use separate logics, 
+        //  see https://github.com/pixijs/pixijs/wiki/v5-Custom-Application-GameLoop
+        //console.log('Creating Pixi app');
         this._app = new PIXI.Application({
             //resizeTo: this._pixi,
             transparent: true,
@@ -71,6 +74,7 @@
 
         this._pixi.appendChild(this._app.view);
 
+        //TODO: removeHandler functionality
         this._viewer.addHandler('animation', () => {
             self.resize();
         });
@@ -101,6 +105,11 @@
     // ----------
     Overlay.prototype = {
         // ----------
+        destroy: function() {
+            //console.log('Destroying Pixi app');
+            this._app.destroy(true,true);
+            this._app=null;
+        },
         app: function() {
             return this._app;
         },
@@ -108,6 +117,7 @@
             return this._app.stage;  
         },
         update: function() { // Call this function whenever drawing, to allow animations to run _tickerTime 
+            if (!this.app()) return; // Destroyed (instead of running through removeHandler)
             if (performance.now()-_lastUpdateTime < 0.1) { // Ignore is less than 0.1ms since last exectuted call
                 return; // Avoid flooding
             }
@@ -130,6 +140,7 @@
 
         // ----------
         resize: function() {
+            if (!this.app()) return; // Destroyed (instead of running through removeHandler)
             let changed_size=false; 
             if (this._containerWidth !== this._viewer.container.clientWidth) {
                 this._containerWidth = this._viewer.container.clientWidth;
@@ -145,7 +156,7 @@
 
             if (changed_size) {
                 this._app.renderer.resize(this._containerWidth, this._containerHeight);
-                console.log(`pixiOverlay resize: ${this._containerWidth},${this._containerHeight}`);
+                //console.log(`pixiOverlay resize: ${this._containerWidth},${this._containerHeight}`);
             }
 
 

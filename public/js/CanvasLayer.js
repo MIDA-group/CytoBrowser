@@ -4,12 +4,14 @@
  **/
 
 class CanvasLayer extends OverlayLayer {
+    #overlayObject = null; //For destroy
     #canvas;
     #texture; //Can be used for several sprites
     
     constructor(name,pixiOverlay) {
         super(name,pixiOverlay._viewer,pixiOverlay._pixi);
-
+        this.overlayObject=pixiOverlay;
+        
         //Drawing canvas
         this.#canvas = document.createElement('canvas');
         this.#canvas.height = 1000; //arb. resolution
@@ -30,6 +32,13 @@ class CanvasLayer extends OverlayLayer {
         CanvasLayer.prototype.update = () => { //prototype, otherwise super doesn't work
             this.#texture.update();
             pixiOverlay.update();
+        }
+    }
+
+    destroy(destroyOverlay = false) {
+        if (destroyOverlay && this.overlayObject) {
+            this.overlayObject.destroy();
+            this.overlayObject=null;
         }
     }
 

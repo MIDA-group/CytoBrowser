@@ -4,7 +4,7 @@
 
 class OverlayLayer {
     name = "unnamed";
-    #requiredFunctions = ["blur","focus"];
+    #requiredFunctions = ["blur","focus","destroy"];
     
     _viewer = null; //OSD viewer
     _element = null; //DOM element 
@@ -30,7 +30,7 @@ class OverlayLayer {
      * @param {number} level 
      */
     setZ(level) {
-        console.log(this.name,level);
+        //console.log('Overlay, setZ: ',this.name,level);
         this.style.zIndex=level;
     }
 
