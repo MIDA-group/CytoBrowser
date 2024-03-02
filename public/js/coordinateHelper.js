@@ -132,12 +132,12 @@ const coordinateHelper = (function() {
      * @returns {Object} The same point in viewport coordinates.
      */
     function pageToViewport({x, y}){
+        const ofs=$("#"+tmapp.getViewerId()).offset();
         const webCoords = {
-            x: x - $("#ISS_viewer").offset().left,
-            y: y - $("#ISS_viewer").offset().top
+            x: x - ofs.left,
+            y: y - ofs.top
         };
-        const viewportCoords = webToViewport(webCoords);
-        return viewportCoords;
+        return webToViewport(webCoords);
     }
 
     /**

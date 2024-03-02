@@ -113,9 +113,17 @@
         }
     }
 
+    //Round to N digits of decimals (allows -N as well)
+    //Improved version of Solution 1 from https://stackoverflow.com/questions/11832914/how-to-round-to-at-most-2-decimal-places-if-necessary?page=1&tab=trending#answer-12830454
+    function roundDecimals(num, scale) {
+        const [ base, exp=0 ] = ("" + num).toLowerCase().split("e");
+        return +(Math.round(+base + "e" + (+exp + scale)) + "e" + -scale);
+    }
+
     return {
         pathIntersectsSelf,
         getCentroid,
-        getDiameter
+        getDiameter,
+        roundDecimals
     };
 })();

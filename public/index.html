@@ -63,11 +63,11 @@
     <!-- Main content -->
     <div id="main_content" class="container-fluid d-flex h-100 position-relative" style="min-width: 400px" tabindex="-1">
         <div id="main_row" class="row flex-fill position-absolute m-0 p-0" style="right: 0; top: 0; left: 0; bottom: 0;">
-            <div class="col md-10 px-0" style="min-width: 50%; min-height: 75%; width: 100%; flex-grow: 100;"> <!-- Doesn't make sense to have overflow of the viewer -->
+            <div class="col md-10 px-0" style="min-width: 50%; min-height: 75%; width: 100%; flex-grow: 100; background-color: #676767;">
                 <div id="viewer_container" class="blurrable" style="height: 100%; width: 100%;">
                     <!-- Space for viewer_0,1,2... -->
                 </div>
-                <div id="alert_wrapper" style="height: 100%; width: 100%; display: flex; justify-content: center; align-items: center; position: absolute; top: 0; padding: 5%; pointer-events: none"></div>
+                <div id="alert_wrapper" style="height: 100%; width: 100%; display: flex; justify-content: center; align-items: center; position: absolute; top: 0; padding: 5%; pointer-events: none;"></div>
                 <span id="qr-code" style="transition: width 0.2s; border-radius: 0 0 0 5px; position: absolute; top: 0; right: 0; overflow:hidden; width:0; height:fit-content; background-color: white;"></span>
             </div>
        
@@ -76,7 +76,7 @@
                 <button type="button" class="btn btn-secondary p-0" style="overflow-y:visible; position: absolute; top: 0px; left: -4px; z-index: 2;" data-toggle="collapse" data-target="#right_toolbar_collapse" onclick="this.blur();">
                     <i class="collapse_rotate_180 fa fa-chevron-right p-0 px-1 m-0"></i>
                 </button>                  
-                <div class="collapse show card w-100" style="transition: 0s ;" id="right_toolbar_collapse">
+                <div class="collapse show card w-100" style="transition: 0s;" id="right_toolbar_collapse">
                     <!-- Modal access -->
                     <div class="card-body pt-1 pt-lg-2 pb-0 pb-lg-1 px-1 px-md-2">
                         <div class="row py-2 no-gutters">
@@ -96,17 +96,25 @@
                                 </button>
                             </div>
                         </div>
-                        <!-- Collapse -->
+                    </div>
+                    <hr class="py-0 my-0" />
+
+                    <!-- Image stuff -->
+                    <div class="card-body pb-0 pt-1 pt-lg-2 px-1 px-md-2">
+                        <!-- Collapse for image visualization -->
                         <!-- Inspired by: https://disjfa.github.io/bootstrap-tricks/card-collapse-tricks/ -->
                         <button type="button" class="btn btn-block btn-primary collapsed" data-toggle="collapse" data-target="#visualization_collapse">
-                            <div class="d-flex flex-row w-100"><div class="w-100">Visualization adjustments</div> <i class="collapse_rotate_90 fa fa-chevron-down pull-right pt-1"></i></div>
+                            <div class="d-flex flex-row w-100">
+                                <div class="w-100">Visualization adjustments</div> 
+                                <i class="collapse_rotate_90 fa fa-chevron-down pull-right pt-1"></i>
+                            </div>
                         </button>
                         <div class="m-0 my-2">
                             <div class="collapse card" id="visualization_collapse">
                                 <div class="card-body">
                                     <h6 class="card-subtitle text-muted">Marker size</h6>
                                     <span class="m-2">
-                                        &nbsp;0 <input id="marker_size_slider" type="text" data-slider-min="0" data-slider-max="2" data-slider-step="0.1" data-slider-value="1"/> &nbsp;2
+                                        &nbsp;0 &nbsp;<input id="marker_size_slider" type="text" data-slider-min="0" data-slider-max="2" data-slider-step="0.1" data-slider-value="1"/> &nbsp;2
                                         <input id="marker_size_reset" class="btn btn-secondary btn-sm p-0 px-1 m-0 mb-1 ml-3" type="reset" value="Reset" onclick="this.blur();">
                                     </span>
                                 </div>
@@ -114,13 +122,18 @@
                                 <div class="card-body">
                                     <h6 class="card-subtitle text-muted">Brightness</h6>
                                     <span class="m-2">
-                                        -1 <input id="brightness_slider" type="text" data-slider-min="-1" data-slider-max="1" data-slider-step="0.1" data-slider-value="0"/> &nbsp;1
+                                        -1 &nbsp;<input id="brightness_slider" type="text" data-slider-min="-1" data-slider-max="1" data-slider-step="0.1" data-slider-value="0"/> &nbsp;1
                                         <input id="brightness_reset" class="btn btn-secondary btn-sm p-0 px-1 m-0 mb-1 ml-3" type="reset" value="Reset" onclick="this.blur();">
                                     </span>
                                     <h6 class="card-subtitle mt-2 text-muted">Contrast</h6>
                                     <span class="m-2">
-                                        -1 <input id="contrast_slider" type="text" data-slider-min="-1" data-slider-max="1" data-slider-step="0.1" data-slider-value="0"/> &nbsp;1
+                                        -1 &nbsp;<input id="contrast_slider" type="text" data-slider-min="-1" data-slider-max="1" data-slider-step="0.1" data-slider-value="0"/> &nbsp;1
                                         <input id="contrast_reset" class="btn btn-secondary btn-sm p-0 px-1 m-0 mb-1 ml-3" type="reset" value="Reset" onclick="this.blur();">
+                                    </span>
+                                    <h6 class="card-subtitle mt-2 text-muted">Transparency</h6>
+                                    <span class="m-2">
+                                        &nbsp;0 &nbsp;<input id="transparency_slider" type="text" data-slider-min="0" data-slider-max="1" data-slider-step="0.05" data-slider-value="0"/> &nbsp;1
+                                        <input id="transparency_reset" class="btn btn-secondary btn-sm p-0 px-1 m-0 mb-1 ml-3" type="reset" value="Reset" onclick="this.blur();">
                                     </span>
                                 </div>
                                 <hr class="m-2">
@@ -130,6 +143,17 @@
                                         <label class="custom-control-label px-1" for="fps_switch">Show FPS counter</label>
                                     </div>
                                 </div>
+                                <div class="card-body">
+                                    <div class="custom-control custom-switch">
+                                        <input type="checkbox" class="custom-control-input" id="layer_freeze">
+                                        <label class="custom-control-label px-1" for="layer_freeze">Freeze layer</label>
+                                    </div>
+
+                                    <input id="layer_up" class="btn btn-secondary btn-sm p-0 px-1 m-0 mb-1 ml-3" type="button" value="Up" onclick="this.blur();">
+                                    <input id="layer_down" class="btn btn-secondary btn-sm p-0 px-1 m-0 mb-1 ml-3" type="button" value="Down" onclick="this.blur();">
+                                    <!-- <button type="button" class="btn btn-primary px-3"><i class="fas fa-arrow-alt-circle-up" aria-hidden="true"></i></button>
+                                    <button type="button" class="btn btn-primary px-3"><i class="fas fa-arrow-alt-circle-down" aria-hidden="true"></i></button> -->
+                                </div>
                             </div>
                         </div>
 
@@ -137,7 +161,7 @@
                         <button type="button" class="btn btn-block btn-primary collapsed" data-toggle="collapse" data-target="#comments_collapse">
                             <div class="d-flex flex-row w-100">
                                 <div class="w-100 position-relative">
-                                    <div class="position-absolute">
+                                    <div class="position-absolute"> <!-- Indicator if there are new comments -->
                                         <span class="badge bg-dark hide" id="unseen_comments" style="display: none;">0</span>
                                     </div>
                                     Global Data
@@ -285,7 +309,7 @@
                                 <button id="points_to_json" class="btn btn-primary btn-block" type="button"> Export </button>
                             </div>
                             <div class="col-6">
-                                <button type="button" class="btn btn-dark btn-block" data-toggle="modal" data-target="#version-picker">Revert changes</btton>
+                                <button type="button" class="btn btn-dark btn-block" data-toggle="modal" data-target="#version-picker">Revert changes</button>
                             </div>
                         </div>
                     </div>

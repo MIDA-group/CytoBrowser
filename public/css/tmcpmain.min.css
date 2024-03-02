@@ -4,8 +4,14 @@ html {
 
 .ISS_viewer{
     height: 100%;
-	background-color: #676767;
+	background-color: transparent;
     overflow: hidden;
+    position: absolute;
+    right: 0;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    transition: 0s opacity;
 }
 
 .ISS_menu{
