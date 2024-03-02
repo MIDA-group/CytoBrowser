@@ -248,10 +248,10 @@ const tmappUI = (function(){
     }
 
     function _initViewerEvents() {
-        $("#ISS_viewer").bind("mousewheel DOMMouseScroll", event => {
+        $("#viewer_container").bind("mousewheel DOMMouseScroll", event => {
             event.preventDefault();
         });
-        $("#ISS_viewer").contextmenu(() => false);
+        $("#viewer_container").contextmenu(() => false);
     }
 
     function _initContextMenu() {
@@ -326,10 +326,13 @@ const tmappUI = (function(){
 
     function _initVisualizationSliders() {
         $("#marker_size_slider").slider({focus: true}).on('change', function(e) {layerHandler.setMarkerScale(e.value.newValue);});
+        $("#marker_size_reset").click(function() { $('#marker_size_slider').slider('setValue', 1, true, true);});
+
+        $("#transparency_slider").slider({focus: true}).on('change', function(e) {tmapp.setTransparency(e.value.newValue);});
         $("#brightness_slider").slider({focus: true}).on('change', function(e) {tmapp.setBrightness(e.value.newValue);});
         $("#contrast_slider").slider({focus: true}).on('change', function(e) {tmapp.setContrast(e.value.newValue);});
-    
-        $("#marker_size_reset").click(function() { $('#marker_size_slider').slider('setValue', 1, true, true);});
+
+        $("#transparency_reset").click(function() { $('#transparency_slider').slider('setValue', 0, true, true);});
         $("#brightness_reset").click(function() { $('#brightness_slider').slider('setValue', 0, true, true);});
         $("#contrast_reset").click(function() { $('#contrast_slider').slider('setValue', 0, true, true);});
 
@@ -359,6 +362,12 @@ const tmappUI = (function(){
                 $("#fps").text('');
             }
         }); 
+
+        $("#layer_freeze").prop('checked',false); // force it to false, since some browsers cache it incorrectly
+        $("#layer_freeze").change( (e) => tmapp.viewerFreeze(e.target.checked) );
+
+        $("#layer_up").click( () => tmapp.viewerBringForward(0) );
+        $("#layer_down").click( () => tmapp.viewerSendBackward(0) );
     }
 
 
@@ -438,6 +447,9 @@ const tmappUI = (function(){
                     break;
                 case 66: // b
                     $("#tool_poly").click();
+                    break;
+                case 32: // ' ' space
+                    tmapp.viewerSendToBack(0); //Put current top at the bottom
                     break;
                 default:
                     caught=false; //Assume we miss the key
@@ -684,7 +696,7 @@ const tmappUI = (function(){
         alert.addClass(`alert ${errorInfo.type}`);
         alert.text(errorInfo.message);
         window.clearTimeout(_errorDisplayTimeout);
-        $("#ISS_viewer").addClass("blurred");
+        $("#viewer_container").addClass("blurred");
         $("#alert_wrapper").removeClass("fade out");
         $("#alert_wrapper").html(alert);
 
@@ -698,7 +710,7 @@ const tmappUI = (function(){
      * Fade out the currently displayed image error.
      */
     function clearImageError() {
-        $("#ISS_viewer").removeClass("blurred");
+        $("#viewer_container").removeClass("blurred");
         $("#alert_wrapper").addClass("fade out");
     }
 

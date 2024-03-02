@@ -658,7 +658,7 @@ const tmapp = (function() {
         //Create html element for viewer
         document.querySelector('#viewer_container').insertAdjacentHTML(
             'afterbegin',
-            `<div id="${idString}" class="ISS_viewer flex-grow-1 h-100 w-100"></div>`
+            `<div id="${idString}" class="ISS_viewer flex-grow-1 h-100 w-100" style="transition: 0s opacity;"></div>` //Don't know why css doesn't catch
         )
 
         //Create OSD viewer
