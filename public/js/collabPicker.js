@@ -192,7 +192,7 @@ const collabPicker = (function() {
         const name = $("#collab-new-name").val();
         $("#collab-new-name").val("");
         console.log('YA');
-        tmapp.openImage(_lastShownImage, () => {
+        tmapp.addImage(_lastShownImage, () => {
             if (name) {
                 collabClient.createCollab(undefined, undefined, () => {
                     collabClient.changeCollabName(name);
