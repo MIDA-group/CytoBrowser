@@ -181,6 +181,7 @@ const collabClient = (function(){
      */
     function _handleSummary(msg) {
         if (msg.image !== tmapp.getImageName()) {
+            console.log('XA');
             tmapp.openImage(msg.image, () => {
                 _joinBatch = null;
                 _requestSummary();
@@ -234,6 +235,7 @@ const collabClient = (function(){
             const target = _followedMember.id;
             swapImage(msg.image, msg.collab);
             disconnect();
+            console.log('XB');
             tmapp.openImage(msg.image, () => {
                 connect(msg.collab);
                 _desiredMember = target;
