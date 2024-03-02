@@ -8,15 +8,14 @@ const tmapp = (function() {
 
     const _imageDir = "data/";
     const _optionsOSD = {
-        id: "ISS_viewer", //cybr_viewer
+        id: "viewer_0", //cybr_viewer
         prefixUrl: "js/openseadragon/images/", //Location of button graphics
-        wrapHorizontal: false,
         showNavigator: true,
         navigatorPosition: "BOTTOM_LEFT",
         navigatorSizeRatio: 0.3,
         navigatorMaintainSizeRatio: true, 
         animationTime: 0.0,
-        blendTime: 0,
+        blendTime: 0.3,
         maxImageCacheCount: 800, //need more for z-stacks
         minZoomImageRatio: 1,
         maxZoomPixelRatio: 4,
@@ -29,76 +28,104 @@ const tmapp = (function() {
         visibilityRatio: 1,
         showNavigationControl: true,
         //imageSmoothingEnabled: false,
-        sequenceMode: false, // true,
-        preserveViewport: true,
-        preserveOverlays: true,
         preload: true
     };
 
+    //Just default values
+    const _imageState = {
+        z: 0, // stepsize 1, zero in the middle (rounded down)
+        brightness: 0,
+        contrast: 0,
+        transparency: 0
+    }
+
     let _currentImage = null, //a focus stack
-        _images, //list of images from image browser
+        _images, //All images in the data directory
         _collab,
-        _viewer, //the OSD-viewer
-        _currState = {
+        _viewer=null, //This is the main viewer, with overlays
+        _viewers=[], //Array of all viewers, in z-index order, first is on top
+        _imageStates=[], //Array of _imageState
+        _disabledControls=false, //showing controls and navigator
+        _availableZLevels, //how is this different from _currentImage.zLevels?
+        _mouseHandler,
+        _currentMouseUpdateFun=null;
+
+    const _currState = {
             x: 0.5,
             y: 0.5,
-            z: 0,
+            z: 0, //copied from _imageStates[_viewerIndex()].z
             rotation: 0,
-            zoom: 1,
-            brightness: 0,
-            contrast: 0
+            zoom: 1
         },
         _cursorStatus = {
             x: 0.5,
             y: 0.5,
             held: false,
             inside: false
-        },
-        _disabledControls=false, //showing controls and navigator
-        _availableZLevels, //how is this different from _currentImage.zLevels?
-        _mouseHandler,
-        _currentMouseUpdateFun=null;
+        }
 
+    //Index of _viewer
+    function _viewerIndex() {
+        return _viewers.findIndex(v => v === _viewer);
+    }
 
     //z = index-ofs
-    function _setFocusLevel(z) {
-        const count = _viewer.world.getItemCount();
+    function _setFocusLevel(z,v=_viewers[0]) {
+        const count = v.nFocusLevels;
         const ofs = Math.floor(count / 2);
         z = Math.min(Math.max(z,-ofs),count-1-ofs);
-        setFocusIndex(z+ofs);
+        setFocusIndex(z+ofs,v);
     }
-    function getFocusIndex() {
-        return  _viewer.getFocusIndex(); //From the focus-levels plugin
+    function getFocusIndex(v=_viewers[0]) {
+        return v? v.getFocusIndex(): 0;
     }
-    function setFocusIndex(z0) {
-        _viewer.setFocusIndex(z0);
+    function setFocusIndex(z0,v=_viewers[0]) {
+        v && v.setFocusIndex(z0);
         _updateFocus();
     }
 
-    // Set slider and image to view based on focusIndex
+    // Set slider and which z-image to view based on focusIndex
     function _updateFocus() {
         if (!_viewer) {
             throw new Error("Tried to update focus of nonexistent viewer.");
         }
-        const ofs = Math.floor(_viewer.nFocusLevels / 2);
-        const index = getFocusIndex();
-        _currState.z = index-ofs;
+        const vi=_viewerIndex();
+        _viewers.forEach((v,i) => {
+            const ofs = Math.floor(v.nFocusLevels / 2);
+            const index = getFocusIndex(v);
+            _imageStates[i].z = index-ofs;
+            htmlHelper.updateFocusSlider(v,index); 
+            htmlHelper.setFocusSliderOpacity(v,i==0?0.8:0.5);
 
-        htmlHelper.updateFocusSlider(_viewer,index); 
-        tmappUI.setImageZLevel(_currentImage.zLevels[index]); //Write in UI
-        coordinateHelper.setImage(_viewer.world.getItemAt(index)); 
-        _updateCollabPosition();
-        _updateURLParams();
+            if (i==vi) {
+                _currState.z = index-ofs;
+                tmappUI.setImageZLevel(_currentImage.zLevels[index]); //Write in UI
+                coordinateHelper.setImage(_viewer.world.getItemAt(index)); 
+                _updateCollabPosition();
+                _updateURLParams();
+            }
+        });
+    }
+
+    function setTransparency(t) {
+        _imageStates[0].transparency = t;
+        _updateTransparency();
     }
 
     function setBrightness(b) {
-        _currState.brightness = b;
+        _imageStates[0].brightness = b;
         _updateBrightnessContrast();
     }
 
     function setContrast(c) {
-        _currState.contrast = c;
+        _imageStates[0].contrast = c;
         _updateBrightnessContrast();
+    }
+
+    function _updateSliders(imageState) {
+        $("#transparency_slider").slider('setValue', imageState.transparency);
+        $("#brightness_slider").slider('setValue', imageState.brightness);
+        $("#contrast_slider").slider('setValue', imageState.contrast);
     }
 
     /**
@@ -109,15 +136,30 @@ const tmapp = (function() {
         //Since I'm not 100% sure that Safari supports the above
         // https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/filter
         //we use the css-style property instead
-        const ctx=document.getElementById("ISS_viewer").querySelector('.openseadragon-canvas').querySelector('canvas').style;
-        if (_currState.contrast==0 && _currState.brightness==0) {
+        const ctx=_viewers[0].element.querySelector('.openseadragon-canvas').querySelector('canvas').style;
+        if (_imageStates[0].contrast==0 && _imageStates[0].brightness==0) {
             ctx.filter = 'none';
         }
         else {
-            ctx.filter = `brightness(${Math.pow(2,2*_currState.brightness)}) contrast(${Math.pow(4,_currState.contrast)})`;
+            ctx.filter = `brightness(${Math.pow(2,2*_imageStates[0].brightness)}) contrast(${Math.pow(4,_imageStates[0].contrast)})`;
         }
-        _viewer.world.draw();
+        //_viewer.world.draw(); //not needed
     }
+
+    function _updateTransparency() {
+        //See comment in _updateBrightnessContrast
+        // const canvas = _viewers[0].element.querySelector('.openseadragon-canvas').querySelector('canvas');
+        // const ctx = canvas.getContext("2d");
+        // ctx.globalAlpha = 1-_currState.transparency; 
+
+        //const ctx=_viewers[0].element.querySelector('.openseadragon-canvas').querySelector('canvas').style;
+        //Make whole viewer transparent
+        const ctx=_viewers[0].element.style;
+        ctx.opacity = 1-_imageStates[0].transparency; 
+    }
+
+
+
 
     // Must wait for "open" event
     function _setWarp(v,transform) {
@@ -129,30 +171,55 @@ const tmapp = (function() {
     /**
      * Handler called when we change zoom from OSD
      */
-    function _updateZoom() {
+    function _updateZoom(e) {
         if (!_viewer) {
             throw new Error("Tried to update zoom of nonexistent viewer.");
         }
+        if (e && e.eventSource!==_viewer) { //ignore events from other viewers
+            console.warn('Got zoom event from other viewer');
+            return;
+        }
+
         let zoom = _viewer.viewport.getZoom();
         if (_viewer.transform?.scale) {
             zoom /= _viewer.transform.scale; // Viewer scale is just adjusting the zoom value
         }
-
         const maxZoom = _viewer.viewport.getMaxZoom();
         const size = _viewer.viewport.getContainerSize();
         layerHandler.setZoom(zoom, maxZoom, size.x, size.y);
         tmappUI.setImageZoom(Math.round(zoom*10)/10);
         _currState.zoom = zoom;
 
+//console.log('zoom',zoom);
+
+        //update additional viewers
+        _viewers.forEach(v => {
+            if (v===_viewer) {
+                return;
+            }
+            if (v.freeze) {
+                v.transform.scale=v.viewport.getZoom()/zoom;
+                console.log('Scale: ',v.transform.scale);
+            }
+            v.viewport.zoomTo(zoom*v.transform.scale); //NOP if frozen
+        });
+
         // Zooming often changes the position too, based on cursor position
         _updatePosition();
     }
 
-    function _updatePosition() {
+    /**
+     * Handler called when we pan in OSD
+     */
+    function _updatePosition(e) {
         if (!_viewer) {
             throw new Error("Tried to update position of nonexistent viewer.");
         }
-    
+        if (e && e.eventSource!==_viewer) { //ignore events from other viewers
+            console.warn('Got position event from other viewer');
+            return;
+        }
+
         const plus = (a,b) => ({x:a.x+b.x, y:a.y+b.y});
         const minus = (a,b) => ({x:a.x-b.x, y:a.y-b.y});
         const scale = (a,s) => ({x:a.x*s, y:a.y*s});
@@ -163,29 +230,71 @@ const tmapp = (function() {
         if (_viewer.transform?.position) {
             position = minus(position,_viewer.transform.position);
         }
-
         _currState.x = position.x;
         _currState.y = position.y;
+
+//console.log('pos',position);
+
+        //update additional viewers
+        _viewers.forEach(v => {
+            if (v===_viewer) {
+                return;
+            }
+            let scaledPosition=scale(position,1/v.transform.scale);
+            scaledPosition=rotate(scaledPosition,deg2rad(v.transform.rotation));
+            if (v.freeze) {
+                v.transform.position=minus(v.viewport.getCenter(),scaledPosition);
+                console.log('Position: ',v.transform.position);
+            }
+            const newPos = plus(scaledPosition,v.transform.position);
+            v.viewport.panTo(newPos); //NOP if frozen
+        });
+
         _updateCollabPosition();
         _updateURLParams();
     }
 
-    function _updateRotation() {
+
+    /**
+     * Handler called for shift-scroll in OSD
+     */
+    function _updateRotation(e) {
         if (!_viewer) {
             throw new Error("Tried to update rotation of nonexistent viewer.");
         }
+        if (e && e.eventSource!==_viewer) { //ignore events from other viewers
+            console.warn('Got rotation event from other viewer');
+            return;
+        }
+
         let rotation = _viewer.viewport.getRotation();
         if (_viewer.transform?.rotation) {
             rotation -= _viewer.transform.rotation; // Viewer rotation is just an offset
         }
-
         layerHandler.setRotation(rotation);
         tmappUI.setImageRotation(rotation);
         _currState.rotation = rotation;
+
+        //update additional viewers
+        _viewers.forEach(v => {
+            if (v===_viewer) {
+                return;
+            }
+            if (v.freeze) { //This bugs, need to update position as well
+                v.transform.rotation=v.viewport.getRotation()-rotation;
+                console.log('Rotation: ',v.transform.rotation);
+            }
+            v.viewport.setRotation(rotation+v.transform.rotation); //NOP if frozen
+        });
+
         _updateCollabPosition();
         _updateURLParams();
     }
 
+
+    /**
+     * Create URL which encodes our state
+     */
     const roundTo = (x, n) => Math.round(x * Math.pow(10, n)) / Math.pow(10, n);
     let urlCache=null;
     function makeURL({x, y, z, rotation, zoom}={},update=false) {
@@ -223,6 +332,7 @@ const tmapp = (function() {
     }
 
     function processURL(url) {
+        console.log('PROCPROC');
         const {imageName, collab, state}=parseURL(url);
         if (imageName && imageName!==_currentImage.name) {
             if (collab) {
@@ -288,6 +398,7 @@ const tmapp = (function() {
         const offset = Math.floor(imageStack.length / 2);
         const zLevels = Array.from({length: imageStack.length}, (x, i) => i - offset);
         _availableZLevels = zLevels;
+        console.log('Opening: ',imageStack);
         viewer.openFocusLevels(imageStack, initialZ, zLevels);
     }
 
@@ -376,7 +487,7 @@ const tmapp = (function() {
             releaseHandler: heldHandler(false)
         }).setTracking(true);
 
-        // Add hook to scroll without zooming, didn't seem possible without
+        // Add hook to scroll without zooming
         function scrollHook(event){
             // Ctrl scroll -> Focus change
             if (event.originalEvent.ctrlKey) {
@@ -389,17 +500,23 @@ const tmapp = (function() {
                 }
             }
             // Alt scroll -> MarkerSize change
-            if (event.originalEvent.altKey) {
+            else if (event.originalEvent.altKey) {
                 event.preventDefaultAction = true;
                 const slider = $('#marker_size_slider');
                 const markerScale = slider.slider('getValue');
                 slider.slider('setValue',markerScale+0.1*Math.sign(event.scroll),true,true);
             }
             // Shift scroll -> Rotate
-            if (event.originalEvent.shiftKey) {
+            else if (event.originalEvent.shiftKey) {
                 event.preventDefaultAction = true;
                 _viewer.viewport.setRotation(_viewer.viewport.getRotation() + 15*Math.sign(event.scroll));
             }
+/*             else if (event.originalEvent.altKey) {
+                viewer.zoomPerScroll = 1.01;
+            }
+            else {
+                viewer.zoomPerScroll = 1.3;
+            } */
         };
 
         viewer.addViewerInputHook({hooks: [
@@ -412,7 +529,7 @@ const tmapp = (function() {
     }
 
     // Called when new image is loaded
-    function _openHandler(event, viewer, image, callback) {
+    function _openHandler(event, viewer, image, callback, activeViewer=true) {
         console.info("Done loading!");
 
         viewer.canvas.focus();
@@ -428,8 +545,18 @@ const tmapp = (function() {
             .then(result=>_setWarp(viewer,result))
             .catch((e)=>console.log('Warp: ',e));
 
+/*         //Focus slider
+        htmlHelper.addFocusSlider($("#toolbar_sliderdiv"),image.zLevels,viewer);
+ */                    
+        if (activeViewer) {
+            _addMouseTracking(viewer);
 
-        _addMouseTracking(viewer);
+/*             const imageFL = _images.find(image => image.name === _currentImage.name+'_FL');
+            if (imageFL) {
+                addImage(imageFL.name);
+            }
+ */        }
+
         _updateFocus(); //coordinateHelper.setImage
         _updateBrightnessContrast();
 
@@ -493,7 +620,7 @@ const tmapp = (function() {
         viewer.addHandler("full-page", (event) => !event.fullPage && annotationHandler && annotationHandler.updateAnnotationCounts());
 
         // When we're done loading
-        viewer.addHandler("open", event => _openHandler(event,viewer,image,callback));
+        viewer.addHandler("open", event => _openHandler(event,viewer,image,callback,activeViewer));
 
         // Error message if we fail to load
         viewer.addHandler('open-failed', function (event) {
@@ -517,6 +644,7 @@ const tmapp = (function() {
      */
     let _nextViewerId=0; // Running index of OSD-viewers
     function _newViewer(imageName, callback=null) {
+        console.log('CALLLLED');
         const image = _images.find(image => image.name === imageName);
         if (!image) {
             tmappUI.displayImageError("badimage");
@@ -526,20 +654,21 @@ const tmapp = (function() {
         console.log(`Opening image ${image.name} -> Viewer #${_nextViewerId}`);
         const idString=`viewer_${_nextViewerId}`;
 
-/*      
+     
         //Create html element for viewer
         document.querySelector('#viewer_container').insertAdjacentHTML(
             'afterbegin',
             `<div id="${idString}" class="ISS_viewer flex-grow-1 h-100 w-100"></div>`
         )
- */
+
         //Create OSD viewer
         const options={..._optionsOSD};
-        /*Object.assign(options,{
+        Object.assign(options,{
             id: idString
             // showNavigator: withOverlay, //For the moment we don't support multiple navigators
             // showNavigationControl: withOverlay //For the moment we don't support multiple controls
-        });*/
+        });
+        console.log('ID: ',options.id);
         const newViewer = OpenSeadragon(options);
         _nextViewerId++;
         newViewer.transform = {scale:1, position:{x:0, y:0}, rotation:0}; // Similarity transform 
@@ -568,9 +697,18 @@ const tmapp = (function() {
         const image = _currentImage;
         const imageName = image.name;
         
-        _viewer = _newViewer(imageName, callback);
-        // _imageStates[0].z = initialZ;
+        console.log('INITINIT');
+        const newViewer = _newViewer(imageName, callback);
+        _viewer = newViewer;
         _currState.z = _viewer.getFocusLevel(); 
+        
+        //Put last
+        _viewers.push(newViewer);
+        _viewersOrder(); //Set z-index
+        _imageStates.push({..._imageState}); //Add new default state
+        _imageStates[0].z = _currState.z
+        _updateSliders(_imageStates);
+
 
         _viewer.scalebar();
 
@@ -616,18 +754,36 @@ const tmapp = (function() {
         // renderer.plugins.interaction = null;
     }
 
+    function _clearAllViewers() {
+        while (_viewers.length) {
+            const v = _viewers.pop();
+            console.log('CLEARING: ',v.id);
+            $("#"+v.id).empty(); //remove descendants of DOM node (alt. while (foo.firstChild) foo.removeChild(foo.firstChild); )
+            v.element.remove(); //remove DOM node
+            v.destroy();
+        }
+        _imageStates=[];
+        _viewer=null;
+        _mouseHandler.destroy();
+    }
     function _clearCurrentImage() {
         if (!_viewer) {
             return;
         }
         annotationHandler.clear(false);
         metadataHandler.clear();
-        _viewer && _viewer.destroy();
-        layerHandler.destroy();
-        $("#ISS_viewer").empty();
         coordinateHelper.clearImage();
+        layerHandler.destroy();
+        _clearAllViewers(); //currently not supporting partial clear
+        // $("#navigator_div").empty(); //not cleaned up by OSD destroy it seems
+        // $("#toolbar_sliderdiv").empty();
         _disabledControls = false;
         _availableZLevels = null;
+    }
+
+    function _filterImages(images) {
+        console.log(images);
+        return images.filter(img => !img.name.includes('_FL'));
     }
 
     /**
@@ -647,6 +803,7 @@ const tmapp = (function() {
      * @param {number} options.initialState.zoom Zoom in viewport.
      */
     function init({imageName, collab, initialState}) {
+        console.log('IIIIINIT');
 
         // Initiate a HTTP request and send it to the image info endpoint
         const imageReq = new XMLHttpRequest();
@@ -669,6 +826,9 @@ const tmapp = (function() {
                     const response = JSON.parse(imageReq.responseText);
                     const missingDataDir = response.missingDataDir;
                     const images = response.images;
+
+                    //const filteredImages = _filterImages(images); //SPECIAL
+                    
                     tmappUI.updateImageBrowser(images);
                     _images = images;
 
@@ -680,6 +840,7 @@ const tmapp = (function() {
                         tmappUI.displayImageError("noavailableimages");
                     }
                     else if (imageName && collab) {
+                        console.log('A');
                         openImage(imageName, () => {
                             collabClient.connect(collab);
                             if (initialState) {
@@ -688,6 +849,7 @@ const tmapp = (function() {
                         });
                     }
                     else if (imageName) {
+                        console.log('B');
                         openImage(imageName, () => {
                             collabPicker.open(imageName, true, true, () => {
                                 if (initialState) {
@@ -727,6 +889,7 @@ const tmapp = (function() {
      * manually.
      */
     function openImage(imageName, callback, nochange, askAboutSaving=false) {
+        console.log('OPENOPEN');
         if (!annotationHandler.isEmpty() && !_collab && askAboutSaving &&
             !confirm(`You are about to open ` +
             `the image "${imageName}". Do you want to ` +
@@ -759,6 +922,14 @@ const tmapp = (function() {
         }
     }
 
+    /**
+     * Similar to openImage, but adding instead of replacing
+     * @param {string} imageName The name of the image being opened.
+     */
+    function addImage(imageName, callback) {
+//        _newOSD(imageName,callback,false); //no overlay
+    }
+    
     /**
      * Move to a specified state in the viewport. If the state is only
      * partially defined, the rest of the viewport state will remain
@@ -898,7 +1069,7 @@ const tmapp = (function() {
      */
     function incrementFocus() {
         if (!_disabledControls) {
-            _setFocusLevel(_currState.z + 1);
+            _setFocusLevel(_imageStates[0].z + 1);
         }
     }
 
@@ -907,7 +1078,7 @@ const tmapp = (function() {
      */
     function decrementFocus() {
         if (!_disabledControls) {
-            _setFocusLevel(_currState.z - 1);
+            _setFocusLevel(_imageStates[0].z - 1);
         }
     }
 
@@ -919,19 +1090,6 @@ const tmapp = (function() {
         return _availableZLevels ? _availableZLevels : [];
     }
 
-    /**
-     * Change brightness level by delta.
-     */
-    function changeBrightness(delta) {
-        setBrightness(_currState.brightness+delta);
-    }
-
-    /**
-     * Change contrast level by delta.
-     */
-    function changeContrast(delta) {
-        setContrast(_currState.contrast+delta);
-    }
 
 
     /**
@@ -985,7 +1143,7 @@ const tmapp = (function() {
             return;
         }
         _viewer.setMouseNavEnabled(true);
-        _viewer.controls.forEach(e => e.element.style.visibility="visible");
+        _viewer.controls.forEach(e => e.element.style.visibility="visible"); //In MM we use Add/Remove
         _disabledControls = false;
     }
 
@@ -1039,6 +1197,49 @@ const tmapp = (function() {
         }
     }
 
+    function _viewersOrder() {
+//        _viewers.forEach((v,i) => v.element.style.zIndex = 100-i);
+    }
+    function _viewerSwap(i,j) {
+        _viewers[i].element.style.zIndex = 100-j;
+        _viewers[j].element.style.zIndex = 100-i;
+        [ _viewers[j], _viewers[i] ] = [ _viewers[i], _viewers[j] ];
+        [ _imageStates[j], _imageStates[i] ] = [ _imageStates[i], _imageStates[j] ];
+        _updateStateSliders();
+        _updateFocus();
+    }
+    function viewerBringForward(idx) {
+        if (idx>0) {
+            _viewerSwap(idx, idx-1);
+        }
+    }
+    function viewerBringToFront(idx) {
+        if (idx>0) {
+            _viewers.unshift(_viewers.splice(idx,1)[0]);
+            _imageStates.unshift(_imageStates.splice(idx,1)[0]);
+            _viewersOrder();
+            _updateStateSliders();
+            _updateFocus();
+        }
+    }
+    function viewerSendBackward(idx) {
+        if (idx<_viewers.length-1) {
+            _viewerSwap(idx, idx+1);
+        }
+    }
+    function viewerSendToBack(idx) {
+        if (idx<_viewers.length-1) {
+            _viewers.push(_viewers.splice(idx,1)[0]);
+            _imageStates.push(_imageStates.splice(idx,1)[0]);
+            _viewersOrder();
+            _updateStateSliders();
+            _updateFocus();
+        }
+    }
+    function viewerFreeze(val) {
+        _viewers[0].freeze=val;
+    }
+
     return {
         init,
         openImage,
@@ -1062,10 +1263,10 @@ const tmapp = (function() {
 
         setBrightness,
         setContrast,
-        changeBrightness,
-        changeContrast,
+        setTransparency,
 
         getImageName,
+        getViewerId:()=>_viewer.id,
         updateCollabStatus,
         setCursorStatus,
         enableControls,
@@ -1075,6 +1276,15 @@ const tmapp = (function() {
         keyDownHandler,
         mouseHandler,
 
-        updateScalebar
+        updateScalebar,
+
+        addImage,
+
+        viewerBringForward,
+        viewerBringToFront,
+        viewerSendBackward,
+        viewerSendToBack,
+
+        viewerFreeze
     };
 })();
