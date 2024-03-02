@@ -55,6 +55,9 @@ const htmlHelper = (function() {
         viewer.setControlsEnabled(); //Show controls, similar as for panning using keyboard
     }
 
+    function setFocusSliderOpacity(viewer, opacity) {
+        $(`#focus_slider_${viewer.id}_internal`).css('opacity', opacity);
+    }
 
     function _annotationButtonRow(id, closeFun) {
         const row = $(`
@@ -641,6 +644,7 @@ const htmlHelper = (function() {
         buildImageBrowser,
 
         buildFocusSlider,
-        updateFocusSlider
+        updateFocusSlider,
+        setFocusSliderOpacity
     };
 })();
