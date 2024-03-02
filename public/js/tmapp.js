@@ -121,12 +121,12 @@ const tmapp = (function() {
         _updateBrightnessContrast();
     }
 
-    function _updateSliders(imageState) {
+    function _updateStateSliders(imageState=_imageStates[0]) {
         $("#transparency_slider").slider('setValue', imageState.transparency);
         $("#brightness_slider").slider('setValue', imageState.brightness);
         $("#contrast_slider").slider('setValue', imageState.contrast);
     }
-
+    
     /**
      * Apply _currState brightness/contrast to current viewer
      */
@@ -658,7 +658,7 @@ const tmapp = (function() {
         //Create html element for viewer
         document.querySelector('#viewer_container').insertAdjacentHTML(
             'afterbegin',
-            `<div id="${idString}" class="ISS_viewer flex-grow-1 h-100 w-100" style="transition: 0s opacity;"></div>` //Don't know why css doesn't catch
+            `<div id="${idString}" class="ISS_viewer flex-grow-1 h-100 w-100" style="transition: 0s opacity;position: absolute;"></div>` //Don't know why css doesn't catch
         )
 
         //Create OSD viewer
@@ -676,6 +676,7 @@ const tmapp = (function() {
         //open the DZI xml file pointing to the tiles
         const imageStack = _expandImageName(image);
         _openImages(newViewer,imageStack);
+        newViewer.name = imageName;
 
         return newViewer;
     }
@@ -747,11 +748,9 @@ const tmapp = (function() {
         _viewers.push(newViewer);
         _viewersOrder(); //Set z-index
         _imageStates.push({..._imageState}); //Add new default state
-        _imageStates[0].z = _viewers[0].getFocusLevel(); 
         htmlHelper.buildFocusSlider(newViewer);
-        _updateSliders(_imageStates);
 
-        
+
         //First viewer is main
         const withOverlay = _viewer==null;
 
@@ -759,17 +758,26 @@ const tmapp = (function() {
         _addHandlers(newViewer, image, callback, withOverlay);
 
         if (withOverlay) {
+            if (_viewers.length > 1) {
+                console.warn('First is not first!?');
+            }
+
             _viewer = newViewer; 
             _currentImage = image;
 
             _currState.z = _viewer.getFocusLevel(); 
             _viewer.scalebar(); 
-            
+
+            _imageStates[0].z = _viewers[0].getFocusLevel(); 
+            _updateStateSliders();
+                
             _initOverlays();
         }
         else {
             newViewer.element.style.pointerEvents = "none"; //ignore mouse :-)
         }
+
+        _viewers.forEach((v,i) => {console.log(`Viewers[${i}]: ${v.name}`)});
     }
 
     function _clearAllViewers() {
