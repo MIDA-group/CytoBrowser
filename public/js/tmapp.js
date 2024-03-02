@@ -75,6 +75,7 @@ const tmapp = (function() {
         _updateFocus();
     }
 
+    // Set slider and image to view based on focusIndex
     function _updateFocus() {
         if (!_viewer) {
             throw new Error("Tried to update focus of nonexistent viewer.");
@@ -122,11 +123,25 @@ const tmapp = (function() {
         _viewer.world.draw();
     }
 
+    // Must wait for "open" event
+    function _setWarp(v,transform) {
+        v.transform=transform;
+        console.log(v.transform);
+        moveTo(_currState);
+    }
+
+    /**
+     * Handler called when we change zoom from OSD
+     */
     function _updateZoom() {
         if (!_viewer) {
             throw new Error("Tried to update zoom of nonexistent viewer.");
         }
-        const zoom = _viewer.viewport.getZoom();
+        let zoom = _viewer.viewport.getZoom();
+        if (_viewer.transform?.scale) {
+            zoom /= _viewer.transform.scale; // Viewer scale is just adjusting the zoom value
+        }
+
         const maxZoom = _viewer.viewport.getMaxZoom();
         const size = _viewer.viewport.getContainerSize();
         layerHandler.setZoom(zoom, maxZoom, size.x, size.y);
@@ -141,7 +156,18 @@ const tmapp = (function() {
         if (!_viewer) {
             throw new Error("Tried to update position of nonexistent viewer.");
         }
-        const position = _viewer.viewport.getCenter();
+    
+        const plus = (a,b) => ({x:a.x+b.x, y:a.y+b.y});
+        const minus = (a,b) => ({x:a.x-b.x, y:a.y-b.y});
+        const scale = (a,s) => ({x:a.x*s, y:a.y*s});
+        const deg2rad = (r) => (r*Math.PI/180);
+        const rotate = (a,r) => ({x:a.x*Math.cos(r)+a.y*Math.sin(r), y:-a.x*Math.sin(r)+a.y*Math.cos(r)});
+    
+        let position = _viewer.viewport.getCenter();
+        if (_viewer.transform?.position) {
+            position = minus(position,_viewer.transform.position);
+        }
+
         _currState.x = position.x;
         _currState.y = position.y;
         _updateCollabPosition();
@@ -152,7 +178,11 @@ const tmapp = (function() {
         if (!_viewer) {
             throw new Error("Tried to update rotation of nonexistent viewer.");
         }
-        const rotation = _viewer.viewport.getRotation();
+        let rotation = _viewer.viewport.getRotation();
+        if (_viewer.transform?.rotation) {
+            rotation -= _viewer.transform.rotation; // Viewer rotation is just an offset
+        }
+
         layerHandler.setRotation(rotation);
         tmappUI.setImageRotation(rotation);
         _currState.rotation = rotation;
@@ -249,6 +279,11 @@ const tmapp = (function() {
             return `${_imageDir}${imageName}_z${zLevel}.dzi`;
         });
         return imageStack;
+    }
+
+    function _imageWarpName(imageName) {
+        console.log('Name:',imageName);
+        return `${_imageDir}${imageName}_warp.json`;
     }
 
     function _openImages(imageStack) {
@@ -368,8 +403,7 @@ const tmapp = (function() {
             // Shift scroll -> Rotate
             if (event.originalEvent.shiftKey) {
                 event.preventDefaultAction = true;
-                const rotation = _currState.rotation;
-                _viewer.viewport.setRotation(rotation + 15*Math.sign(event.scroll));
+                _viewer.viewport.setRotation(_viewer.viewport.getRotation() + 15*Math.sign(event.scroll));
             }
         };
 
@@ -382,7 +416,66 @@ const tmapp = (function() {
         ]});
     }
 
-    function _addHandlers(viewer, callback) {
+    // Called when new image is loaded
+    function _openHandler(event, viewer, image, callback) {
+        console.info("Done loading!");
+
+        viewer.canvas.focus();
+        viewer.viewport.goHome();
+        _updateRotation();
+        _updateZoom();
+        //_updatePosition(); //called by _updateZoom
+
+        //Load warp if existing
+        const warpName=_imageWarpName(image);
+        promiseHttpRequest("GET", warpName)
+            .then(JSON.parse)
+            .then(result=>_setWarp(viewer,result))
+            .catch((e)=>console.log('Warp: ',e));
+
+
+        _addMouseTracking(viewer);
+        _updateFocus(); //coordinateHelper.setImage
+        _updateBrightnessContrast();
+
+        //Set better aspect ratio of navigator
+        function setNavSize() {
+            if (!viewer.element) return;
+            
+            viewer.navigator._resizeWithViewer = false;
+            
+            var $ = window.OpenSeadragon;
+            const viewerSize = $.getElementSize( viewer.element ); //Relying on OSD's fun
+
+            let newWidth  = viewerSize.x * viewer.navigator.sizeRatio;
+            let newHeight = viewerSize.y * viewer.navigator.sizeRatio;
+            const image=_getImage();
+            if (image) { //Aspect ratio based on image, not viewer
+                const viewAspect = newHeight/newWidth;
+                const imAspect = image.getBounds().height;
+                if (imAspect < viewAspect) { //Pick the smallest
+                    newHeight = imAspect * newWidth;
+                }
+                else {
+                    newWidth = newHeight / imAspect;
+                }
+            }
+            
+            viewer.navigator.element.style.width  = Math.round( newWidth ) + 'px';
+            viewer.navigator.element.style.height = Math.round( newHeight ) + 'px';
+
+            viewer.navigator.update( viewer.viewport );
+        }
+        setNavSize();
+        viewer.addHandler("update-viewport", setNavSize);
+        viewer.navigator.addHandler("resize", setNavSize);
+
+        tmappUI.clearImageError();
+        callback && callback();
+        viewer.canvas.focus(); //Focus again after the callback
+    }
+
+    function _addHandlers(viewer, image, callback) {
         var context_menu_node = null;
         // Change-of-Page (z-level) handler
         viewer.addHandler("page", _updateFocus);
@@ -398,53 +491,7 @@ const tmapp = (function() {
         viewer.addHandler("full-page", (event) => !event.fullPage && annotationHandler && annotationHandler.updateAnnotationCounts());
 
         // When we're done loading
-        viewer.addHandler("open", function (event) {
-            console.info("Done loading!");
-            _addMouseTracking(viewer);
-            viewer.canvas.focus();
-            viewer.viewport.goHome();
-            _updateZoom();
-            _updateFocus(); //coordinateHelper.setImage
-            _updatePosition();
-            _updateRotation();
-            _updateBrightnessContrast();
-
-            //Set better aspect ratio of navigator
-            function setNavSize() {
-                if (!viewer.element) return;
-                
-                viewer.navigator._resizeWithViewer = false;
-                
-                var $ = window.OpenSeadragon;
-                const viewerSize = $.getElementSize( viewer.element ); //Relying on OSD's fun
-
-                let newWidth  = viewerSize.x * viewer.navigator.sizeRatio;
-                let newHeight = viewerSize.y * viewer.navigator.sizeRatio;
-                const image=_getImage();
-                if (image) { //Aspect ratio based on image, not viewer
-                    const viewAspect = newHeight/newWidth;
-                    const imAspect = image.getBounds().height;
-                    if (imAspect < viewAspect) { //Pick the smallest
-                        newHeight = imAspect * newWidth;
-                    }
-                    else {
-                        newWidth = newHeight / imAspect;
-                    }
-                }
-                
-                viewer.navigator.element.style.width  = Math.round( newWidth ) + 'px';
-                viewer.navigator.element.style.height = Math.round( newHeight ) + 'px';
-
-                viewer.navigator.update( viewer.viewport );
-            }
-            setNavSize();
-            viewer.addHandler("update-viewport", setNavSize);
-            viewer.navigator.addHandler("resize", setNavSize);
-
-            tmappUI.clearImageError();
-            callback && callback();
-            viewer.canvas.focus(); //Focus again after the callback
-        });
+        viewer.addHandler("open", event => _openHandler(event,viewer,image,callback));
 
         // Error message if we fail to load
         viewer.addHandler('open-failed', function (event) {
@@ -479,7 +526,7 @@ const tmapp = (function() {
         const imageName = _currentImage.name;
         const imageStack = _expandImageName(imageName);
         _openImages(imageStack); //sets _availableZLevels
-        _addHandlers(_viewer, callback);
+        _addHandlers(_viewer, imageName, callback);
         
         htmlHelper.buildFocusSlider(_viewer, _currentImage.zLevels);
 
@@ -648,7 +695,7 @@ const tmapp = (function() {
             tmappUI.setImageName(null);
             tmappUI.displayImageError("noimage");
             _updateURLParams();
-            callback && callback();
+            callback && callback(); //This violates specification above
         }
         else {
             const image = _images.find(image => image.name === imageName);
@@ -683,6 +730,9 @@ const tmapp = (function() {
         if (zoom !== undefined) {
             const min = _viewer.viewport.getMinZoom();
             const max = _viewer.viewport.getMaxZoom();
+            if (_viewer.transform?.scale) {
+                zoom *= _viewer.transform.scale;
+            }
             const boundZoom = capValue(zoom, min, max);
             _viewer.viewport.zoomTo(boundZoom, true);
         }
@@ -701,12 +751,19 @@ const tmapp = (function() {
                 minY = imageBounds.height / 2;
                 maxY = imageBounds.height / 2;
             }
+            if (_viewer.transform?.position) {
+                x += _viewer.transform.position.x;
+                y += _viewer.transform.position.y;
+            }
             const boundX = capValue(x, minX, maxX);
             const boundY = capValue(y, minY, maxY);
             const point = new OpenSeadragon.Point(boundX, boundY);
             _viewer.viewport.panTo(point, true);
         }
         if (rotation !== undefined) {
+            if (_viewer.transform?.rotation) {
+                rotation += _viewer.transform.rotation;
+            }
             _viewer.viewport.setRotation(rotation);
         }
         if (z !== undefined) {
@@ -714,6 +771,7 @@ const tmapp = (function() {
         }
     }
 
+    // Zoom level which is suitable for annotation diameter
     function _defaultZoom(annotation) {
         const img_diag = _viewer.world.getItemAt(0).getContentSize().distanceTo(new OpenSeadragon.Point());
         return Math.pow(0.5*img_diag/(600+annotation.diameter),0.9);
