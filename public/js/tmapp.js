@@ -39,14 +39,13 @@ const tmapp = (function() {
         transparency: 0
     }
 
-    let _currentImage = null, //a focus stack
+    let _currentImage = null, //the main focus stack (shown in _viewer)
         _images, //All images in the data directory
         _collab,
         _viewer=null, //This is the main viewer, with overlays
         _viewers=[], //Array of all viewers, in z-index order, first is on top
         _imageStates=[], //Array of _imageState
         _disabledControls=false, //showing controls and navigator
-        _availableZLevels, //how is this different from _currentImage.zLevels?
         _mouseHandler,
         _currentMouseUpdateFun=null;
 
@@ -395,7 +394,6 @@ const tmapp = (function() {
         const initialZ = 0;
         const offset = Math.floor(imageStack.length / 2);
         const zLevels = Array.from({length: imageStack.length}, (x, i) => i - offset);
-        _availableZLevels = zLevels;
         console.log('Opening: ',imageStack);
         viewer.openFocusLevels(imageStack, initialZ, zLevels);
     }
@@ -526,7 +524,7 @@ const tmapp = (function() {
         ]});
     }
 
-    // Called when new image is loaded
+    // Called when new image is fully loaded
     function _openHandler(event, viewer, image, callback, activeViewer=true) {
         console.info("Done loading!");
 
@@ -599,6 +597,9 @@ const tmapp = (function() {
         viewer.canvas.focus(); //Focus again after the callback
     }
 
+    /**
+     * callback is added to _openHandler
+     */
     function _addHandlers(viewer, image, callback, activeViewer=true) {
         if (activeViewer) { 
             // Change-of-Page (z-level) handler
@@ -639,10 +640,12 @@ const tmapp = (function() {
 
     /**
      * Create a new OSD viewer instance
+     * Creating the DOM node for the viewer.
+     * Getting a full stack of image names based on the original imageName, 
+     * loading the images from the server.
      */
     let _nextViewerId=0; // Running index of OSD-viewers
     function _newViewer(imageName, callback=null) {
-        console.log('CALLLLED');
         const image = _images.find(image => image.name === imageName);
         if (!image) {
             tmappUI.displayImageError("badimage");
@@ -652,7 +655,6 @@ const tmapp = (function() {
         console.log(`Opening image ${image.name} -> Viewer #${_nextViewerId}`);
         const idString=`viewer_${_nextViewerId}`;
 
-     
         //Create html element for viewer
         document.querySelector('#viewer_container').insertAdjacentHTML(
             'afterbegin',
@@ -673,47 +675,16 @@ const tmapp = (function() {
 
         //open the DZI xml file pointing to the tiles
         const imageStack = _expandImageName(image);
-        _openImages(newViewer,imageStack); //sets _availableZLevels
+        _openImages(newViewer,imageStack);
 
         return newViewer;
     }
 
     /**
-     * Initialize an instance of OpenSeadragon. 
-     * Creating the DOM node for the viewer.
-     * Getting a full stack of image names based on the original imageName, 
-     * loading the images from the server, and initializing the overlay.
-     * 
-     * @param {string} imageName Name of the image to open.
-     * @param {Function} callback Function to call once the images have
-     * been successfully loaded.
-     * @param {boolean} withOverlay, set true to associate annotation overlays
-     * 
-     * @returns {object} image object to store in _currentImage.
+     * Create all the (non-image) overlays (once)
+     * Connected to _viewer (which must be set)
      */
-    function _initOSD(callback) {
-        const image = _currentImage;
-        const imageName = image.name;
-        
-        console.log('INITINIT');
-        const newViewer = _newViewer(imageName, callback);
-        _viewer = newViewer;
-        _currState.z = _viewer.getFocusLevel(); 
-        
-        //Put last
-        _viewers.push(newViewer);
-        _viewersOrder(); //Set z-index
-        _imageStates.push({..._imageState}); //Add new default state
-        _imageStates[0].z = _currState.z
-        _updateSliders(_imageStates);
-
-
-        _viewer.scalebar();
-
-        _addHandlers(_viewer, image, callback, true); //active viewer
-       
-        htmlHelper.buildFocusSlider(_viewer, _currentImage.zLevels);
-
+    function _initOverlays() {
         //Create a wrapper in which we place all overlays, s.t. we can switch with zIndex but still get Navigator and On-screen menu
         const overlayDiv = document.createElement('div');
         overlayDiv.id = 'overlay_div';
@@ -741,7 +712,6 @@ const tmapp = (function() {
 
 
 
-
         //PIXI.Ticker.shared.add(() => fps.frame());
 
         // var ticker = PIXI.Ticker.shared;
@@ -752,16 +722,67 @@ const tmapp = (function() {
         // renderer.plugins.interaction = null;
     }
 
+    /**
+     * Initialize an instance of OpenSeadragon. 
+     * Creating the DOM node for the viewer.
+     * Getting a full stack of image names based on the original imageName, 
+     * loading the images from the server
+     * 
+     * If no _viewer/_current image, then also initializing the overlay.
+     * 
+     * @param {string} imageName Name of the image to open.
+     * @param {Function} callback Function to call once the images have
+     * been successfully loaded.
+     */
+    function _newOSD(imageName, callback=null) {
+        const image = _images.find(image => image.name === imageName);
+        if (!image) {
+            tmappUI.displayImageError("badimage");
+            throw new Error(`Failed to open image ${imageName}.`);
+        }
+        
+        const newViewer = _newViewer(imageName);
+        
+        //Put last
+        _viewers.push(newViewer);
+        _viewersOrder(); //Set z-index
+        _imageStates.push({..._imageState}); //Add new default state
+        _imageStates[0].z = _viewers[0].getFocusLevel(); 
+        htmlHelper.buildFocusSlider(newViewer);
+        _updateSliders(_imageStates);
+
+        
+        //First viewer is main
+        const withOverlay = _viewer==null;
+
+        //don't add more handlers than needed
+        _addHandlers(newViewer, image, callback, withOverlay);
+
+        if (withOverlay) {
+            _viewer = newViewer; 
+            _currentImage = image;
+
+            _currState.z = _viewer.getFocusLevel(); 
+            _viewer.scalebar(); 
+            
+            _initOverlays();
+        }
+        else {
+            newViewer.element.style.pointerEvents = "none"; //ignore mouse :-)
+        }
+    }
+
     function _clearAllViewers() {
         while (_viewers.length) {
             const v = _viewers.pop();
-            console.log('CLEARING: ',v.id);
+            console.log('Clear viewer: ',v.id);
             $("#"+v.id).empty(); //remove descendants of DOM node (alt. while (foo.firstChild) foo.removeChild(foo.firstChild); )
             v.element.remove(); //remove DOM node
             v.destroy();
         }
         _imageStates=[];
         _viewer=null;
+        _currentImage=null;
     }
     function _clearCurrentImage() {
         if (!_viewer) {
@@ -780,7 +801,6 @@ const tmapp = (function() {
         // $("#navigator_div").empty(); //not cleaned up by OSD destroy it seems
         // $("#toolbar_sliderdiv").empty();
         _disabledControls = false;
-        _availableZLevels = null;
     }
 
     function _filterImages(images) {
@@ -805,7 +825,7 @@ const tmapp = (function() {
      * @param {number} options.initialState.zoom Zoom in viewport.
      */
     function init({imageName, collab, initialState}) {
-        console.log('IIIIINIT');
+        console.log('Init CytoBrowser');
 
         // Initiate a HTTP request and send it to the image info endpoint
         const imageReq = new XMLHttpRequest();
@@ -889,7 +909,6 @@ const tmapp = (function() {
      * manually.
      */
     function openImage(imageName, callback, nochange, askAboutSaving=false) {
-        console.log('OPENOPEN');
         if (!annotationHandler.isEmpty() && !_collab && askAboutSaving &&
             !confirm(`You are about to open ` +
             `the image "${imageName}". Do you want to ` +
@@ -909,16 +928,10 @@ const tmapp = (function() {
             callback && callback(); //This violates specification above
         }
         else {
-            const image = _images.find(image => image.name === imageName);
-            if (!image) {
-                tmappUI.displayImageError("badimage");
-                throw new Error(`Failed to open image ${imageName}.`);
-            }
-            _clearCurrentImage();
-            _currentImage = image;
+            _clearCurrentImage(); 
+            _newOSD(imageName, callback);
             tmappUI.setImageName(_currentImage.name);
             _updateURLParams();
-            _initOSD(callback);
         }
     }
 
@@ -927,7 +940,7 @@ const tmapp = (function() {
      * @param {string} imageName The name of the image being opened.
      */
     function addImage(imageName, callback) {
-//        _newOSD(imageName,callback,false); //no overlay
+        _newOSD(imageName,callback);
     }
     
     /**
@@ -1083,13 +1096,12 @@ const tmapp = (function() {
     }
 
     /**
-     * Get the available z levels for the current image.
+     * Get the available z levels for the _viewer.
      * @returns {Array} An array of the available z levels.
      */
     function getZLevels() {
-        return _availableZLevels ? _availableZLevels : [];
+        return _viewer? _viewer.getFocusLevels() : [];
     }
-
 
 
     /**
@@ -1198,7 +1210,7 @@ const tmapp = (function() {
     }
 
     function _viewersOrder() {
-//        _viewers.forEach((v,i) => v.element.style.zIndex = 100-i);
+       _viewers.forEach((v,i) => v.element.style.zIndex = 100-i);
     }
     function _viewerSwap(i,j) {
         _viewers[i].element.style.zIndex = 100-j;
