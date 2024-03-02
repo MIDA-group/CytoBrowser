@@ -122,6 +122,13 @@
         });
     }
 
+    /** 
+     * Array of zLevels (from constructor)
+    */
+    $.Viewer.prototype.getFocusLevels = function() {
+        return this._zLevels;
+    }
+
     /**
      * Get the focus level of the of the OSD viewer, assuming the images
      * were opened using openFocusLevels().
@@ -129,6 +136,7 @@
     $.Viewer.prototype.getFocusLevel = function() {
         return this._currentZ;
     }
+
     /**
      * Get the focus index of the of the OSD viewer, assuming the images
      * were opened using openFocusLevels().

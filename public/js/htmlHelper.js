@@ -12,11 +12,11 @@ const htmlHelper = (function() {
 
     /**
      * @param {*} viewer 
-     * @param {array} zLevels 
      * @returns element for OSD.addControl
      * Doc: https://seiyria.com/bootstrap-slider/
      */
-    function buildFocusSlider(viewer,zLevels) {
+    function buildFocusSlider(viewer) {
+        const zLevels = viewer.getFocusLevels();
         if (zLevels.length<2) return; //Nothing to focus
         const divElem = document.createElement("span");
         viewer.addControl(divElem, {anchor: OpenSeadragon.ControlAnchor.ABSOLUTE});
@@ -166,7 +166,7 @@ const htmlHelper = (function() {
             </div>
         `);
         const select = container.find("select");
-        const zLevels = tmapp.getZLevels(); //of _viewer
+        const zLevels = tmapp.getZLevels(); //of _viewer[0]
         zLevels.forEach(z => {
             const selected = annotation.z === z;
             const option = $(`
