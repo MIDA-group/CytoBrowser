@@ -285,7 +285,7 @@ const collabPicker = (function() {
         }
         let _errorDisplayTimeout = null; //set to null if timed out
         _errorDisplayTimeout = setTimeout(() => {tmappUI.displayImageError("waitingapi");_errorDisplayTimeout=null;},1000);
-        await refresh(image); //updates _availableCollabs
+        await refresh(image); //updates _availableCollabs and sets _lastShownImage=image
         if (_errorDisplayTimeout) {
             clearTimeout(_errorDisplayTimeout);
         }
@@ -294,9 +294,9 @@ const collabPicker = (function() {
         }
 
         if (_autostart && !_availableCollabs.length) { //no options, just create new
-            _createCollab();
+            _createCollab(); //calls tmapp.openImage
         }
-        else { //select Collab or create new
+        else { //select Collab or create new (then calls tmapp.openImage)
             const activeModal = $(".modal.show");
             activeModal.modal("hide");
 
@@ -334,9 +334,9 @@ const collabPicker = (function() {
     }
 
     return {
-        clear: clear,
-        refresh: refresh,
-        open: open,
-        init: init
+        clear,
+        refresh,
+        open,
+        init
     };
 })();

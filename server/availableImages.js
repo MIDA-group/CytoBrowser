@@ -35,7 +35,7 @@ const zEx = /(?<=_z).*(?=\.dzi)/g;
 
 function getZLevels(dir, image) {
     // Only look at dzi files for the right name
-    const nameFilter = RegExp(`^${image.name}.*\.dzi$`);
+    const nameFilter = RegExp(`^${image.name}_z.*\.dzi$`);
     const names = dir.filter(name => nameFilter.test(name));
 
     // Isolate the z levels in the dzi filenames
@@ -57,7 +57,7 @@ function getZLevels(dir, image) {
 */
 async function getThumbnails(dir, image) {
     // Find the file directories for the image name
-    const nameFilter = RegExp(`^${image.name}.*_files$`);
+    const nameFilter = RegExp(`^${image.name}_z.*_files$`);
     const names = dir.filter(name => nameFilter.test(name));
 
     // Look through the middle file directory
