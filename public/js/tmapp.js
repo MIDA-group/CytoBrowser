@@ -91,10 +91,6 @@ const tmapp = (function() {
         _updateURLParams();
     }
 
-    function _getImage() {
-         return _currentImage && _viewer.world.getItemAt(getFocusIndex());
-    }
-
     function setBrightness(b) {
         _currState.brightness = b;
         _updateBrightnessContrast();
@@ -271,10 +267,11 @@ const tmapp = (function() {
         collabClient.updateCursor(_cursorStatus);
     }
 
-    function _expandImageName() {
+    /** Filename convention hardcoded here! FIX */
+    function _expandImageName(imageInfo) {
         // Get the full image names based on the data from the server
-        const imageName = _currentImage.name;
-        const zLevels = _currentImage.zLevels;
+        const imageName = imageInfo.name;
+        const zLevels = imageInfo.zLevels;
         const imageStack = zLevels.map(zLevel => {
             return `${_imageDir}${imageName}_z${zLevel}.dzi`;
         });
@@ -286,14 +283,12 @@ const tmapp = (function() {
         return `${_imageDir}${imageName}_warp.json`;
     }
 
-    function _openImages(imageStack) {
+    function _openImages(viewer,imageStack) {
         const initialZ = 0;
         const offset = Math.floor(imageStack.length / 2);
         const zLevels = Array.from({length: imageStack.length}, (x, i) => i - offset);
         _availableZLevels = zLevels;
-        console.info(`Opening: ${imageStack}`);
-        _viewer.openFocusLevels(imageStack, initialZ, zLevels);
-        _currState.z = initialZ;
+        viewer.openFocusLevels(imageStack, initialZ, zLevels);
     }
 
     /**
@@ -427,7 +422,7 @@ const tmapp = (function() {
         //_updatePosition(); //called by _updateZoom
 
         //Load warp if existing
-        const warpName=_imageWarpName(image);
+        const warpName=_imageWarpName(image.name);
         promiseHttpRequest("GET", warpName)
             .then(JSON.parse)
             .then(result=>_setWarp(viewer,result))
@@ -449,6 +444,10 @@ const tmapp = (function() {
 
             let newWidth  = viewerSize.x * viewer.navigator.sizeRatio;
             let newHeight = viewerSize.y * viewer.navigator.sizeRatio;
+            
+            function _getImage() {
+                return _currentImage && _viewer.world.getItemAt(getFocusIndex());
+            }
             const image=_getImage();
             if (image) { //Aspect ratio based on image, not viewer
                 const viewAspect = newHeight/newWidth;
@@ -475,15 +474,18 @@ const tmapp = (function() {
         viewer.canvas.focus(); //Focus again after the callback
     }
 
-    function _addHandlers(viewer, image, callback) {
-        var context_menu_node = null;
-        // Change-of-Page (z-level) handler
-        viewer.addHandler("page", _updateFocus);
-        viewer.addHandler("zoom", _updateZoom);
-        viewer.addHandler("pan", _updatePosition);
-        viewer.addHandler("rotate", _updateRotation);
+    function _addHandlers(viewer, image, callback, activeViewer=true) {
+        if (activeViewer) { 
+            // Change-of-Page (z-level) handler
+            viewer.addHandler("page", _updateFocus);
+            viewer.addHandler("zoom", _updateZoom);
+            viewer.addHandler("pan", _updatePosition);
+            viewer.addHandler("rotate", _updateRotation);
+            // viewer.addHandler("resize", _updateResize); //Check with MM why we needed this
+        }
 
         // Store and add #context_menu element, s.t. we can use it in full-page/screen mode
+        var context_menu_node = null;
         viewer.addHandler("pre-full-page", (event) => {context_menu_node = document.getElementById("context_menu"); console.log('stored');});
         viewer.addHandler("full-page", (event) => event.fullPage && context_menu_node && document.body.appendChild( context_menu_node ));
         
@@ -511,23 +513,69 @@ const tmapp = (function() {
     }
 
     /**
-     * Initialize an instance of OpenSeadragon. This involves getting
-     * a full stack of image names based on the original name, loading the
-     * images from the server, and initializing the overlay.
+     * Create a new OSD viewer instance
+     */
+    let _nextViewerId=0; // Running index of OSD-viewers
+    function _newViewer(imageName, callback=null) {
+        const image = _images.find(image => image.name === imageName);
+        if (!image) {
+            tmappUI.displayImageError("badimage");
+            throw new Error(`Failed to open image ${imageName}.`);
+        }
+
+        console.log(`Opening image ${image.name} -> Viewer #${_nextViewerId}`);
+        const idString=`viewer_${_nextViewerId}`;
+
+/*      
+        //Create html element for viewer
+        document.querySelector('#viewer_container').insertAdjacentHTML(
+            'afterbegin',
+            `<div id="${idString}" class="ISS_viewer flex-grow-1 h-100 w-100"></div>`
+        )
+ */
+        //Create OSD viewer
+        const options={..._optionsOSD};
+        /*Object.assign(options,{
+            id: idString
+            // showNavigator: withOverlay, //For the moment we don't support multiple navigators
+            // showNavigationControl: withOverlay //For the moment we don't support multiple controls
+        });*/
+        const newViewer = OpenSeadragon(options);
+        _nextViewerId++;
+        newViewer.transform = {scale:1, position:{x:0, y:0}, rotation:0}; // Similarity transform 
+
+        //open the DZI xml file pointing to the tiles
+        const imageStack = _expandImageName(image);
+        _openImages(newViewer,imageStack); //sets _availableZLevels
+
+        return newViewer;
+    }
+
+    /**
+     * Initialize an instance of OpenSeadragon. 
+     * Creating the DOM node for the viewer.
+     * Getting a full stack of image names based on the original imageName, 
+     * loading the images from the server, and initializing the overlay.
+     * 
+     * @param {string} imageName Name of the image to open.
      * @param {Function} callback Function to call once the images have
      * been successfully loaded.
+     * @param {boolean} withOverlay, set true to associate annotation overlays
+     * 
+     * @returns {object} image object to store in _currentImage.
      */
     function _initOSD(callback) {
-        //init OSD viewer
-        _viewer = OpenSeadragon(_optionsOSD);
+        const image = _currentImage;
+        const imageName = image.name;
+        
+        _viewer = _newViewer(imageName, callback);
+        // _imageStates[0].z = initialZ;
+        _currState.z = _viewer.getFocusLevel(); 
+
         _viewer.scalebar();
-        
-        //open the DZI xml file pointing to the tiles
-        const imageName = _currentImage.name;
-        const imageStack = _expandImageName(imageName);
-        _openImages(imageStack); //sets _availableZLevels
-        _addHandlers(_viewer, imageName, callback);
-        
+
+        _addHandlers(_viewer, image, callback, true); //active viewer
+       
         htmlHelper.buildFocusSlider(_viewer, _currentImage.zLevels);
 
         //Create a wrapper in which we place all overlays, s.t. we can switch with zIndex but still get Navigator and On-screen menu
