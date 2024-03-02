@@ -332,7 +332,6 @@ const tmapp = (function() {
     }
 
     function processURL(url) {
-        console.log('PROCPROC');
         const {imageName, collab, state}=parseURL(url);
         if (imageName && imageName!==_currentImage.name) {
             if (collab) {
@@ -548,6 +547,8 @@ const tmapp = (function() {
 /*         //Focus slider
         htmlHelper.addFocusSlider($("#toolbar_sliderdiv"),image.zLevels,viewer);
  */                    
+        _updateFocus(); //coordinateHelper.setImage must come before Mouse
+        _updateBrightnessContrast();
         if (activeViewer) {
             _addMouseTracking(viewer);
 
@@ -557,8 +558,6 @@ const tmapp = (function() {
             }
  */        }
 
-        _updateFocus(); //coordinateHelper.setImage
-        _updateBrightnessContrast();
 
         //Set better aspect ratio of navigator
         function setNavSize() {
@@ -764,11 +763,15 @@ const tmapp = (function() {
         }
         _imageStates=[];
         _viewer=null;
-        _mouseHandler.destroy();
     }
     function _clearCurrentImage() {
         if (!_viewer) {
             return;
+        }
+        if (_mouseHandler) { //First stop any mouse input
+            _currentMouseUpdateFun=null;
+            _mouseHandler.setTracking(false);
+            _mouseHandler.destroy();
         }
         annotationHandler.clear(false);
         metadataHandler.clear();
