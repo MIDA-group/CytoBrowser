@@ -165,18 +165,13 @@ const tmapp = (function() {
     function _setWarp(v,transform) {
         const scale = (a,b) => ({x:a.x*b, y:a.y*b});
 
-        console.log('WARP1: ',{...transform});
-        const width = v.world.getItemAt(0).source.dimensions.x;
-        console.log('Width: ',width);
-
         //Scale around upper left corner (before translation)
-        //Position from pixels to [0,1]
+        //Position in image pixels
         //Rotation around top left of _viewer (after scale and translate) 
 
         v.transform=transform; //Possibly extend to array(sequence) of transforms
-        v.transform.position=scale(v.transform.position,1/width);
+        v.transform.position=scale(v.transform.position,-1);
         //v.transform.disabled=true;
-        console.log('WARP2: ',v.transform);
         moveTo(_currState);
     }
 
@@ -202,17 +197,20 @@ const tmapp = (function() {
         tmappUI.setImageZoom(Math.round(zoom*10)/10);
         _currState.zoom = zoom;
 
-//console.log('zoom',zoom);
+        //Into pixel-scale-factor
+        zoom = _viewer.world.getItemAt(0).viewportToImageZoom(zoom);
 
         //update additional viewers
         _viewers.forEach(v => {
             if (v===_viewer) {
                 return;
             }
+        
             let newZoom = zoom;
             if (v.transform?.scale && !v.transform?.disabled) {
                 newZoom *= v.transform.scale;
             }
+            newZoom = v.world.getItemAt(0).imageToViewportZoom(newZoom);
             v.viewport.zoomTo(newZoom);
         });
 
@@ -245,20 +243,26 @@ const tmapp = (function() {
         _currState.x = position.x;
         _currState.y = position.y;
 
-console.log('pos',position);
+        //Into image coords
+        position = _viewer.world.getItemAt(0).viewportToImageCoordinates(position);
 
         //update additional viewers
         _viewers.forEach(v => {
             if (v===_viewer) {
                 return;
             }
-            // let scaledPosition=scale(position,1/v.transform.scale);
-            // scaledPosition=rotate(scaledPosition,deg2rad(v.transform.rotation));
-            // const newPos = plus(scaledPosition,v.transform.position);
+
             let newPos = position;
             if (v.transform?.position && !v.transform?.disabled) {
-                newPos = plus(newPos,v.transform.position);
+                newPos = plus(newPos,v.transform.position); //Displace in _viewer (image) coords
             }
+            if (v.transform?.scale && !v.transform?.disabled) {
+                newPos = scale(newPos,1/v.transform.scale); //Scale to v (image) coords
+            }
+            if (v.transform?.rotation && !v.transform?.disabled) {
+                newPos=rotate(newPos,deg2rad(v.transform.rotation)); //Rotate around origin
+            }
+            newPos = v.world.getItemAt(0).imageToViewportCoordinates(newPos.x,newPos.y); 
             v.viewport.panTo(newPos);
         });
 
@@ -818,7 +822,7 @@ console.log('pos',position);
         layerHandler.destroy();
         _clearAllViewers(); //currently not supporting partial clear
         // $("#navigator_div").empty(); //not cleaned up by OSD destroy it seems
-        // $("#toolbar_sliderdiv").empty();
+        $("#toolbar_sliderdiv").empty(); //Our focus sliders
         _disabledControls = false;
     }
 
