@@ -15,21 +15,29 @@ const htmlHelper = (function() {
      * @returns element for OSD.addControl
      * Doc: https://seiyria.com/bootstrap-slider/
      */
-    function buildFocusSlider(viewer) {
+    function addFocusSlider(viewer) {
         const zLevels = viewer.getFocusLevels();
         if (zLevels.length<2) return; //Nothing to focus
-        const divElem = document.createElement("span");
-        viewer.addControl(divElem, {anchor: OpenSeadragon.ControlAnchor.ABSOLUTE});
         
-        divElem.id="focus_slider_div";
-        divElem.style.position = "absolute";
+        const elem=$("#toolbar_sliderdiv");
+
+        // div to wrap the slider
+        const divElem = document.createElement("span");
+        divElem.classList.add("focus_slider_div");
+        divElem.style.position = "relative";
         divElem.style.left = "0px";
         divElem.style.top = "45px";
         divElem.style.height = "100%";
         divElem.style.margin = "7px";
+        divElem.style.zIndex = 100-elem.children().length;
 
         const slider = `<input class="focus_slider" id="focus_slider_${viewer.id}" data-slider-id="focus_slider_${viewer.id}_internal" type="text" data-slider-orientation="vertical"/>`
+        
         divElem.innerHTML=slider;
+        elem.append(divElem);
+        
+        // Haven't manage to get this working
+        //viewer.addControl(divElem, {anchor: OpenSeadragon.ControlAnchor.ABSOLUTE});
          
         $(`#focus_slider_${viewer.id}`).slider({
                 reversed:true,
@@ -52,11 +60,14 @@ const htmlHelper = (function() {
         const obj=$(`#focus_slider_${viewer.id}`);
         if (!obj) return;
         obj.slider('setValue', val0);
-        viewer.setControlsEnabled(); //Show controls, similar as for panning using keyboard
     }
 
     function setFocusSliderOpacity(viewer, opacity) {
         $(`#focus_slider_${viewer.id}_internal`).css('opacity', opacity);
+    }
+
+    function enableFocusSlider(viewer, enable=true) {
+        $(`#focus_slider_${viewer.id}_internal`).css('pointer-events', enable?'auto':'none');
     }
 
     function _annotationButtonRow(id, closeFun) {
@@ -166,7 +177,7 @@ const htmlHelper = (function() {
             </div>
         `);
         const select = container.find("select");
-        const zLevels = tmapp.getZLevels(); //of _viewer[0]
+        const zLevels = tmapp.getZLevels(); //of _viewer
         zLevels.forEach(z => {
             const selected = annotation.z === z;
             const option = $(`
@@ -469,7 +480,12 @@ const htmlHelper = (function() {
             anchor.click(event => {
                 event.preventDefault();
                 entry.closest(".modal").modal("hide");
-                collabPicker.open(image.name);
+                if (event.ctrlKey) {
+                    tmapp.addImage(image.name);
+                }
+                else {
+                    collabPicker.open(image.name);
+                }
             });
             anchor.hover(
                 () => detail.addClass("show").removeClass("hide"),
@@ -643,8 +659,9 @@ const htmlHelper = (function() {
         buildCollaboratorList,
         buildImageBrowser,
 
-        buildFocusSlider,
+        addFocusSlider,
         updateFocusSlider,
-        setFocusSliderOpacity
+        setFocusSliderOpacity,
+        enableFocusSlider
     };
 })();
