@@ -163,9 +163,20 @@ const tmapp = (function() {
 
     // Must wait for "open" event
     function _setWarp(v,transform) {
+        const scale = (a,b) => ({x:a.x*b, y:a.y*b});
+
+        console.log('WARP1: ',{...transform});
+        const width = v.world.getItemAt(0).source.dimensions.x;
+        console.log('Width: ',width);
+
+        //Scale around upper left corner (before translation)
+        //Position from pixels to [0,1]
+        //Rotation around top left of _viewer (after scale and translate) 
+
         v.transform=transform; //Possibly extend to array(sequence) of transforms
-        v.transform.disabled=true;
-        console.log(v.transform);
+        v.transform.position=scale(v.transform.position,1/width);
+        //v.transform.disabled=true;
+        console.log('WARP2: ',v.transform);
         moveTo(_currState);
     }
 
@@ -198,11 +209,11 @@ const tmapp = (function() {
             if (v===_viewer) {
                 return;
             }
-            // if (v.freeze) {
-            //     v.transform.scale=v.viewport.getZoom()/zoom;
-            //     console.log('Scale: ',v.transform.scale);
-            // }
-            v.viewport.zoomTo(zoom); //*v.transform.scale); //NOP if frozen
+            let newZoom = zoom;
+            if (v.transform?.scale && !v.transform?.disabled) {
+                newZoom *= v.transform.scale;
+            }
+            v.viewport.zoomTo(newZoom);
         });
 
         // Zooming often changes the position too, based on cursor position
@@ -243,12 +254,12 @@ console.log('pos',position);
             }
             // let scaledPosition=scale(position,1/v.transform.scale);
             // scaledPosition=rotate(scaledPosition,deg2rad(v.transform.rotation));
-            // if (v.freeze) {
-            //     v.transform.position=minus(v.viewport.getCenter(),scaledPosition);
-            //     console.log('Position: ',v.transform.position);
-            // }
             // const newPos = plus(scaledPosition,v.transform.position);
-            v.viewport.panTo(position); //newPos); //NOP if frozen
+            let newPos = position;
+            if (v.transform?.position && !v.transform?.disabled) {
+                newPos = plus(newPos,v.transform.position);
+            }
+            v.viewport.panTo(newPos);
         });
 
         _updateCollabPosition();
@@ -281,11 +292,11 @@ console.log('pos',position);
             if (v===_viewer) {
                 return;
             }
-            // if (v.freeze) { //This bugs, need to update position as well
-            //     v.transform.rotation=v.viewport.getRotation()-rotation;
-            //     console.log('Rotation: ',v.transform.rotation);
-            // }
-            v.viewport.setRotation(rotation); //+v.transform.rotation); //NOP if frozen
+            let newRot = rotation;
+            if (v.transform?.rotation && !v.transform?.disabled) {
+                newRot += v.transform.rotation;
+            }
+            v.viewport.setRotation(newRot);
         });
 
         _updateCollabPosition();
@@ -344,7 +355,6 @@ console.log('pos',position);
                 });
             }
             else if (imageName) {
-                console.log('U');
                 collabPicker.open(imageName, true, true, () => {
                     if (state) {
                         moveTo(state);
@@ -871,7 +881,6 @@ console.log('pos',position);
                         tmappUI.displayImageError("noavailableimages");
                     }
                     else if (imageName && collab) {
-                        console.log('A');
                         openImage(imageName, () => {
                             collabClient.connect(collab);
                             if (initialState) {
@@ -880,7 +889,6 @@ console.log('pos',position);
                         });
                     }
                     else if (imageName) {
-                        console.log('B');
                         collabPicker.open(imageName, true, true, () => {
                             if (initialState) {
                                 moveTo(initialState);
