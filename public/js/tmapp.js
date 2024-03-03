@@ -95,6 +95,7 @@ const tmapp = (function() {
             _imageStates[i].z = index-ofs;
             htmlHelper.updateFocusSlider(v,index); 
             htmlHelper.setFocusSliderOpacity(v,i==0?0.8:0.5);
+            htmlHelper.enableFocusSlider(v,i==0);
 
             if (i==vi) {
                 _currState.z = index-ofs;
@@ -162,7 +163,8 @@ const tmapp = (function() {
 
     // Must wait for "open" event
     function _setWarp(v,transform) {
-        v.transform=transform;
+        v.transform=transform; //Possibly extend to array(sequence) of transforms
+        v.transform.disabled=true;
         console.log(v.transform);
         moveTo(_currState);
     }
@@ -180,7 +182,7 @@ const tmapp = (function() {
         }
 
         let zoom = _viewer.viewport.getZoom();
-        if (_viewer.transform?.scale) {
+        if (_viewer.transform?.scale && !_viewer.transform?.disabled) {
             zoom /= _viewer.transform.scale; // Viewer scale is just adjusting the zoom value
         }
         const maxZoom = _viewer.viewport.getMaxZoom();
@@ -196,11 +198,11 @@ const tmapp = (function() {
             if (v===_viewer) {
                 return;
             }
-            if (v.freeze) {
-                v.transform.scale=v.viewport.getZoom()/zoom;
-                console.log('Scale: ',v.transform.scale);
-            }
-            v.viewport.zoomTo(zoom*v.transform.scale); //NOP if frozen
+            // if (v.freeze) {
+            //     v.transform.scale=v.viewport.getZoom()/zoom;
+            //     console.log('Scale: ',v.transform.scale);
+            // }
+            v.viewport.zoomTo(zoom); //*v.transform.scale); //NOP if frozen
         });
 
         // Zooming often changes the position too, based on cursor position
@@ -226,27 +228,27 @@ const tmapp = (function() {
         const rotate = (a,r) => ({x:a.x*Math.cos(r)+a.y*Math.sin(r), y:-a.x*Math.sin(r)+a.y*Math.cos(r)});
     
         let position = _viewer.viewport.getCenter();
-        if (_viewer.transform?.position) {
+        if (_viewer.transform?.position && !_viewer.transform?.disabled) {
             position = minus(position,_viewer.transform.position);
         }
         _currState.x = position.x;
         _currState.y = position.y;
 
-//console.log('pos',position);
+console.log('pos',position);
 
         //update additional viewers
         _viewers.forEach(v => {
             if (v===_viewer) {
                 return;
             }
-            let scaledPosition=scale(position,1/v.transform.scale);
-            scaledPosition=rotate(scaledPosition,deg2rad(v.transform.rotation));
-            if (v.freeze) {
-                v.transform.position=minus(v.viewport.getCenter(),scaledPosition);
-                console.log('Position: ',v.transform.position);
-            }
-            const newPos = plus(scaledPosition,v.transform.position);
-            v.viewport.panTo(newPos); //NOP if frozen
+            // let scaledPosition=scale(position,1/v.transform.scale);
+            // scaledPosition=rotate(scaledPosition,deg2rad(v.transform.rotation));
+            // if (v.freeze) {
+            //     v.transform.position=minus(v.viewport.getCenter(),scaledPosition);
+            //     console.log('Position: ',v.transform.position);
+            // }
+            // const newPos = plus(scaledPosition,v.transform.position);
+            v.viewport.panTo(position); //newPos); //NOP if frozen
         });
 
         _updateCollabPosition();
@@ -267,7 +269,7 @@ const tmapp = (function() {
         }
 
         let rotation = _viewer.viewport.getRotation();
-        if (_viewer.transform?.rotation) {
+        if (_viewer.transform?.rotation && !_viewer.transform?.disabled) {
             rotation -= _viewer.transform.rotation; // Viewer rotation is just an offset
         }
         layerHandler.setRotation(rotation);
@@ -279,11 +281,11 @@ const tmapp = (function() {
             if (v===_viewer) {
                 return;
             }
-            if (v.freeze) { //This bugs, need to update position as well
-                v.transform.rotation=v.viewport.getRotation()-rotation;
-                console.log('Rotation: ',v.transform.rotation);
-            }
-            v.viewport.setRotation(rotation+v.transform.rotation); //NOP if frozen
+            // if (v.freeze) { //This bugs, need to update position as well
+            //     v.transform.rotation=v.viewport.getRotation()-rotation;
+            //     console.log('Rotation: ',v.transform.rotation);
+            // }
+            v.viewport.setRotation(rotation); //+v.transform.rotation); //NOP if frozen
         });
 
         _updateCollabPosition();
@@ -664,14 +666,13 @@ const tmapp = (function() {
         //Create OSD viewer
         const options={..._optionsOSD};
         Object.assign(options,{
-            id: idString
-            // showNavigator: withOverlay, //For the moment we don't support multiple navigators
-            // showNavigationControl: withOverlay //For the moment we don't support multiple controls
+            id: idString,
+            // showNavigator: _viewer==null, //For the moment we don't support multiple navigators
+            // showNavigationControl: _viewer==null //For the moment we don't support multiple controls
         });
         console.log('ID: ',options.id);
         const newViewer = OpenSeadragon(options);
         _nextViewerId++;
-        newViewer.transform = {scale:1, position:{x:0, y:0}, rotation:0}; // Similarity transform 
 
         //open the DZI xml file pointing to the tiles
         const imageStack = _expandImageName(image);
@@ -748,7 +749,7 @@ const tmapp = (function() {
         _viewers.push(newViewer);
         _viewersOrder(); //Set z-index
         _imageStates.push({..._imageState}); //Add new default state
-        htmlHelper.buildFocusSlider(newViewer);
+        htmlHelper.addFocusSlider(newViewer);
 
 
         //First viewer is main
@@ -970,7 +971,7 @@ const tmapp = (function() {
         if (zoom !== undefined) {
             const min = _viewer.viewport.getMinZoom();
             const max = _viewer.viewport.getMaxZoom();
-            if (_viewer.transform?.scale) {
+            if (_viewer.transform?.scale && !_viewer.transform?.disabled) {
                 zoom *= _viewer.transform.scale;
             }
             const boundZoom = capValue(zoom, min, max);
@@ -991,7 +992,7 @@ const tmapp = (function() {
                 minY = imageBounds.height / 2;
                 maxY = imageBounds.height / 2;
             }
-            if (_viewer.transform?.position) {
+            if (_viewer.transform?.position && !_viewer.transform?.disabled) {
                 x += _viewer.transform.position.x;
                 y += _viewer.transform.position.y;
             }
@@ -1001,7 +1002,7 @@ const tmapp = (function() {
             _viewer.viewport.panTo(point, true);
         }
         if (rotation !== undefined) {
-            if (_viewer.transform?.rotation) {
+            if (_viewer.transform?.rotation && !_viewer.transform?.disabled) {
                 rotation += _viewer.transform.rotation;
             }
             _viewer.viewport.setRotation(rotation);
