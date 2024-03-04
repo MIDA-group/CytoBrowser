@@ -57,7 +57,7 @@ const htmlHelper = (function() {
         
         $(`#focus_slider_${viewer.id}_internal .slider-selection`).css('boxShadow',"1px 1px 8px 0px inset");
         $(`#focus_slider_${viewer.id}_internal .slider-track`).css('boxShadow',"1px 1px 8px 0px inset");            
-        $(`#focus_slider_${viewer.id}_internal .slider-handle`).css('boxShadow',"1px 1px 8px 0px");            
+        $(`#focus_slider_${viewer.id}_internal .slider-handle`).css('boxShadow',"1px 1px 8px 0px").css('border','1px groove darkgray');            
         $(`#focus_slider_${viewer.id}_internal .tooltip-inner`).css('boxShadow',"1px 1px 8px 0px black");            
     }
 
