@@ -54,6 +54,11 @@ const htmlHelper = (function() {
         $(`#focus_slider_${viewer.id}_internal`)
             .addClass("focus_slider_internal")
             .css("height","max(100px,10%)");
+        
+        $(`#focus_slider_${viewer.id}_internal .slider-selection`).css('boxShadow',"1px 1px 8px 0px inset");
+        $(`#focus_slider_${viewer.id}_internal .slider-track`).css('boxShadow',"1px 1px 8px 0px inset");            
+        $(`#focus_slider_${viewer.id}_internal .slider-handle`).css('boxShadow',"1px 1px 8px 0px");            
+        $(`#focus_slider_${viewer.id}_internal .tooltip-inner`).css('boxShadow',"1px 1px 8px 0px black");            
     }
 
     function updateFocusSlider(viewer,val0) {
@@ -68,6 +73,7 @@ const htmlHelper = (function() {
 
     function enableFocusSlider(viewer, enable=true) {
         $(`#focus_slider_${viewer.id}_internal`).css('pointer-events', enable?'auto':'none');
+        $(`#focus_slider_${viewer.id}_internal .slider-handle`).attr('tabindex',enable?0:-1);            
     }
 
     function _annotationButtonRow(id, closeFun) {
