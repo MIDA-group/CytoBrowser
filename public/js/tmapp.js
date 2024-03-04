@@ -202,7 +202,7 @@ const tmapp = (function() {
 
         //update additional viewers
         _viewers.forEach(v => {
-            if (v===_viewer) {
+            if (v===_viewer || !v.world.getItemAt(0)) {
                 return;
             }
         
@@ -248,7 +248,7 @@ const tmapp = (function() {
 
         //update additional viewers
         _viewers.forEach(v => {
-            if (v===_viewer) {
+            if (v===_viewer || !v.world.getItemAt(0)) {
                 return;
             }
 
