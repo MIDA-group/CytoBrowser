@@ -557,19 +557,17 @@ const tmapp = (function() {
             .then(result=>_setWarp(viewer,result))
             .catch((e)=>console.log('Warp: ',e));
 
-/*         //Focus slider
-        htmlHelper.addFocusSlider($("#toolbar_sliderdiv"),image.zLevels,viewer);
- */                    
         _updateFocus(); //coordinateHelper.setImage must come before Mouse
         _updateBrightnessContrast();
         if (activeViewer) {
             _addMouseTracking(viewer);
 
-/*             const imageFL = _images.find(image => image.name === _currentImage.name+'_FL');
+            //Autoload _FL image
+            const imageFL = _images.find(image => image.name === _currentImage.name+'_FL');
             if (imageFL) {
                 addImage(imageFL.name);
             }
- */        }
+        }
 
 
         //Set better aspect ratio of navigator
@@ -872,9 +870,9 @@ const tmapp = (function() {
                     const missingDataDir = response.missingDataDir;
                     const images = response.images;
 
-                    //const filteredImages = _filterImages(images); //SPECIAL
+                    const filteredImages = _filterImages(images); //Filter out _FL image
                     
-                    tmappUI.updateImageBrowser(images);
+                    tmappUI.updateImageBrowser(filteredImages);
                     _images = images;
 
                     // Go to the initial image and/or join the collab
