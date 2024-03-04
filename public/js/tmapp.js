@@ -94,7 +94,7 @@ const tmapp = (function() {
             const index = getFocusIndex(v);
             _imageStates[i].z = index-ofs;
             htmlHelper.updateFocusSlider(v,index); 
-            htmlHelper.setFocusSliderOpacity(v,i==0?0.8:0.5);
+            htmlHelper.setFocusSliderOpacity(v,i==0?0.9:0.5);
             htmlHelper.enableFocusSlider(v,i==0);
 
             if (i==vi) {
@@ -759,10 +759,8 @@ const tmapp = (function() {
         
         //Put last
         _viewers.push(newViewer);
-        _viewersOrder(); //Set z-index
         _imageStates.push({..._imageState}); //Add new default state
         htmlHelper.addFocusSlider(newViewer);
-
 
         //First viewer is main
         const withOverlay = _viewer==null;
@@ -786,9 +784,7 @@ const tmapp = (function() {
                 
             _initOverlays();
         }
-        else {
-            newViewer.element.style.pointerEvents = "none"; //ignore mouse :-)
-        }
+        _updateViewers();
 
         _viewers.forEach((v,i) => {console.log(`Viewers[${i}]: ${v.name}`)});
     }
@@ -1228,14 +1224,19 @@ const tmapp = (function() {
         }
     }
 
-    function _viewersOrder() {
-       _viewers.forEach((v,i) => v.element.style.zIndex = 100-i);
+    function _updateViewers() {
+        _viewers.forEach((v,i) => {
+            v.setControlsEnabled(i==0); //Disable OSD controls for non-top
+            v.element.style.zIndex = 100-i; //Set z-index
+            v.element.style.pointerEvents = (i==0)?"auto":"none"; //Ignore mouse for non-top viewers
+        });
     }
     function _viewerSwap(i,j) {
         _viewers[i].element.style.zIndex = 100-j;
         _viewers[j].element.style.zIndex = 100-i;
         [ _viewers[j], _viewers[i] ] = [ _viewers[i], _viewers[j] ];
         [ _imageStates[j], _imageStates[i] ] = [ _imageStates[i], _imageStates[j] ];
+        _updateViewers();
         _updateStateSliders();
         _updateFocus();
     }
@@ -1248,7 +1249,7 @@ const tmapp = (function() {
         if (idx>0) {
             _viewers.unshift(_viewers.splice(idx,1)[0]);
             _imageStates.unshift(_imageStates.splice(idx,1)[0]);
-            _viewersOrder();
+            _updateViewers();
             _updateStateSliders();
             _updateFocus();
         }
@@ -1262,7 +1263,7 @@ const tmapp = (function() {
         if (idx<_viewers.length-1) {
             _viewers.push(_viewers.splice(idx,1)[0]);
             _imageStates.push(_imageStates.splice(idx,1)[0]);
-            _viewersOrder();
+            _updateViewers();
             _updateStateSliders();
             _updateFocus();
         }
