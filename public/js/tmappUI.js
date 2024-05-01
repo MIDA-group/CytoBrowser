@@ -351,6 +351,10 @@ const tmappUI = (function(){
                 }
             }
         });
+        $("#filter_invert_switch").prop('checked',false); // force it to false, since some browsers cache it incorrectly
+        $("#filter_invert_switch").change(function(e) {
+            tmapp.setInvert(e.target.checked?1:0);
+        });
 
         $("#fps_switch").prop('checked',false); // force it to false, since some browsers cache it incorrectly
         $("#fps_switch").change(function(e) {
@@ -408,7 +412,7 @@ const tmappUI = (function(){
             // Prevent the keyboard shortcuts from being used when the ctrl key is down
             // This is just a simple way of letting people copy and paste, could be refined
             if (event.ctrlKey) {
-                const step=event.shiftKey?1:5;
+                const step=event.shiftKey?-0.5:-5;
 
                 switch (event.key) {
                     case "ArrowLeft":
@@ -828,6 +832,10 @@ const tmappUI = (function(){
         $("#last_autosave").text(time || time === 0 ? txt : "");
     }
 
+    function setMiscNavbarText(txt) {
+        $("#navbar_misc_text").text(txt || txt === 0 ? txt : "");
+    }
+
     /**
      * Indicate that there has been an error in parsing a filter query.
      * @param {string} error The error message to display.
@@ -1053,6 +1061,7 @@ const tmappUI = (function(){
         setImageZLevel,
         setImageZoom,
         setImageRotation,
+        setMiscNavbarText,
         setLastAutosave,
         setFilterError,
         setFilterInfo,

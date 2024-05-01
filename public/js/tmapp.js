@@ -123,7 +123,11 @@ const tmapp = (function() {
         _updateBrightnessContrast();
     }
 
-    //TODO: Mode picker
+    function setInvert(i) {
+        _imageStates[0].invert = i;
+        _updateBrightnessContrast();
+    }
+
     function setMixBlendMode(m) {
         _imageStates[0].mixBlendMode = m;
         _updateTransparency();
@@ -133,6 +137,7 @@ const tmapp = (function() {
         $("#transparency_slider").slider('setValue', imageState.transparency);
         $("#brightness_slider").slider('setValue', imageState.brightness);
         $("#contrast_slider").slider('setValue', imageState.contrast);
+        $("#filter_invert_switch").prop('checked',imageState.invert ?? 0);
         $("#mix_blend_mode_select").val(imageState.mixBlendMode??'normal'); //triggers change
     }
 
@@ -145,11 +150,14 @@ const tmapp = (function() {
         // https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/filter
         //we use the css-style property instead
         const ctx=_viewers[0].element.querySelector('.openseadragon-canvas').querySelector('canvas').style;
-        if (_imageStates[0].contrast==0 && _imageStates[0].brightness==0) {
+        if (_imageStates[0].contrast==0 && _imageStates[0].brightness==0 && _imageStates[0].invert==0) {
             ctx.filter = 'none';
         }
         else {
             ctx.filter = `brightness(${Math.pow(2,2*_imageStates[0].brightness)}) contrast(${Math.pow(4,_imageStates[0].contrast)})`;
+            if (_imageStates[0].invert) {
+                ctx.filter += `invert(${_imageStates[0].invert})`;
+            }
         }
         //_viewer.world.draw(); //not needed
     }
@@ -184,6 +192,12 @@ const tmapp = (function() {
         }
         v.transform.position.x+=delta.x;
         v.transform.position.y+=delta.y;
+        if (v==_viewers[0]) { //If main=first
+            const ofs=v.world.getItemAt(0).imageToViewportCoordinates(delta.x,delta.y)
+            _currState.x+=ofs.x;
+            _currState.y+=ofs.y;
+            moveTo(_currState);
+        }
         _updatePosition();
         moveTo(_currState);
     }
@@ -415,6 +429,14 @@ const tmapp = (function() {
     function _updateURLParams() {
         //console.log('UpdateURLS',_currState);
         tmappUI.setURL(makeURL(_currState));
+    
+        const v=_viewers[0];
+        if (v && v.transform?.position && !v.transform?.disabled) {
+            tmappUI.setMiscNavbarText(`${v.id}: Warp: (${v.transform.position.x},${v.transform.position.y})`);
+        }
+        else {
+            tmappUI.setMiscNavbarText(v.id);
+        }
     }
 
     function _updateCollabPosition() {
@@ -1044,7 +1066,7 @@ const tmapp = (function() {
             }
             if (_viewer.transform?.position && !_viewer.transform?.disabled) {
                 //_viewer.transform is in pixels!
-                const pos=_viewer.world.getItemAt(0).imageToViewportCoordinates(_viewer.transform.position.x,_viewer.transform.position.y)
+                const pos=_viewer.world.getItemAt(0).imageToViewportCoordinates(_viewer.transform.position.x,_viewer.transform.position.y);
                 x += pos.x;
                 y += pos.y;
             }
@@ -1343,6 +1365,7 @@ const tmapp = (function() {
         setContrast,
         setTransparency,
         setMixBlendMode,
+        setInvert,
 
         getImageName,
         getViewerId:()=>_viewer.id,

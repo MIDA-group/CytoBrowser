@@ -47,6 +47,7 @@
                     <li class="navbar-text font-weight-bold p-2"> Z-level: <span id="img_zlevel"> -</span></li>
                     <li class="navbar-text font-weight-bold p-2"> Zoom: <span id="img_zoom"> -</span></li>
                     <li class="navbar-text font-weight-bold p-2"> Rotation: <span id="img_rotation"> -</span></li>
+                    <li class="navbar-text font-weight-bold p-2"> <span id="navbar_misc_text"></span></li>
                     <li class="navbar-text p-2"> <span id="last_autosave"></span></li>
                     <li class="navbar-text font-weight-bold p-2"> <span id="fps"></span></li>
                 </ul>
@@ -128,6 +129,12 @@
                                     <span class="m-2">
                                         -1 &nbsp;<input id="brightness_slider" type="text" data-slider-min="-1" data-slider-max="1" data-slider-step="0.1" data-slider-value="0"/> &nbsp;1
                                         <input id="brightness_reset" class="btn btn-secondary btn-sm p-0 px-1 m-0 mb-1 ml-3" type="reset" value="Reset" onclick="this.blur();">
+                                    </span>
+                                    <span class="m-2 ml-3">
+                                        <span class="custom-switch">
+                                            <input type="checkbox" class="custom-control-input" id="filter_invert_switch">
+                                            <label class="custom-control-label px-1" for="filter_invert_switch">Invert</label>
+                                        </span>
                                     </span>
                                     <h6 class="card-subtitle mt-2 text-muted">Contrast</h6>
                                     <span class="m-2">
