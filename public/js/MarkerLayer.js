@@ -20,6 +20,7 @@ class MarkerLayer extends OverlayLayer {
     #markerCircleSize = 1/32;
     #markerSquareStrokeWidth = 0.03;
     #markerCircleStrokeWidth = 0.01;
+    #markerCircleColor = "0x808080"; //gray
 
     #zoomLevel;
     #wContainer;
@@ -90,6 +91,9 @@ class MarkerLayer extends OverlayLayer {
         return this.#markerSize/2*this.#zoomLevel*this.#wContainer;
     }
 
+    setCircleColor(col) {
+        this.#markerCircleColor = col;
+    }
     
     /**
      * Set marker visible if inside rectangle, or pressed
@@ -222,6 +226,7 @@ class MarkerLayer extends OverlayLayer {
 
             // Use a clone of the annotation to make sure the edit is permitted
             const dClone = annotationHandler.getAnnotationById(id);
+            if (dClone.bookmarked) return; //bookmarked = fixed
             const object_pos = dClone.centroid; //current pos imageCoords
 
             const delta = object_new_pos.minus(object_pos);
@@ -267,7 +272,7 @@ class MarkerLayer extends OverlayLayer {
         const graphics = new PIXI.Graphics();
         // Inner circle (not in base object, since we wish to rescale and turn it on/off)
         const circle = new PIXI.Graphics() 
-            .lineStyle(this.#markerCircleStrokeWidth*100, "0x808080") //gray
+            .lineStyle(this.#markerCircleStrokeWidth*100, this.#markerCircleColor) //gray
             .drawCircle(0, 0, 3.2*this.#markerCircleSize*100);
         circle.scale.set(10); // Number of segments is dependent on original object size
         circle.name="circle";

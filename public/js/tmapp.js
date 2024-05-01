@@ -18,7 +18,7 @@ const tmapp = (function() {
         blendTime: 0.3,
         maxImageCacheCount: 800, //need more for z-stacks
         minZoomImageRatio: 1,
-        maxZoomPixelRatio: 4,
+        maxZoomPixelRatio: 16,
         gestureSettingsMouse: {clickToZoom: false, dblClickToZoom: false},
         gestureSettingsTouch: {clickToZoom: false, dblClickToZoom: false},
         gestureSettingsPen: {clickToZoom: false, dblClickToZoom: false},
@@ -27,7 +27,8 @@ const tmapp = (function() {
         constrainDuringPan: true,
         visibilityRatio: 1,
         showNavigationControl: true,
-        //imageSmoothingEnabled: false,
+        imageSmoothingEnabled: false,
+        smoothTileEdgesMinZoom: Infinity,
         preload: true
     };
 
@@ -49,7 +50,7 @@ const tmapp = (function() {
         _mouseHandler,
         _currentMouseUpdateFun=null;
 
-    const _currState = {
+    const _currState = { //viewport coordinates
             x: 0.5,
             y: 0.5,
             z: 0, //copied from _imageStates[_viewerIndex()].z
@@ -122,12 +123,19 @@ const tmapp = (function() {
         _updateBrightnessContrast();
     }
 
+    //TODO: Mode picker
+    function setMixBlendMode(m) {
+        _imageStates[0].mixBlendMode = m;
+        _updateTransparency();
+    }
+
     function _updateStateSliders(imageState=_imageStates[0]) {
         $("#transparency_slider").slider('setValue', imageState.transparency);
         $("#brightness_slider").slider('setValue', imageState.brightness);
         $("#contrast_slider").slider('setValue', imageState.contrast);
+        $("#mix_blend_mode_select").val(imageState.mixBlendMode??'normal'); //triggers change
     }
-    
+
     /**
      * Apply _currState brightness/contrast to current viewer
      */
@@ -146,6 +154,7 @@ const tmapp = (function() {
         //_viewer.world.draw(); //not needed
     }
 
+    //And mixBlendMode
     function _updateTransparency() {
         //See comment in _updateBrightnessContrast
         // const canvas = _viewers[0].element.querySelector('.openseadragon-canvas').querySelector('canvas');
@@ -156,10 +165,28 @@ const tmapp = (function() {
         //Make whole viewer transparent
         const ctx=_viewers[0].element.style;
         ctx.opacity = 1-_imageStates[0].transparency; 
+        ctx.mixBlendMode = _imageStates[0].mixBlendMode ?? 'normal';
     }
 
 
-
+    function warpDelta(delta) {
+        const v=_viewers[0];
+        if (v.transform==null) {
+            v.transform={
+            "type": "simtform2d",
+            "position": {
+              "x": 0,
+              "y": 0
+            },
+            "scale": 1,
+            "rotation": 0
+          };
+        }
+        v.transform.position.x+=delta.x;
+        v.transform.position.y+=delta.y;
+        _updatePosition();
+        moveTo(_currState);
+    }
 
     // Must wait for "open" event
     function _setWarp(v,transform) {
@@ -236,16 +263,23 @@ const tmapp = (function() {
         const deg2rad = (r) => (r*Math.PI/180);
         const rotate = (a,r) => ({x:a.x*Math.cos(r)+a.y*Math.sin(r), y:-a.x*Math.sin(r)+a.y*Math.cos(r)});
     
-        let position = _viewer.viewport.getCenter();
+        let position = _viewer.viewport.getCenter(); //vpCoords
+
         if (_viewer.transform?.position && !_viewer.transform?.disabled) {
+            position = _viewer.world.getItemAt(0).viewportToImageCoordinates(position);
             position = minus(position,_viewer.transform.position);
+            position = _viewer.world.getItemAt(0).imageToViewportCoordinates(position.x, position.y);
         }
+
         _currState.x = position.x;
         _currState.y = position.y;
 
         //Into image coords
         position = _viewer.world.getItemAt(0).viewportToImageCoordinates(position);
-
+        if (_viewer.transform?.position && !_viewer.transform?.disabled) {
+            position = minus(position,_viewer.transform.position);
+        }
+        
         //update additional viewers
         _viewers.forEach(v => {
             if (v===_viewer || !v.world.getItemAt(0)) {
@@ -263,6 +297,7 @@ const tmapp = (function() {
                 newPos=rotate(newPos,deg2rad(v.transform.rotation)); //Rotate around origin
             }
             newPos = v.world.getItemAt(0).imageToViewportCoordinates(newPos.x,newPos.y); 
+
             v.viewport.panTo(newPos);
         });
 
@@ -710,6 +745,8 @@ const tmapp = (function() {
         overlayDiv.style.zIndex = 0; //We use zIndex inside
         _viewer.canvas.appendChild(overlayDiv);
 
+        const containerDiv = document.getElementById("viewer_container");
+
         //Since scale < image.size, it is not pixel-perfect
         const attentionLayer = new AttentionLayer("attention", _viewer.pixiOverlay({container:overlayDiv}));
         layerHandler.addLayer(attentionLayer);
@@ -724,6 +761,13 @@ const tmapp = (function() {
         const markerLayer = new MarkerLayer("marker", _viewer.pixiOverlay({container:overlayDiv}));
         layerHandler.addLayer(markerLayer);
 
+        // const markerLayer2 = new MarkerLayer("marker2", _viewer.pixiOverlay({container:overlayDiv}));
+        // markerLayer2.setCircleColor("0xFF8080");
+        // layerHandler.addLayer(markerLayer2);
+
+        //const markerLayer2 = new MarkerLayer("marker2", _viewer.pixiOverlay({container:containerDiv}));
+        //layerHandler.addLayer(markerLayer2);
+        //markerLayer2.setZ(200);
 
 
         //PIXI.Ticker.shared.add(() => fps.frame());
@@ -999,8 +1043,10 @@ const tmapp = (function() {
                 maxY = imageBounds.height / 2;
             }
             if (_viewer.transform?.position && !_viewer.transform?.disabled) {
-                x += _viewer.transform.position.x;
-                y += _viewer.transform.position.y;
+                //_viewer.transform is in pixels!
+                const pos=_viewer.world.getItemAt(0).imageToViewportCoordinates(_viewer.transform.position.x,_viewer.transform.position.y)
+                x += pos.x;
+                y += pos.y;
             }
             const boundX = capValue(x, minX, maxX);
             const boundY = capValue(y, minY, maxY);
@@ -1296,6 +1342,7 @@ const tmapp = (function() {
         setBrightness,
         setContrast,
         setTransparency,
+        setMixBlendMode,
 
         getImageName,
         getViewerId:()=>_viewer.id,
@@ -1307,6 +1354,8 @@ const tmapp = (function() {
         keyHandler,
         keyDownHandler,
         mouseHandler,
+
+        warpDelta,
 
         updateScalebar,
 

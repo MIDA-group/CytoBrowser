@@ -336,6 +336,22 @@ const tmappUI = (function(){
         $("#brightness_reset").click(function() { $('#brightness_slider').slider('setValue', 0, true, true);});
         $("#contrast_reset").click(function() { $('#contrast_slider').slider('setValue', 0, true, true);});
 
+        $("#mix_blend_mode_select").change( (e) => {
+            tmapp.setMixBlendMode(e.target.value);
+        });
+        $("#mix_blend_mode_select").on("keypress keydown", function (event) {
+            if (!event.ctrlKey) {
+                switch (event.key) {
+                    case "ArrowLeft":
+                    case "ArrowRight":
+                    case "ArrowUp":
+                    case "ArrowDown":
+                        event.stopPropagation();
+                        break;
+                }
+            }
+        });
+
         $("#fps_switch").prop('checked',false); // force it to false, since some browsers cache it incorrectly
         $("#fps_switch").change(function(e) {
             if (e.target.checked) {
@@ -392,6 +408,26 @@ const tmappUI = (function(){
             // Prevent the keyboard shortcuts from being used when the ctrl key is down
             // This is just a simple way of letting people copy and paste, could be refined
             if (event.ctrlKey) {
+                const step=event.shiftKey?1:5;
+
+                switch (event.key) {
+                    case "ArrowLeft":
+                        // Left pressed
+                        tmapp.warpDelta({x:-step,y:0});
+                        break;
+                    case "ArrowRight":
+                        // Right pressed
+                        tmapp.warpDelta({x:step,y:0});
+                        break;
+                    case "ArrowUp":
+                        // Up pressed
+                        tmapp.warpDelta({x:0,y:-step});
+                        break;
+                    case "ArrowDown":
+                        // Down pressed
+                        tmapp.warpDelta({x:0,y:step});
+                        break;
+                }
                 return;
             }
             let caught=true; //Assume we use the key (setting to false in 'default')
