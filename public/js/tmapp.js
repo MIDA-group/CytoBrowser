@@ -229,6 +229,7 @@ const tmapp = (function() {
     }
 
     function _updateURLParams() {
+        console.log('UpdateURLS',_currState);
         tmappUI.setURL(makeURL(_currState));
     }
 

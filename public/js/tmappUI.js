@@ -361,6 +361,7 @@ const tmappUI = (function(){
         }); 
     }
 
+
     function _initKeyboardShortcuts() {
         // Shortcuts for the pop-up context menu
         $("#context_menu").keydown(function(event){
@@ -385,6 +386,7 @@ const tmappUI = (function(){
                 return;
             }
             let caught=true; //Assume we use the key (setting to false in 'default')
+            //console.log('Key: ',event.which);
             switch(event.which) {
                 case 27: // esc
                     if (annotationTool.isEditing()) {
@@ -413,6 +415,10 @@ const tmappUI = (function(){
                         caught=false;
                     }
                 break;
+                // QWER...
+                case 81: // q
+                    _updateQR(true); //toggle
+                    break;
                 // ASDF...
                 case 70: // f
                     //catching 'f' to disable 'Flip' in OSD, we do not support it
@@ -484,7 +490,7 @@ const tmappUI = (function(){
         });
         $("#copy_collaboration").click(function(event) {
             $("#collaboration_start [name='collab_url']").select();
-            document.execCommand("copy");
+            document.execCommand("copy"); //TODO: FIX: Deprecated function
         });
         $("#change_session").click(function(event) {
             const image = tmapp.getImageName();
@@ -808,47 +814,125 @@ const tmappUI = (function(){
         input.removeClass("is-valid");
     }
 
-    let _urlTimeout=0;
-    let _overwriteURL=true; //High (from start and) for 1 second after setURL => replaceState instead of pushState
+
+
+    /**
+     * @param {*} fun Function to call after delay in range [0,maxWait]
+     * @param {*} maxWait Maximume waiting time before triggered, in ms
+     * @returns Function to be executed with rate limitation, always called asynchronously 
+     */
+    function rateLimit(fun,maxWait) {
+        let lastRun=0;
+        let pending=0;
+        return (now=false) => {
+            if (now) {
+                fun();lastRun=Date.now();pending=0;
+                return;
+            }
+            if (pending) return;
+            let delay=Math.max(0,lastRun+maxWait-Date.now()); 
+            console.log(`Delay: ${delay}, MW: ${maxWait}, LR:${lastRun}`);
+            console.assert(delay<=maxWait);
+            pending=setTimeout(()=>{fun();lastRun=Date.now();pending=0;},delay);
+        }
+    }
+
+    const _scheduleUpdateQR=rateLimit(() => {
+        $("#qr-code").empty();
+        QrCreator.render({
+            text: window.location.href,
+            radius: 0.5, // 0.0 to 0.5
+            ecLevel: 'L', // L, M, Q, H
+            fill: '#000', // foreground color
+            background: '#eee', // color or null for transparent
+            size: 128 // in pixels
+        }, document.querySelector('#qr-code'));
+    },500); //Max wait time in ms
+
+    let _qrShowing=false;
+    function _updateQR(toggle=false) {
+        if (toggle) {
+            if (_qrShowing) $("#qr-code").empty();
+            _qrShowing=!_qrShowing;
+        }
+        if (_qrShowing) {
+            _scheduleUpdateQR();
+        }
+    }
+
+
+    function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms))
+      }
+    async function delayedNumbers() {
+        for (let i = 1; i <= 5; i++) {
+          await sleep(1000) // Wait for 1 second
+          console.log(i)
+        }
+      }
+
 
     /**
      * If next setURL to overwrite previous history state or not
      * @param {boolean} value setURL => value?replaceState:pushState
      */
+    let _overwriteURL=true; //High for 1 second after setURL => replaceState instead of pushState
     function setOverwriteURL(value) {
         _overwriteURL=value;
     }
     
+    let _urlState=null;
+
+    function _updateURL() {
+        if (!_urlState) return; //must have state
+        if (_overwriteURL) {
+            console.log('replace',_urlState.href);
+            delayedNumbers();
+            history.replaceState({ "page": _urlState.href }, "", _urlState.href);
+        }
+        else {
+            console.log('push',_urlState.href);
+            delayedNumbers();
+            history.pushState({ "page": _urlState.href }, "", _urlState.href);
+        }
+        setOverwriteURL(true);
+        _updateQR();
+    }
+    const _rateLimitURL=rateLimit(_updateURL,50); //don't set url more often than every 50ms
+
+
     /**
      * Update URL in browser
      * Push to history if standing still long enough.
      * @param {string} url The new state to push.
      */
+    let _urlTimeout=0;
+    let _noWaitURL=false;
+    addEventListener("popstate", (event) => {console.log('popstate!');setOverwriteURL(false);_urlTimeout=0;_noWaitURL=true;})
+
     function setURL(url) {
-        if (!history.state || history.state.page!=url.href) 
+console.log('SetUrl');
+_urlState=url;
+if (!history.state || history.state.page!=url.href) 
         {
+            console.log('RealChange',!history.state || history.state.page,url.href);
             try {
-                if (_overwriteURL) {
-                    history.replaceState({ "page": url.href }, "", url.href);
-                }
-                else {
-                    history.pushState({ "page": url.href }, "", url.href);
-                }
+                _rateLimitURL(_noWaitURL);
+                _noWaitURL=false;
             }
-            catch (err) { //Firefox e.g. often reports "Too many calls to Location or History APIs within a short timeframe."
+            catch (err) { //Browsers used to report "Too many calls to Location or History APIs within a short timeframe.", of "Throttling navigation"; fixed with rateLimit
                 console.warn('setURL reported an issue: ',err); 
             }
-
-            setOverwriteURL(true);
-        }
         if (_urlTimeout) {
             clearTimeout(_urlTimeout);
         }
         _urlTimeout = setTimeout(() => {
             setOverwriteURL(false);
+            console.log('Next is push');
             _urlTimeout = 0;
         }, 1000); //1 second
     }
+}
 
     /**
      * Check whether or not the page is in focus.
