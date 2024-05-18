@@ -874,6 +874,7 @@ const tmappUI = (function(){
     }
 
     const _scheduleUpdateQR=rateLimit(() => {
+        const siz=200;
         $("#qr-code").empty();
         QrCreator.render({
             text: window.location.href,
@@ -881,14 +882,17 @@ const tmappUI = (function(){
             ecLevel: 'L', // L, M, Q, H
             fill: '#000', // foreground color
             background: '#eee', // color or null for transparent
-            size: 128 // in pixels
+            size: siz // in pixels
         }, document.querySelector('#qr-code'));
+        $("#qr-code")
+          .css("width",`${siz+6}`) //fit-content")
+          .children().css("margin","3px").css("margin-bottom","-2px").css("margin-x","4px");
     },500); //Max wait time in ms
 
     let _qrShowing=false;
     function _updateQR(toggle=false) {
         if (toggle) {
-            if (_qrShowing) $("#qr-code").empty();
+            if (_qrShowing) $("#qr-code").css("width", "0px");
             _qrShowing=!_qrShowing;
         }
         if (_qrShowing) {
