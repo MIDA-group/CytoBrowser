@@ -886,7 +886,7 @@ const tmappUI = (function(){
         }, document.querySelector('#qr-code'));
         $("#qr-code")
           .css("width",`${siz+6}`) //fit-content")
-          .children().css("margin","3px").css("margin-bottom","-2px").css("margin-x","4px");
+          .children().css("margin","3px").css("margin-bottom","-2.5px").css("margin-x","4px");
     },500); //Max wait time in ms
 
     let _qrShowing=false;
