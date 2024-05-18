@@ -47,7 +47,7 @@
                     <li class="navbar-text font-weight-bold p-2"> Z-level: <span id="img_zlevel"> -</span></li>
                     <li class="navbar-text font-weight-bold p-2"> Zoom: <span id="img_zoom"> -</span></li>
                     <li class="navbar-text font-weight-bold p-2"> Rotation: <span id="img_rotation"> -</span></li>
-                    <li class="navbar-text font-weight-bold p-2"> <span id="last_autosave"></span></li>
+                    <li class="navbar-text p-2"> <span id="last_autosave"></span></li>
                     <li class="navbar-text font-weight-bold p-2"> <span id="fps"></span></li>
                 </ul>
                 <ul class="nav navbar-nav ml-auto">
@@ -66,6 +66,7 @@
             <div class="col md-10 px-0" style="min-width: 50%; min-height: 75%; width: 100%; flex-grow: 100;"> <!-- Doesn't make sense to have overflow of the viewer -->
                 <div id="ISS_viewer" class="ISS_viewer blurrable flex-grow-1 h-100 w-100"></div>
                 <div id="alert_wrapper" style="height: 100%; width: 100%; display: flex; justify-content: center; align-items: center; position: absolute; top: 0; padding: 5%; pointer-events: none"></div>
+                <span id="qr-code" style="transition: width 0.2s; border-radius: 0 0 0 5px; position: absolute; top: 0; right: 0; overflow:hidden; width:0; height:fit-content; background-color: white;"></span>
             </div>
        
             <!-- Right side main toolbar -->
@@ -830,6 +831,8 @@
 <script src="js/htmlHelper.js"></script>
 <script src="js/annotationTool.js"></script>
 
+<script src="js/qr-creator/qr-creator.min.js"></script>
+
 <script>
     function noArrows() {
         switch( event.keyCode ){
@@ -851,11 +854,10 @@
     // Uses window.location.base for remoteStorage
     tmappUI.initUI();
 
-    // Handle browser history.back/forward()
-    window.onpopstate = function(event) {
+    // Handle browser history.back/forward() 
+    // Note: popstate also captured in tmappUI
+    window.onpopstate = function(event) { //Nope, onpagehide is not valid for this
         $('.modal').modal('hide'); //close all modals
-        tmappUI.setOverwriteURL(true); //state already on history
-        tmapp.processURL(document.location);
     };
 
     function getServerVersion() {
