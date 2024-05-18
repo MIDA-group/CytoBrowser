@@ -854,11 +854,10 @@
     // Uses window.location.base for remoteStorage
     tmappUI.initUI();
 
-    // Handle browser history.back/forward()
-    window.onpopstate = function(event) {
+    // Handle browser history.back/forward() 
+    // Note: popstate also captured in tmappUI
+    window.onpopstate = function(event) { //Nope, onpagehide is not valid for this
         $('.modal').modal('hide'); //close all modals
-        tmappUI.setOverwriteURL(true); //state already on history
-        tmapp.processURL(document.location);
     };
 
     function getServerVersion() {
