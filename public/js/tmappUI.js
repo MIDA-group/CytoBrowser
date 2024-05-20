@@ -874,7 +874,7 @@ const tmappUI = (function(){
     }
 
     const _scheduleUpdateQR=rateLimit(() => {
-        const siz=200;
+        const siz=120;
         $("#qr-code").empty();
         QrCreator.render({
             text: window.location.href,
