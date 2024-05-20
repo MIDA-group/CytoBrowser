@@ -21,9 +21,13 @@ const tmapp = (function() {
         minZoomImageRatio: 1,
         maxZoomPixelRatio: 4,
         gestureSettingsMouse: {clickToZoom: false, dblClickToZoom: false},
-        gestureSettingsTouch: {clickToZoom: false, dblClickToZoom: false},
+        gestureSettingsTouch: {clickToZoom: false, dblClickToZoom: false}, //, pinchRotate: true, flickEnabled:true, flickMomentum:1, flickMinSpeed:10},
         gestureSettingsPen: {clickToZoom: false, dblClickToZoom: false},
         gestureSettingsUnknown: {clickToZoom: false, dblClickToZoom: false},
+
+        springStiffness:        30,
+        animationTime:          2,
+
         zoomPerClick: 1.4,
         constrainDuringPan: true,
         visibilityRatio: 1,
@@ -684,7 +688,7 @@ const tmapp = (function() {
             const min = _viewer.viewport.getMinZoom();
             const max = _viewer.viewport.getMaxZoom();
             const boundZoom = capValue(zoom, min, max);
-            _viewer.viewport.zoomTo(boundZoom, true);
+            _viewer.viewport.zoomTo(boundZoom, false); //true);
         }
         if (x !== undefined && y !== undefined) {
             const imageBounds = _viewer.world.getItemAt(0).getBounds();
@@ -704,10 +708,10 @@ const tmapp = (function() {
             const boundX = capValue(x, minX, maxX);
             const boundY = capValue(y, minY, maxY);
             const point = new OpenSeadragon.Point(boundX, boundY);
-            _viewer.viewport.panTo(point, true);
+            _viewer.viewport.panTo(point, false); // true);
         }
         if (rotation !== undefined) {
-            _viewer.viewport.setRotation(rotation);
+            _viewer.viewport.setRotation(rotation, false);
         }
         if (z !== undefined) {
             _setFocusLevel(z);
