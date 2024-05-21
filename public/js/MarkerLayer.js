@@ -235,10 +235,19 @@ class MarkerLayer extends OverlayLayer {
             tmapp.setCursorStatus(viewportCoords);
             this.#drawUpdate();
         }
+        let _taps=0;
         const tapHandler=(event) => {
+            _taps++;
+            setTimeout(()=>_taps=0,300);
             if (event.data.originalEvent.ctrlKey) {
                 // console.log('Remove');
                 annotationHandler.remove(id);
+            }
+            else {
+                //if (_taps>0) {console.log('Taps: ',_taps);}
+                if (_taps==2) {
+                    tmappUI.openAnnotationEditMenu(id, event.data.global);
+                }
             }
             this.#drawUpdate();
         }
