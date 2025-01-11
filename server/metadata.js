@@ -74,7 +74,7 @@ function getMetadataForImage(imageName) {
                 return {};
             }
             else {
-                console.log(`Failed opening metadata file: ${filename}`);
+                console.log(`Failed reading metadata file: ${filename}\n- ${e}`);
                 return {};
             }
         }
