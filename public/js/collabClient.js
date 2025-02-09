@@ -29,6 +29,7 @@ const collabClient = (function(){
      * @param {string} msg.type The type of message being received.
      */
     function _handleMessage(msg) {
+        console.log(`_handleMessage: ${msg.type}${msg.actionType?" action: "+msg.actionType:""}`)
         switch(msg.type) {
             case "annotationAction": //add/move annotations etc.
                 _handleAnnotationAction(msg);
@@ -223,6 +224,7 @@ const collabClient = (function(){
     }
 
     function _requestSummary() {
+        console.log('_requestSummary()');
         send({
             type: "requestSummary",
             image: tmapp.getImageName()
@@ -373,6 +375,8 @@ const collabClient = (function(){
      * should be included in the collaborative workspace.
      * @param {boolean} askAboutInclude Whether or not the user should be
      * prompted about the inclusion of annotations.
+     * 
+     * Calls _requestSummary() to acknowledge the connection
      */
     function connect(id, name=getDefaultName(), include=false, askAboutInclude=false) {
         tmappUI.displayImageError("loadingcollab");

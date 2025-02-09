@@ -605,6 +605,13 @@ const tmapp = (function() {
                             });
                         });
                     }
+                    else if (collab) {
+                        console.log(`Connecting to collab ${collab} without image!`)
+                        collabClient.connect(collab);
+                        if (initialState) {
+                            moveTo(initialState);
+                        }
+                    }
                     else {
                         tmappUI.displayImageError("noimage");
                         $("#image_browser").modal();
@@ -778,7 +785,7 @@ const tmapp = (function() {
      */
     function setCollab(id) {
         _collab = id;
-        tmappUI.setCollabID(id, _currentImage.name);
+        tmappUI.setCollabID(id, _currentImage?.name);
         _updateURLParams();
     }
 
