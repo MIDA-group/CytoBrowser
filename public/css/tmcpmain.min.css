@@ -1,6 +1,37 @@
 html {
+    height: 100%;
     font-size: 15px;
 } 
+
+/* Holy Grail Layout https://www.digitalocean.com/community/tutorials/css-css-grid-holy-grail-layout */
+/* nav goes into header */
+body {
+    display: grid;
+
+    grid-template-areas:
+      "header header"
+      "main rside";
+  
+    grid-template-columns: 1fr 200px;
+    grid-template-rows: auto 1fr;
+ 
+    height: 100vh;
+    width: 100vw;
+}
+
+header {
+  grid-area: header;
+}
+
+main {
+  grid-area: main;
+}
+
+#rtoolbar {
+  grid-area: rside;
+}
+
+
 
 .ISS_viewer{
     height: 100%;
@@ -8,9 +39,6 @@ html {
     overflow: hidden;
 }
 
-.ISS_menu{
-	height:90vh;
-}
 
 .focus_slider_internal {
     opacity: 0.6;
@@ -37,6 +65,7 @@ html {
     transition: 1s ease-in-out all;
 }
 
+
 .collapse_rotate_90 {
     transition: .3s transform ease-in-out;
 }
@@ -50,6 +79,33 @@ html {
 .collapsed .collapse_rotate_180 {
     transform: rotate(180deg);
 }
+
+/* https://stackoverflow.com/questions/47738975/customizing-the-collapse-transition-in-bootstrap-4 */
+.collapse {
+    visibility: hidden;
+  }
+  .collapse.show {
+    visibility: visible;
+    display: block;
+  }
+  .collapsing {
+    position: relative;
+    height: 0;
+    overflow: hidden;
+    -webkit-transition-property: height, visibility;
+    transition-property: height, visibility;
+    -webkit-transition-duration: 0.35s;
+    transition-duration: 0.35s;
+    -webkit-transition-timing-function: ease;
+    transition-timing-function: ease;
+  }
+  .collapsing.width {
+    -webkit-transition-property: width, visibility;
+    transition-property: width, visibility;
+    width: 0;
+    height: auto;
+  }
+
 
 /* Discrete links in our annotation-list */
 #annotation-list td a { 
