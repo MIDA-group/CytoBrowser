@@ -19,6 +19,10 @@ body {
     overflow: hidden;
 }
 
+body:fullscreen {
+    display: block;
+}
+
 #logo_img {
     height:35px; 
     min-height:20px; 
