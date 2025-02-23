@@ -19,6 +19,44 @@ body {
     width: 100vw;
 }
 
+#logo_img {
+    height:35px; 
+    min-height:20px; 
+    max-height:8vh;
+}
+
+/* Bootstrap breakpoints: https://getbootstrap.com/docs/4.0/layout/overview/#responsive-breakpoints */
+/* xs < 576, sm < 768, md < 992, lg < 1200, xl >= 1200 */
+@media (max-width: 1200px) {
+    html {
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 992px) {
+    html {
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 768px) {
+    body {
+        grid-template-areas:
+            "header"
+            "main"
+            "rside";
+    
+        grid-template-columns: 1fr;
+        grid-template-rows:
+            auto /* header */
+            1.2fr /* main */
+            0.8fr; /* rside */
+    }
+    #logo_img {
+        height: 25px;
+    }
+}
+
 header {
   grid-area: header;
 }

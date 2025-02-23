@@ -21,10 +21,10 @@
     <!-- Header -->
     <header>
         <!-- Navbar -->
-        <nav class="navbar navbar-expand-lg navbar-dark bg-primary d-print pl-2 pl-lg-0 py-0 py-xl-1" id="navbar">
+        <nav class="navbar navbar-expand-md navbar-dark bg-primary d-print pl-2 pl-lg-0 py-0 py-xl-1" id="navbar">
             <!-- <div class="container-fluid"> -->
                 <a class="navbar-brand" style="padding-top:0.5vh; padding-bottom:0.5vh; outline: none;" href="https://mida-group.github.io/CytoBrowser/" target="_blank" rel="noopener noreferrer">
-                    <img id="logo_img" style="height:35px; min-height:20px; max-height:8vh;" src="misc/uulogowhiteCyBr.png">
+                    <img id="logo_img" src="misc/uulogowhiteCyBr.png">
                 </a>
 
                 <button class="navbar-toggler ml-auto" type="button" data-toggle="collapse" data-target="#navbar_items">
@@ -54,7 +54,7 @@
 
     <!-- Main content -->
     <main id="main_content" tabindex="-1">
-        <div id="ISS_viewer" class="ISS_viewer blurrable flex-grow-1 h-100 w-100"></div>
+        <div id="ISS_viewer" class="ISS_viewer blurrable flex-grow-1 h-100 w-100" style="height: fit-content;"></div>
         <div id="alert_wrapper" style="height: 100%; width: 100%; display: flex; justify-content: center; align-items: center; position: absolute; top: 0; padding: 5%; pointer-events: none"></div>
         <span id="qr-code" style="transition: width 0.2s; border-radius: 0 0 0 5px; position: absolute; top: 0; right: 0; overflow:hidden; width:0; height:fit-content; background-color: white;"></span>
     </main> <!-- End of main_content -->
@@ -874,20 +874,6 @@
     $(document).ready(() => {
         getServerVersion();
 
-
-        // Only way I manage to get correct size navbar on vertical phone layout (due to zoom, content is wider than 100%)!
- 
-        // Bootstrap breakpoints: https://getbootstrap.com/docs/4.0/layout/overview/#responsive-breakpoints
-        // xs = 0-575.98 pixels. sm = 576-767.98 pixels. md = 768-991.98 pixels. lg = 992-1199.98 xl >= 1200 pixels
-
-/*         $(window).on("load resize",function(e){
-            if( window.innerWidth < 993 ) { //lg
-                $('#navbar_items').collapse('hide');
-            } else {
-                $('#navbar_items').collapse('show');
-            }
-        });
- */
         // Options when initializing tmapp
         const tmappOptions = {};
         const {imageName, collab, state}=tmapp.parseURL(new URL(window.location.href));
