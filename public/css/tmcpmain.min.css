@@ -1,5 +1,4 @@
 html {
-    height: 100%;
     font-size: 15px;
 } 
 
@@ -13,10 +12,11 @@ body {
       "main rside";
   
     grid-template-columns: 1fr auto;
-    grid-template-rows: auto 1fr;
+    grid-template-rows: auto minmax(0, 1fr);
  
     height: 100vh;
     width: 100vw;
+    overflow: hidden;
 }
 
 #logo_img {
@@ -39,6 +39,7 @@ body {
     }
 }
 
+/* < sm, stack vertically, collapse down */
 @media (max-width: 768px) {
     body {
         grid-template-areas:
@@ -49,11 +50,14 @@ body {
         grid-template-columns: 1fr;
         grid-template-rows:
             auto /* header */
-            1.2fr /* main */
-            0.8fr; /* rside */
+            minmax(auto, 1fr) /* main */
+            minmax(0, auto); /* rside */
     }
     #logo_img {
         height: 25px;
+    }
+    #right_toolbar_collapse {
+        max-height: 60vh;
     }
 }
 
@@ -69,6 +73,12 @@ main {
   grid-area: rside;
 }
 
+.right_toolbar_collapse_button {
+    overflow: visible; 
+    position: absolute;
+    z-index: 200;
+    padding: -30;
+}
 
 
 .ISS_viewer{
@@ -118,11 +128,12 @@ main {
     transform: rotate(180deg);
 }
 
+
 /* See also https://stackoverflow.com/questions/47738975/customizing-the-collapse-transition-in-bootstrap-4 */
 .collapsing.width {
     transition-property: width;
     width: 0;
-    height: inherit;
+    height: 100%;
 }
 
 
