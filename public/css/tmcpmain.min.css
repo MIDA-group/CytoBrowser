@@ -2,15 +2,98 @@ html {
     font-size: 15px;
 } 
 
+/* Holy Grail Layout https://www.digitalocean.com/community/tutorials/css-css-grid-holy-grail-layout */
+/* nav goes into header */
+body {
+    display: grid;
+
+    grid-template-areas:
+      "header header"
+      "main rside";
+  
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto minmax(0, 1fr);
+ 
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+}
+
+#logo_img {
+    height:35px; 
+    min-height:20px; 
+    max-height:8vh;
+}
+
+#right_toolbar_collapse .width_keeper {
+    width: fit-content;
+}
+
+/* Bootstrap breakpoints: https://getbootstrap.com/docs/4.0/layout/overview/#responsive-breakpoints */
+/* xs < 576, sm < 768, md < 992, lg < 1200, xl >= 1200 */
+@media (max-width: 1200px) {
+    html {
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 992px) {
+    html {
+        font-size: 12px;
+    }
+}
+
+/* < sm, stack vertically, collapse down */
+@media (max-width: 768px) {
+    body {
+        grid-template-areas:
+            "header"
+            "main"
+            "rside";
+    
+        grid-template-columns: 1fr;
+        grid-template-rows:
+            auto /* header */
+            minmax(auto, 1fr) /* main */
+            minmax(0, auto); /* rside */
+    }
+    #logo_img {
+        height: 25px;
+    }
+    #right_toolbar_collapse {
+        max-height: 60vh;
+    }
+    #right_toolbar_collapse .width_keeper {
+        width: 100%;
+    }
+}
+
+header {
+  grid-area: header;
+}
+
+main {
+  grid-area: main;
+}
+
+#rtoolbar {
+  grid-area: rside;
+}
+
+.right_toolbar_collapse_button {
+    overflow: visible; 
+    position: absolute;
+    z-index: 200;
+    padding: -30;
+}
+
+
 .ISS_viewer{
     height: 100%;
 	background-color: #676767;
     overflow: hidden;
 }
 
-.ISS_menu{
-	height:90vh;
-}
 
 .focus_slider_internal {
     opacity: 0.6;
@@ -37,6 +120,7 @@ html {
     transition: 1s ease-in-out all;
 }
 
+
 .collapse_rotate_90 {
     transition: .3s transform ease-in-out;
 }
@@ -50,6 +134,15 @@ html {
 .collapsed .collapse_rotate_180 {
     transform: rotate(180deg);
 }
+
+
+/* See also https://stackoverflow.com/questions/47738975/customizing-the-collapse-transition-in-bootstrap-4 */
+.collapsing.width {
+    transition-property: width;
+    width: 0;
+    height: 100%;
+}
+
 
 /* Discrete links in our annotation-list */
 #annotation-list td a { 

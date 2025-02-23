@@ -3,9 +3,9 @@
 
 <head>
     <link rel="shortcut icon" href="favicon.ico">
-    <link rel="stylesheet" type="text/css" href="css/tmcpmain.min.css">
     <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="css/bootstrap-slider.min.css">
+    <link rel="stylesheet" type="text/css" href="css/tmcpmain.min.css">
     <link rel="stylesheet" type="text/css" href="css/cytobrowsertheme.css">
     <link rel="stylesheet" type="text/css" href="css/tm-icon-style.css">
     <title>CytoBrowser</title>
@@ -17,302 +17,298 @@
     <script src="js/jquery/jquery-3.4.1.slim.min.js"></script>
 </head>
 
-<!-- Styling required to cover full page -->
-<style>
-    html, body {
-        height: 100%;
-    }
-    body {
-        display: flex;
-        flex-direction: column;
-    }
-</style>
-
 <body>
-    <!-- Navbar -->
-    <nav class="navbar navbar-fixed-top navbar-expand-lg navbar-dark bg-primary pl-2 pl-lg-0 py-0 py-xl-1" id="navbar">
-        <div class="container-fluid">
-            <a class="navbar-brand" style="padding-top:0.5vh; padding-bottom:0.5vh; outline: none;" href="https://mida-group.github.io/CytoBrowser/" target="_blank" rel="noopener noreferrer">
-                <img id="logo_img" style="height:35px; min-height:20px; max-height:8vh;" src="misc/uulogowhiteCyBr.png">
-            </a>
+    <!-- Header -->
+    <header>
+        <!-- Navbar -->
+        <nav class="navbar navbar-expand-md navbar-dark bg-primary d-print pl-2 pl-lg-0 py-0 py-xl-1 h-100" id="navbar">
+            <!-- <div class="container-fluid"> -->
+                <a class="navbar-brand" style="padding-top:0.5vh; padding-bottom:0.5vh; outline: none;" href="https://mida-group.github.io/CytoBrowser/" target="_blank" rel="noopener noreferrer">
+                    <img id="logo_img" src="misc/uulogowhiteCyBr.png">
+                </a>
 
-            <button class="navbar-toggler ml-auto" type="button" data-toggle="collapse" data-target="#navbar_items">
-                <span class="navbar-toggler-icon" style="min-height:12px; max-height:5vh;"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbar_items">
-                <ul class="nav navbar-nav align-items-end">
-                    <li class="nav-item"><a class="nav-link font-weight-bold" style="cursor: pointer; font-size: 1.2rem;" data-toggle="modal" data-target="#image_browser">
-                        <span class="fa fa-caret-down"> </span> Image: <span id="img_name"> -</span>
-                    </a></li>
-                    <li class="navbar-text font-weight-bold p-2"> Z-level: <span id="img_zlevel"> -</span></li>
-                    <li class="navbar-text font-weight-bold p-2"> Zoom: <span id="img_zoom"> -</span></li>
-                    <li class="navbar-text font-weight-bold p-2"> Rotation: <span id="img_rotation"> -</span></li>
-                    <li class="navbar-text p-2"> <span id="last_autosave"></span></li>
-                    <li class="navbar-text font-weight-bold p-2"> <span id="fps"></span></li>
-                </ul>
-                <ul class="nav navbar-nav ml-auto">
-                    <li class="nav-item"><a class="nav-link font-weight-bold" style="cursor: pointer; font-size: 1.2rem;" data-toggle="modal" data-target="#collaboration_menu">
-                            <span class="fa fa-caret-down"> </span> Session: <span id="collab_name"> -</span>
-                    </a></li>
-                    <li class="nav-item"><a class="nav-link font-weight-bold" style="font-size: 1.2rem;"> User: <span id="user_name"> -</span></a></li>
-                </ul>
-            </div>
-        </div>
-    </nav>
+                <button class="navbar-toggler ml-auto" type="button" data-toggle="collapse" data-target="#navbar_items">
+                    <span class="navbar-toggler-icon" style="min-height:12px; max-height:5vh;"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbar_items">
+                    <ul class="nav navbar-nav align-items-end">
+                        <li class="nav-item"><a class="nav-link font-weight-bold" style="cursor: pointer; font-size: 1.2rem;" data-toggle="modal" data-target="#image_browser">
+                            <span class="fa fa-caret-down"> </span> Image: <span id="img_name"> -</span>
+                        </a></li>
+                        <li class="navbar-text font-weight-bold p-2"> Z-level: <span id="img_zlevel"> -</span></li>
+                        <li class="navbar-text font-weight-bold p-2"> Zoom: <span id="img_zoom"> -</span></li>
+                        <li class="navbar-text font-weight-bold p-2"> Rotation: <span id="img_rotation"> -</span></li>
+                        <li class="navbar-text p-2"> <span id="last_autosave"></span></li>
+                        <li class="navbar-text font-weight-bold p-2"> <span id="fps"></span></li>
+                    </ul>
+                    <ul class="nav navbar-nav ml-auto">
+                        <li class="nav-item"><a class="nav-link font-weight-bold" style="cursor: pointer; font-size: 1.2rem;" data-toggle="modal" data-target="#collaboration_menu">
+                                <span class="fa fa-caret-down"> </span> Session: <span id="collab_name"> -</span>
+                        </a></li>
+                        <li class="nav-item"><a class="nav-link font-weight-bold" style="font-size: 1.2rem;"> User: <span id="user_name"> -</span></a></li>
+                    </ul>
+                </div>
+            <!-- </div> -->
+        </nav>
+    </header>
 
     <!-- Main content -->
-    <div id="main_content" class="container-fluid d-flex h-100 position-relative" style="min-width: 400px" tabindex="-1">
-        <div id="main_row" class="row flex-fill position-absolute m-0 p-0" style="right: 0; top: 0; left: 0; bottom: 0;">
-            <div class="col md-10 px-0" style="min-width: 50%; min-height: 75%; width: 100%; flex-grow: 100;"> <!-- Doesn't make sense to have overflow of the viewer -->
-                <div id="ISS_viewer" class="ISS_viewer blurrable flex-grow-1 h-100 w-100"></div>
-                <div id="alert_wrapper" style="height: 100%; width: 100%; display: flex; justify-content: center; align-items: center; position: absolute; top: 0; padding: 5%; pointer-events: none"></div>
-                <span id="qr-code" style="transition: width 0.2s; border-radius: 0 0 0 5px; position: absolute; top: 0; right: 0; overflow:hidden; width:0; height:fit-content; background-color: white;"></span>
-            </div>
-       
-            <!-- Right side main toolbar -->
-            <div class="col-auto flex-column pt-1 pl-1 pr-0 h-100" style="overflow-y:auto; overflow-x:hidden; flex-grow: 0; min-width: 0.8em;" id="rtoolbar">
-                <button type="button" class="btn btn-secondary p-0" style="overflow-y:visible; position: absolute; top: 0px; left: -4px; z-index: 2;" data-toggle="collapse" data-target="#right_toolbar_collapse" onclick="this.blur();">
-                    <i class="collapse_rotate_180 fa fa-chevron-right p-0 px-1 m-0"></i>
-                </button>                  
-                <div class="collapse show card w-100" style="transition: 0s ;" id="right_toolbar_collapse">
-                    <!-- Modal access -->
-                    <div class="card-body pt-1 pt-lg-2 pb-0 pb-lg-1 px-1 px-md-2">
-                        <div class="row py-2 no-gutters">
-                            <div class="col-5 pr-2">
-                                <button type="button" class="btn btn-block btn-primary" data-toggle="modal" data-target="#image_browser">
-                                    Image browser
-                                </button>
-                            </div>
-                            <div class="col-5 px-2">
-                                <button type="button" class="btn btn-block btn-primary" data-toggle="modal" data-target="#collaboration_menu">
-                                    Session menu
-                                </button>
-                            </div>
-                            <div class="col-2 pl-2">
-                                <button type="button" class="btn btn-block btn-secondary" data-toggle="modal" data-target="#instructions">
-                                    Help
-                                </button>
-                            </div>
-                        </div>
-                        <!-- Collapse -->
-                        <!-- Inspired by: https://disjfa.github.io/bootstrap-tricks/card-collapse-tricks/ -->
-                        <button type="button" class="btn btn-block btn-primary collapsed" data-toggle="collapse" data-target="#visualization_collapse">
-                            <div class="d-flex flex-row w-100"><div class="w-100">Visualization adjustments</div> <i class="collapse_rotate_90 fa fa-chevron-down pull-right pt-1"></i></div>
-                        </button>
-                        <div class="m-0 my-2">
-                            <div class="collapse card" id="visualization_collapse">
-                                <div class="card-body">
-                                    <h6 class="card-subtitle text-muted">Marker size</h6>
-                                    <span class="m-2">
-                                        &nbsp;0 <input id="marker_size_slider" type="text" data-slider-min="0" data-slider-max="2" data-slider-step="0.1" data-slider-value="1"/> &nbsp;2
-                                        <input id="marker_size_reset" class="btn btn-secondary btn-sm p-0 px-1 m-0 mb-1 ml-3" type="reset" value="Reset" onclick="this.blur();">
-                                    </span>
-                                </div>
-                                <hr class="m-2">
-                                <div class="card-body">
-                                    <h6 class="card-subtitle text-muted">Brightness</h6>
-                                    <span class="m-2">
-                                        -1 <input id="brightness_slider" type="text" data-slider-min="-1" data-slider-max="1" data-slider-step="0.1" data-slider-value="0"/> &nbsp;1
-                                        <input id="brightness_reset" class="btn btn-secondary btn-sm p-0 px-1 m-0 mb-1 ml-3" type="reset" value="Reset" onclick="this.blur();">
-                                    </span>
-                                    <h6 class="card-subtitle mt-2 text-muted">Contrast</h6>
-                                    <span class="m-2">
-                                        -1 <input id="contrast_slider" type="text" data-slider-min="-1" data-slider-max="1" data-slider-step="0.1" data-slider-value="0"/> &nbsp;1
-                                        <input id="contrast_reset" class="btn btn-secondary btn-sm p-0 px-1 m-0 mb-1 ml-3" type="reset" value="Reset" onclick="this.blur();">
-                                    </span>
-                                </div>
-                                <hr class="m-2">
-                                <div class="card-body">
-                                    <div class="custom-control custom-switch">
-                                        <input type="checkbox" class="custom-control-input" id="fps_switch">
-                                        <label class="custom-control-label px-1" for="fps_switch">Show FPS counter</label>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+    <main id="main_content" style="min-height:30vh; height:100%;" tabindex="-1">
+        <div id="ISS_viewer" class="ISS_viewer blurrable h-100 w-100 flex-grow-1"></div>
+        <div id="alert_wrapper" style="height: 100%; width: 100%; display: flex; justify-content: center; align-items: center; position: absolute; top: 0; padding: 5%; pointer-events: none"></div>
+        <span id="qr-code" style="transition: width 0.2s; border-radius: 0 0 0 5px; position: absolute; top: 0; right: 0; overflow:hidden; width:0; height:fit-content; background-color: white;"></span>
+    </main> <!-- End of main_content -->
 
-                        <!-- Collapse for metadata and global comments and metadata -->
-                        <button type="button" class="btn btn-block btn-primary collapsed" data-toggle="collapse" data-target="#comments_collapse">
-                            <div class="d-flex flex-row w-100">
-                                <div class="w-100 position-relative">
-                                    <div class="position-absolute">
-                                        <span class="badge bg-dark hide" id="unseen_comments" style="display: none;">0</span>
-                                    </div>
-                                    Global Data
-                                </div>
-                                <i class="collapse_rotate_90 fa fa-chevron-down pull-right pt-1"></i>
-                            </div>
-                        </button>
-                        <div class="m-0 my-1 my-lg-2">
-                            <div class="collapse card" id="comments_collapse">
-                                <table class="table table-striped table-borderless">
-                                    <tbody>
-                                        <tr><td class="py-1">
-                                            <div class="d-flex justify-content-between">
-                                                <span>Data size:</span>
-                                                <span id="metadata_resolution">-</span>
-                                            </div>
-                                        </td></tr>
-                                        <tr><td class="py-1">
-                                            <div class="d-flex justify-content-between">
-                                                <span>Physical size:</span>
-                                                <span id="metadata_size">-</span>
-                                            </div>
-                                        </td></tr>
-                                        <tr><td class="py-1">
-                                            <div class="d-flex justify-content-between">
-                                                <span>Acquisition date:</span>
-                                                <span id="metadata_date">-</span>
-                                            </div>
-                                        </td></tr>
-                                        <tr><td class="py-1">
-                                            <div class="d-flex justify-content-between">
-                                                <span>Microscope model:</span>
-                                                <span id="metadata_microscope">-</span>
-                                            </div>
-                                        </td></tr>
-                                        <tr><td class="py-1">
-                                            <div class="d-flex justify-content-between">
-                                                <span>Nominal magnification:</span>
-                                                <span id="metadata_magnification">-</span>
-                                            </div>
-                                        </td></tr>
-                                        <tr><td class="py-1">
-                                            <div class="d-flex justify-content-between">
-                                                <span>Color depth:</span>
-                                                <span id="metadata_sigbits">-</span>
-                                            </div>
-                                        </td></tr>
-                                        <tr><td class="py-1">
-                                            <div class="d-flex justify-content-between">
-                                                <span>Number of channels:</span>
-                                                <span id="metadata_nchannels">-</span>
-                                            </div>
-                                        </td></tr>
-                                        <tr><td class="py-1">
-                                            <div class="d-flex justify-content-between">
-                                                <span>Number of markers:</span>
-                                                <span id="global_data_nmarkers">-</span>
-                                            </div>
-                                        </td></tr>
-                                        <tr><td class="py-1">
-                                            <div class="d-flex justify-content-between">
-                                                <span>Number of regions:</span>
-                                                <span id="global_data_nregions">-</span>
-                                            </div>
-                                        </td></tr>
-                                    </tbody>
-                                </table>
-                                <div class="card-body p-2" id="global_comments">
-                                    <!-- Comments -->
-                                </div>
-                            </div>
+    <!-- Right side main toolbar -->
+    <!-- position:relative needed for placement of collapse buttons -->
+    <aside id="rtoolbar" class="pt-1 pl-1 pr-0" style="height: 100%; overflow: visible; position: relative;">
+        <!-- Collapse right button for large display -->
+        <button type="button" class="d-none d-md-block right_toolbar_collapse_button btn btn-secondary p-0" style="bottom:1px; left:-15px;" data-toggle="collapse" data-target="#right_toolbar_collapse" onclick="this.blur();">
+            <i class="collapse_rotate_180 fa fa-chevron-right p-0 px-1 m-0"></i>
+        </button>                  
+        <!-- Collapse down button for small (narrow) displays -->
+        <button type="button" class="d-md-none right_toolbar_collapse_button btn btn-secondary p-0" style="top:-15px; right: 1px;" data-toggle="collapse" data-target="#right_toolbar_collapse" onclick="this.blur();">
+            <i class="collapse_rotate_180 fa fa-chevron-down p-0 px-1 m-0"></i>
+        </button>                  
+        <div id="right_toolbar_collapse" class="collapse show card width" style="height: 100%; overflow-y:auto; overflow-x: hidden;">
+            <div class="width_keeper"> <!-- To prevent updating layout on collapse -->
+                <!-- Modal access -->
+                <div class="card-body pt-1 pt-lg-2 pb-0 pb-lg-1 px-1 px-md-2">
+                    <div class="row py-2 no-gutters">
+                        <div class="col-5 pr-2">
+                            <button type="button" class="btn btn-block btn-primary" data-toggle="modal" data-target="#image_browser">
+                                Image browser
+                            </button>
+                        </div>
+                        <div class="col-5 px-2">
+                            <button type="button" class="btn btn-block btn-primary" data-toggle="modal" data-target="#collaboration_menu">
+                                Session menu
+                            </button>
+                        </div>
+                        <div class="col-2 pl-2">
+                            <button type="button" class="btn btn-block btn-secondary" data-toggle="modal" data-target="#instructions">
+                                Help
+                            </button>
                         </div>
                     </div>
-                    <hr class="py-0 my-0" />
-                    <!-- Functionality buttons -->
-                    <div class="card-body pb-0 pt-1 pt-lg-2 px-1 px-md-2">
-                        <div class="card-block pb-4">
-                            <div class="row mb-2" style="margin-top:-5px;">
-                                <div class="col-6">
-                                    <div class="custom-control custom-switch">
-                                        <input type="checkbox" class="custom-control-input" id="attention_track_switch">
-                                        <label class="custom-control-label px-1" for="attention_track_switch">Track attention</label>
-                                    </div>
-                                </div>
-                                <div class="col-6">
-                                    <div class="custom-control custom-switch">
-                                        <input type="checkbox" class="custom-control-input" id="attention_view_switch">
-                                        <label class="custom-control-label px-1" for="attention_view_switch">Overlay attention map</label>
-                                    </div>
-                                </div>
+                    <!-- Collapse -->
+                    <!-- Inspired by: https://disjfa.github.io/bootstrap-tricks/card-collapse-tricks/ -->
+                    <button type="button" class="btn btn-block btn-primary collapsed" data-toggle="collapse" data-target="#visualization_collapse">
+                        <div class="d-flex flex-row w-100"><div class="w-100">Visualization adjustments</div> <i class="collapse_rotate_90 fa fa-chevron-down pull-right pt-1"></i></div>
+                    </button>
+                    <div class="m-0 my-2">
+                        <div class="collapse card" id="visualization_collapse">
+                            <div class="card-body">
+                                <h6 class="card-subtitle text-muted">Marker size</h6>
+                                <span class="m-2">
+                                    &nbsp;0 <input id="marker_size_slider" type="text" data-slider-min="0" data-slider-max="2" data-slider-step="0.1" data-slider-value="1"/> &nbsp;2
+                                    <input id="marker_size_reset" class="btn btn-secondary btn-sm p-0 px-1 m-0 mb-1 ml-3" type="reset" value="Reset" onclick="this.blur();">
+                                </span>
                             </div>
-                            <div class="row">
-                                <!-- Annotation tools -->
-                                <div class="col-8">
-                                    <h6 class="card-subtitle mb-1 text-muted">Annotation tool</h6>
-                                    <div class="btn-toolbar" role="toolbar" aria-label="Toolbar with annotation button groups">
-                                        <div class="btn-group btn-group-toggle d-flex mr-1" data-toggle="buttons" role="group" onkeydown="noArrows()">
-                                            <label id="tool_marker" type="button" class="btn btn-primary">
-                                                <input name="tool_selection" type="radio" autocomplete="off">
-                                                Marker
-                                            </label>
-                                        </div>
-                                        <div class="btn-group btn-group-toggle d-flex" data-toggle="buttons" role="group" onkeydown="noArrows()">
-                                            <label id="tool_rect" type="button" class="btn btn-primary">
-                                                <input name="tool_selection" type="radio" autocomplete="off">
-                                                Rectangle
-                                            </label>
-                                            <label id="tool_poly" type="button" class="btn btn-primary">
-                                                <input name="tool_selection" type="radio" autocomplete="off">
-                                                Polygon
-                                            </label>
-                                        </div>
-                                    </div>
-                                </div>
-                                <!-- Focus up/down --> <!-- TODO, move elsewhere -->
-                                <div class="col-4 ml-auto">
-                                    <h6 class="card-subtitle mb-1 text-muted">Change focus</h6>
-                                    <div class="btn-group d-flex" role="group" onkeydown="noArrows()">
-                                        <button id="focus_next" type="button" class="btn btn-primary">Up</button>
-                                        <button id="focus_prev" type="button" class="btn btn-primary">Down</button>
-                                    </div>
-                                </div>
+                            <hr class="m-2">
+                            <div class="card-body">
+                                <h6 class="card-subtitle text-muted">Brightness</h6>
+                                <span class="m-2">
+                                    -1 <input id="brightness_slider" type="text" data-slider-min="-1" data-slider-max="1" data-slider-step="0.1" data-slider-value="0"/> &nbsp;1
+                                    <input id="brightness_reset" class="btn btn-secondary btn-sm p-0 px-1 m-0 mb-1 ml-3" type="reset" value="Reset" onclick="this.blur();">
+                                </span>
+                                <h6 class="card-subtitle mt-2 text-muted">Contrast</h6>
+                                <span class="m-2">
+                                    -1 <input id="contrast_slider" type="text" data-slider-min="-1" data-slider-max="1" data-slider-step="0.1" data-slider-value="0"/> &nbsp;1
+                                    <input id="contrast_reset" class="btn btn-secondary btn-sm p-0 px-1 m-0 mb-1 ml-3" type="reset" value="Reset" onclick="this.blur();">
+                                </span>
                             </div>
-                        </div>
-                        <div class="card-block">
-                            <div class="row">
-                                <!-- Annotation class buttons -->
-                                <div class="col">
-                                    <h6 class="card-subtitle mb-1 text-muted">Annotation class</h6>
-                                    <div id="class_buttons" class="btn-group btn-group-toggle d-flex" data-toggle="buttons" role="group" onkeydown="noArrows()">
-                                    </div>
+                            <hr class="m-2">
+                            <div class="card-body">
+                                <div class="custom-control custom-switch">
+                                    <input type="checkbox" class="custom-control-input" id="fps_switch">
+                                    <label class="custom-control-label px-1" for="fps_switch">Show FPS counter</label>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Import/Export -->
-                    <div class="card-body pb-0 px-1 px-md-2">
-                        <div class="row pb-1 pt-2">
-                            <div class="col-3">
-                                <input class="d-none" type="file" id="data_files_import" onclick="this.value=null;" name="files[]" accept=".json">
-                                <button id="json_to_data" class="btn btn-primary btn-block" type="button"> Import </button>
+                    <!-- Collapse for metadata and global comments and metadata -->
+                    <button type="button" class="btn btn-block btn-primary collapsed" data-toggle="collapse" data-target="#comments_collapse">
+                        <div class="d-flex flex-row w-100">
+                            <div class="w-100 position-relative">
+                                <div class="position-absolute">
+                                    <span class="badge bg-dark hide" id="unseen_comments" style="display: none;">0</span>
+                                </div>
+                                Global Data
                             </div>
-                            <div class="col-3">
-                                <button id="points_to_json" class="btn btn-primary btn-block" type="button"> Export </button>
+                            <i class="collapse_rotate_90 fa fa-chevron-down pull-right pt-1"></i>
+                        </div>
+                    </button>
+                    <div class="m-0 my-1 my-lg-2">
+                        <div class="collapse card" id="comments_collapse">
+                            <table class="table table-striped table-borderless">
+                                <tbody>
+                                    <tr><td class="py-1">
+                                        <div class="d-flex justify-content-between">
+                                            <span>Data size:</span>
+                                            <span id="metadata_resolution">-</span>
+                                        </div>
+                                    </td></tr>
+                                    <tr><td class="py-1">
+                                        <div class="d-flex justify-content-between">
+                                            <span>Physical size:</span>
+                                            <span id="metadata_size">-</span>
+                                        </div>
+                                    </td></tr>
+                                    <tr><td class="py-1">
+                                        <div class="d-flex justify-content-between">
+                                            <span>Acquisition date:</span>
+                                            <span id="metadata_date">-</span>
+                                        </div>
+                                    </td></tr>
+                                    <tr><td class="py-1">
+                                        <div class="d-flex justify-content-between">
+                                            <span>Microscope model:</span>
+                                            <span id="metadata_microscope">-</span>
+                                        </div>
+                                    </td></tr>
+                                    <tr><td class="py-1">
+                                        <div class="d-flex justify-content-between">
+                                            <span>Nominal magnification:</span>
+                                            <span id="metadata_magnification">-</span>
+                                        </div>
+                                    </td></tr>
+                                    <tr><td class="py-1">
+                                        <div class="d-flex justify-content-between">
+                                            <span>Color depth:</span>
+                                            <span id="metadata_sigbits">-</span>
+                                        </div>
+                                    </td></tr>
+                                    <tr><td class="py-1">
+                                        <div class="d-flex justify-content-between">
+                                            <span>Number of channels:</span>
+                                            <span id="metadata_nchannels">-</span>
+                                        </div>
+                                    </td></tr>
+                                    <tr><td class="py-1">
+                                        <div class="d-flex justify-content-between">
+                                            <span>Number of markers:</span>
+                                            <span id="global_data_nmarkers">-</span>
+                                        </div>
+                                    </td></tr>
+                                    <tr><td class="py-1">
+                                        <div class="d-flex justify-content-between">
+                                            <span>Number of regions:</span>
+                                            <span id="global_data_nregions">-</span>
+                                        </div>
+                                    </td></tr>
+                                </tbody>
+                            </table>
+                            <div class="card-body p-2" id="global_comments">
+                                <!-- Comments -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <hr class="py-0 my-0" />
+                <!-- Functionality buttons -->
+                <div class="card-body pb-0 pt-1 pt-lg-2 px-1 px-md-2">
+                    <div class="card-block pb-4">
+                        <div class="row mb-2" style="margin-top:-5px;">
+                            <div class="col-6">
+                                <div class="custom-control custom-switch">
+                                    <input type="checkbox" class="custom-control-input" id="attention_track_switch">
+                                    <label class="custom-control-label px-1" for="attention_track_switch">Track attention</label>
+                                </div>
                             </div>
                             <div class="col-6">
-                                <button type="button" class="btn btn-dark btn-block" data-toggle="modal" data-target="#version-picker">Revert changes</btton>
+                                <div class="custom-control custom-switch">
+                                    <input type="checkbox" class="custom-control-input" id="attention_view_switch">
+                                    <label class="custom-control-label px-1" for="attention_view_switch">Overlay attention map</label>
+                                </div>
                             </div>
                         </div>
-                    </div>
-
-                    <!-- Annotation filter -->
-                    <div class="card-body px-1 px-md-2">
                         <div class="row">
-                            <div class="col">
-                                <div class="input-group">
-                                    <input id="filter-query-input" type="text" class="form-control" placeholder="Filter annotations">
-                                    <div class="input-group-append">
-                                        <button class="btn btn-info" data-toggle="modal" data-target="#filter-usage" style="border-top-right-radius: 0.25rem;border-bottom-right-radius: 0.25rem;">Help</button>
+                            <!-- Annotation tools -->
+                            <div class="col-8">
+                                <h6 class="card-subtitle mb-1 text-muted">Annotation tool</h6>
+                                <div class="btn-toolbar" role="toolbar" aria-label="Toolbar with annotation button groups">
+                                    <div class="btn-group btn-group-toggle d-flex mr-1" data-toggle="buttons" role="group" onkeydown="noArrows()">
+                                        <label id="tool_marker" type="button" class="btn btn-primary">
+                                            <input name="tool_selection" type="radio" autocomplete="off">
+                                            Marker
+                                        </label>
                                     </div>
-                                    <div id="filter-query-error" class="invalid-feedback">
+                                    <div class="btn-group btn-group-toggle d-flex" data-toggle="buttons" role="group" onkeydown="noArrows()">
+                                        <label id="tool_rect" type="button" class="btn btn-primary">
+                                            <input name="tool_selection" type="radio" autocomplete="off">
+                                            Rectangle
+                                        </label>
+                                        <label id="tool_poly" type="button" class="btn btn-primary">
+                                            <input name="tool_selection" type="radio" autocomplete="off">
+                                            Polygon
+                                        </label>
                                     </div>
-                                    <div id="filter-query-info" class="valid-feedback">
-                                    </div>
+                                </div>
+                            </div>
+                            <!-- Focus up/down --> <!-- TODO, move elsewhere -->
+                            <div class="col-4 ml-auto">
+                                <h6 class="card-subtitle mb-1 text-muted">Change focus</h6>
+                                <div class="btn-group d-flex" role="group" onkeydown="noArrows()">
+                                    <button id="focus_next" type="button" class="btn btn-primary">Up</button>
+                                    <button id="focus_prev" type="button" class="btn btn-primary">Down</button>
                                 </div>
                             </div>
                         </div>
                     </div>
-
-                    <!-- List of annotations -->
-                    <table id="annotation-list" class="table table-striped table-hover text-center mb-0 mr-1">
-                    </table>
+                    <div class="card-block">
+                        <div class="row">
+                            <!-- Annotation class buttons -->
+                            <div class="col">
+                                <h6 class="card-subtitle mb-1 text-muted">Annotation class</h6>
+                                <div id="class_buttons" class="btn-group btn-group-toggle d-flex" data-toggle="buttons" role="group" onkeydown="noArrows()">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div> <!-- End of toolbar -->
-        </div> <!-- End of row -->
-    </div> <!-- End of container -->
+
+                <!-- Import/Export -->
+                <div class="card-body pb-0 px-1 px-md-2">
+                    <div class="row pb-1 pt-2">
+                        <div class="col-3">
+                            <input class="d-none" type="file" id="data_files_import" onclick="this.value=null;" name="files[]" accept=".json">
+                            <button id="json_to_data" class="btn btn-primary btn-block" type="button"> Import </button>
+                        </div>
+                        <div class="col-3">
+                            <button id="points_to_json" class="btn btn-primary btn-block" type="button"> Export </button>
+                        </div>
+                        <div class="col-6">
+                            <button type="button" class="btn btn-dark btn-block" data-toggle="modal" data-target="#version-picker">Revert changes</btton>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Annotation filter -->
+                <div class="card-body px-1 px-md-2">
+                    <div class="row">
+                        <div class="col">
+                            <div class="input-group">
+                                <input id="filter-query-input" type="text" class="form-control" placeholder="Filter annotations">
+                                <div class="input-group-append">
+                                    <button class="btn btn-info" data-toggle="modal" data-target="#filter-usage" style="border-top-right-radius: 0.25rem;border-bottom-right-radius: 0.25rem;">Help</button>
+                                </div>
+                                <div id="filter-query-error" class="invalid-feedback">
+                                </div>
+                                <div id="filter-query-info" class="valid-feedback">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- List of annotations -->
+                <table id="annotation-list" class="table table-striped table-hover text-center mb-0 mr-1">
+                </table>
+            </div> <!-- End of width keeping div --> 
+        </div> <!-- End of collapse --> 
+    </aside> <!-- End of toolbar -->
 
     <!-- Image browser -->
     <div class="modal fade" id="image_browser" tabindex="-1" role="dialog">
@@ -879,19 +875,21 @@
         };
     }
 
+    // If to collapse toolbar horizontally or vertically
+    function setCollapseDir () {
+        if (window.innerWidth > 768) {
+            $("#right_toolbar_collapse").addClass("width");
+        }
+        else {
+            $("#right_toolbar_collapse").removeClass("width");
+        }
+    }
+
     // Start our tmapp
     $(document).ready(() => {
-        getServerVersion();
+        window.addEventListener('resize', setCollapseDir, false);
 
-        // Only way I manage to get correct size navbar on vertical phone layout (due to zoom, content is wider than 100%)!
-        function resizeNavbar() {
-            const navbar = document.getElementById("navbar");
-            if (navbar) {
-                navbar.style.width = `${Math.max(document.getElementById("main_row").clientWidth,document.body.clientWidth)}px`;
-            }
-            // console.log(`${Math.max(document.getElementById("main_row").clientWidth,document.body.clientWidth)}px`);
-        }
-        window.addEventListener('resize', resizeNavbar);
+        getServerVersion();
 
         // Options when initializing tmapp
         const tmappOptions = {};
@@ -919,7 +917,7 @@
 
         // Initialize tmapp
         tmapp.init(tmappOptions);
-        resizeNavbar();
+        setCollapseDir();
     });
 </script>
 </html>
