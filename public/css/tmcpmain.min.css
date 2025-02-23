@@ -25,6 +25,10 @@ body {
     max-height:8vh;
 }
 
+#right_toolbar_collapse .width_keeper {
+    width: fit-content;
+}
+
 /* Bootstrap breakpoints: https://getbootstrap.com/docs/4.0/layout/overview/#responsive-breakpoints */
 /* xs < 576, sm < 768, md < 992, lg < 1200, xl >= 1200 */
 @media (max-width: 1200px) {
@@ -58,6 +62,9 @@ body {
     }
     #right_toolbar_collapse {
         max-height: 60vh;
+    }
+    #right_toolbar_collapse .width_keeper {
+        width: 100%;
     }
 }
 
