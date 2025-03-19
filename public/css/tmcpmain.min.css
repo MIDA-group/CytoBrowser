@@ -17,6 +17,7 @@ body {
  
     height: 100vh; /* old browsers */  
     height: 100dvh; /* new browsers */
+    min-height: -webkit-fill-available;
     width: 100vw;
     width: 100dvw; /* not really needed, but shouldn't harm */
     overflow: hidden;
@@ -150,6 +151,16 @@ main {
     height: 100%;
 }
 
+#ui_div {
+    min-height: 30%;
+    overflow: auto;
+}
+
+#list_div {
+    min-height: 30%;
+    max-height: 50%;
+    overflow: auto;
+}
 
 /* Discrete links in our annotation-list */
 #annotation-list td a { 

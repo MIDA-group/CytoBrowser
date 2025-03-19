@@ -73,6 +73,7 @@
         </button>                  
         <div id="right_toolbar_collapse" class="collapse show card width" style="height: 100%; overflow-y:auto; overflow-x: hidden;">
             <div class="width_keeper"> <!-- To prevent updating layout on collapse -->
+                <div id="ui_div">
                 <!-- Modal access -->
                 <div class="card-body pt-1 pt-lg-2 pb-0 pb-lg-1 px-1 px-md-2">
                     <div class="row py-2 no-gutters">
@@ -303,10 +304,12 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- List of annotations -->
-                <table id="annotation-list" class="table table-striped table-hover text-center mb-0 mr-1">
-                </table>
+                </div>
+                <div id="list_div">
+                    <!-- List of annotations -->
+                    <table id="annotation-list" class="table table-striped table-hover text-center mb-0 mr-1">
+                    </table>
+                </div>
             </div> <!-- End of width keeping div --> 
         </div> <!-- End of collapse --> 
     </aside> <!-- End of toolbar -->
@@ -890,7 +893,13 @@
     $(document).ready(() => {
         window.addEventListener('resize', setCollapseDir);
         // Prevent scrolling away the Header/Navbar (e.g. on mobile phone)
-        window.addEventListener("scroll", (event) => {window.scrollTop(0);});
+        addEventListener("scroll", (event) => {
+window.scrollY(0);
+document.getElementById('body-container').scrollTo(0, 0);
+$("#navbar").scrollIntoView();
+documentElement.scrollTop(0);
+$('html,body').scrollTop(0);});
+//window.addEventListener('scroll', function() { alert("Scrolled"); });
 
         getServerVersion();
 
