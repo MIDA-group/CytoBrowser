@@ -13,7 +13,7 @@ Origintating as a fork[^1] of [TissUUmaps](https://github.com/wahlby-lab/TissUUm
 
 #### Express setup
 1. Install [Node.js](https://nodejs.org/en/download) 
-2. Run `npx cytobrowser --open-browser`[^2]
+2. Run `npx cytobrowser`[^2]
 [^2]: If (on Windows) you get `ENOENT: no such file or directory...`, the try running `npm install -g npm`
 
 Done! 😊
