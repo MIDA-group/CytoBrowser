@@ -1,6 +1,7 @@
 # CytoBrowser development – a Contributors’ Howto
 Essentially we follow a simplified Gitflow (master is used as release branch)
-https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow
+
+See, e.g., https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow
 - Do not touch master; master is only for releases (and possible bugfixes) – done by Joakim
 - Development is done in feature branches created from **develop**
 - To sync, **rebase** feature branches from `develop`, and use `--force-with-lease` (make sure no one else uses it)
