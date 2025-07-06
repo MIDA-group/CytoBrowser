@@ -210,15 +210,15 @@
                 <hr class="py-0 my-0" />
                 <!-- Functionality buttons -->
                 <div class="card-body pb-0 pt-1 pt-lg-2 px-1 px-md-2">
-                    <div class="card-block pb-4">
+                    <div class="card-block pb-3 pb-xl-4">
                         <div class="row mb-2" style="margin-top:-5px;">
-                            <div class="col-6">
+                            <div class="col-5 pr-1">
                                 <div class="custom-control custom-switch">
                                     <input type="checkbox" class="custom-control-input" id="attention_track_switch">
                                     <label class="custom-control-label px-1" for="attention_track_switch">Track attention</label>
                                 </div>
                             </div>
-                            <div class="col-6">
+                            <div class="col-7">
                                 <div class="custom-control custom-switch">
                                     <input type="checkbox" class="custom-control-input" id="attention_view_switch">
                                     <label class="custom-control-label px-1" for="attention_view_switch">Overlay attention map</label>
@@ -227,8 +227,8 @@
                         </div>
                         <div class="row">
                             <!-- Annotation tools -->
-                            <div class="col-8">
-                                <h6 class="card-subtitle mb-1 text-muted">Annotation tool</h6>
+                            <div class="col-8 pr-1">
+                                <h6 class="card-subtitle mb-0 mb-lg-1 text-muted">Annotation tool</h6>
                                 <div class="btn-toolbar" role="toolbar" aria-label="Toolbar with annotation button groups">
                                     <div class="btn-group btn-group-toggle d-flex mr-1" data-toggle="buttons" role="group" onkeydown="noArrows()">
                                         <label id="tool_marker" type="button" class="btn btn-primary">
@@ -249,8 +249,8 @@
                                 </div>
                             </div>
                             <!-- Focus up/down --> <!-- TODO, move elsewhere -->
-                            <div class="col-4 ml-auto">
-                                <h6 class="card-subtitle mb-1 text-muted">Change focus</h6>
+                            <div class="col-4 pl-1 ml-auto">
+                                <h6 class="card-subtitle mb-0 mb-lg-1 text-muted">Change focus</h6>
                                 <div class="btn-group d-flex" role="group" onkeydown="noArrows()">
                                     <button id="focus_next" type="button" class="btn btn-primary">Up</button>
                                     <button id="focus_prev" type="button" class="btn btn-primary">Down</button>
@@ -271,13 +271,13 @@
                 </div>
 
                 <!-- Import/Export -->
-                <div class="card-body pb-0 px-1 px-md-2">
-                    <div class="row pb-1 pt-2">
-                        <div class="col-3">
+                <div class="card-body pb-1 pt-2 pt-xl-3 px-1 px-md-2">
+                    <div class="row">
+                        <div class="col-3 pr-2">
                             <input class="d-none" type="file" id="data_files_import" onclick="this.value=null;" name="files[]" accept=".json">
                             <button id="json_to_data" class="btn btn-primary btn-block" type="button"> Import </button>
                         </div>
-                        <div class="col-3">
+                        <div class="col-3 pr-2">
                             <button id="points_to_json" class="btn btn-primary btn-block" type="button"> Export </button>
                         </div>
                         <div class="col-6">
@@ -287,7 +287,7 @@
                 </div>
 
                 <!-- Annotation filter -->
-                <div class="card-body px-1 px-md-2">
+                <div class="card-body py-1 px-1 px-md-2">
                     <div class="row">
                         <div class="col">
                             <div class="input-group">

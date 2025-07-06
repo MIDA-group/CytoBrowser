@@ -38,9 +38,15 @@ body:fullscreen {
 
 /* Bootstrap breakpoints: https://getbootstrap.com/docs/4.0/layout/overview/#responsive-breakpoints */
 /* xs < 576, sm < 768, md < 992, lg < 1200, xl >= 1200 */
-@media (max-width: 1200px) {
+@media (max-width: 1299px) {
     html {
         font-size: 13px;
+    }
+}
+
+@media (max-width: 1199px) {
+    html {
+        font-size: 12.5px;
     }
 }
 
@@ -68,7 +74,7 @@ body:fullscreen {
         height: 25px;
     }
     #right_toolbar_collapse {
-        max-height: 60vh;
+        max-height: 55vh;
     }
     #right_toolbar_collapse .width_keeper {
         width: 100%;
