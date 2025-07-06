@@ -14,7 +14,7 @@ process.on('uncaughtException', function(e) {
 // Open URL on Win,Mac,Linux
 const { exec } = require('node:child_process');
 function open(url) {
-    const cmd = (process.platform === "win32") ? 'start' : (process.platform === "darwin") ? '`open' : 'xdg-open';
+    const cmd = (process.platform === "win32") ? 'start' : (process.platform === "darwin") ? 'open' : 'xdg-open';
     const command = cmd+' "'+url+'"';
     console.info("Running: ",command);
     exec(command, (error, stdout, stderr) => {
