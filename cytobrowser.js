@@ -36,7 +36,7 @@ const port = argv._[1] || 0; //zero = 'arbitrary unused port'
 const collabDir = argv.collab || argv.c || "./collab_storage";
 const metadataDir = argv.metadata || argv.m || "./metadata/json";
 const dataDir = argv.data || argv.d || "./data";
-const urlQuery = "?"+argv.query || "";
+const urlQuery = argv.query? "?"+argv.query : "";
 if (argv.h || argv.help) {
     console.info(`Usage: node cytobrowser.js [--open-browser] hostname port` +
     ` [-c collab storage path = "./collab_storage"]` +
