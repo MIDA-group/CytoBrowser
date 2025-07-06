@@ -28,7 +28,7 @@ done
 #Using libvips (https://www.libvips.org/install.html) to create Deep Zoom images (dzi)
 mkdir -p data
 for a in tmp/"${name}"_z*.tiff; do
-	vips --vips-progress dzsave "$a" --tile-size 256 --overlap 0 --suffix .jpg[Q=90] data/"$(basename "$a" .tiff)"
+	vips --vips-progress dzsave "$a" --tile-size 256 --overlap 0 --suffix '.jpg[Q=90]' data/"$(basename "$a" .tiff)"
 	rm -f "$a"
 done
 rmdir --ignore-fail-on-non-empty tmp

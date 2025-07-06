@@ -17,7 +17,7 @@ name="Hamamatsu-${file%.*}"
 #Using libvips (https://www.libvips.org/install.html) to directly create Deep Zoom images (dzi)
 # note the '_z0' suffix to indicate only the zero-level z-plane
 mkdir -p data
-vips --vips-progress dzsave "${file}" --tile-size 256 --overlap 0 --suffix .jpg[Q=90] data/"${name}"_z0
+vips --vips-progress dzsave "${file}" --tile-size 256 --overlap 0 --suffix '.jpg[Q=90]' data/"${name}"_z0
 
 
 #If you have a z-stacked ndpi file, we suggest to use ndpisplit of NDPITools to extract the individual z-planes
