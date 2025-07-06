@@ -33,11 +33,11 @@
   },
   "homepage": "https://github.com/MIDA-group/CytoBrowser#readme",
   "dependencies": {
-    "express": "^4.17.3",
+    "express": "^5.1.0",
     "express-ws": "^5.0.2",
-    "fast-xml-parser": "^4.0.3",
-    "jsondiffpatch": "^0.4.1",
-    "minimist": "^1.2.6",
+    "fast-xml-parser": "^5.2.5",
+    "jsondiffpatch": "^0.7.3",
+    "minimist": "^1.2.8",
     "sanitize-filename": "^1.6.3"
   }
 }
