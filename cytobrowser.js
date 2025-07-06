@@ -11,6 +11,21 @@ process.on('uncaughtException', function(e) {
     throw e;
 });
 
+// Open URL on Win,Mac,Linux
+const { exec } = require('node:child_process');
+function open(url) {
+    const cmd = (process.platform === "win32") ? 'start' : (process.platform === "darwin") ? '`open' : 'xdg-open';
+    const command = cmd+' "'+url+'"'
+    console.info("Running: ",command);
+    exec(command, (error, stdout, stderr) => {
+        if (error) {
+            console.error(`\nFailed to open browser: ${error}`);
+            console.error(`Please manually open in your preferred browser: ${url}`);
+            return;
+        }
+    });
+}
+
 // Handle command line arguments
 const argv = require("minimist")(process.argv.slice(2), {
     boolean: ['open-browser'],
@@ -33,7 +48,6 @@ if (argv.h || argv.help) {
 const express = require("express");
 const availableImages = require("./server/availableImages")(dataDir);
 const collaboration = require("./server/collaboration")(collabDir, metadataDir);
-const open = require("open");
 const { version : serverVersion } = require("./package.json");
 
 // Initialize the server
