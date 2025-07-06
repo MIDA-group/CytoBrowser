@@ -5,8 +5,9 @@ See, e.g., https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-w
 - Do not touch master; master is only for releases (and possible bugfixes) – done by the project maintainer (Joakim)
 - Development is done in feature branches created from **develop**
 - To sync, **rebase** feature branches from `develop`, and use `--force-with-lease` (make sure no one else uses it)
-  - Make pull use rebase by default: `git config --global pull.rebase merges`
+  - Make pull use rebase by default: `git config --global pull.rebase merges`[^1]
 - Do not squash commit messages (we prefer the long history)
+[^1]: See also: https://stackoverflow.com/questions/15915430/what-exactly-does-gits-rebase-preserve-merges-do-and-why
 
 ## Development procedure
 ### Create feature branch from develop
