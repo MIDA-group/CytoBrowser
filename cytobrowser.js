@@ -36,11 +36,13 @@ const port = argv._[1] || 0; //zero = 'arbitrary unused port'
 const collabDir = argv.collab || argv.c || "./collab_storage";
 const metadataDir = argv.metadata || argv.m || "./metadata/json";
 const dataDir = argv.data || argv.d || "./data";
+const urlQuery = "?"+argv.query || "";
 if (argv.h || argv.help) {
-    console.info(`Usage: node cytobrowser.js [--open-browser] hostname port ` +
-    `[-c collab storage path = "./collab_storage"] ` +
-    `[-m image json metadata path = "./metadata/json"] ` +
-    `[-d image data path = "./data"]`);
+    console.info(`Usage: node cytobrowser.js [--open-browser] hostname port` +
+    ` [-c collab storage path = "./collab_storage"]` +
+    ` [-m image json metadata path = "./metadata/json"]` +
+    ` [-d image data path = "./data"]` +
+    ` [--query url-query-string (only with '--open-browser')]` );
     return;
 }
 
@@ -138,6 +140,6 @@ const listener = app.listen(port, hostname, () => {
 
     // Opens the URL in the default browser.
     if (argv['open-browser']) {
-        open(`http://${address}:${port}`);  
+        open(`http://${address}:${port}/${urlQuery}`);  
     }
 });
