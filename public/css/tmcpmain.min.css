@@ -34,6 +34,7 @@ body:fullscreen {
 
 #right_toolbar_collapse .width_keeper {
     width: fit-content;
+    height: 100%;
 }
 
 /* Bootstrap breakpoints: https://getbootstrap.com/docs/4.0/layout/overview/#responsive-breakpoints */
@@ -73,9 +74,6 @@ body:fullscreen {
     #logo_img {
         height: 25px;
     }
-    #right_toolbar_collapse {
-        max-height: 55vh;
-    }
     #right_toolbar_collapse .width_keeper {
         width: 100%;
     }
@@ -91,6 +89,8 @@ main {
 
 #rtoolbar {
   grid-area: rside;
+  display: flex;
+  flex-direction: column;
 }
 
 .right_toolbar_collapse_button {
