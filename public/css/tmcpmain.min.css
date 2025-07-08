@@ -78,6 +78,11 @@ body:fullscreen {
         width: 100%;
     }
 }
+body:fullscreen {
+    grid-template-areas: "main";
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr;
+}
 
 header {
   grid-area: header;
@@ -102,8 +107,10 @@ main {
 
 
 .ISS_viewer{
+    grid-area: main;
     height: 100%;
-	background-color: #676767;
+    width: 100%;
+    background-color: #676767;
     overflow: hidden;
 }
 
