@@ -123,6 +123,13 @@ main {
     cursor: default;
 }
 
+/* Uncollapsed small menu gets to use full width */
+@media (max-width: 767.98px) {
+    .navbar-nav .nav-link {
+    max-width: 100% !important;
+}
+
+
 /* Blurring for error messages */
 .blurrable.blurred > * {
     transition: 1s ease-in-out all;

@@ -22,7 +22,7 @@
     <!-- Header -->
     <header>
         <!-- Navbar -->
-        <nav class="navbar navbar-expand-md navbar-dark bg-primary d-print pl-2 pl-lg-0 py-0 py-xl-1 h-100" id="navbar">
+        <nav class="navbar navbar-expand-md navbar-dark bg-primary d-print pl-2 pl-lg-0 py-0 py-xl-1 h-100" id="navbar" style="line-height:100%;">
             <!-- <div class="container-fluid"> -->
                 <a class="navbar-brand" style="padding-top:0.5vh; padding-bottom:0.5vh; outline: none;" href="https://mida-group.github.io/CytoBrowser/" target="_blank" rel="noopener noreferrer">
                     <img id="logo_img" src="misc/uulogowhiteCyBr.png">
@@ -33,20 +33,27 @@
                 </button>
                 <div class="collapse navbar-collapse" id="navbar_items">
                     <ul class="nav navbar-nav align-items-end">
-                        <li class="nav-item"><a class="nav-link font-weight-bold" style="cursor: pointer; font-size: 1.2rem;" data-toggle="modal" data-target="#image_browser">
+                        <li class="nav-item" style="margin:-3px -1px;"><a class="nav-link font-weight-bold" style="cursor: pointer; font-size: 1.2rem;max-width: 20vw; overflow:hidden; white-space:nowrap; text-overflow: ellipsis;" data-toggle="modal" data-target="#image_browser">
                             <span class="fa fa-caret-down"> </span> Image: <span id="img_name"> -</span>
                         </a></li>
-                        <li class="navbar-text font-weight-bold p-2"> Z-level: <span id="img_zlevel"> -</span></li>
-                        <li class="navbar-text font-weight-bold p-2"> Zoom: <span id="img_zoom"> -</span></li>
-                        <li class="navbar-text font-weight-bold p-2"> Rotation: <span id="img_rotation"> -</span></li>
-                        <li class="navbar-text p-2"> <span id="last_autosave"></span></li>
-                        <li class="navbar-text font-weight-bold p-2"> <span id="fps"></span></li>
+                        <li class="navbar-text font-weight-bold px-1 px-lg-2" style="margin:-3px -1px;;"> Z-level: <span id="img_zlevel"> -</span></li>
+                        <li class="navbar-text font-weight-bold px-1 px-lg-2" style="margin:-3px -1px;;"> Zoom: <span id="img_zoom"> -</span></li>
+                        <li class="navbar-text font-weight-bold px-1 px-lg-2" style="margin:-3px -1px;;"> Rotation: <span id="img_rotation"> -</span></li>
+                        <li class="navbar-text px-1 px-lg-2" style="margin:-3px -1px;;"> <span id="last_autosave"></span></li>
+                        <li class="navbar-text font-weight-bold px-1 px-lg-2" style="margin:-3px -1px;;"> <span id="fps"></span></li>
                     </ul>
                     <ul class="nav navbar-nav ml-auto">
-                        <li class="nav-item"><a class="nav-link font-weight-bold" style="cursor: pointer; font-size: 1.2rem;" data-toggle="modal" data-target="#collaboration_menu">
+                        <li class="nav-item" style="margin:-3px;">
+                            <a class="nav-link font-weight-bold" style="cursor:pointer; font-size:1.2rem; max-width: 35vw; overflow:hidden; white-space:nowrap; text-overflow: ellipsis;" data-toggle="modal" data-target="#collaboration_menu">
                                 <span class="fa fa-caret-down"> </span> Session: <span id="collab_name"> -</span>
-                        </a></li>
-                        <li class="nav-item"><a class="nav-link font-weight-bold" style="font-size: 1.2rem;"> User: <span id="user_name"> -</span></a></li>
+                            </a>
+                        </li>
+                        <li class="nav-item" style="margin:-3px;">
+                            <a class="nav-link font-weight-bold" style="font-size: 1.2rem; max-width: 20vw; overflow:hidden; white-space:nowrap; text-overflow: ellipsis;">
+                                <!-- Strange bug(?) makes "User" move up a bit if no fa-caret-down -->
+                                <span class="fa fa-caret-down" style="visibility:hidden;"></span>User: <span id="user_name"> -</span>
+                            </a>
+                        </li>
                     </ul>
                 </div>
             <!-- </div> -->
