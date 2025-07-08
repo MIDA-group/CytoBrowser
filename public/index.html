@@ -2,7 +2,7 @@
 <html>
 
 <head>
-    <link rel="shortcut icon" href="favicon.ico">
+    <link el="shortcut icon" href="favicon.ico">
     <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="css/bootstrap-slider.min.css">
     <link rel="stylesheet" type="text/css" href="css/tmcpmain.min.css">
@@ -33,9 +33,11 @@
                 </button>
                 <div class="collapse navbar-collapse" id="navbar_items">
                     <ul class="nav navbar-nav align-items-end">
-                        <li class="nav-item" style="margin:-3px -1px;"><a class="nav-link font-weight-bold" style="cursor: pointer; font-size: 1.2rem;max-width: 20vw; overflow:hidden; white-space:nowrap; text-overflow: ellipsis;" data-toggle="modal" data-target="#image_browser">
-                            <span class="fa fa-caret-down"> </span> Image: <span id="img_name"> -</span>
-                        </a></li>
+                        <li class="nav-item" style="margin:-3px -1px;">
+                            <a class="nav-link font-weight-bold" style="cursor: pointer; font-size: 1.2rem;max-width: 20vw; overflow:hidden; white-space:nowrap; text-overflow: ellipsis;" data-toggle="modal" data-target="#image_browser">
+                                <span class="fa fa-caret-down"> </span> Image: <span id="img_name"> -</span>
+                            </a>
+                        </li>
                         <li class="navbar-text font-weight-bold px-1 px-lg-2" style="margin:-3px -1px;;"> Z-level: <span id="img_zlevel"> -</span></li>
                         <li class="navbar-text font-weight-bold px-1 px-lg-2" style="margin:-3px -1px;;"> Zoom: <span id="img_zoom"> -</span></li>
                         <li class="navbar-text font-weight-bold px-1 px-lg-2" style="margin:-3px -1px;;"> Rotation: <span id="img_rotation"> -</span></li>
@@ -71,13 +73,13 @@
     <!-- position:relative needed for placement of collapse buttons -->
     <aside id="rtoolbar" class="pt-1 pl-1 pr-0" style="height: 100%; overflow: visible; position: relative;">
         <!-- Collapse right button for large display -->
-        <button type="button" class="d-none d-md-block right_toolbar_collapse_button btn btn-secondary p-0" style="bottom:1px; left:-15px;" data-toggle="collapse" data-target="#right_toolbar_collapse" onclick="this.blur();">
+        <button type="button" class="d-none d-md-block right_toolbar_collapse_button btn btn-secondary p-0 py-1 pr-1" style="bottom:1px; left:-15px;" data-toggle="collapse" data-target="#right_toolbar_collapse" onclick="this.blur();">
             <i class="collapse_rotate_180 fa fa-chevron-right p-0 px-1 m-0"></i>
-        </button>                  
+        </button>
         <!-- Collapse down button for small (narrow) displays -->
-        <button type="button" class="d-md-none right_toolbar_collapse_button btn btn-secondary p-0" style="top:-15px; right: 1px;" data-toggle="collapse" data-target="#right_toolbar_collapse" onclick="this.blur();">
+        <button type="button" class="d-md-none right_toolbar_collapse_button btn btn-secondary p-0 px-1" style="top:-15px; right: 1px;" data-toggle="collapse" data-target="#right_toolbar_collapse" onclick="this.blur();">
             <i class="collapse_rotate_180 fa fa-chevron-down p-0 px-1 m-0"></i>
-        </button>                  
+        </button>
         <div id="right_toolbar_collapse" class="collapse show card width" style="height: 100%; overflow-y:auto; overflow-x: hidden;">
             <div class="width_keeper"> <!-- To prevent updating layout on collapse -->
                 <!-- Modal access -->
