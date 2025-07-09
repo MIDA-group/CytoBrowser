@@ -14,7 +14,7 @@ const collabClient = (function(){
         _userId,
         _onCreated;
 
-    const _idleTime = 20 * 60 * 1000; // 20 minutes
+    const _idleTime = 30 * 60 * 1000; // 30 minutes
     const _keepaliveTime = 30 * 1000; // sending ping every 30s
     let _idleTimeout, _keepaliveTimeout;
 
