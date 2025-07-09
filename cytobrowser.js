@@ -122,6 +122,7 @@ app.ws("/collaboration/:id", (ws, req) => {
     });
 
     ws.on("close", (code, reason) => {
+        console.log(` ws_close: ${code}, ${reason}`);
         collaboration.leaveCollab(ws, id);
     });
 });
