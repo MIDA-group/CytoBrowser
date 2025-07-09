@@ -69,7 +69,7 @@ body:fullscreen {
         grid-template-rows:
             auto /* header */
             minmax(auto, 1fr) /* main */
-            minmax(0, auto); /* rside */
+            minmax(0, 1fr); /* rside */
     }
     #logo_img {
         height: 25px;
@@ -132,8 +132,8 @@ main {
 
 /* Uncollapsed small menu gets to use full width */
 @media (max-width: 767.98px) {
-    .navbar-nav .nav-link {
-        max-width: 100% !important;
+    .navbar-nav .nav-link {      
+        max-width: 100vw !important;
     }
 }
 

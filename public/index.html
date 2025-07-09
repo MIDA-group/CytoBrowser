@@ -5,7 +5,7 @@
     <link el="shortcut icon" href="favicon.ico">
     <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="css/bootstrap-slider.min.css">
-    <link rel="stylesheet" type="text/css" href="css/tmcpmain.min.css">
+    <link rel="stylesheet" type="text/css" href="css/cytobrowser.css">
     <link rel="stylesheet" type="text/css" href="css/cytobrowsertheme.css">
     <link rel="stylesheet" type="text/css" href="css/tm-icon-style.css">
     <title>CytoBrowser</title>
@@ -31,17 +31,17 @@
                     <span class="navbar-toggler-icon" style="min-height:12px; max-height:5vh;"></span>
                 </button>
                 <div class="collapse navbar-collapse" id="navbar_items">
-                    <ul class="nav navbar-nav align-items-end">
+                    <ul class="nav navbar-nav">
                         <li class="nav-item" style="margin:-3px -1px;">
-                            <a class="nav-link font-weight-bold" style="cursor: pointer; font-size: 1.2rem;max-width: 20vw; overflow:hidden; white-space:nowrap; text-overflow: ellipsis;" data-toggle="modal" data-target="#image_browser">
+                            <a class="nav-link font-weight-bold" style="cursor: pointer; font-size: 1.2rem; max-width: 20vw; overflow:hidden; white-space:nowrap; text-overflow: ellipsis;" data-toggle="modal" data-target="#image_browser">
                                 <span class="fa fa-caret-down"> </span> Image: <span id="img_name"> -</span>
                             </a>
                         </li>
-                        <li class="navbar-text font-weight-bold px-1 px-lg-2" style="margin:-3px -1px;;"> Z-level: <span id="img_zlevel"> -</span></li>
-                        <li class="navbar-text font-weight-bold px-1 px-lg-2" style="margin:-3px -1px;;"> Zoom: <span id="img_zoom"> -</span></li>
-                        <li class="navbar-text font-weight-bold px-1 px-lg-2" style="margin:-3px -1px;;"> Rotation: <span id="img_rotation"> -</span></li>
-                        <li class="navbar-text px-1 px-lg-2" style="margin:-3px -1px;;"> <span id="last_autosave"></span></li>
-                        <li class="navbar-text font-weight-bold px-1 px-lg-2" style="margin:-3px -1px;;"> <span id="fps"></span></li>
+                        <li class="navbar-text font-weight-bold px-1 px-lg-2" style="margin:-1px -1px;"> Z-level: <span id="img_zlevel"> -</span></li>
+                        <li class="navbar-text font-weight-bold px-1 px-lg-2" style="margin:-1px -1px;"> Zoom: <span id="img_zoom"> -</span></li>
+                        <li class="navbar-text font-weight-bold px-1 px-lg-2" style="margin:-1px -1px;"> Rotation: <span id="img_rotation"> -</span></li>
+                        <li class="navbar-text px-1 px-lg-2" style="margin:-1px -1px;"> <span id="last_autosave"></span></li>
+                        <li class="navbar-text font-weight-bold px-1 px-lg-2" style="margin:-1px -1px;"> <pre id="fps" style="margin:0;padding:0;"></pre></li>
                     </ul>
                     <ul class="nav navbar-nav ml-auto">
                         <li class="nav-item" style="margin:-3px;">
@@ -127,7 +127,7 @@
 
                     <div class="m-0 my-1 my-xl-2">
                         <div class="collapse card" id="visualization_collapse">
-                            <div class="card-body px-2 px-lg-3">
+                            <div class="card-body px-2 px-lg-3 py-2 pt-3">
                                 <h6 class="card-subtitle text-muted">Marker size</h6>
                                 <span class="ml-2">
                                     &nbsp;0 <input id="marker_size_slider" style="width:68%;" type="text" data-slider-min="0" data-slider-max="2" data-slider-step="0.1" data-slider-value="1"/> &nbsp;2
@@ -135,7 +135,7 @@
                                 </span>
                             </div>
                             <hr class="m-2">
-                            <div class="card-body px-2 px-lg-3">
+                            <div class="card-body px-2 px-lg-3 py-2">
                                 <h6 class="card-subtitle text-muted">Brightness</h6>
                                 <span class="ml-2">
                                     -1 <input id="brightness_slider" style="width:68%;" type="text" data-slider-min="-1" data-slider-max="1" data-slider-step="0.1" data-slider-value="0"/> &nbsp;1
@@ -148,7 +148,7 @@
                                 </span>
                             </div>
                             <hr class="m-2">
-                            <div class="card-body px-2 px-lg-3">
+                            <div class="card-body px-2 px-lg-3 py-1">
                                 <div class="custom-control custom-switch">
                                     <input type="checkbox" class="custom-control-input" id="fps_switch">
                                     <label class="custom-control-label px-1" for="fps_switch">Show FPS counter</label>
@@ -217,7 +217,7 @@
                                     </td></tr>
                                 </tbody>
                             </table>
-                            <div class="card-body p-2" id="global_comments">
+                            <div class="card-body p-0 px-2 pb-1" id="global_comments">
                                 <!-- Comments -->
                             </div>
                         </div>

@@ -344,7 +344,7 @@ const tmappUI = (function(){
                             fps = Math.round(1000/((performance.now() - requestTime)));
                         }
                         pixiFPS=Math.round(PIXI.Ticker.shared.FPS);
-                        $("#fps").text(`FPS: ${fps} (${pixiFPS})`);
+                        $("#fps").text(`FPS: ${String(fps).padStart(3)} (${String(pixiFPS).padStart(3)})`);
                         requestTime = time;
     
                         window.requestAnimationFrame((timeRes) => loop(timeRes));
