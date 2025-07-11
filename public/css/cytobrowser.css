@@ -68,8 +68,8 @@ body:fullscreen {
         grid-template-columns: 1fr;
         grid-template-rows:
             auto /* header */
-            minmax(auto, 1fr) /* main */
-            minmax(0, 1fr); /* rside */
+            minmax(50vh, 1fr) /* main */
+            minmax(0, auto); /* rside */
     }
     #logo_img {
         height: 25px;
