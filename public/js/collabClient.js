@@ -2,6 +2,7 @@
  * Clientside functions for collaborating.
  * @namespace collabClient
  */
+
 const collabClient = (function(){
     "use strict";
     let _ws,
@@ -267,6 +268,7 @@ const collabClient = (function(){
 
     function _attemptReconnect() {
         console.info(`Attempting to reconnect to ${_collabId}.`);
+        _attemptReconnect.lastAttempt=Date.now();
         connect(_collabId, getDefaultName(), false);
     }
 
@@ -374,6 +376,7 @@ const collabClient = (function(){
      * @param {boolean} askAboutInclude Whether or not the user should be
      * prompted about the inclusion of annotations.
      */
+    const retryCount = (function () { let i = 0; const fun=()=>++i; fun.get=()=>i; fun.set=(x)=>{i=x;}; return fun; })();
     function connect(id, name=getDefaultName(), include=false, askAboutInclude=false) {
         tmappUI.displayImageError("loadingcollab");
         if (_ws) {
@@ -391,6 +394,7 @@ const collabClient = (function(){
             const ws = new WebSocket(wsProtocol+address);
             ws.onopen = function(event) {
                 console.info(`Successfully connected to collaboration ${id}.`);
+                retryCount.set(0);
                 tmappUI.clearImageError();
 
                 _ws = ws;
@@ -411,7 +415,7 @@ const collabClient = (function(){
                 }
             }
 
-            const count = (function () { let i = 1; return () => i++; })();
+            const count = (function () { let i = 0; return () => ++i; })();
             ws.onmessage = function(event) {
                 // console.log('Msg: ',count());
                 if (event.data !== "__pong__") {
@@ -421,17 +425,31 @@ const collabClient = (function(){
                 }
             }
             ws.onclose = function(event) {
+                console.info(`Lost connection to server with code ${event.code}`)
                 _stopKeepalive();
                 if (event.code === 1000) {
                     _destroy();
+                    return;
                 }
-                else {
-                    tmappUI.displayImageError("loadingcollab");
-                    const title = event.code === 4000 ?
-                        "Connection closed due to inactivity"
-                        : "Lost connection to the server";
-                    setTimeout(() => _promptReconnect(title), 2000);
+                if (event.code === 1006) { //1006: 'Abnormal Closure'
+                    const now = Date.now();
+                    if (!_attemptReconnect.lastAttempt || now - _attemptReconnect.lastAttempt > 5000) { // 5 seconds
+                        console.info('Trying auto-reconnect');
+                        _attemptReconnect();
+                        return;
+                    }
+                    else {
+                        console.info(`Reconnect apparently not successful ${retryCount()}`);
+                        if (retryCount.get()<3) {
+                            setTimeout(_attemptReconnect,2000);
+                            return;
+                        }
+                    }
                 }
+                const title = event.code === 4000 ?
+                    "Connection closed due to inactivity"
+                    : "Lost connection to the server";
+                _promptReconnect(title);
             }
         });
     }
