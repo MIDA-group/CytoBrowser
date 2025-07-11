@@ -338,8 +338,19 @@ const tmapp = (function() {
             };
         }
 
-        //OSD handlers have to be registered using MouseTracker OSD objects
-        _mouseHandler = new OpenSeadragon.MouseTracker({
+        // //OSD handlers have to be registered using MouseTracker OSD objects
+        // _mouseHandler = new OpenSeadragon.MouseTracker({
+        //     element: viewer.canvas,
+        //     clickHandler: clickHandler,
+        //     dblClickHandler: dblClickHandler,
+        //     moveHandler: moveHandler,
+        //     enterHandler: insideHandler(true),
+        //     exitHandler: insideHandler(false),
+        //     pressHandler: heldHandler(true),
+        //     releaseHandler: heldHandler(false)
+        // }).setTracking(true);
+
+        _mouseHandler = {
             element: viewer.canvas,
             clickHandler: clickHandler,
             dblClickHandler: dblClickHandler,
@@ -348,7 +359,35 @@ const tmapp = (function() {
             exitHandler: insideHandler(false),
             pressHandler: heldHandler(true),
             releaseHandler: heldHandler(false)
-        }).setTracking(true);
+        }
+
+        viewer.addHandler('canvas-click', function(event) {
+            clickHandler(event);
+        });
+
+        viewer.addHandler('canvas-double-click', function(event) {
+            dblClickHandler(event);
+        });
+
+        viewer.addHandler('canvas-enter', function(event) {
+            insideHandler(true)(event);
+        });
+
+        viewer.addHandler('canvas-exit', function(event) {
+            insideHandler(false)(event);
+        });
+
+        viewer.addHandler('canvas-press', function(event) {
+            heldHandler(true)(event);
+        });
+
+        viewer.addHandler('canvas-release', function(event) {
+            heldHandler(false)(event);
+        });
+
+        viewer.addHandler('canvas-drag', function(event) {
+            moveHandler(event);
+        });
 
         // Add hook to scroll without zooming, didn't seem possible without
         function scrollHook(event){
@@ -416,30 +455,11 @@ const tmapp = (function() {
             //Set better aspect ratio of navigator
             function setNavSize() {
                 if (!viewer.element) return;
-                
-                viewer.navigator._resizeWithViewer = false;
-                
-                var $ = window.OpenSeadragon;
-                const viewerSize = $.getElementSize( viewer.element ); //Relying on OSD's fun
-
-                let newWidth  = viewerSize.x * viewer.navigator.sizeRatio;
-                let newHeight = viewerSize.y * viewer.navigator.sizeRatio;
-                const image=_getImage();
-                if (image) { //Aspect ratio based on image, not viewer
-                    const viewAspect = newHeight/newWidth;
-                    const imAspect = image.getBounds().height;
-                    if (imAspect < viewAspect) { //Pick the smallest
-                        newHeight = imAspect * newWidth;
-                    }
-                    else {
-                        newWidth = newHeight / imAspect;
-                    }
-                }
-                
-                viewer.navigator.element.style.width  = Math.round( newWidth ) + 'px';
-                viewer.navigator.element.style.height = Math.round( newHeight ) + 'px';
-
-                viewer.navigator.update( viewer.viewport );
+                // TODO: Remove black bars around image in the navigator.
+                // The previous logic here to resize the navigator to remove the black bars 
+                // broke when updating OSD to 5.0.1. I have not been able to remove the black
+                // bars without messing up the location of the red rectangle within indicating 
+                // the current location of the viewport. /Olle
             }
             setNavSize();
             viewer.addHandler("update-viewport", setNavSize);
