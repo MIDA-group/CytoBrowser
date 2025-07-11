@@ -2,3 +2,7 @@ node_modules
 data
 storage
 collab_storage
+
+# OpenSeadragon public access from node module install
+public/js/openseadragon/images
+public/js/openseadragon/openseadragon.min.js

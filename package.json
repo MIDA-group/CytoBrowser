@@ -10,6 +10,7 @@
     "cytobrowser": "cytobrowser.js"
   },
   "scripts": {
+    "postinstall": "mkdir -p public/js/openseadragon/images && cp node_modules/openseadragon/build/openseadragon/openseadragon.min.js public/js/openseadragon/ && cp -r node_modules/openseadragon/build/openseadragon/images/* public/js/openseadragon/images/",
     "start": "cytobrowser.js",
     "server": "cytobrowser.js",
     "cytobrowser": "cytobrowser.js",
@@ -39,6 +40,7 @@
     "fix-esm": "^1.0.1",
     "jsondiffpatch": "^0.7.3",
     "minimist": "^1.2.8",
+    "openseadragon": "^5.0.1",
     "sanitize-filename": "^1.6.3"
   }
 }
