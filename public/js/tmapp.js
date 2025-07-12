@@ -927,7 +927,7 @@ const tmapp = (function() {
                 pixelsPerMeter: pixelsPerMeter,
                 type: OpenSeadragon.ScalebarType.MICROSCOPY,
                 location: OpenSeadragon.ScalebarLocation.BOTTOM_RIGHT,
-                xOffset: 15, //to not be hidden behing the collapse button
+                xOffset: 30, //to not be hidden behing the collapse button
                 backgroundColor: "rgba(255,255,255,0.5)",
                 barThickness: 4,
                 stayInsideImage: false // Necessary for rotation to work
