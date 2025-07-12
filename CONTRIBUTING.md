@@ -32,4 +32,4 @@ Suggested to do this at the start of your workday, and mandatory before PR
 
 ### Update develop from feature branch
 1. Perform "[Update feature branch from develop](#update-feature-branch-from-develop)"
-2. Make pull request on [GitHub](https://github.com/MIDA-group/CytoBrowser/pulls)
+2. Make pull request on [GitHub](https://github.com/MIDA-group/CytoBrowser/pulls) from your `devel/feature_branch` onto `develop`
