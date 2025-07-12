@@ -60,19 +60,32 @@
         // Create the application helper and add its render target to the page
         // TODO: This will lead to running out of WebGL context, better to use separate logics, 
         //  see https://github.com/pixijs/pixijs/wiki/v5-Custom-Application-GameLoop
-        //console.log('Creating Pixi app');
-        this._app = new PIXI.Application({
-            //resizeTo: this._pixi,
-            transparent: true,
-            antialias: true,
-            sharedTicker: true
-        });
-        this._app.ticker.maxFPS = 30; // To reduce environmental impact
-        this._app.renderer.plugins.interaction.moveWhenInside = true;
-        this._app.renderer.plugins.interaction.autoPreventDefault=true;
-        turnOffTouchEvents(this._app.renderer.plugins.interaction);
 
-        this._pixi.appendChild(this._app.view);
+        try {
+            this._app = new PIXI.Application({
+                //resizeTo: this._pixi,
+                transparent: true,
+                antialias: true,
+                sharedTicker: true
+            });
+            this._app.ticker.maxFPS = 30; // To reduce environmental impact
+            this._app.renderer.plugins.interaction.moveWhenInside = true;
+            this._app.renderer.plugins.interaction.autoPreventDefault=true;
+            turnOffTouchEvents(this._app.renderer.plugins.interaction);
+
+            this._pixi.appendChild(this._app.view);
+
+            // Check if WebGL is supported
+            if (!PIXI.utils.isWebGLSupported()) {
+                console.error("WebGL is not supported. Suggested to switch to Chrome browser.");
+                alert("WebGL initialization failed. Please check your browser settings.");
+            }
+
+        } catch (error) {
+            console.error("Pixi.js failed to initialize:", error);
+            alert("Graphics initialization failed. Please check your browser settings.");
+        }
+
 
         //TODO: removeHandler functionality
         this._viewer.addHandler('animation', () => {
