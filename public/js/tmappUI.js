@@ -231,18 +231,18 @@ const tmappUI = (function(){
 
     function _initToolSelectionButtons() {
         $("#tool_marker").addClass("active");
-        overlayHandler.setActiveAnnotationOverlay("marker");
+        layerHandler.setActiveAnnotationOverlay("marker");
         annotationTool.setTool("marker");
         $("#tool_marker").click(() => {
-            overlayHandler.setActiveAnnotationOverlay("marker");
+            layerHandler.setActiveAnnotationOverlay("marker");
             annotationTool.setTool("marker");
         });
         $("#tool_rect").click(() => {
-            overlayHandler.setActiveAnnotationOverlay("region");
+            layerHandler.setActiveAnnotationOverlay("region");
             annotationTool.setTool("rect");
         });
         $("#tool_poly").click(() => {
-            overlayHandler.setActiveAnnotationOverlay("region");
+            layerHandler.setActiveAnnotationOverlay("region");
             annotationTool.setTool("poly");
         });
     }
@@ -325,9 +325,9 @@ const tmappUI = (function(){
     }
 
     function _initVisualizationSliders() {
-        $("#marker_size_slider").slider().on('change', function(e) {overlayHandler.setMarkerScale(e.value.newValue);});
-        $("#brightness_slider").slider().on('change', function(e) {tmapp.setBrightness(e.value.newValue);});
-        $("#contrast_slider").slider().on('change', function(e) {tmapp.setContrast(e.value.newValue);});
+        $("#marker_size_slider").slider({focus: true}).on('change', function(e) {layerHandler.setMarkerScale(e.value.newValue);});
+        $("#brightness_slider").slider({focus: true}).on('change', function(e) {tmapp.setBrightness(e.value.newValue);});
+        $("#contrast_slider").slider({focus: true}).on('change', function(e) {tmapp.setContrast(e.value.newValue);});
     
         $("#marker_size_reset").click(function() { $('#marker_size_slider').slider('setValue', 1, true, true);});
         $("#brightness_reset").click(function() { $('#brightness_slider').slider('setValue', 0, true, true);});
@@ -344,7 +344,7 @@ const tmappUI = (function(){
                             fps = Math.round(1000/((performance.now() - requestTime)));
                         }
                         pixiFPS=Math.round(PIXI.Ticker.shared.FPS);
-                        $("#fps").text(`FPS: ${fps} (${pixiFPS})`);
+                        $("#fps").text(`FPS: ${String(fps).padStart(3)} (${String(pixiFPS).padStart(3)})`);
                         requestTime = time;
     
                         window.requestAnimationFrame((timeRes) => loop(timeRes));
@@ -361,9 +361,10 @@ const tmappUI = (function(){
         }); 
     }
 
+
     function _initKeyboardShortcuts() {
         // Shortcuts for the pop-up context menu
-        $("#context_menu").keydown(function(){
+        $("#context_menu").keydown(function(event){
             switch(event.which) {
                 case 27: // esc
                     _closeContextMenu();
@@ -372,19 +373,20 @@ const tmappUI = (function(){
         });
 
         // Propagate keypress events to OSD (also when not focused)
-        $("#main_content").keypress(function(){
+        $("#main_content").keypress(function(event){
             tmapp.keyHandler(event);
         });
 
         //1,2,... for class selection
         //z,x for focus up down
-        $("#main_content").keydown(function(){
+        $("#main_content").keydown(function(event){
             // Prevent the keyboard shortcuts from being used when the ctrl key is down
             // This is just a simple way of letting people copy and paste, could be refined
             if (event.ctrlKey) {
                 return;
             }
             let caught=true; //Assume we use the key (setting to false in 'default')
+            //console.log('Key: ',event.which);
             switch(event.which) {
                 case 27: // esc
                     if (annotationTool.isEditing()) {
@@ -413,6 +415,10 @@ const tmappUI = (function(){
                         caught=false;
                     }
                 break;
+                // QWER...
+                case 81: // q
+                    _updateQR(true); //toggle
+                    break;
                 // ASDF...
                 case 70: // f
                     //catching 'f' to disable 'Flip' in OSD, we do not support it
@@ -484,7 +490,7 @@ const tmappUI = (function(){
         });
         $("#copy_collaboration").click(function(event) {
             $("#collaboration_start [name='collab_url']").select();
-            document.execCommand("copy");
+            document.execCommand("copy"); //TODO: FIX: Deprecated function
         });
         $("#change_session").click(function(event) {
             const image = tmapp.getImageName();
@@ -808,47 +814,165 @@ const tmappUI = (function(){
         input.removeClass("is-valid");
     }
 
-    let _urlTimeout=0;
-    let _overwriteURL=true; //High (from start and) for 1 second after setURL => replaceState instead of pushState
+
+
+    /**
+     * @param {*} fun Function to call after delay in range [0,maxWait]
+     * @param {*} maxWait Default maximume waiting time before triggered, in ms
+     * @returns fun, Function to be executed with rate limitation, always called asynchronously 
+     * fun(newWait[,args]), where newWait=null => maxWait from creation
+     * fun.clearPending() => throw them away
+     * fun.flush() => run pending now!
+     */
+    function rateLimit(fun,maxWait) {
+        let lastRun=0;
+        let pending=0;
+        let argsStore=undefined;
+        function clearPending() {
+            if (pending) {
+                clearTimeout(pending);
+                pending=0;
+            }
+        }
+        function flush() { //run pending now!
+            if (pending) {
+                console.log('Flushrun!');
+                clearPending();
+                runFun();
+            }
+        }            
+        function runFun() {
+            fun(...argsStore);
+            lastRun=Date.now();
+            pending=0;
+        }
+        const retfun=(newWait, ...args) => {
+            argsStore=args;
+            if (newWait == null) {
+                newWait=maxWait; //default wait
+            }
+            clearPending();
+            if (newWait===0) { //immediate
+                runFun();
+            }
+            else { 
+                let delay=Math.max(0,lastRun+newWait-Date.now()); 
+                //console.log(`Delay: ${delay}, MW: ${newWait}, LR:${lastRun}`);
+                console.assert(delay<=newWait);
+                if (delay>0) {
+                    console.assert(!pending);
+                    pending=setTimeout(()=>runFun(),delay);
+                }
+                else {
+                    runFun(); //no task switch
+                }
+            }
+        }
+        retfun.clearPending=clearPending;
+        retfun.flush=flush;
+        return retfun;
+    }
+
+    const _scheduleUpdateQR=rateLimit(() => {
+        const siz=120;
+        $("#qr-code").empty();
+        QrCreator.render({
+            text: window.location.href,
+            radius: 0.5, // 0.0 to 0.5
+            ecLevel: 'L', // L, M, Q, H
+            fill: '#000', // foreground color
+            background: '#eee', // color or null for transparent
+            size: siz // in pixels
+        }, document.querySelector('#qr-code'));
+        $("#qr-code")
+          .css("width",`${siz+6}`) //fit-content")
+          .children().css("margin","3px").css("margin-bottom","-2.5px").css("margin-x","4px");
+    },500); //Max wait time in ms
+
+    let _qrShowing=false;
+    function _updateQR(toggle=false) {
+        if (toggle) {
+            if (_qrShowing) $("#qr-code").css("width", "0px");
+            _qrShowing=!_qrShowing;
+        }
+        if (_qrShowing) {
+            _scheduleUpdateQR();
+        }
+    }
+
+
 
     /**
      * If next setURL to overwrite previous history state or not
      * @param {boolean} value setURL => value?replaceState:pushState
      */
-    function setOverwriteURL(value) {
+    let _overwriteURL=true; //High for 1 second after setURL => replaceState instead of pushState
+    function _setOverwriteURL(value) {
+        //console.log('SetState:',value);
         _overwriteURL=value;
     }
     
+    let _urlState=null;
+    async function _updateURL() { //replace or push _urlState
+        if (!_urlState) return; //must have state
+        if (_overwriteURL) {
+            history.replaceState({ "page": _urlState.href }, "", _urlState.href);
+            //console.log('done replace',_urlState.href);
+        }
+        else { 
+            _setOverwriteURL(true);
+            history.pushState({ "page": _urlState.href }, "", _urlState.href);
+            //console.log('done push',_urlState.href);
+        }
+        _updateQR();
+        //console.log('History length: ',history.length);
+    }
+
+    // Don't fiddle with state too often
+    const _rateLimitURL=rateLimit(_updateURL,50); //don't set url more often than every 50ms
+
+    // When we reach here, the state has already changed (or is in the middle of it)
+    // Note, there is one listener in index.html as well
+    addEventListener("popstate", (event) => {
+        //console.log('popstate!',history.length,_urlState.href,event.state,document.location.href); //Back/forward pressed from browser
+        _rateLimitURL.clearPending(); //remove any pending updates
+        
+        _lastRunURL=Date.now(); //Do not push! That (among others) prevents posibility to go forward after back
+        tmapp.processURL(document.location); //this leads to several calls to setURL
+        _lastRunURL=1; //Make next one push (not zero)
+    })
+
     /**
      * Update URL in browser
-     * Push to history if standing still long enough.
+     * Push next position to history if standing still long enough.
      * @param {string} url The new state to push.
      */
+    let _lastRunURL=0; //Start with replaceState (since already on history from start)
     function setURL(url) {
-        if (!history.state || history.state.page!=url.href) 
+        if (_urlState==url) { //If real change compared to our state (e.g. if history.back())
+            //console.log('Already stated: ',url.href);
+            return;
+        }
+
+        //Initial URL is on the history in general
+        if (_lastRunURL && (Date.now()-_lastRunURL > 2000)) { //If long ago, then Push-mode
+            _setOverwriteURL(false);            
+        }
+        _lastRunURL=Date.now();
+        _urlState=url;
+
+        if (!history.state || history.state.page!=_urlState.href) //Real change compared to what's already in browser
         {
+           // console.log('RealChange',!history.state || history.state.page,url.href);
             try {
-                if (_overwriteURL) {
-                    history.replaceState({ "page": url.href }, "", url.href);
-                }
-                else {
-                    history.pushState({ "page": url.href }, "", url.href);
-                }
+                _rateLimitURL(null,_urlState.href);
             }
-            catch (err) { //Firefox e.g. often reports "Too many calls to Location or History APIs within a short timeframe."
+            catch (err) { //"Throttling navigation" errors fixed with rateLimit
                 console.warn('setURL reported an issue: ',err); 
             }
-
-            setOverwriteURL(true);
         }
-        if (_urlTimeout) {
-            clearTimeout(_urlTimeout);
-        }
-        _urlTimeout = setTimeout(() => {
-            setOverwriteURL(false);
-            _urlTimeout = 0;
-        }, 1000); //1 second
     }
+
 
     /**
      * Check whether or not the page is in focus.
@@ -886,7 +1010,6 @@ const tmappUI = (function(){
         setFilterInfo,
         clearFilterInfo,
         setURL,
-        setOverwriteURL,
 
         inFocus
     };

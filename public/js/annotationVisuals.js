@@ -1,6 +1,6 @@
 /**
  * Namespace for handling any local visual representation of annotations.
- * I.e., updating overlayHandler and _annotationList
+ * I.e., updating layers and _annotationList
  * @namespace annotationVisuals
  */
 const annotationVisuals = (function() {
@@ -54,12 +54,12 @@ const annotationVisuals = (function() {
         }
 
         let thisVisCount=pendingVisCount(1); //add one
-        if (overlayHandler.updateAnnotations.inProgress()) {
+        if (layerHandler.updateAnnotations.inProgress()) {
             wait(1) //Using Promise.resolve() didn't give time enough for rendering
                 .then(() => {
                     if (thisVisCount==pendingVisCount()) { //if we're the last one
                         // console.log('running delayed overlay update: ',thisVisCount,pendingVisCount());
-                        overlayHandler.updateAnnotations(annotations);
+                        layerHandler.updateAnnotations(annotations);
                     }
                     else {
                         // console.log('skipping overlay update',thisVisCount,pendingVisCount());
@@ -68,7 +68,7 @@ const annotationVisuals = (function() {
         }
         else {
             //console.log('running immediate overlay update: ',thisVisCount,pendingVisCount());
-            overlayHandler.updateAnnotations(annotations);
+            layerHandler.updateAnnotations(annotations);
         }
 
         if (!_filterIsTrivial && _lastQueryWasValid) {
@@ -146,7 +146,7 @@ const annotationVisuals = (function() {
      */
     function clear(){
     	// TODO: This function shouldn't have to exist, update() should be enough (beware of filters though)
-    	overlayHandler.clearAnnotations();
+    	layerHandler.clearAnnotations();
     }
 
 

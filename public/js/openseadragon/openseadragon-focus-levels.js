@@ -123,6 +123,31 @@
     }
 
     /**
+     * Get the focus level of the of the OSD viewer, assuming the images
+     * were opened using openFocusLevels().
+     */
+    $.Viewer.prototype.getFocusLevel = function() {
+        return this._currentZ;
+    }
+    /**
+     * Get the focus index of the of the OSD viewer, assuming the images
+     * were opened using openFocusLevels().
+     */
+    $.Viewer.prototype.getFocusIndex = function() {
+        return this._zLevels.findIndex(z => this._currentZ === z); //Crock
+    }
+    /**
+     * Set the focus index of the of the OSD viewer, assuming the images
+     * were opened using openFocusLevels().
+     */
+    $.Viewer.prototype.setFocusIndex = function(zIndex) {
+        return this.setFocusLevel(this._zLevels[zIndex]); //Crock
+    }    
+    /**
+     * Convenience getter
+     */
+    Object.defineProperty($.Viewer.prototype,"nFocusLevels", { get: function() { return this._nFocusLevels; }});
+    /**
      * Set the focus level of the of the OSD viewer, assuming the images
      * were opened using openFocusLevels().
      * @param {number} z The new focus level. The value used should
@@ -173,42 +198,6 @@
         }
     }
 
-    /**
-     * Increment the focus level of the viewer if possible.
-     * @returns {number} The new focus level.
-     */
-    $.Viewer.prototype.incrementFocus = function() {
-        const nItems = this._nFocusLevels;
-        const oldZ = this._currentZ;
-        const oldZIndex = this._zLevels.findIndex(z => oldZ === z);
-        if (oldZIndex < nItems - 1) {
-            const newZIndex = oldZIndex + 1;
-            const newZ = this._zLevels[newZIndex];
-            this.setFocusLevel(newZ);
-            return newZ;
-        }
-        else {
-            return oldZ;
-        }
-    }
-
-    /**
-     * Decrement the focus level of the viewer if possible.
-     * @returns {number} The new focus level.
-     */
-    $.Viewer.prototype.decrementFocus = function() {
-        const oldZ = this._currentZ;
-        const oldZIndex = this._zLevels.findIndex(z => oldZ === z);
-        if (oldZIndex > 0) {
-            const newZIndex = oldZIndex - 1;
-            const newZ = this._zLevels[newZIndex];
-            this.setFocusLevel(newZ);
-            return newZ;
-        }
-        else {
-            return oldZ;
-        }
-    }
 
     // Wrapper of the draw function to force current focus level first
     $.TiledImage.prototype._unalteredDraw = $.TiledImage.prototype.draw;

@@ -10,6 +10,52 @@ const htmlHelper = (function() {
           ('0' + Math.min(255, Math.max(0, Math.round(parseInt(color, 16) * scale))).toString(16)).substr(-2));
     }
 
+    /**
+     * @param {*} viewer 
+     * @param {array} zLevels 
+     * @returns element for OSD.addControl
+     * Doc: https://seiyria.com/bootstrap-slider/
+     */
+    function buildFocusSlider(viewer,zLevels) {
+        if (zLevels.length<2) return; //Nothing to focus
+        const divElem = document.createElement("span");
+        viewer.addControl(divElem, {anchor: OpenSeadragon.ControlAnchor.ABSOLUTE});
+        
+        divElem.id="focus_slider_div";
+        divElem.style.position = "absolute";
+        divElem.style.left = "0px";
+        divElem.style.top = "45px";
+        divElem.style.height = "100%";
+        divElem.style.margin = "7px";
+
+        const slider = `<input class="focus_slider" id="focus_slider_${viewer.id}" data-slider-id="focus_slider_${viewer.id}_internal" type="text" data-slider-orientation="vertical"/>`
+        divElem.innerHTML=slider;
+         
+        $(`#focus_slider_${viewer.id}`).slider({
+                reversed:true,
+                focus: true,
+                min:0,
+                max:zLevels.length-1,
+                value:tmapp.getFocusIndex(viewer),
+                formatter: (val) => zLevels[val]
+            })
+            .on('change', (data) => {
+                tmapp.setFocusIndex(data.value.newValue,viewer);
+            });
+    
+        $(`#focus_slider_${viewer.id}_internal`)
+            .addClass("focus_slider_internal")
+            .css("height","max(100px,10%)");
+    }
+
+    function updateFocusSlider(viewer,val0) {
+        const obj=$(`#focus_slider_${viewer.id}`);
+        if (!obj) return;
+        obj.slider('setValue', val0);
+        viewer.setControlsEnabled(); //Show controls, similar as for panning using keyboard
+    }
+
+
     function _annotationButtonRow(id, closeFun) {
         const row = $(`
                 <div class="row mt-4">
@@ -117,7 +163,7 @@ const htmlHelper = (function() {
             </div>
         `);
         const select = container.find("select");
-        const zLevels = tmapp.getZLevels();
+        const zLevels = tmapp.getZLevels(); //of _viewer
         zLevels.forEach(z => {
             const selected = annotation.z === z;
             const option = $(`
@@ -261,7 +307,7 @@ const htmlHelper = (function() {
     function _commentInputAlt(inputFun) {
         const container = $(`
             <div class="input-group">
-                <textarea class="form-control" rows="1" style="resize: vertical;"></textarea>
+                <textarea name="comment" class="form-control" rows="1" style="resize: vertical;"></textarea>
                 <div class="input-group-append">
                     <button type="button" class="btn btn-primary">Add comment</button>
                 </div>
@@ -271,11 +317,11 @@ const htmlHelper = (function() {
         submitButton.click(() => {
             const textarea = container.find("textarea");
             const body = textarea.val();
-	    if (body.length > 0) {
-                textarea.val("");
-                inputFun(body);
-            }
-        });
+            if (body.length > 0) {
+                    textarea.val("");
+                    inputFun(body);
+                }
+            });
         container.keypress(e => e.stopPropagation());
         container.keyup(e => e.stopPropagation());
         container.keydown(e => {
@@ -300,7 +346,7 @@ const htmlHelper = (function() {
                 </div>
             </div>
         `);
-	 const submitButton = container.find("button");
+	    const submitButton = container.find("button");
         submitButton.click(() => {
             const textarea = container.find("textarea");
             const body = textarea.val();
@@ -313,7 +359,7 @@ const htmlHelper = (function() {
             e.stopPropagation();
             if ((e.code === "Enter" || e.code === "NumpadEnter") && !e.shiftKey) {
                 e.preventDefault();
-		submitButton.click();
+		        submitButton.click();
             }
             else if (e.code === "Escape") {
                 container.parent().parent().focus();
@@ -587,11 +633,14 @@ const htmlHelper = (function() {
     }
 
     return {
-        buildCommentSection: buildCommentSection,
-        buildCommentSectionAlt: buildCommentSectionAlt,
-        buildAnnotationSettingsMenu: buildAnnotationSettingsMenu,
-        buildClassSelectionButtons: buildClassSelectionButtons,
-        buildCollaboratorList: buildCollaboratorList,
-        buildImageBrowser: buildImageBrowser
+        //buildCommentSection,  //Seemingly not in use 
+        buildCommentSectionAlt,
+        buildAnnotationSettingsMenu,
+        buildClassSelectionButtons,
+        buildCollaboratorList,
+        buildImageBrowser,
+
+        buildFocusSlider,
+        updateFocusSlider
     };
 })();

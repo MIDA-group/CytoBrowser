@@ -51,13 +51,13 @@ const annotationTool = (function() {
 
         function _updatePending() {
             const annotation = _getAnnotation();
-            overlayHandler.updatePendingRegion(annotation);
+            layerHandler.topLayer().updatePendingRegion(annotation);
         }
 
         function reset() {
             _startPoint = null;
             _endPoint = null;
-            overlayHandler.updatePendingRegion(null);
+            layerHandler.topLayer().name === "region" && layerHandler.topLayer().updatePendingRegion(null);
             _clicks = 0;
         }
 
@@ -144,13 +144,13 @@ const annotationTool = (function() {
 
         function _updatePending() {
             const annotation = _getAnnotation([..._points, _nextPoint]);
-            overlayHandler.updatePendingRegion(annotation);
+            layerHandler.topLayer().updatePendingRegion(annotation);
         }
 
         function reset() {
             _points = [];
             _nextPoint = null;
-            overlayHandler.updatePendingRegion(null);
+            layerHandler.topLayer().name === "region" && layerHandler.topLayer().updatePendingRegion(null);
         }
 
         let recentTap=false; // Avoid double-tap creating two vertices

@@ -7,8 +7,8 @@ trap 'echo Error $? on line $LINENO; trap - ERR; return 2>/dev/null || exit' ERR
 
 
 #Download an example image - HER2 FISH, fluorescence, 3 channels, 13 Z-planes; credited to Yves Sucaet
-wget -nc http://openslide.cs.cmu.edu/download/openslide-testdata/Zeiss/Zeiss-1-Stacked.zvi
 file="Zeiss-1-Stacked.zvi"
+curl -L -o "${file}" -C - https://openslide.cs.cmu.edu/download/openslide-testdata/Zeiss/Zeiss-1-Stacked.zvi
 name="${file%.*}"
 
 #Verify the image size
@@ -25,13 +25,13 @@ for i in {0..12}; do
 done
 
 
-#Using libvips to create Deep Zoom images (dzi)
+#Using libvips (https://www.libvips.org/install.html) to create Deep Zoom images (dzi)
 mkdir -p data
 for a in tmp/"${name}"_z*.tiff; do
-	vips --vips-progress dzsave "$a" --tile-size 256 --overlap 0 --suffix .jpg[Q=90] data/"$(basename "$a" .tiff)"
-	rm "$a"
+	vips --vips-progress dzsave "$a" --tile-size 256 --overlap 0 --suffix '.jpg[Q=90]' data/"$(basename "$a" .tiff)"
+	rm -f "$a"
 done
 rmdir --ignore-fail-on-non-empty tmp
 
 
-xdg-open http://localhost:8080/?image="${name}"
+printf "\nTo directly open this image, run:\n node cytobrowser.js --open-browser --query 'image=${name}'\n"

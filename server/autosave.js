@@ -134,7 +134,14 @@ module.exports = function(dir) {
         throw new Error("No autosave directory specified!");
     }
     autosaveDir = dir;
-    fs.mkdirSync(autosaveDir, {recursive: true});
+    try {
+        if(fs.mkdirSync(autosaveDir, {recursive: true})) {
+            console.info('Created annotation directory: ',autosaveDir);
+        }
+    } catch (e) {
+        console.error(`\nError: Failed to create or access annotation directory '${autosaveDir}'\n\n\n`);
+        throw e;
+    }
     return {
         loadAnnotations: loadAnnotations,
         saveAnnotations: saveAnnotations,

@@ -1,7 +1,7 @@
 /**
  * Namespace for handling the region editing functionality, intended to
  * make it easier to turn it on and off from other parts of the code.
- * While overlayHandler has public functions for enabling and disabling
+ * While regionLayer has public functions for enabling and disabling
  * editing controls for regions, these are only intended for this
  * namespace, as this namespace is also used to make sure that only one
  * region is being edited at a time.
@@ -12,8 +12,12 @@
 const regionEditor = (function() {
     let _currentlyEditedRegionId = null;
 
-    
-    function isEditingRegion() {
+    /**
+     * @param {number} [id] 
+     * @returns {boolean} - if currently edting any/given region
+     */
+    function isEditingRegion(id=null) {
+        if (id) return _currentlyEditedRegionId === id;
         return _currentlyEditedRegionId !== null;
     }
 
@@ -26,7 +30,7 @@ const regionEditor = (function() {
     function startEditingRegion(id) {
         stopEditingRegion();
         _currentlyEditedRegionId = id;
-        overlayHandler.startRegionEdit(id);
+        layerHandler.topLayer().startRegionEdit(id);
     }
 
     /**
@@ -36,7 +40,7 @@ const regionEditor = (function() {
      */
     function stopEditingRegion() {
         if (isEditingRegion()) {
-            overlayHandler.stopRegionEdit(_currentlyEditedRegionId);
+            layerHandler.topLayer().stopRegionEdit(_currentlyEditedRegionId);
             _currentlyEditedRegionId = null;
             return true;
         }

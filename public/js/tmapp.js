@@ -10,20 +10,24 @@ const tmapp = (function() {
     const _optionsOSD = {
         id: "ISS_viewer", //cybr_viewer
         prefixUrl: "js/openseadragon/images/", //Location of button graphics
-        navigatorSizeRatio: 1,
         wrapHorizontal: false,
         showNavigator: true,
         navigatorPosition: "BOTTOM_LEFT",
-        navigatorSizeRatio: 0.25,
+        navigatorSizeRatio: 0.3,
+        navigatorMaintainSizeRatio: true, 
         animationTime: 0.0,
         blendTime: 0,
         maxImageCacheCount: 800, //need more for z-stacks
         minZoomImageRatio: 1,
         maxZoomPixelRatio: 4,
         gestureSettingsMouse: {clickToZoom: false, dblClickToZoom: false},
-        gestureSettingsTouch: {clickToZoom: false, dblClickToZoom: false},
+        gestureSettingsTouch: {clickToZoom: false, dblClickToZoom: false}, //, pinchRotate: true, flickEnabled:true, flickMomentum:1, flickMinSpeed:10},
         gestureSettingsPen: {clickToZoom: false, dblClickToZoom: false},
         gestureSettingsUnknown: {clickToZoom: false, dblClickToZoom: false},
+
+        springStiffness:        30,
+        animationTime:          2,
+
         zoomPerClick: 1.4,
         constrainDuringPan: true,
         visibilityRatio: 1,
@@ -35,10 +39,10 @@ const tmapp = (function() {
         preload: true
     };
 
-    let _currentImage,
-        _images,
+    let _currentImage = null, //a focus stack
+        _images, //list of images from image browser
         _collab,
-        _viewer,
+        _viewer, //the OSD-viewer
         _currState = {
             x: 0.5,
             y: 0.5,
@@ -54,21 +58,24 @@ const tmapp = (function() {
             held: false,
             inside: false
         },
-        _disabledControls,
-        _availableZLevels,
+        _disabledControls=false, //showing controls and navigator
+        _availableZLevels, //how is this different from _currentImage.zLevels?
         _mouseHandler,
         _currentMouseUpdateFun=null;
 
-    function _getFocusIndex() {
-        return _currState.z + Math.floor(_currentImage.zLevels.length / 2);
-    }
 
+    //z = index-ofs
     function _setFocusLevel(z) {
         const count = _viewer.world.getItemCount();
-        const ofs = Math.floor(_currentImage.zLevels.length / 2);
+        const ofs = Math.floor(count / 2);
         z = Math.min(Math.max(z,-ofs),count-1-ofs);
-        _viewer.setFocusLevel(z);
-        _currState.z = z;
+        setFocusIndex(z+ofs);
+    }
+    function getFocusIndex() {
+        return  _viewer.getFocusIndex(); //From the focus-levels plugin
+    }
+    function setFocusIndex(z0) {
+        _viewer.setFocusIndex(z0);
         _updateFocus();
     }
 
@@ -76,11 +83,19 @@ const tmapp = (function() {
         if (!_viewer) {
             throw new Error("Tried to update focus of nonexistent viewer.");
         }
-        const index = _getFocusIndex();
-        tmappUI.setImageZLevel(_currentImage.zLevels[index]);
-        coordinateHelper.setImage(_viewer.world.getItemAt(index));
+        const ofs = Math.floor(_viewer.nFocusLevels / 2);
+        const index = getFocusIndex();
+        _currState.z = index-ofs;
+
+        htmlHelper.updateFocusSlider(_viewer,index); 
+        tmappUI.setImageZLevel(_currentImage.zLevels[index]); //Write in UI
+        coordinateHelper.setImage(_viewer.world.getItemAt(index)); 
         _updateCollabPosition();
         _updateURLParams();
+    }
+
+    function _getImage() {
+         return _currentImage && _viewer.world.getItemAt(getFocusIndex());
     }
 
     function setBrightness(b) {
@@ -118,7 +133,7 @@ const tmapp = (function() {
         const zoom = _viewer.viewport.getZoom();
         const maxZoom = _viewer.viewport.getMaxZoom();
         const size = _viewer.viewport.getContainerSize();
-        overlayHandler.setOverlayScale(zoom, maxZoom, size.x, size.y);
+        layerHandler.setZoom(zoom, maxZoom, size.x, size.y);
         tmappUI.setImageZoom(Math.round(zoom*10)/10);
         _currState.zoom = zoom;
 
@@ -142,7 +157,7 @@ const tmapp = (function() {
             throw new Error("Tried to update rotation of nonexistent viewer.");
         }
         const rotation = _viewer.viewport.getRotation();
-        overlayHandler.setOverlayRotation(rotation);
+        layerHandler.setRotation(rotation);
         tmappUI.setImageRotation(rotation);
         _currState.rotation = rotation;
         _updateCollabPosition();
@@ -218,6 +233,7 @@ const tmapp = (function() {
     }
 
     function _updateURLParams() {
+        //console.log('UpdateURLS',_currState);
         tmappUI.setURL(makeURL(_currState));
     }
 
@@ -291,7 +307,7 @@ const tmapp = (function() {
             }
         };
 
-        // Similar naming convention as in overlayHandler
+        // Similar naming convention as in layerHandlers
         function updateMousePos() {
             if (!_cursorStatus.held) { // Drag does not change location in image
                 const pos = coordinateHelper.webToViewport(mouse_pos);
@@ -336,6 +352,7 @@ const tmapp = (function() {
 
         // Add hook to scroll without zooming, didn't seem possible without
         function scrollHook(event){
+            // Ctrl scroll -> Focus change
             if (event.originalEvent.ctrlKey) {
                 event.preventDefaultAction = true;
                 if (event.scroll > 0) {
@@ -345,15 +362,18 @@ const tmapp = (function() {
                     decrementFocus();
                 }
             }
+            // Alt scroll -> MarkerSize change
+            if (event.originalEvent.altKey) {
+                event.preventDefaultAction = true;
+                const slider = $('#marker_size_slider');
+                const markerScale = slider.slider('getValue');
+                slider.slider('setValue',markerScale+0.1*Math.sign(event.scroll),true,true);
+            }
+            // Shift scroll -> Rotate
             if (event.originalEvent.shiftKey) {
                 event.preventDefaultAction = true;
                 const rotation = _currState.rotation;
-                if (event.scroll > 0) {
-                    _viewer.viewport.setRotation(rotation + 15);
-                }
-                else if (event.scroll < 0) {
-                    _viewer.viewport.setRotation(rotation - 15);
-                }
+                _viewer.viewport.setRotation(rotation + 15*Math.sign(event.scroll));
             }
         };
 
@@ -366,15 +386,20 @@ const tmapp = (function() {
         ]});
     }
 
-    function _addHandlers (viewer, callback) {
+    function _addHandlers(viewer, callback) {
+        var context_menu_node = null;
         // Change-of-Page (z-level) handler
         viewer.addHandler("page", _updateFocus);
         viewer.addHandler("zoom", _updateZoom);
         viewer.addHandler("pan", _updatePosition);
         viewer.addHandler("rotate", _updateRotation);
 
-        // When leaving full-screen mode, update counts
-        viewer.addHandler("full-screen", (event) => !event.fullScreen && annotationHandler && annotationHandler.updateAnnotationCounts());
+        // Store and add #context_menu element, s.t. we can use it in full-page/screen mode
+        viewer.addHandler("pre-full-page", (event) => {context_menu_node = document.getElementById("context_menu"); console.log('stored');});
+        viewer.addHandler("full-page", (event) => event.fullPage && context_menu_node && document.body.appendChild( context_menu_node ));
+        
+        // When leaving full-page mode, update counts
+        viewer.addHandler("full-page", (event) => !event.fullPage && annotationHandler && annotationHandler.updateAnnotationCounts());
 
         // When we're done loading
         viewer.addHandler("open", function (event) {
@@ -383,12 +408,46 @@ const tmapp = (function() {
             viewer.canvas.focus();
             viewer.viewport.goHome();
             _updateZoom();
-            _updateFocus();
+            _updateFocus(); //coordinateHelper.setImage
             _updatePosition();
             _updateRotation();
             _updateBrightnessContrast();
+
+            //Set better aspect ratio of navigator
+            function setNavSize() {
+                if (!viewer.element) return;
+                
+                viewer.navigator._resizeWithViewer = false;
+                
+                var $ = window.OpenSeadragon;
+                const viewerSize = $.getElementSize( viewer.element ); //Relying on OSD's fun
+
+                let newWidth  = viewerSize.x * viewer.navigator.sizeRatio;
+                let newHeight = viewerSize.y * viewer.navigator.sizeRatio;
+                const image=_getImage();
+                if (image) { //Aspect ratio based on image, not viewer
+                    const viewAspect = newHeight/newWidth;
+                    const imAspect = image.getBounds().height;
+                    if (imAspect < viewAspect) { //Pick the smallest
+                        newHeight = imAspect * newWidth;
+                    }
+                    else {
+                        newWidth = newHeight / imAspect;
+                    }
+                }
+                
+                viewer.navigator.element.style.width  = Math.round( newWidth ) + 'px';
+                viewer.navigator.element.style.height = Math.round( newHeight ) + 'px';
+
+                viewer.navigator.update( viewer.viewport );
+            }
+            setNavSize();
+            viewer.addHandler("update-viewport", setNavSize);
+            viewer.navigator.addHandler("resize", setNavSize);
+
             tmappUI.clearImageError();
             callback && callback();
+            viewer.canvas.focus(); //Focus again after the callback
         });
 
         // Error message if we fail to load
@@ -419,26 +478,42 @@ const tmapp = (function() {
         //init OSD viewer
         _viewer = OpenSeadragon(_optionsOSD);
         _viewer.scalebar();
-        _addHandlers(_viewer, callback);
-
+        
         //open the DZI xml file pointing to the tiles
         const imageName = _currentImage.name;
         const imageStack = _expandImageName(imageName);
-        _openImages(imageStack);
+        _openImages(imageStack); //sets _availableZLevels
+        _addHandlers(_viewer, callback);
+        
+        htmlHelper.buildFocusSlider(_viewer, _currentImage.zLevels);
 
-        //Create a wrapper in which we place both overlays, s.t. we can switch with zIndex but still get Navigator and On-screen menu
-        const wrapper = document.createElement('div');
-        wrapper.style.position = 'absolute';
-        wrapper.style.left = 0;
-        wrapper.style.top = 0;
-        wrapper.style.width = '100%';
-        wrapper.style.height = '100%';
-        wrapper.style.zIndex = 0; //We use zIndex inside
-        _viewer.canvas.appendChild(wrapper);
+        //Create a wrapper in which we place all overlays, s.t. we can switch with zIndex but still get Navigator and On-screen menu
+        const overlayDiv = document.createElement('div');
+        overlayDiv.id = 'overlay_div';
+        overlayDiv.style.position = 'absolute';
+        overlayDiv.style.left = 0;
+        overlayDiv.style.top = 0;
+        overlayDiv.style.width = '100%';
+        overlayDiv.style.height = '100%';
+        overlayDiv.style.zIndex = 0; //We use zIndex inside
+        _viewer.canvas.appendChild(overlayDiv);
 
-        const svgOverlay = _viewer.svgOverlay(wrapper);
-        const pixiOverlay = _viewer.pixiOverlay(wrapper);
-        overlayHandler.init(svgOverlay,pixiOverlay);
+        //Since scale < image.size, it is not pixel-perfect
+        const attentionLayer = new AttentionLayer("attention", _viewer.pixiOverlay({container:overlayDiv}));
+        layerHandler.addLayer(attentionLayer);
+    
+        const svgOverlay = _viewer.svgOverlay(overlayDiv); //Shared for regions and collab (for the moment)
+        const collabLayer = new CollabLayer("collab",svgOverlay);
+        layerHandler.addLayer(collabLayer);
+        
+        const regionLayer = new RegionLayer("region",svgOverlay);
+        layerHandler.addLayer(regionLayer);
+  
+        const markerLayer = new MarkerLayer("marker", _viewer.pixiOverlay({container:overlayDiv}));
+        layerHandler.addLayer(markerLayer);
+
+
+
 
         //PIXI.Ticker.shared.add(() => fps.frame());
 
@@ -457,9 +532,10 @@ const tmapp = (function() {
         annotationHandler.clear(false);
         metadataHandler.clear();
         _viewer && _viewer.destroy();
+        layerHandler.destroy();
         $("#ISS_viewer").empty();
         coordinateHelper.clearImage();
-        _disabledControls = null;
+        _disabledControls = false;
         _availableZLevels = null;
     }
 
@@ -612,7 +688,7 @@ const tmapp = (function() {
             const min = _viewer.viewport.getMinZoom();
             const max = _viewer.viewport.getMaxZoom();
             const boundZoom = capValue(zoom, min, max);
-            _viewer.viewport.zoomTo(boundZoom, true);
+            _viewer.viewport.zoomTo(boundZoom, false); //true);
         }
         if (x !== undefined && y !== undefined) {
             const imageBounds = _viewer.world.getItemAt(0).getBounds();
@@ -632,10 +708,10 @@ const tmapp = (function() {
             const boundX = capValue(x, minX, maxX);
             const boundY = capValue(y, minY, maxY);
             const point = new OpenSeadragon.Point(boundX, boundY);
-            _viewer.viewport.panTo(point, true);
+            _viewer.viewport.panTo(point, false); // true);
         }
         if (rotation !== undefined) {
-            _viewer.viewport.setRotation(rotation);
+            _viewer.viewport.setRotation(rotation, false);
         }
         if (z !== undefined) {
             _setFocusLevel(z);
@@ -807,10 +883,8 @@ const tmapp = (function() {
             return;
         }
         _viewer.setMouseNavEnabled(true);
-        _disabledControls.forEach(control => {
-            _viewer.addControl(control.element, control);
-        });
-        _disabledControls = null;
+        _viewer.controls.forEach(e => e.element.style.visibility="visible");
+        _disabledControls = false;
     }
 
     /**
@@ -822,10 +896,9 @@ const tmapp = (function() {
         }
         _viewer.setMouseNavEnabled(false);
 
-        // Store a copy of the current control buttons
-        // API docs suggest setControlsEnabled(), doesn't seem to work
-        _disabledControls = Array.from(_viewer.controls);
-        _viewer.clearControls();
+        // API docs suggest setControlsEnabled(false), doesn't seem to work
+        _viewer.controls.forEach(e => e.element.style.visibility="hidden");
+        _disabledControls=true;
     }
 
     /**
@@ -854,6 +927,7 @@ const tmapp = (function() {
                 pixelsPerMeter: pixelsPerMeter,
                 type: OpenSeadragon.ScalebarType.MICROSCOPY,
                 location: OpenSeadragon.ScalebarLocation.BOTTOM_RIGHT,
+                xOffset: 30, //to not be hidden behing the collapse button
                 backgroundColor: "rgba(255,255,255,0.5)",
                 barThickness: 4,
                 stayInsideImage: false // Necessary for rotation to work
@@ -882,6 +956,8 @@ const tmapp = (function() {
         incrementFocus,
         decrementFocus,
         getZLevels,
+        setFocusIndex,
+        getFocusIndex,
 
         setBrightness,
         setContrast,

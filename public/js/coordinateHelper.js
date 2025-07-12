@@ -3,7 +3,7 @@
  * In order to use the functions, the active image first has to be set
  * with the {@link setImage} function. The different coordinate systems
  * that the functions convert between are described in more detail
- * {@link https://openseadragon.github.io/examples/viewport-coordinates/|here.}
+ * {@link https://openseadragon.github.io/examples/viewport-coordinates/ |here.}
  * A function for coversion with so-called overlay coordinates is also
  * included as a workaround for a bug with mouse events in the overlay.
  * @namespace coordinateHelper
@@ -79,7 +79,7 @@ const coordinateHelper = (function() {
      * @returns {Object} The same point in viewport coordinates.
      */
     function webToViewport({x, y}){
-        return imageToViewport(webToImage({x, y}));
+        return imageToViewport(webToImage({x, y})); //viewer.viewport.pointFromPixel(webPoint);
     }
 
     /**
@@ -105,9 +105,12 @@ const coordinateHelper = (function() {
     function viewportToOverlay({x, y}){
         return {x: x * 1000, y: y * 1000};
     }
-
     function overlayToViewport({x, y}){
         return {x: x / 1000, y: y / 1000};
+    }
+
+    function webToOverlay({x, y}){
+        return viewportToOverlay(webToViewport({x, y}));
     }
     function overlayToWeb({x, y}){
         return viewportToWeb(overlayToViewport({x, y}));
@@ -116,7 +119,10 @@ const coordinateHelper = (function() {
     function imageToOverlay({x, y}){
         return viewportToOverlay(imageToViewport({x, y}));
     }
-
+    function overlayToImage({x, y}){
+        return viewportToImage(overlayToViewport({x, y}));
+    }
+    
     /**
      * Convert from page coordinates, as acquired from pageX and pageY
      * on mouse events, to viewport coordinates.
@@ -186,12 +192,16 @@ const coordinateHelper = (function() {
      */
     function setImage(image) {
         _activeImage = image;
-        const bounds = image.getBounds();
+        const bounds = image.getBounds(); //in viewport coords
         const width = viewportToImage({x: 1, y: 0}).x;
         const height = bounds.height * width;
-        _minDimension = Math.min(width, height);
-    }
+        _minDimension = Math.min(width, height); //in image coords
 
+        //how about image.getContentSize() ?
+    }
+    function hasImage() {
+        return _activeImage != null;
+    }
     /**
      * Clear information about the current image.
      */
@@ -203,14 +213,22 @@ const coordinateHelper = (function() {
     return {
         imageToViewport,
         viewportToImage,
+
         imageToWeb,
         webToImage,
+
         webToViewport,
         viewportToWeb,
+
         viewportToOverlay,
         overlayToViewport,
+
         overlayToWeb,
+        webToOverlay,
+
         imageToOverlay,
+        overlayToImage,
+
         pageToViewport,
 
         getMinDimension,
@@ -218,6 +236,7 @@ const coordinateHelper = (function() {
         pointIsInsideWeb,
         pointIsInsideImage,
         setImage,
+        hasImage,
         clearImage
     };
 })();

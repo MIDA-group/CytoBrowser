@@ -11,13 +11,23 @@
         }
     }
 
-    // ----------
-    $.Viewer.prototype.pixiOverlay = function(container=this.canvas) {
-        if (this._pixiOverlayInfo) {
-            return this._pixiOverlayInfo;
-        }
-
-        this._pixiOverlayInfo = new Overlay(this, container);
+    /**
+     * Adds pixi.js overlay capability to your OpenSeadragon Viewer
+     *
+     * @param {Object} options
+     *     Allows configurable properties to be entirely specified by passing
+     *     an options object to the constructor.
+     *
+     * @param {Object} options.container
+     *     Container element to use, instead of Viewer.canvas
+     * 
+     * @param {Object} options.viewer
+     *     Use other viewer than 'this'
+     * 
+     * @returns {Overlay}
+     */
+    $.Viewer.prototype.pixiOverlay = function(options) {
+        this._pixiOverlayInfo = new Overlay(options?.viewer ?? this, options?.container);
         return this._pixiOverlayInfo;
     };
 
@@ -48,19 +58,36 @@
         container.appendChild(this._pixi);
 
         // Create the application helper and add its render target to the page
-        this._app = new PIXI.Application({
-            //resizeTo: this._pixi,
-            transparent: true,
-            antialias: true,
-            sharedTicker: true
-        });
-        this._app.ticker.maxFPS = 30; // To reduce environmental impact
-        this._app.renderer.plugins.interaction.moveWhenInside = true;
-        this._app.renderer.plugins.interaction.autoPreventDefault=true;
-        turnOffTouchEvents(this._app.renderer.plugins.interaction);
+        // TODO: This will lead to running out of WebGL context, better to use separate logics, 
+        //  see https://github.com/pixijs/pixijs/wiki/v5-Custom-Application-GameLoop
 
-        this._pixi.appendChild(this._app.view);
-        
+        try {
+            this._app = new PIXI.Application({
+                //resizeTo: this._pixi,
+                transparent: true,
+                antialias: true,
+                sharedTicker: true
+            });
+            this._app.ticker.maxFPS = 30; // To reduce environmental impact
+            this._app.renderer.plugins.interaction.moveWhenInside = true;
+            this._app.renderer.plugins.interaction.autoPreventDefault=true;
+            turnOffTouchEvents(this._app.renderer.plugins.interaction);
+
+            this._pixi.appendChild(this._app.view);
+
+            // Check if WebGL is supported
+            if (!PIXI.utils.isWebGLSupported()) {
+                console.error("WebGL is not supported. Suggested to switch to Chrome browser.");
+                alert("WebGL initialization failed. Please check your browser settings.");
+            }
+
+        } catch (error) {
+            console.error("Pixi.js failed to initialize:", error);
+            alert("Graphics initialization failed. Please check your browser settings.");
+        }
+
+
+        //TODO: removeHandler functionality
         this._viewer.addHandler('animation', () => {
             self.resize();
         });
@@ -91,6 +118,11 @@
     // ----------
     Overlay.prototype = {
         // ----------
+        destroy: function() {
+            //console.log('Destroying Pixi app');
+            this._app.destroy(true,true);
+            this._app=null;
+        },
         app: function() {
             return this._app;
         },
@@ -98,6 +130,7 @@
             return this._app.stage;  
         },
         update: function() { // Call this function whenever drawing, to allow animations to run _tickerTime 
+            if (!this.app()) return; // Destroyed (instead of running through removeHandler)
             if (performance.now()-_lastUpdateTime < 0.1) { // Ignore is less than 0.1ms since last exectuted call
                 return; // Avoid flooding
             }
@@ -120,6 +153,7 @@
 
         // ----------
         resize: function() {
+            if (!this.app()) return; // Destroyed (instead of running through removeHandler)
             let changed_size=false; 
             if (this._containerWidth !== this._viewer.container.clientWidth) {
                 this._containerWidth = this._viewer.container.clientWidth;
@@ -135,7 +169,7 @@
 
             if (changed_size) {
                 this._app.renderer.resize(this._containerWidth, this._containerHeight);
-                console.log(`pixiOverlay resize: ${this._containerWidth},${this._containerHeight}`);
+                //console.log(`pixiOverlay resize: ${this._containerWidth},${this._containerHeight}`);
             }
 
 

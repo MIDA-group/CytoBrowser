@@ -1,0 +1,191 @@
+html {
+    font-size: 15px;
+    height: 100%;
+} 
+
+/* Holy Grail Layout https://www.digitalocean.com/community/tutorials/css-css-grid-holy-grail-layout */
+/* nav goes into header */
+body {
+    display: grid;
+
+    grid-template-areas:
+      "header header"
+      "main rside";
+  
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto minmax(0, 1fr);
+ 
+    height: 100vh; /* old browsers */  
+    height: 100dvh; /* new browsers */
+    width: 100vw;
+    width: 100dvw; /* not really needed, but shouldn't harm */
+    overflow: hidden;
+}
+
+body:fullscreen {
+    display: block;
+}
+
+#logo_img {
+    height:35px; 
+    min-height:20px; 
+    max-height:8vh;
+}
+
+#right_toolbar_collapse .width_keeper {
+    width: fit-content;
+    height: 100%;
+}
+
+/* Bootstrap breakpoints: https://getbootstrap.com/docs/4.0/layout/overview/#responsive-breakpoints */
+/* xs < 576, sm < 768, md < 992, lg < 1200, xl >= 1200 */
+@media (max-width: 1299px) {
+    html {
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 1199px) {
+    html {
+        font-size: 12.5px;
+    }
+}
+
+@media (max-width: 992px) {
+    html {
+        font-size: 12px;
+    }
+}
+
+/* < sm, stack vertically, collapse down */
+@media (max-width: 768px) {
+    body {
+        grid-template-areas:
+            "header"
+            "main"
+            "rside";
+    
+        grid-template-columns: 1fr;
+        grid-template-rows:
+            auto /* header */
+            minmax(48dvh, 1fr) /* main */
+            minmax(0, auto); /* rside */
+    }
+    #logo_img {
+        height: 25px;
+    }
+    #right_toolbar_collapse .width_keeper {
+        width: 100%;
+    }
+}
+body:fullscreen {
+    grid-template-areas: "main";
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr;
+}
+
+header {
+  grid-area: header;
+}
+
+main {
+  grid-area: main;
+}
+
+#rtoolbar {
+  grid-area: rside;
+  display: flex;
+  flex-direction: column;
+}
+
+.right_toolbar_collapse_button {
+    overflow: visible; 
+    position: absolute;
+    z-index: 200;
+    padding: -30;
+}
+
+
+.ISS_viewer{
+    grid-area: main;
+    height: 100%;
+    width: 100%;
+    background-color: #676767;
+    overflow: hidden;
+}
+
+
+.focus_slider_internal {
+    opacity: 0.6;
+}
+.focus_slider_internal:hover {
+    opacity: 0.8;
+}
+
+.nav-tabs > li > a.active, .nav-tabs > li > a.active:hover, .nav-tabs > li > a.active:focus {
+    color: #555555;
+    background-color: #ffffff;
+    border: 1px solid #dddddd;
+    border-bottom-color: transparent;
+    cursor: default;
+}
+
+/* Uncollapsed small menu gets to use full width */
+@media (max-width: 767.98px) {
+    .navbar-nav .nav-link {      
+        max-width: 100vw !important;
+    }
+}
+
+
+/* Blurring for error messages */
+.blurrable.blurred > * {
+    transition: 1s ease-in-out all;
+    filter: blur(4px);
+}
+
+.blurrable > * {
+    transition: 1s ease-in-out all;
+}
+
+
+.collapse_rotate_90 {
+    transition: .3s transform ease-in-out;
+}
+.collapsed .collapse_rotate_90 {
+    transform: rotate(90deg);
+}
+
+.collapse_rotate_180 {
+    transition: .3s transform ease-in-out;
+}
+.collapsed .collapse_rotate_180 {
+    transform: rotate(180deg);
+}
+
+
+/* See also https://stackoverflow.com/questions/47738975/customizing-the-collapse-transition-in-bootstrap-4 */
+.collapsing.width {
+    transition-property: width;
+    width: 0;
+    height: 100%;
+}
+
+
+/* Discrete links in our annotation-list */
+#annotation-list td a { 
+    display: block;
+    color: inherit;
+    text-decoration: inherit;
+}
+
+/* Disable text selection, https://stackoverflow.com/questions/11237936/mobile-web-disable-long-touch-taphold-text-selection */
+.notSelectable {
+    -webkit-touch-callout:none;
+    -webkit-user-select:none;
+    -khtml-user-select:none;
+    -moz-user-select:none;
+    -ms-user-select:none;
+    user-select:none;
+    -webkit-tap-highlight-color:rgba(0,0,0,0);
+}

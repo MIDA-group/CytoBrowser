@@ -1,7 +1,7 @@
 const fs = require("fs");
 const fsPromises = fs.promises;
 const path = require("path");
-const jsondiffpatch = require('jsondiffpatch'); // Much faster than 'diff'
+const jsondiffpatch = require("fix-esm").require('jsondiffpatch'); // Much faster than 'diff'
 
 const maxHistoryEntries = 50; // Set as negative to remove limit
 
@@ -85,20 +85,23 @@ function assert(condition, message="Assertion failed") {
  */
 function extendHistory(history, newData, oldData) {
     if (oldData) { //If we have oldData, that means we have existing history
-        assert(history.history.length>0,"Corrupt history file");
+        if (history.history.length>0) {
+            const delta = jsondiffpatch.diff(newData, oldData); // Several orders of magnitude faster than 'diff.createPatch'
+            if (delta === undefined) { // Equal data; typically from reverting twice to the same 
+                //console.info('Equal!');
+                return false;
+            }
+            const revertPatch = JSON.stringify(delta);
 
-        const delta = jsondiffpatch.diff(newData, oldData); // Several orders of magnitude faster than 'diff.createPatch'
-        if (delta === undefined) { // Equal data; typically from reverting twice to the same 
-            //console.info('Equal!');
-            return false;
+            // Update the last entry in the history by suitable patch
+            const lastEntry=history.history[history.history.length-1];
+            // assert(lastEntry.patch==="{}");
+            // assert(lastEntry.nAnnotations===oldData.nAnnotations);
+            lastEntry.patch=revertPatch;
         }
-        const revertPatch = JSON.stringify(delta);
-
-        // Update the last entry in the history by suitable patch
-        const lastEntry=history.history[history.history.length-1];
-        // assert(lastEntry.patch==="{}");
-        // assert(lastEntry.nAnnotations===oldData.nAnnotations);
-        lastEntry.patch=revertPatch;
+        else {
+            console.error(`Error: History file missing or corrupt [${oldData.id}]; starting new history.`);
+        }
     }
 
     // Entry for the current state

@@ -11,6 +11,21 @@ process.on('uncaughtException', function(e) {
     throw e;
 });
 
+// Open URL on Win,Mac,Linux
+const { exec } = require('node:child_process');
+function open(url) {
+    const cmd = (process.platform === "win32") ? 'start' : (process.platform === "darwin") ? 'open' : 'xdg-open';
+    const command = cmd+' "'+url+'"';
+    console.info("Running: ",command);
+    exec(command, (error, stdout, stderr) => {
+        if (error) {
+            console.error(`\nFailed to open browser: ${error}`);
+            console.error(`Please manually open in your preferred browser: ${url}`);
+            return;
+        }
+    });
+}
+
 // Handle command line arguments
 const argv = require("minimist")(process.argv.slice(2), {
     boolean: ['open-browser'],
@@ -21,11 +36,13 @@ const port = argv._[1] || 0; //zero = 'arbitrary unused port'
 const collabDir = argv.collab || argv.c || "./collab_storage";
 const metadataDir = argv.metadata || argv.m || "./metadata/json";
 const dataDir = argv.data || argv.d || "./data";
+const urlQuery = argv.query? "?"+argv.query : "";
 if (argv.h || argv.help) {
-    console.info(`Usage: node cytobrowser.js [--open-browser] hostname port ` +
-    `[-c collab storage path = "./collab_storage"] ` +
-    `[-m image json metadata path = "./metadata/json"] ` +
-    `[-d image data path = "./data"]`);
+    console.info(`Usage: node cytobrowser.js [--open-browser] hostname port` +
+    ` [-c collab storage path = "./collab_storage"]` +
+    ` [-m image json metadata path = "./metadata/json"]` +
+    ` [-d image data path = "./data"]` +
+    ` [--query url-query-string (only with '--open-browser')]` );
     return;
 }
 
@@ -33,7 +50,6 @@ if (argv.h || argv.help) {
 const express = require("express");
 const availableImages = require("./server/availableImages")(dataDir);
 const collaboration = require("./server/collaboration")(collabDir, metadataDir);
-const open = require("open");
 const { version : serverVersion } = require("./package.json");
 
 // Initialize the server
@@ -106,6 +122,7 @@ app.ws("/collaboration/:id", (ws, req) => {
     });
 
     ws.on("close", (code, reason) => {
+        console.log(` ws_close: ${code}, ${reason}`);
         collaboration.leaveCollab(ws, id);
     });
 });
@@ -124,6 +141,6 @@ const listener = app.listen(port, hostname, () => {
 
     // Opens the URL in the default browser.
     if (argv['open-browser']) {
-        open(`http://${address}:${port}`);  
+        open(`http://${address}:${port}/${urlQuery}`);  
     }
 });
