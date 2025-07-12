@@ -433,7 +433,7 @@ const collabClient = (function(){
                 }
                 if (event.code === 1006) { //1006: 'Abnormal Closure'
                     const now = Date.now();
-                    if (!_attemptReconnect.lastAttempt || now - _attemptReconnect.lastAttempt > 5000) { // 5 seconds
+                    if (!_attemptReconnect.lastAttempt || now - _attemptReconnect.lastAttempt > 4000) { // 4 seconds
                         console.info('Trying auto-reconnect');
                         _attemptReconnect();
                         return;
