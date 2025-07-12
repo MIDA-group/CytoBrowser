@@ -1,7 +1,7 @@
 const fs = require("fs");
 const fsPromises = fs.promises;
 const path = require("path");
-const jsondiffpatch = require('jsondiffpatch'); // Much faster than 'diff'
+const jsondiffpatch = require("fix-esm").require('jsondiffpatch'); // Much faster than 'diff'
 
 const maxHistoryEntries = 50; // Set as negative to remove limit
 
