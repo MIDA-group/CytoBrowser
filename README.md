@@ -13,7 +13,7 @@ Origintating as a fork[^1] of [TissUUmaps](https://github.com/wahlby-lab/TissUUm
 
 #### Express setup
 1. Install [Node.js](https://nodejs.org/en/download) 
-2. Run `npx cytobrowser`[^2]
+2. Run `npx cytobrowser --open-browser`[^2]
 [^2]: If (on Windows) you get `ENOENT: no such file or directory...`, the try running `npm install -g npm`
 
 Done! 😊
@@ -61,12 +61,15 @@ ssh -L 8080:localhost:8080 remote.host
 ### Branches
 Current list of branches:
 * **master** - Main stable branch, official releases are from this branch;
-* devel - Main development branch, less stable but more up-to-date;
+* **develop** - Main development branch, less stable but more up-to-date - most often a good choice;
 * devel/multi-image - Work in progress to support multiple layers of images (for correlative multimodal analysis);
 * devel/multi-image-autoload-hack - Small add-on to hide images with suffix '_FL', and autoload them together with corresponding non-hidden images with same prefix.
 
 ### Issues
 We aim to support all modern browsers. Since development mostly utilizes the [Chrome](https://www.google.com/chrome/) browser, that one can be expected to give the least troublesome usage experience. Please don't be shy to report [issues](https://github.com/MIDA-group/CytoBrowser/issues) that you experience.
+
+### Contributing
+We are very happy for contributions to further improve CytoBrowser, take a look at [CONTRIBUTING.md](CONTRIBUTING.md) to get started.
 
 ### Citing
 If you find the CytoBrowser software useful in your research, please consider citing the following article:
