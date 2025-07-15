@@ -10,7 +10,7 @@
     "cytobrowser": "cytobrowser.js"
   },
   "scripts": {
-    "postinstall": "mkdir -p public/js/openseadragon/images && cp node_modules/openseadragon/build/openseadragon/openseadragon.min.js public/js/openseadragon/ && cp -r node_modules/openseadragon/build/openseadragon/images/* public/js/openseadragon/images/",
+    "postinstall": "node scripts/postinstall.js",
     "start": "cytobrowser.js",
     "server": "cytobrowser.js",
     "cytobrowser": "cytobrowser.js",
