@@ -6,3 +6,4 @@ collab_storage
 # OpenSeadragon public access from node module install
 public/js/openseadragon/images
 public/js/openseadragon/openseadragon.min.js
+public/js/openseadragon/openseadragon.min.js.map

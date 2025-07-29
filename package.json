@@ -10,11 +10,24 @@
     "cytobrowser": "cytobrowser.js"
   },
   "scripts": {
-    "postinstall": "node scripts/postinstall.js",
+    "postinstall": "copy-files-from-to",
     "start": "cytobrowser.js",
     "server": "cytobrowser.js",
     "cytobrowser": "cytobrowser.js",
     "version-update": "node -p 'const { version } = require(\"./package.json\"); `const clientVersion = \"${version}\";`' >| ./public/js/misc/clientVersion.js"
+  },
+  "copyFiles": [
+    {
+      "from": "node_modules/openseadragon/build/openseadragon/openseadragon.min.js{,.map}",
+      "to": "public/js/openseadragon/"
+    },
+    {
+      "from": "node_modules/openseadragon/build/openseadragon/images",
+      "to": "public/js/openseadragon/"
+    }
+  ],
+  "copyFilesSettings": {
+    "whenFileExists": "overwrite"
   },
   "repository": {
     "type": "git",
@@ -34,6 +47,7 @@
   },
   "homepage": "https://github.com/MIDA-group/CytoBrowser#readme",
   "dependencies": {
+    "copy-files-from-to": "^3.12.1",
     "express": "^5.1.0",
     "express-ws": "^5.0.2",
     "fast-xml-parser": "^5.2.5",
