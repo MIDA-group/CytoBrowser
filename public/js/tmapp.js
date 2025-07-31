@@ -130,7 +130,12 @@ const tmapp = (function() {
         if (!_viewer) {
             throw new Error("Tried to update zoom of nonexistent viewer.");
         }
-        const zoom = _viewer.viewport.getZoom();
+        let zoom = _viewer.viewport.getZoom();
+        if (zoom < _viewer.viewport.getMinZoom()) {
+            // console.log('Is this an OSD-5 bug?');
+            _viewer.viewport.zoomTo(_viewer.viewport.getMinZoom());
+            return; //This function will be called again
+        }
         const maxZoom = _viewer.viewport.getMaxZoom();
         const size = _viewer.viewport.getContainerSize();
         layerHandler.setZoom(zoom, maxZoom, size.x, size.y);
