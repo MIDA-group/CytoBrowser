@@ -460,7 +460,7 @@ const tmapp = (function() {
                 viewer.navigator.setHeight(newHeight);
             }
             setNavSize();
-            viewer.addHandler("update-viewport", setNavSize);
+            viewer.addHandler("after-resize", setNavSize);
 
             tmappUI.clearImageError();
             callback && callback();
@@ -478,7 +478,8 @@ const tmapp = (function() {
             tmappUI.displayImageError("tilefail", 1000);
         });
 
-        // What is the difference between 'update-viewport' and 'viewport-change' ?
+        // When viewport position changes (before drawing)
+        // ('update-viewport' is called after viewport is redrawn)
         viewer.addHandler('viewport-change', (event) => {
             _currentMouseUpdateFun && _currentMouseUpdateFun(); //set cursor position if view-port changed by external source
         });
