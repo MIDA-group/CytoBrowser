@@ -338,18 +338,6 @@ const tmapp = (function() {
             };
         }
 
-        // //OSD handlers have to be registered using MouseTracker OSD objects
-        // _mouseHandler = new OpenSeadragon.MouseTracker({
-        //     element: viewer.canvas,
-        //     clickHandler: clickHandler,
-        //     dblClickHandler: dblClickHandler,
-        //     moveHandler: moveHandler,
-        //     enterHandler: insideHandler(true),
-        //     exitHandler: insideHandler(false),
-        //     pressHandler: heldHandler(true),
-        //     releaseHandler: heldHandler(false)
-        // }).setTracking(true);
-
         _mouseHandler = {
             element: viewer.canvas,
             clickHandler: clickHandler,
@@ -416,13 +404,9 @@ const tmapp = (function() {
             }
         };
 
-        viewer.addViewerInputHook({hooks: [
-            {
-                tracker: "viewer",
-                handler: "scrollHandler",
-                hookHandler: scrollHook
-            }
-        ]});
+        viewer.addHandler("canvas-scroll", function(event) {
+            scrollHook(event);
+        });
     }
 
     function _addHandlers(viewer, callback) {
