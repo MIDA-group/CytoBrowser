@@ -24,9 +24,9 @@ See, e.g., https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-w
 ### Update feature branch from develop
 Suggested to do this at the start of your workday, and mandatory before PR
 1. `git switch devel/feature_branch` #you are probably already there
-2. `git remote update` #or `git fetch --all`
-3. `git rebase develop`
-4. `git mergetool` #if needed
+2. `git fetch --all` #or `git remote update` (which does the same afaik)
+3. `git rebase origin/develop`
+4. `git mergetool` + `git rebase --continue` #if needed
 5. **Test that nothing is broken!**
 6. `git push --force-with-lease` #verify that no-one else is using your feature branch
 
