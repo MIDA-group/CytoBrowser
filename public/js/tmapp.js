@@ -436,18 +436,31 @@ const tmapp = (function() {
             _updateRotation();
             _updateBrightnessContrast();
 
-            //Set better aspect ratio of navigator
+            //Set better aspect ratio of navigator, based on image, not viewer
             function setNavSize() {
                 if (!viewer.element) return;
-                // TODO: Remove black bars around image in the navigator.
-                // The previous logic here to resize the navigator to remove the black bars 
-                // broke when updating OSD to 5.0.1. I have not been able to remove the black
-                // bars without messing up the location of the red rectangle within indicating 
-                // the current location of the viewport. /Olle
+                const image=_getImage();
+                if (!image) return; //No image -> No sensible navigator
+
+                const viewerSize = window.OpenSeadragon.getElementSize( viewer.element ); //Relying on OSD's fun
+                let newWidth  = viewerSize.x * viewer.navigator.sizeRatio;
+                let newHeight = viewerSize.y * viewer.navigator.sizeRatio;
+
+                const viewAspect = newHeight/newWidth;
+                const imAspect = image.getBounds().height; //width===1.0
+                if (imAspect < viewAspect) { //Adjust as to get the smallest resulting navigator
+                    newHeight = imAspect * newWidth;
+                }
+                else {
+                    newWidth = newHeight / imAspect;
+                }
+
+                //these set navigator._resizeWithViewer=false and calls navigator.updateSize()
+                viewer.navigator.setWidth(newWidth);
+                viewer.navigator.setHeight(newHeight);
             }
             setNavSize();
             viewer.addHandler("update-viewport", setNavSize);
-            viewer.navigator.addHandler("resize", setNavSize);
 
             tmappUI.clearImageError();
             callback && callback();
