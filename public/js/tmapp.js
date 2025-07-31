@@ -130,11 +130,11 @@ const tmapp = (function() {
         if (!_viewer) {
             throw new Error("Tried to update zoom of nonexistent viewer.");
         }
-        let zoom = _viewer.viewport.getZoom();
+        const zoom = _viewer.viewport.getZoom();
         if (zoom < _viewer.viewport.getMinZoom()) {
             // console.log('Is this an OSD-5 bug?');
             _viewer.viewport.zoomTo(_viewer.viewport.getMinZoom());
-            return; //This function will be called again
+            return; //This function will be called again due to zoom change
         }
         const maxZoom = _viewer.viewport.getMaxZoom();
         const size = _viewer.viewport.getContainerSize();
@@ -928,8 +928,27 @@ const tmapp = (function() {
      * Sending events to OSDs keyboard handlers
      */
     function keyDownHandler(event) {
-        // Only arrow keys
-        _viewer.innerTracker.keyDownHandler(event);
+        let caught=true; //Assume we use the key (setting to false in 'default')
+        //console.log('Key: ',event.which);
+        switch(event.which) {
+            case 107: // NumPad +
+                // How to reach singleZoomInAction() in viewer.js?
+                _viewer.viewport.zoomBy( _viewer.zoomPerClick / 1.0 );
+                _viewer.viewport.applyConstraints();
+                break;
+            case 109: // NumPad -
+                _viewer.viewport.zoomBy( 1.0 / _viewer.zoomPerClick );
+                _viewer.viewport.applyConstraints();
+                break;
+            default:
+                caught=false; //Assume we miss the key
+        }
+        if (caught) {
+            event.preventDefault(); //prevent e.g. Firefox to open search box
+        }
+        else {
+            _viewer.innerTracker.keyDownHandler(event);
+        }
     }
     function keyHandler(event) {
         // All other OSD keys
