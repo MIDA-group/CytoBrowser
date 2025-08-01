@@ -281,7 +281,7 @@ const collabClient = (function(){
     }
 
     function _becomeIdle() {
-        if (_ws && _ws.readyState === 1) {
+        if (_ws && _ws.readyState === WebSocket.OPEN) {
             _ws.close(4000, "User was idle for too long.");
         }
     }
@@ -380,7 +380,7 @@ const collabClient = (function(){
     function connect(id, name=getDefaultName(), include=false, askAboutInclude=false) {
         tmappUI.displayImageError("loadingcollab");
         if (_ws) {
-            if (_ws.readyState === 1) {
+            if (_ws.readyState === WebSocket.OPEN) {
                 swapImage(tmapp.getImageName(), id);
             }
             disconnect();
@@ -484,14 +484,18 @@ const collabClient = (function(){
      */
     function send(msg, resetIdle=true) {
         if (_ws) {
-            if (resetIdle) {
-                _postponeIdle();
-            }
-            if (typeof(msg) === "object") {
-                _ws.send(JSON.stringify(msg));
-            }
-            else {
-                _ws.send(msg);
+            if (_ws.readyState === WebSocket.OPEN) {
+                if (resetIdle) {
+                    _postponeIdle();
+                }
+                if (typeof(msg) === "object") {
+                    _ws.send(JSON.stringify(msg));
+                }
+                else {
+                    _ws.send(msg);
+                }
+            } else {
+                console.log('Not sending msg since WebSocket not open.');
             }
         }
     }
