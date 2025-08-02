@@ -24,6 +24,18 @@
     {
       "from": "node_modules/openseadragon/build/openseadragon/images",
       "to": "public/js/openseadragon/"
+    },
+    {
+      "from": "node_modules/bootstrap/dist/js/bootstrap.bundle.min.js{,.map}",
+      "to": "public/js/bootstrap/"
+    },
+    {
+      "from": "node_modules/bootstrap/dist/css/bootstrap.min.css{,.map}",
+      "to": "public/css/"
+    },
+    {
+      "from": "node_modules/jquery/dist/jquery.slim.min.js{,.map}",
+      "to": "public/js/jquery/"
     }
   ],
   "copyFilesSettings": {
@@ -47,6 +59,7 @@
   },
   "homepage": "https://github.com/MIDA-group/CytoBrowser#readme",
   "dependencies": {
+    "bootstrap": "^4",
     "copy-files-from-to": "^3.12.1",
     "express": "^5.1.0",
     "express-ws": "^5.0.2",
