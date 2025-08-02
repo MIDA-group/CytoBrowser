@@ -36,6 +36,10 @@
     {
       "from": "node_modules/jquery/dist/jquery.slim.min.js{,.map}",
       "to": "public/js/jquery/"
+    },
+    {
+      "from": "node_modules/pixi.js/dist/browser/pixi.min.js{,.map}",
+      "to": "public/js/pixi/"
     }
   ],
   "copyFilesSettings": {
@@ -68,6 +72,7 @@
     "jsondiffpatch": "^0.7.3",
     "minimist": "^1.2.8",
     "openseadragon": "^5.0.1",
+    "pixi.js": "^6",
     "sanitize-filename": "^1.6.3"
   }
 }
