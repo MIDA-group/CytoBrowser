@@ -7,3 +7,13 @@ collab_storage
 public/js/openseadragon/images
 public/js/openseadragon/openseadragon.min.js
 public/js/openseadragon/openseadragon.min.js.map
+
+# Bootstrap public access from node module install
+public/js/bootstrap/bootstrap.bundle.min.js
+public/js/bootstrap/bootstrap.bundle.min.js.map
+public/css/bootstrap.min.css
+public/css/bootstrap.min.css.map
+
+# jQuery, comes with bootstrap4
+public/js/jquery/jquery.slim.min.js
+public/js/jquery/jquery.slim.min.js.map
