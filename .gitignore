@@ -17,3 +17,7 @@ public/css/bootstrap.min.css.map
 # jQuery, comes with bootstrap4
 public/js/jquery/jquery.slim.min.js
 public/js/jquery/jquery.slim.min.js.map
+
+# PixiJS from node module install
+public/js/pixi/pixi.min.js
+public/js/pixi/pixi.min.js.map
