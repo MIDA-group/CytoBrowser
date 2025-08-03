@@ -382,6 +382,11 @@ const tmapp = (function() {
             moveHandler(event);
         });
 
+        viewer.container.addEventListener('mousemove', event => {
+            event.position = new OpenSeadragon.Point(event.offsetX,event.offsetY);
+            moveHandler(event);
+        });
+
         // Add hook to scroll without zooming, didn't seem possible without
         function scrollHook(event){
             // Ctrl scroll -> Focus change
