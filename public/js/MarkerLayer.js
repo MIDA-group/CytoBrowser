@@ -47,6 +47,9 @@ class MarkerLayer extends OverlayLayer {
             });
         }
     }
+    
+    #lastLogTime = 0;
+    #logThrottleDelay = 500;
 
     #currentMouseUpdateFun = null;
 
@@ -126,7 +129,12 @@ class MarkerLayer extends OverlayLayer {
                     c.visible = c.pressed || rect.contains(webPos.x,webPos.y);
                     vis += c.visible;
                 });
-                console.log('Visible markers: ',vis);
+                // console.log('Visible markers: ',vis);
+                const now = performance.now();
+                if (now - this.#lastLogTime > this.#logThrottleDelay) {
+                    console.log('Visible markers:', vis);
+                    this.#lastLogTime = now;
+                }
             }
         }
     }
