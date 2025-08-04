@@ -37,6 +37,17 @@ class MarkerLayer extends OverlayLayer {
     #markerContainer = null;
     #markerList = [];
 
+    #drawUpdatePending = false;
+    #triggerDrawUpdate() {
+        if (!this.#drawUpdatePending) {
+            this.#drawUpdatePending = true;
+            requestAnimationFrame(() => {
+                this.#drawUpdate();
+                this.#drawUpdatePending = false;
+            });
+        }
+    }
+
     #currentMouseUpdateFun = null;
 
     /**
@@ -128,7 +139,8 @@ class MarkerLayer extends OverlayLayer {
             c.scale.set(this.#markerSize);
             c.getChildByName('circle').visible=visCirc;
         });
-        this.#drawUpdate();
+        // this.#drawUpdate();
+        this.#triggerDrawUpdate();
     }
 
     #rotateMarkers() {
@@ -161,7 +173,8 @@ class MarkerLayer extends OverlayLayer {
             scale(marker.getChildByName('square'),1.25);
             if (!marker.getChildByName('label')) //Add text if not there
                 marker.addChild(this.#pixiMarkerLabel(d));
-            this.#drawUpdate();
+            // this.#drawUpdate();
+            this.#triggerDrawUpdate();
         }
         const unHighlight = (event) => {
             if (pressed) return; //Keep highlight during drag
@@ -171,7 +184,8 @@ class MarkerLayer extends OverlayLayer {
                 alpha(label,0) //Ease out
                     .once('complete', (ease) => ease.elements.forEach(item=>{ if (!item.destroyed) item.destroy(true);}));
             }
-            this.#drawUpdate();
+            // this.#drawUpdate();
+            this.#triggerDrawUpdate();
         }
 
         const pressHandler=(event) => {
@@ -198,7 +212,8 @@ class MarkerLayer extends OverlayLayer {
                 this.#renderer.plugins.interaction.moveWhenInside = false;
             }
             highlight(event);
-            this.#drawUpdate();
+            // this.#drawUpdate();
+            this.#triggerDrawUpdate();
         }
         const releaseHandler=(event) => {
             // event.currentTarget.releasePointerCapture(event.data.originalEvent.pointerId);
@@ -208,7 +223,8 @@ class MarkerLayer extends OverlayLayer {
             this.#currentMouseUpdateFun=null;
             this.#renderer.plugins.interaction.moveWhenInside = true;
             unHighlight(event);
-            this.#drawUpdate();
+            // this.#drawUpdate();
+            this.#triggerDrawUpdate();
         }
         const dragHandler=(event) => {
             if (!pressed) return;
@@ -233,7 +249,8 @@ class MarkerLayer extends OverlayLayer {
 
             const viewportCoords = coordinateHelper.webToViewport(mouse_pos);
             tmapp.setCursorStatus(viewportCoords);
-            this.#drawUpdate();
+            // this.#drawUpdate();
+            this.#triggerDrawUpdate();
         }
         let _taps=0;
         const tapHandler=(event) => {
@@ -249,7 +266,8 @@ class MarkerLayer extends OverlayLayer {
                     tmappUI.openAnnotationEditMenu(id, event.data.global);
                 }
             }
-            this.#drawUpdate();
+            // this.#drawUpdate();
+            this.#triggerDrawUpdate();
         }
 
         obj.interactive = true;
@@ -409,7 +427,8 @@ class MarkerLayer extends OverlayLayer {
         
         this.#markerContainer.removeChildren(); //Without this, we get an error in cullMarkers
       
-        this.#drawUpdate();
+        // this.#drawUpdate();
+        this.#triggerDrawUpdate();
     }
 
 
@@ -422,7 +441,8 @@ class MarkerLayer extends OverlayLayer {
      * Resolved promises on .transition().end() => updateAnnotations.inProgress(false)
      */
     updateAnnotations(annotations){
-        this.#drawUpdate();
+        // this.#drawUpdate();
+        this.#triggerDrawUpdate();
 
         let timed=false;
         if (this.#timingLog) {
@@ -522,7 +542,8 @@ class MarkerLayer extends OverlayLayer {
         if (this.#markerContainer) {
             this.#alpha(this.#markerContainer,0.4);
         }
-        this.#drawUpdate();
+        // this.#drawUpdate();
+        this.#triggerDrawUpdate();
     }
 
     /**
@@ -532,7 +553,8 @@ class MarkerLayer extends OverlayLayer {
         if (this.#markerContainer) {
             this.#alpha(this.#markerContainer,1);
         }
-        this.#drawUpdate();
+        // this.#drawUpdate();
+        this.#triggerDrawUpdate();
     }
 }
 
