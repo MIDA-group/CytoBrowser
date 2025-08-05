@@ -32,22 +32,18 @@ class MarkerLayer extends OverlayLayer {
     #stage = null; //Pixi stage
     #renderer = null; //Pixi renderer (for interaction manipulation)
     #drawUpdate = null; //Rendring update function
+
+    #spatialMarkerIndex = new RBush();
+    #annotationIdToMarker = new Map();
     
     #markerOverlay;
     #markerContainer = null;
     #markerList = [];
 
+    #annotationUpdatePending = false;
+    #latestAnnotations = null;
+
     #drawUpdatePending = false;
-    #triggerDrawUpdate() {
-        if (!this.#drawUpdatePending) {
-            this.#drawUpdatePending = true;
-            requestAnimationFrame(() => {
-                this.#drawUpdate();
-                this.#drawUpdatePending = false;
-            });
-        }
-    }
-    
     #lastLogTime = 0;
     #logThrottleDelay = 500;
 
@@ -88,6 +84,16 @@ class MarkerLayer extends OverlayLayer {
         });
     }
 
+    #triggerDrawUpdate() {
+        if (!this.#drawUpdatePending) {
+            this.#drawUpdatePending = true;
+            requestAnimationFrame(() => {
+                this.#drawUpdate();
+                this.#drawUpdatePending = false;
+            });
+        }
+    }
+
     destroy(destroyOverlay = false) {
         if (destroyOverlay && this.overlayObject) {
             this.overlayObject.destroy();
@@ -118,23 +124,35 @@ class MarkerLayer extends OverlayLayer {
             const ul=coordinateHelper.overlayToWeb({x:0,y:0});
             const dr=coordinateHelper.overlayToWeb({x:1000,y:1000});
             if (this.#first || ul.x!=this.#oldUl.x || ul.y!=this.#oldUl.y || dr.x!=this.#oldDr.x || dr.y!=this.#oldDr.y) {
+                console.time('cullMarkers');
                 this.#first=false;
                 this.#oldUl=ul;
                 this.#oldDr=dr;
                 rect=rect.clone().pad(this.#markerDiameter/2); //So we see frame also when outside
 
-                let vis=0;
-                this.#markerContainer.children.forEach(c => {
-                    const webPos = coordinateHelper.overlayToWeb(c.position); //Todo: Avoid per marker coordinate transform
-                    c.visible = c.pressed || rect.contains(webPos.x,webPos.y);
-                    vis += c.visible;
+                const topLeft = coordinateHelper.webToImage({ x: rect.x, y: rect.y });
+                const bottomRight = coordinateHelper.webToImage({ x: rect.x + rect.width, y: rect.y + rect.height });
+
+                const visibleMarkers = this.#spatialMarkerIndex.search({
+                    minX: topLeft.x,
+                    minY: topLeft.y,
+                    maxX: bottomRight.x,
+                    maxY: bottomRight.y
                 });
-                // console.log('Visible markers: ',vis);
+                const visibleIDs = new Set(visibleMarkers.map(m => m.id));
+
+                let vis = 0;
+                this.#markerContainer.children.forEach(marker => {
+                    marker.visible = marker.pressed || visibleIDs.has(marker.id);
+                    vis += marker.visible;
+                });
+
                 const now = performance.now();
                 if (now - this.#lastLogTime > this.#logThrottleDelay) {
                     console.log('Visible markers:', vis);
                     this.#lastLogTime = now;
                 }
+                console.timeEnd('cullMarkers');
             }
         }
     }
@@ -147,7 +165,6 @@ class MarkerLayer extends OverlayLayer {
             c.scale.set(this.#markerSize);
             c.getChildByName('circle').visible=visCirc;
         });
-        // this.#drawUpdate();
         this.#triggerDrawUpdate();
     }
 
@@ -192,7 +209,6 @@ class MarkerLayer extends OverlayLayer {
                 alpha(label,0) //Ease out
                     .once('complete', (ease) => ease.elements.forEach(item=>{ if (!item.destroyed) item.destroy(true);}));
             }
-            // this.#drawUpdate();
             this.#triggerDrawUpdate();
         }
 
@@ -220,7 +236,6 @@ class MarkerLayer extends OverlayLayer {
                 this.#renderer.plugins.interaction.moveWhenInside = false;
             }
             highlight(event);
-            // this.#drawUpdate();
             this.#triggerDrawUpdate();
         }
         const releaseHandler=(event) => {
@@ -231,7 +246,6 @@ class MarkerLayer extends OverlayLayer {
             this.#currentMouseUpdateFun=null;
             this.#renderer.plugins.interaction.moveWhenInside = true;
             unHighlight(event);
-            // this.#drawUpdate();
             this.#triggerDrawUpdate();
         }
         const dragHandler=(event) => {
@@ -257,7 +271,6 @@ class MarkerLayer extends OverlayLayer {
 
             const viewportCoords = coordinateHelper.webToViewport(mouse_pos);
             tmapp.setCursorStatus(viewportCoords);
-            // this.#drawUpdate();
             this.#triggerDrawUpdate();
         }
         let _taps=0;
@@ -274,7 +287,6 @@ class MarkerLayer extends OverlayLayer {
                     tmappUI.openAnnotationEditMenu(id, event.data.global);
                 }
             }
-            // this.#drawUpdate();
             this.#triggerDrawUpdate();
         }
 
@@ -367,6 +379,19 @@ class MarkerLayer extends OverlayLayer {
             .each(d => {
                 // console.log('AID: ',d.id,duration);
                 this.#markerList[d.id]=this.#pixiMarker(d,duration);
+
+                // Add marker to spatial index and ID map
+                const x = d.points[0].x;
+                const y = d.points[0].y;
+                const markerItem = {
+                    minX: x,
+                    minY: y,
+                    maxX: x,
+                    maxY: y,
+                    id: d.id,
+                };
+                this.#spatialMarkerIndex.insert(markerItem);
+                this.#annotationIdToMarker.set(d.id, markerItem);
             });
     }
 
@@ -380,6 +405,21 @@ class MarkerLayer extends OverlayLayer {
             if (marker.position.x!==coords.x || marker.position.y!==coords.y) { 
                 marker.position.set(coords.x,coords.y);
                 changed = true;
+                
+                // Update marker in spatial index and ID map
+                const existingMarker = this.#annotationIdToMarker.get(id);
+                this.#spatialMarkerIndex.remove(existingMarker, (a, b) => a.id === b.id);
+                const x = d.points[0].x;
+                const y = d.points[0].y;
+                const markerItem = {
+                    minX: x,
+                    minY: y,
+                    maxX: x,
+                    maxY: y,
+                    id: d.id,
+                };
+                this.#spatialMarkerIndex.insert(markerItem);
+                this.#annotationIdToMarker.set(d.id, markerItem);
             }
 
             const square = marker.getChildByName('square');
@@ -419,6 +459,9 @@ class MarkerLayer extends OverlayLayer {
                     ease.elements.forEach(item=>item.destroy(true)); //Self destruct after animation
                 });
             delete this.#markerList[d.id];
+            const existingMarker = this.#annotationIdToMarker.get(d.id);
+            this.#spatialMarkerIndex.remove(existingMarker, (a, b) => a.id === b.id);
+            this.#annotationIdToMarker.delete(d.id);
         }).remove();
     }
 
@@ -434,8 +477,9 @@ class MarkerLayer extends OverlayLayer {
         this.#markerList=[];
         
         this.#markerContainer.removeChildren(); //Without this, we get an error in cullMarkers
+        this.#spatialMarkerIndex.clear();
+        this.#annotationIdToMarker.clear();
       
-        // this.#drawUpdate();
         this.#triggerDrawUpdate();
     }
 
@@ -449,7 +493,17 @@ class MarkerLayer extends OverlayLayer {
      * Resolved promises on .transition().end() => updateAnnotations.inProgress(false)
      */
     updateAnnotations(annotations){
-        // this.#drawUpdate();
+        this.#latestAnnotations = annotations;
+        if (!this.#annotationUpdatePending) {
+            this.#annotationUpdatePending = true;
+            requestAnimationFrame(() => {
+                this.#annotationUpdatePending = false;
+                this.#updateAnnotations(this.#latestAnnotations);
+            });
+        }
+    }
+
+    #updateAnnotations(annotations) {
         this.#triggerDrawUpdate();
 
         let timed=false;
@@ -550,7 +604,6 @@ class MarkerLayer extends OverlayLayer {
         if (this.#markerContainer) {
             this.#alpha(this.#markerContainer,0.4);
         }
-        // this.#drawUpdate();
         this.#triggerDrawUpdate();
     }
 
@@ -561,7 +614,6 @@ class MarkerLayer extends OverlayLayer {
         if (this.#markerContainer) {
             this.#alpha(this.#markerContainer,1);
         }
-        // this.#drawUpdate();
         this.#triggerDrawUpdate();
     }
 }
