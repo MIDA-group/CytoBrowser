@@ -43,7 +43,6 @@ class MarkerLayer extends OverlayLayer {
     #annotationUpdatePending = false;
     #latestAnnotations = null;
 
-    #drawUpdatePending = false;
     #lastLogTime = 0;
     #logThrottleDelay = 500;
 
@@ -82,16 +81,6 @@ class MarkerLayer extends OverlayLayer {
         this.#renderer.on('prerender', () => {
             this.#cullMarkers();
         });
-    }
-
-    #triggerDrawUpdate() {
-        if (!this.#drawUpdatePending) {
-            this.#drawUpdatePending = true;
-            requestAnimationFrame(() => {
-                this.#drawUpdate();
-                this.#drawUpdatePending = false;
-            });
-        }
     }
 
     destroy(destroyOverlay = false) {
@@ -165,7 +154,7 @@ class MarkerLayer extends OverlayLayer {
             c.scale.set(this.#markerSize);
             c.getChildByName('circle').visible=visCirc;
         });
-        this.#triggerDrawUpdate();
+        this.#drawUpdate();
     }
 
     #rotateMarkers() {
@@ -198,8 +187,7 @@ class MarkerLayer extends OverlayLayer {
             scale(marker.getChildByName('square'),1.25);
             if (!marker.getChildByName('label')) //Add text if not there
                 marker.addChild(this.#pixiMarkerLabel(d));
-            // this.#drawUpdate();
-            this.#triggerDrawUpdate();
+            this.#drawUpdate();
         }
         const unHighlight = (event) => {
             if (pressed) return; //Keep highlight during drag
@@ -209,7 +197,7 @@ class MarkerLayer extends OverlayLayer {
                 alpha(label,0) //Ease out
                     .once('complete', (ease) => ease.elements.forEach(item=>{ if (!item.destroyed) item.destroy(true);}));
             }
-            this.#triggerDrawUpdate();
+            this.#drawUpdate();
         }
 
         const pressHandler=(event) => {
@@ -236,7 +224,7 @@ class MarkerLayer extends OverlayLayer {
                 this.#renderer.plugins.interaction.moveWhenInside = false;
             }
             highlight(event);
-            this.#triggerDrawUpdate();
+            this.#drawUpdate();
         }
         const releaseHandler=(event) => {
             // event.currentTarget.releasePointerCapture(event.data.originalEvent.pointerId);
@@ -246,7 +234,7 @@ class MarkerLayer extends OverlayLayer {
             this.#currentMouseUpdateFun=null;
             this.#renderer.plugins.interaction.moveWhenInside = true;
             unHighlight(event);
-            this.#triggerDrawUpdate();
+            this.#drawUpdate();
         }
         const dragHandler=(event) => {
             if (!pressed) return;
@@ -271,7 +259,7 @@ class MarkerLayer extends OverlayLayer {
 
             const viewportCoords = coordinateHelper.webToViewport(mouse_pos);
             tmapp.setCursorStatus(viewportCoords);
-            this.#triggerDrawUpdate();
+            this.#drawUpdate();
         }
         let _taps=0;
         const tapHandler=(event) => {
@@ -287,7 +275,7 @@ class MarkerLayer extends OverlayLayer {
                     tmappUI.openAnnotationEditMenu(id, event.data.global);
                 }
             }
-            this.#triggerDrawUpdate();
+            this.#drawUpdate();
         }
 
         obj.interactive = true;
@@ -480,7 +468,7 @@ class MarkerLayer extends OverlayLayer {
         this.#spatialMarkerIndex.clear();
         this.#annotationIdToMarker.clear();
       
-        this.#triggerDrawUpdate();
+        this.#drawUpdate();
     }
 
 
@@ -504,7 +492,7 @@ class MarkerLayer extends OverlayLayer {
     }
 
     #updateAnnotations(annotations) {
-        this.#triggerDrawUpdate();
+        this.#drawUpdate();
 
         let timed=false;
         if (this.#timingLog) {
@@ -604,7 +592,7 @@ class MarkerLayer extends OverlayLayer {
         if (this.#markerContainer) {
             this.#alpha(this.#markerContainer,0.4);
         }
-        this.#triggerDrawUpdate();
+        this.#drawUpdate();
     }
 
     /**
@@ -614,7 +602,7 @@ class MarkerLayer extends OverlayLayer {
         if (this.#markerContainer) {
             this.#alpha(this.#markerContainer,1);
         }
-        this.#triggerDrawUpdate();
+        this.#drawUpdate();
     }
 }
 
