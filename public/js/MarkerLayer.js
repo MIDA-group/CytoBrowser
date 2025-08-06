@@ -27,6 +27,7 @@ class MarkerLayer extends OverlayLayer {
     #rotation;
     #maxScale;
     #markerScale = 1; //Modifcation factor
+    #markerTextures = null;
 
     #overlayObject = null; //For destroy
     #stage = null; //Pixi stage
@@ -58,6 +59,8 @@ class MarkerLayer extends OverlayLayer {
         
         this.#stage=pixiOverlay._app.stage;
         this.#renderer=pixiOverlay._app.renderer; 
+
+        this.#createMarkerTextures();
 
         //this.#drawUpdate=pixiOverlay.update; // Call this function when drawing anything, see pixi-overlay
         this.#drawUpdate=() => pixiOverlay.update(); // Aaargh, the 'this' functionality in JS is just... sigh!
@@ -99,6 +102,37 @@ class MarkerLayer extends OverlayLayer {
         return this.#markerSize/2*this.#zoomLevel*this.#wContainer;
     }
 
+    #createMarkerTextures() {
+        this.#markerTextures = {};
+        const classConfig = classUtils.getClassConfig();
+
+        const _createMarkerTexture = (color) => {
+            const step = Math.SQRT2 * this.#markerSquareSize * 1000;
+            const graphics = new PIXI.Graphics();
+            const circle = new PIXI.Graphics()
+                .lineStyle(this.#markerCircleStrokeWidth * 100, "0x808080")
+                .drawCircle(0, 0, 3.2 * this.#markerCircleSize * 100);
+            circle.scale.set(10);
+            circle.name = "circle";
+            const square = new PIXI.Graphics()
+                .beginFill(0x000000, 0.2)
+                .lineStyle(this.#markerSquareStrokeWidth * 1000, parseInt(color))
+                .drawRect(-step, -step, 2 * step, 2 * step)
+                .endFill();
+            square.angle = 45;
+            square.name = "square";
+            graphics.addChild(square, circle);
+            const texture = this.#renderer.generateTexture(graphics);
+            graphics.destroy({ children: true });
+            return texture;
+        };
+
+        classConfig.forEach(c => {
+            const texture = _createMarkerTexture(c.color.replace('#', '0x'));
+            this.#markerTextures[c.name] = texture;
+        });
+    }
+
     
     /**
      * Set marker visible if inside rectangle, or pressed
@@ -113,7 +147,6 @@ class MarkerLayer extends OverlayLayer {
             const ul=coordinateHelper.overlayToWeb({x:0,y:0});
             const dr=coordinateHelper.overlayToWeb({x:1000,y:1000});
             if (this.#first || ul.x!=this.#oldUl.x || ul.y!=this.#oldUl.y || dr.x!=this.#oldDr.x || dr.y!=this.#oldDr.y) {
-                console.time('cullMarkers');
                 this.#first=false;
                 this.#oldUl=ul;
                 this.#oldDr=dr;
@@ -141,7 +174,6 @@ class MarkerLayer extends OverlayLayer {
                     console.log('Visible markers:', vis);
                     this.#lastLogTime = now;
                 }
-                console.timeEnd('cullMarkers');
             }
         }
     }
@@ -152,7 +184,6 @@ class MarkerLayer extends OverlayLayer {
         const visCirc=this.#markerDiameter>10; //Smaller than 10 pix and we skip the circle
         this.#markerContainer.children.forEach(c => {
             c.scale.set(this.#markerSize);
-            c.getChildByName('circle').visible=visCirc;
         });
         this.#drawUpdate();
     }
@@ -184,14 +215,14 @@ class MarkerLayer extends OverlayLayer {
 
         //Arrow functions required to preserve this
         const highlight = (event) => {
-            scale(marker.getChildByName('square'),1.25);
+            scale(marker, 1.25*this.#markerSize);
             if (!marker.getChildByName('label')) //Add text if not there
                 marker.addChild(this.#pixiMarkerLabel(d));
             this.#drawUpdate();
         }
         const unHighlight = (event) => {
             if (pressed) return; //Keep highlight during drag
-            scale(marker.getChildByName('square'),1);
+            scale(marker, this.#markerSize);
             const label=marker.getChildByName('label');
             if (label) { //We might call unHighlight several times
                 alpha(label,0) //Ease out
@@ -295,49 +326,30 @@ class MarkerLayer extends OverlayLayer {
 
     #pixiMarker(d, duration=0) {
         const coords = coordinateHelper.imageToOverlay(d.points[0]);
+        const texture = this.#markerTextures[d.mclass];
+        if (!texture) {
+            console.warn(`No texture found for marker type ${d.type}`);
+            return null;
+        }
 
-        const color = this._getAnnotationColor(d).replace('#','0x');
-        const step=Math.SQRT2*this.#markerSquareSize*1000; //Rounding errors in Pixi for small values, thus '*1000'
-        
-        const graphics = new PIXI.Graphics();
-        // Inner circle (not in base object, since we wish to rescale and turn it on/off)
-        const circle = new PIXI.Graphics() 
-            .lineStyle(this.#markerCircleStrokeWidth*100, "0x808080") //gray
-            .drawCircle(0, 0, 3.2*this.#markerCircleSize*100);
-        circle.scale.set(10); // Number of segments is dependent on original object size
-        circle.name="circle";
+        const sprite = new PIXI.Sprite(texture);
+        sprite.anchor.set(0.5);
+        sprite.position.set(coords.x, coords.y);
+        sprite.angle = -this.#rotation;
+        sprite.scale.set(0);
+        sprite.id = d.id;
 
-        // Tilted square
-        const square = new PIXI.Graphics()
-            .beginFill(0x000000,0.2)
-            .lineStyle(this.#markerSquareStrokeWidth*1000, color)
-            .drawRect(-step,-step,2*step,2*step) //x,y,w,h
-            .endFill();
-        square.angle=45; 
-        square.name="square";
-        graphics.addChild(square,circle);
+        this.#addMarkerInteraction(d, sprite, sprite);
+        this.#markerContainer.addChild(sprite);
 
-        // Global part
-        graphics.position.set(coords.x,coords.y);
-        graphics.angle=-this.#rotation;
-        graphics.scale.set(0);
-        graphics.id=d.id; //non-pixi, just data
-
-        //Works ok, but our own is faster
-        //graphics.cullable=true;
-
-        this.#addMarkerInteraction(d,square,graphics); //mouse interface to the simplest item
-        this.#markerContainer.addChild(graphics);
         if (duration > 0) {
-            graphics.scale.set(0);
-            Ease.ease.add(graphics,{scale:this.#markerSize},{duration:duration});
+            sprite.scale.set(0);
+            Ease.ease.add(sprite, { scale: this.#markerSize }, { duration: duration });
+        } else {
+            sprite.scale.set(this.#markerSize);
         }
-        else {
-            graphics.scale.set(this.#markerSize);
-        }
-        // .once('complete', (ease) => ease.elements.forEach(item=>item.cacheAsBitmap=true));  //Doesn't really pay off
 
-        return graphics;
+        return sprite;
     }
 
     /**
@@ -493,6 +505,7 @@ class MarkerLayer extends OverlayLayer {
 
     #updateAnnotations(annotations) {
         this.#drawUpdate();
+        this.#createMarkerTextures();   // This is here temporary, should be handled better
 
         let timed=false;
         if (this.#timingLog) {
