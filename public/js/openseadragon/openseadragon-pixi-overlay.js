@@ -113,13 +113,17 @@
 
     const _tickerTime = 5 * 1000; // Run ticker for 5 seconds on updates
     let _tickerTimeout = 0;
-    let _lastUpdateTime = performance.now();
+    let _requestedAnimationFrame = null;
 
     // ----------
     Overlay.prototype = {
         // ----------
         destroy: function() {
             //console.log('Destroying Pixi app');
+            if (_requestedAnimationFrame !== null) {
+                cancelAnimationFrame(_requestedAnimationFrame);
+                _requestedAnimationFrame = null;
+            }
             this._app.destroy(true,true);
             this._app=null;
         },
@@ -131,24 +135,30 @@
         },
         update: function() { // Call this function whenever drawing, to allow animations to run _tickerTime 
             if (!this.app()) return; // Destroyed (instead of running through removeHandler)
-            if (performance.now()-_lastUpdateTime < 0.1) { // Ignore is less than 0.1ms since last exectuted call
-                return; // Avoid flooding
-            }
-            this._app.renderer.render(this._app.stage); // Call render directly to reduce lag
-            _lastUpdateTime = performance.now();
+            if (_requestedAnimationFrame !== null) return; // Already scheduled
 
-            if (!this._app.ticker.started) {
-                this._app.ticker.start(); // Start render loop
-                console.log('Ticker started');
-            }
-            if (_tickerTimeout) {
-                clearTimeout(_tickerTimeout);
-            }
-            _tickerTimeout = setTimeout(() => {
-                this._app.ticker.stop();
-                _tickerTimeout = 0;
-                console.log('Ticker paused');
-            }, _tickerTime); // Pause render loop after a while
+            _requestedAnimationFrame = requestAnimationFrame(() =>{
+                _requestedAnimationFrame = null;
+                // console.time('render');
+                const start = performance.now();
+                this._app.renderer.render(this._app.stage); // Call render directly to reduce lag
+                const renderTime = performance.now() - start;
+                if (renderTime > 16) console.log("Render time: ", renderTime);
+                // console.timeEnd('render');
+
+                if (!this._app.ticker.started) {
+                    this._app.ticker.start(); // Start render loop
+                    console.log('Ticker started');
+                }
+                if (_tickerTimeout) {
+                    clearTimeout(_tickerTimeout);
+                }
+                _tickerTimeout = setTimeout(() => {
+                    this._app.ticker.stop();
+                    _tickerTimeout = 0;
+                    console.log('Ticker paused');
+                }, _tickerTime); // Pause render loop after a while
+            });
         },
 
         // ----------
