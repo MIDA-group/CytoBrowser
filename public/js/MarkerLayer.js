@@ -3,16 +3,6 @@
  * Class for the marker annotation overlay.
  **/
 
-// Hack to do color change, https://www.html5gamedevs.com/topic/9374-change-the-style-of-line-that-is-already-drawn/page/2/
-PIXI.Graphics.prototype.updateLineStyle = function({width=null, color=null, alpha=null}={}) {
-    this.geometry.graphicsData.forEach(data => {
-        if (width!=null) { data.lineStyle.width = width; }
-        if (color!=null) { data.lineStyle.color = color; }
-        if (alpha!=null) { data.lineStyle.alpha = alpha; }
-    });
-    this.geometry.invalidate();
-}
-
 class MarkerLayer extends OverlayLayer {
     #timingLog = false; //Log update times
 
@@ -181,7 +171,6 @@ class MarkerLayer extends OverlayLayer {
     
     #resizeMarkers() {
 //        console.log('Resize: ',this.#markerSize);
-        const visCirc=this.#markerDiameter>10; //Smaller than 10 pix and we skip the circle
         this.#markerContainer.children.forEach(c => {
             c.scale.set(this.#markerSize);
         });
@@ -328,7 +317,7 @@ class MarkerLayer extends OverlayLayer {
         const coords = coordinateHelper.imageToOverlay(d.points[0]);
         const texture = this.#markerTextures[d.mclass];
         if (!texture) {
-            console.warn(`No texture found for marker type ${d.type}`);
+            console.warn(`No texture found for marker type ${d.mclass}`);
             return null;
         }
 
@@ -338,6 +327,7 @@ class MarkerLayer extends OverlayLayer {
         sprite.angle = -this.#rotation;
         sprite.scale.set(0);
         sprite.id = d.id;
+        sprite.mclass = d.mclass;
 
         this.#addMarkerInteraction(d, sprite, sprite);
         this.#markerContainer.addChild(sprite);
@@ -407,7 +397,7 @@ class MarkerLayer extends OverlayLayer {
                 changed = true;
                 
                 // Update marker in spatial index and ID map
-                const existingMarker = this.#annotationIdToMarker.get(id);
+                const existingMarker = this.#annotationIdToMarker.get(d.id);
                 this.#spatialMarkerIndex.remove(existingMarker, (a, b) => a.id === b.id);
                 const x = d.points[0].x;
                 const y = d.points[0].y;
@@ -421,12 +411,10 @@ class MarkerLayer extends OverlayLayer {
                 this.#spatialMarkerIndex.insert(markerItem);
                 this.#annotationIdToMarker.set(d.id, markerItem);
             }
-
-            const square = marker.getChildByName('square');
-            const color = this._getAnnotationColor(d).replace('#','0x');
-            if (color !== square.line.color) { //alternatively use square._lineStyle.color
-                square.line.color = color;
-                square.updateLineStyle({color});
+            
+            if (marker.mclass!==d.mclass) {
+                marker.texture = this.#markerTextures[d.mclass];
+                marker.mclass = d.mclass;
                 changed = true;
             }
 
@@ -434,13 +422,13 @@ class MarkerLayer extends OverlayLayer {
             if (changed && !marker.pressed) {
                 const duration = 100; //0.1 second
                 if (!this.#easeTimeout) {
-                    Ease.ease.add(marker.getChildByName('square'),{scale:1.25,alpha:0.5},{duration});
+                    Ease.ease.add(marker,{scale:1.25*this.#markerSize,alpha:0.5},{duration});
                 }
                 else {
                     clearTimeout(this.#easeTimeout);
                 }
                 this.#easeTimeout = setTimeout(() => {
-                    Ease.ease.add(marker.getChildByName('square'),{scale:1,alpha:1},{duration});
+                    Ease.ease.add(marker,{scale:this.#markerSize,alpha:1},{duration});
                     this.#easeTimeout = 0;
                 }, duration); 
             }
@@ -520,7 +508,7 @@ class MarkerLayer extends OverlayLayer {
         const markers = annotations.filter(annotation =>
             annotation.points.length === 1
         );
-        
+
         const doneMarkers = new Promise((resolve, reject) => {
             const marks = this.#markerOverlay.selectAll("g")
                 .data(markers, d => d.id)
