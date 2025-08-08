@@ -189,3 +189,9 @@ main {
     user-select:none;
     -webkit-tap-highlight-color:rgba(0,0,0,0);
 }
+
+/* Crock-fix for sometimes blue buttons following Bootstrap upgrade -> commit 176b1034a813019 */
+/* To be permanently fixed with re-styling and Bootstrap 5 in due time */
+.btn-primary:focus {
+    background-color: #AD1D28;
+}

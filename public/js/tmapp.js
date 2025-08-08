@@ -131,6 +131,11 @@ const tmapp = (function() {
             throw new Error("Tried to update zoom of nonexistent viewer.");
         }
         const zoom = _viewer.viewport.getZoom();
+        if (zoom < _viewer.viewport.getMinZoom()) {
+            // console.log('Is this an OSD-5 bug?');
+            _viewer.viewport.zoomTo(_viewer.viewport.getMinZoom());
+            return; //This function will be called again due to zoom change
+        }
         const maxZoom = _viewer.viewport.getMaxZoom();
         const size = _viewer.viewport.getContainerSize();
         layerHandler.setZoom(zoom, maxZoom, size.x, size.y);
@@ -338,8 +343,7 @@ const tmapp = (function() {
             };
         }
 
-        //OSD handlers have to be registered using MouseTracker OSD objects
-        _mouseHandler = new OpenSeadragon.MouseTracker({
+        _mouseHandler = {
             element: viewer.canvas,
             clickHandler: clickHandler,
             dblClickHandler: dblClickHandler,
@@ -348,7 +352,40 @@ const tmapp = (function() {
             exitHandler: insideHandler(false),
             pressHandler: heldHandler(true),
             releaseHandler: heldHandler(false)
-        }).setTracking(true);
+        }
+
+        viewer.addHandler('canvas-click', function(event) {
+            clickHandler(event);
+        });
+
+        viewer.addHandler('canvas-double-click', function(event) {
+            dblClickHandler(event);
+        });
+
+        viewer.addHandler('canvas-enter', function(event) {
+            insideHandler(true)(event);
+        });
+
+        viewer.addHandler('canvas-exit', function(event) {
+            insideHandler(false)(event);
+        });
+
+        viewer.addHandler('canvas-press', function(event) {
+            heldHandler(true)(event);
+        });
+
+        viewer.addHandler('canvas-release', function(event) {
+            heldHandler(false)(event);
+        });
+
+        viewer.addHandler('canvas-drag', function(event) {
+            moveHandler(event);
+        });
+
+        viewer.container.addEventListener('mousemove', event => {
+            event.position = new OpenSeadragon.Point(event.offsetX,event.offsetY);
+            moveHandler(event);
+        });
 
         // Add hook to scroll without zooming, didn't seem possible without
         function scrollHook(event){
@@ -377,13 +414,9 @@ const tmapp = (function() {
             }
         };
 
-        viewer.addViewerInputHook({hooks: [
-            {
-                tracker: "viewer",
-                handler: "scrollHandler",
-                hookHandler: scrollHook
-            }
-        ]});
+        viewer.addHandler("canvas-scroll", function(event) {
+            scrollHook(event);
+        });
     }
 
     function _addHandlers(viewer, callback) {
@@ -413,37 +446,31 @@ const tmapp = (function() {
             _updateRotation();
             _updateBrightnessContrast();
 
-            //Set better aspect ratio of navigator
+            //Set better aspect ratio of navigator, based on image, not viewer
             function setNavSize() {
                 if (!viewer.element) return;
-                
-                viewer.navigator._resizeWithViewer = false;
-                
-                var $ = window.OpenSeadragon;
-                const viewerSize = $.getElementSize( viewer.element ); //Relying on OSD's fun
+                const image=_getImage();
+                if (!image) return; //No image -> No sensible navigator
 
+                const viewerSize = window.OpenSeadragon.getElementSize( viewer.element ); //Relying on OSD's fun
                 let newWidth  = viewerSize.x * viewer.navigator.sizeRatio;
                 let newHeight = viewerSize.y * viewer.navigator.sizeRatio;
-                const image=_getImage();
-                if (image) { //Aspect ratio based on image, not viewer
-                    const viewAspect = newHeight/newWidth;
-                    const imAspect = image.getBounds().height;
-                    if (imAspect < viewAspect) { //Pick the smallest
-                        newHeight = imAspect * newWidth;
-                    }
-                    else {
-                        newWidth = newHeight / imAspect;
-                    }
-                }
-                
-                viewer.navigator.element.style.width  = Math.round( newWidth ) + 'px';
-                viewer.navigator.element.style.height = Math.round( newHeight ) + 'px';
 
-                viewer.navigator.update( viewer.viewport );
+                const viewAspect = newHeight/newWidth;
+                const imAspect = image.getBounds().height; //width===1.0
+                if (imAspect < viewAspect) { //Adjust as to get the smallest resulting navigator
+                    newHeight = imAspect * newWidth;
+                }
+                else {
+                    newWidth = newHeight / imAspect;
+                }
+
+                //these set navigator._resizeWithViewer=false and calls navigator.updateSize()
+                viewer.navigator.setWidth(newWidth);
+                viewer.navigator.setHeight(newHeight);
             }
             setNavSize();
-            viewer.addHandler("update-viewport", setNavSize);
-            viewer.navigator.addHandler("resize", setNavSize);
+            viewer.addHandler("after-resize", setNavSize);
 
             tmappUI.clearImageError();
             callback && callback();
@@ -461,7 +488,8 @@ const tmapp = (function() {
             tmappUI.displayImageError("tilefail", 1000);
         });
 
-        // What is the difference between 'update-viewport' and 'viewport-change' ?
+        // When viewport position changes (before drawing)
+        // ('update-viewport' is called after viewport is redrawn)
         viewer.addHandler('viewport-change', (event) => {
             _currentMouseUpdateFun && _currentMouseUpdateFun(); //set cursor position if view-port changed by external source
         });
@@ -905,8 +933,27 @@ const tmapp = (function() {
      * Sending events to OSDs keyboard handlers
      */
     function keyDownHandler(event) {
-        // Only arrow keys
-        _viewer.innerTracker.keyDownHandler(event);
+        let caught=true; //Assume we use the key (setting to false in 'default')
+        //console.log('Key: ',event.which);
+        switch(event.which) {
+            case 107: // NumPad +
+                // How to reach singleZoomInAction() in viewer.js?
+                _viewer.viewport.zoomBy( _viewer.zoomPerClick / 1.0 );
+                _viewer.viewport.applyConstraints();
+                break;
+            case 109: // NumPad -
+                _viewer.viewport.zoomBy( 1.0 / _viewer.zoomPerClick );
+                _viewer.viewport.applyConstraints();
+                break;
+            default:
+                caught=false; //Assume we miss the key
+        }
+        if (caught) {
+            event.preventDefault(); //prevent e.g. Firefox to open search box
+        }
+        else {
+            _viewer.innerTracker.keyDownHandler(event);
+        }
     }
     function keyHandler(event) {
         // All other OSD keys

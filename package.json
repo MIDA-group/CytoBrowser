@@ -10,10 +10,40 @@
     "cytobrowser": "cytobrowser.js"
   },
   "scripts": {
+    "postinstall": "copy-files-from-to",
     "start": "cytobrowser.js",
     "server": "cytobrowser.js",
     "cytobrowser": "cytobrowser.js",
     "version-update": "node -p 'const { version } = require(\"./package.json\"); `const clientVersion = \"${version}\";`' >| ./public/js/misc/clientVersion.js"
+  },
+  "copyFiles": [
+    {
+      "from": "node_modules/openseadragon/build/openseadragon/openseadragon.min.js{,.map}",
+      "to": "public/js/openseadragon/"
+    },
+    {
+      "from": "node_modules/openseadragon/build/openseadragon/images",
+      "to": "public/js/openseadragon/"
+    },
+    {
+      "from": "node_modules/bootstrap/dist/js/bootstrap.bundle.min.js{,.map}",
+      "to": "public/js/bootstrap/"
+    },
+    {
+      "from": "node_modules/bootstrap/dist/css/bootstrap.min.css{,.map}",
+      "to": "public/css/"
+    },
+    {
+      "from": "node_modules/jquery/dist/jquery.slim.min.js{,.map}",
+      "to": "public/js/jquery/"
+    },
+    {
+      "from": "node_modules/pixi.js/dist/browser/pixi.min.js{,.map}",
+      "to": "public/js/pixi/"
+    }
+  ],
+  "copyFilesSettings": {
+    "whenFileExists": "overwrite"
   },
   "repository": {
     "type": "git",
@@ -33,12 +63,16 @@
   },
   "homepage": "https://github.com/MIDA-group/CytoBrowser#readme",
   "dependencies": {
+    "bootstrap": "^4",
+    "copy-files-from-to": "^3.12.1",
     "express": "^5.1.0",
     "express-ws": "^5.0.2",
     "fast-xml-parser": "^5.2.5",
     "fix-esm": "^1.0.1",
     "jsondiffpatch": "^0.7.3",
     "minimist": "^1.2.8",
+    "openseadragon": "^5.0.1",
+    "pixi.js": "^6",
     "sanitize-filename": "^1.6.3"
   }
 }
