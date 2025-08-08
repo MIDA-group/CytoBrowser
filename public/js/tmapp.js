@@ -343,16 +343,17 @@ const tmapp = (function() {
             };
         }
 
+        // Only used to access mouse handler functions elsewhere
         _mouseHandler = {
             element: viewer.canvas,
             clickHandler: clickHandler,
             dblClickHandler: dblClickHandler,
             moveHandler: moveHandler,
             enterHandler: insideHandler(true),
-            exitHandler: insideHandler(false),
+            leaveHandler: insideHandler(false),
             pressHandler: heldHandler(true),
             releaseHandler: heldHandler(false)
-        }
+        };
 
         viewer.addHandler('canvas-click', function(event) {
             clickHandler(event);
