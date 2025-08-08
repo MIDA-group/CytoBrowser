@@ -493,7 +493,7 @@ class MarkerLayer extends OverlayLayer {
 
     #updateAnnotations(annotations) {
         this.#drawUpdate();
-        this.#createMarkerTextures();   // This is here temporary, should be handled better
+        if (annotations.length>0) this.#createMarkerTextures();   // This is here temporary, should be handled better
 
         let timed=false;
         if (this.#timingLog) {
