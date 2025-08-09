@@ -58,9 +58,11 @@ ssh -L 8080:localhost:8080 remote.host
 #Enjoy! =)
 </pre>
 
+Some additional info can also be found in the <a href="https://github.com/MIDA-group/CytoBrowser/tree/master/INSTALL.md">INSTALL.md</a> file.
+
 ### Branches
 Current list of branches:
-* **master** - Main stable branch, official releases are from this branch;
+* **stable** - Main stable branch, official releases are from this branch;
 * **develop** - Main development branch, less stable but more up-to-date - most often a good choice;
 * devel/multi-image - Work in progress to support multiple layers of images (for correlative multimodal analysis);
 * devel/multi-image-autoload-hack - Small add-on to hide images with suffix '_FL', and autoload them together with corresponding non-hidden images with same prefix.
