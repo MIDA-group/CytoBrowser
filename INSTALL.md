@@ -7,45 +7,57 @@ Once Node.js and npm are installed, enter the top-level directory of CytoBrowser
 npm install
 ```
 
-The server requires access to three different directories. These are the data directory, where **.dzi** files are stored, the **.json** metadata directory, where metadata for each image is stored, and the collaboration storage directory, where annotation data is automatically saved from collaboration sessions; the last of these will be created automatically if not existing whereas the other two will not. 
-By default, the server will assume that these directories can be found in the top-level directory of CytoBrowser as `./data`, `./metadata/json`, and `./collab_storage`. It is possible, but not necessary, to make these symbolic links to other parts of the file system. On Unix machines, this can be done for the data directory with:
+The server requires access to three directories. These are the data directory, where **.dzi** files are stored, the metadata directory, where **.json** metadata for each image is stored, and the collaboration storage directory, where annotation data is automatically saved from collaboration sessions; the last of these will be created automatically if not existing whereas the other two will not. 
+By default, the server will assume that these directories can be found in the top-level directory of CytoBrowser as `./data`, `./data` (i.e., same as the data directory), and `./collab_storage`. 
+Using command line parameters `-d`, `-m`, and `-c`, it is possible to change these directories. It is also possible to use symbolic links (using `ln` or `mklink` commands) to direct to other parts of the file system.
 
-```bash
-ln -s /path/to/data ./data
-```
+To populate the data directory with **.dzi** files, see a few examples in `./examples/`.
 
-On windows machines, while running as an administrator, this can be done with:
 
-```bash
-mklink /D .\data \Path\To\Data
-```
-
+## Start the server
 With the necessary modules installed and the directories set up, run the server with the following command:
 
 ```bash
- node cytobrowser.js (hostname) (port) -m /path/to/metadata -c /path/to/collab/storage -d /path/to/data
- ```
+ node cytobrowser.js (host) (port) 
+```
 
-The directory paths do not need to be specified if the default paths are used. For example, to run the server on the local host on port 8080 with the default directory paths, run the following:
+The `host` parameter determines which network interfaces the server will listen on, default is `localhost` (127.0.0.1 for IPv4 or ::1 for IPv6) making the server accessible only from the same machine. Set `host` to `0.0.0.0` to make the server listen on all available network interfaces; do take care about possible security implications, the `./public` directory is exposed by the server.
 
+If no `port` parameter is given, the server will look for a free port to use - presented in the terminal so you know which one it is.
+
+To list all command line options, type
+```bash
+ node cytobrowser.js --help 
+```
+
+## Access the interface
+
+The user interface is accessed via any modern web browser (development is mostly using Chrome).
+For example, if starting the server with 
 ```bash
 node cytobrowser.js localhost 8080
 ```
+going to `http://localhost:8080` in your browser will present the CytoBrowser interface.
 
-The user interface can then be accessed by opening a modern web browser and going to `http://localhost:8080`.
+A convenient parameter for automatically launching a browser is `--open-browser`, which saves you from entering the URL manually.
+Thus, the following will start the server using a free port on localhost, and opening the user interface on the default browser. 
+```bash
+node cytobrowser.js --open-browser
+```
+
 
 ## Preparing Metadata
 
-In order to display metadata for an image, the metadata first has to be extracted and preprocessed. This requires the use of [bftools](https://docs.openmicroscopy.org/bio-formats/latest/users/comlinetools/index.html). First, the metadata has to be extracted from the original microscopy images as **.ome.xml** files. For **.ndpi** files, this can be done with:
+In order to display metadata, such as image resolution, for an image, the metadata first has to be extracted and preprocessed. This requires the use of [bftools](https://docs.openmicroscopy.org/bio-formats/latest/users/comlinetools/index.html). First, the metadata has to be extracted from the original microscopy images as **.ome.xml** files. For **.ndpi** files, this can be done with:
 
 ```bash
-bftools/showinf -nocore -no-sas -nopix -omexml -omexml-only [filename].ndpi > [OME-XML directory]/[filename].ome.xml
+bftools/showinf -nocore -no-sas -nopix -omexml -omexml-only [filename].ndpi > [filename].ome.xml
 ```
 
-Next, the **.ome.xml** files have to be converted to **.json** files structured in the way CytoBrowser expects them. If several **.ome.xml** have been created and stored in the same directory, this can be done with a single operation. From the CytoBrowser root directory, this is done with:
-
+Next, the **.ome.xml** files have to be converted to **.json** files structured in the way CytoBrowser expects them.
+This is done with:
 ```bash
-node server/metadata.js [OME-XML directory] [JSON directory]
+node server/metadata.js [OME-XML-file(s)] [metadata directory]
 ```
 
-Note that the CytoBrowser server expects the filenames of the **.json** files to be the same as the **.dzi** files, only differing in file extension.
+The CytoBrowser server expects the filenames of metadata **.json** files to be the same as the **.dzi** files, only differing in file extension.

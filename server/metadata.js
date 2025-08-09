@@ -8,6 +8,7 @@
  */
 
 const fs = require("fs");
+const path = require('path');
 const {XMLParser} = require('fast-xml-parser');
 
 const metadataCache = {};
@@ -31,8 +32,8 @@ function extractImportantMetadata(jsonData) {
         imageData = imageData.find(im => im["@_ID"] === "Image:0");
     }
     const importantMetadata = {
-        MicroscopeModel: jsonData["OME"]["Instrument"] && jsonData["OME"]["Instrument"]["Microscope"]["@_Model"],
-        NominalMagnification: jsonData["OME"]["Instrument"] && jsonData["OME"]["Instrument"]["Objective"]["@_NominalMagnification"],
+        MicroscopeModel: jsonData["OME"]["Instrument"] && jsonData["OME"]["Instrument"]["Microscope"] && jsonData["OME"]["Instrument"]["Microscope"]["@_Model"],
+        NominalMagnification: jsonData["OME"]["Instrument"] && jsonData["OME"]["Instrument"]["Objective"] && jsonData["OME"]["Instrument"]["Objective"]["@_NominalMagnification"],
         AcquisitionDate: imageData["AcquisitionDate"],
         PhysicalSizeX: imageData["Pixels"]["@_PhysicalSizeX"],
         PhysicalSizeY: imageData["Pixels"]["@_PhysicalSizeY"],
@@ -83,19 +84,17 @@ function getMetadataForImage(imageName) {
 
 function main() {
     const argv = require("minimist")(process.argv.slice(2));
-    if (argv.h || argv.help || argv._.length !== 2) {
-        console.info("Usage: node metadata.js omexml-dir json-dir");
+    if (argv.h || argv.help || argv._.length < 2) {
+        console.info("Usage: node metadata.js ome.xml-file(s) output-json-dir");
         return;
     }
     else {
-        const inputDir = argv._[0];
-        const outputDir = argv._[1];
-        const inputFilenames = fs.readdirSync(inputDir).filter(fn => fn.endsWith(".ome.xml"));
+        const outputDir = argv._.at(-1);
+        const inputFilenames = argv._.slice(0, -1);
         inputFilenames.forEach(fn => {
-            const path = `${inputDir}/${fn}`;
-            const outputFilename = `${fn.slice(0, -8)}.json`;
+            const outputFilename = path.basename(fn, '.ome.xml')+'.json';
             const outputPath = `${outputDir}/${outputFilename}`;
-            const xmlData = fs.readFileSync(path, "utf8");
+            const xmlData = fs.readFileSync(fn, "utf8");
             const data = xmlToObject(xmlData);
             const importantData = extractImportantMetadata(data);
             fs.writeFileSync(outputPath, JSON.stringify(importantData, null, 4));
