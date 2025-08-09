@@ -1,8 +1,14 @@
-# Installation
-Before the server can be run, make sure Node.js is installed. The current latest version of Node.js can be downloaded from [here](https://nodejs.org/en/download/). This includes the Node package manager (npm), which is required to install the required modules. 
+# Installation.
 
-Once Node.js and npm are installed, enter the top-level directory of CytoBrowser (following `git clone`) and run the following command to download and install the required modules:
+This file presents the *installation from github* option. For a faster *npx* option (stable only) which does not require installing `git`, see `./README.md`.
 
+Before the server can be run, make sure Node.js is installed. The current latest version of Node.js can be downloaded from [here](https://nodejs.org/en/download/). This includes the Node package manager (npm), which is needed to install the required modules. 
+
+Once Node.js and npm are installed, go ahead and clone the git repository: `git clone https://github.com/MIDA-group/CytoBrowser.git` (requires that you have `git` installed).
+Enter the top-level directory of CytoBrowser (`cd CytoBrowser`.).
+Consider switching to the `develop` branch (`git switch develop`) to enjoy the latest features, or stay with the `stable`, for a more well tested experience. (You can switch back and forth later, but make sure to run `npm install`, since different branches may depend on different packages.) 
+
+To download required dependencies, run the following command:
 ```bash
 npm install
 ```
