@@ -4,7 +4,7 @@
  **/
 
 class MarkerLayer extends OverlayLayer {
-    #timingLog = false; //Log update times
+    #timingLog = true; //Log update times
 
     #markerSquareSize = 1/8;
     #markerCircleSize = 1/32;
@@ -21,6 +21,7 @@ class MarkerLayer extends OverlayLayer {
 
     #overlayObject = null; //For destroy
     #stage = null; //Pixi stage
+    #canvas = null;
     #renderer = null; //Pixi renderer (for interaction manipulation)
     #drawUpdate = null; //Rendring update function
 
@@ -31,8 +32,12 @@ class MarkerLayer extends OverlayLayer {
     #markerContainer = null;
     #markerList = [];
 
+    #mouse_pos;
+    #markerPressed = false;
+
     #annotationUpdatePending = false;
     #latestAnnotations = null;
+    #lastClassConfigString = "";
 
     #lastLogTime = 0;
     #logThrottleDelay = 500;
@@ -46,11 +51,10 @@ class MarkerLayer extends OverlayLayer {
     constructor(name,pixiOverlay) {
         super(name,pixiOverlay._viewer,pixiOverlay._pixi);
         this.overlayObject=pixiOverlay;
-        
-        this.#stage=pixiOverlay._app.stage;
-        this.#renderer=pixiOverlay._app.renderer; 
 
-        this.#createMarkerTextures();
+        this.#stage=pixiOverlay._app.stage;
+        this.#canvas=pixiOverlay._app.canvas;
+        this.#renderer=pixiOverlay._app.renderer; 
 
         //this.#drawUpdate=pixiOverlay.update; // Call this function when drawing anything, see pixi-overlay
         this.#drawUpdate=() => pixiOverlay.update(); // Aaargh, the 'this' functionality in JS is just... sigh!
@@ -70,8 +74,15 @@ class MarkerLayer extends OverlayLayer {
             this.#currentMouseUpdateFun && this.#currentMouseUpdateFun(); //set cursor position if view-port changed by external source
         });
 
-        // "prerender" is fired right before the renderer draws the scene
-        this.#renderer.on('prerender', () => {
+        this.#canvas.addEventListener('pointermove', (event) => {
+            if (this.#markerPressed) {
+                regionEditor.stopEditingRegion();
+                this.#mouse_pos = new OpenSeadragon.Point(event.offsetX,event.offsetY);
+                this.#currentMouseUpdateFun();
+            }
+        });
+
+        pixiOverlay._app.ticker.add(() => {
             this.#cullMarkers();
         });
     }
@@ -92,37 +103,44 @@ class MarkerLayer extends OverlayLayer {
         return this.#markerSize/2*this.#zoomLevel*this.#wContainer;
     }
 
-    #createMarkerTextures() {
+    async #createMarkerTextures() {
         this.#markerTextures = {};
         const classConfig = classUtils.getClassConfig();
 
-        const _createMarkerTexture = (color) => {
+        const _createMarkerTexture = async (color) => {
             const step = Math.SQRT2 * this.#markerSquareSize * 1000;
-            const graphics = new PIXI.Graphics();
             const circle = new PIXI.Graphics()
-                .lineStyle(this.#markerCircleStrokeWidth * 100, "0x808080")
-                .drawCircle(0, 0, 3.2 * this.#markerCircleSize * 100);
+                .circle(0, 0, 3.2 * this.#markerCircleSize * 100)
+                .stroke({ width: this.#markerCircleStrokeWidth * 100, color: 0x808080 });
             circle.scale.set(10);
             circle.name = "circle";
             const square = new PIXI.Graphics()
-                .beginFill(0x000000, 0.2)
-                .lineStyle(this.#markerSquareStrokeWidth * 1000, parseInt(color))
-                .drawRect(-step, -step, 2 * step, 2 * step)
-                .endFill();
+                .rect(-step, -step, 2 * step, 2 * step)
+                .fill({ color: 0x000000, alpha: 0.2 })
+                .stroke({ width: this.#markerSquareStrokeWidth * 1000, color: color });
             square.angle = 45;
             square.name = "square";
+            const graphics = new PIXI.Container();
             graphics.addChild(square, circle);
-            const texture = this.#renderer.generateTexture(graphics);
+            const texture = await this.#renderer.generateTexture(graphics);
             graphics.destroy({ children: true });
             return texture;
         };
 
-        classConfig.forEach(c => {
-            const texture = _createMarkerTexture(c.color.replace('#', '0x'));
+        for (const c of classConfig) {
+            const hexColor = parseInt(c.color.replace('#', '0x'));
+            const texture = await _createMarkerTexture(hexColor);
             this.#markerTextures[c.name] = texture;
-        });
+        }
     }
 
+    async #updateMarkerTextures() {
+        const currentClassConfigString  = classUtils.getClassConfig().map(c => c.name).sort().join(',');
+        if (!this.#markerTextures || currentClassConfigString !== this.#lastClassConfigString) {
+            await this.#createMarkerTextures();
+            this.#lastClassConfigString = currentClassConfigString;
+        }
+    }
     
     /**
      * Set marker visible if inside rectangle, or pressed
@@ -138,8 +156,10 @@ class MarkerLayer extends OverlayLayer {
             const dr=coordinateHelper.overlayToWeb({x:1000,y:1000});
             if (this.#first || ul.x!=this.#oldUl.x || ul.y!=this.#oldUl.y || dr.x!=this.#oldDr.x || dr.y!=this.#oldDr.y) {
                 this.#first=false;
-                this.#oldUl=ul;
-                this.#oldDr=dr;
+                this.#oldUl.x = ul.x;
+                this.#oldUl.y = ul.y;
+                this.#oldDr.x = dr.x;
+                this.#oldDr.y = dr.y;
                 rect=rect.clone().pad(this.#markerDiameter/2); //So we see frame also when outside
 
                 const topLeft = coordinateHelper.webToImage({ x: rect.x, y: rect.y });
@@ -151,12 +171,17 @@ class MarkerLayer extends OverlayLayer {
                     maxX: bottomRight.x,
                     maxY: bottomRight.y
                 });
-                const visibleIDs = new Set(visibleMarkers.map(m => m.id));
+                const visibleIDs = new Set();
+                for (const m of visibleMarkers) {
+                    visibleIDs.add(m.id);
+                }
 
                 let vis = 0;
                 this.#markerContainer.children.forEach(marker => {
-                    marker.visible = marker.pressed || visibleIDs.has(marker.id);
-                    vis += marker.visible;
+                    const active = marker.pressed || visibleIDs.has(marker.id);
+                    marker.visible = active;
+                    marker.interactive = active;
+                    vis += active;
                 });
 
                 const now = performance.now();
@@ -191,9 +216,7 @@ class MarkerLayer extends OverlayLayer {
      */
     #addMarkerInteraction(d, obj, marker) {
         const id = d.id;
-        let mouse_pos; //retain last used mouse_pos (global) s.t. we may update locations when keyboard panning etc.
         let mouse_offset; //offset (in webCoords) between mouse click and object
-        let pressed=false; //see also for drag vs. click: https://gist.github.com/fwindpeak/ce39d1acdd55cb37a5bcd8e01d429799
 
         function scale(obj,s) {
             return Ease.ease.add(obj,{scale:s},{duration:100});
@@ -210,7 +233,7 @@ class MarkerLayer extends OverlayLayer {
             this.#drawUpdate();
         }
         const unHighlight = (event) => {
-            if (pressed) return; //Keep highlight during drag
+            if (this.#markerPressed) return; //Keep highlight during drag
             scale(marker, this.#markerSize);
             const label=marker.getChildByName('label');
             if (label) { //We might call unHighlight several times
@@ -228,43 +251,32 @@ class MarkerLayer extends OverlayLayer {
                 tmappUI.openAnnotationEditMenu(id, event.data.global);
             }
             else {
-                event.data.originalEvent.stopPropagation(); //Sometimes works, sometimes not (for touch, depending e.g., on Chrome state)
+                this._viewer.innerTracker.setTracking(false);
+                this.#markerContainer.interactiveChildren = false;
                 tmapp.setCursorStatus({held: true});
-                mouse_pos = new OpenSeadragon.Point(event.data.global.x,event.data.global.y);
-    //TODO: Use marker instead of slow looking up
-                // console.log('pressid: ',id);
-    //            const object_pos = new OpenSeadragon.Point(marker.position.x,marker.position.y);
-                const object_pos = coordinateHelper.imageToWeb(annotationHandler.getAnnotationById(id).centroid);
-                mouse_offset = mouse_pos.minus(object_pos);
-                pressed=true;
+                this.#markerPressed=true;
                 marker.pressed=true;
                 this.#currentMouseUpdateFun=updateMousePos;
-
-                //Fire move events also when the cursor is outside of the object
-                this.#renderer.plugins.interaction.moveWhenInside = false;
+                this.#mouse_pos = new OpenSeadragon.Point(event.data.global.x,event.data.global.y);
+                const object_pos = coordinateHelper.overlayToWeb({x: marker.x, y: marker.y});
+                mouse_offset = this.#mouse_pos.minus(object_pos);
             }
             highlight(event);
             this.#drawUpdate();
         }
         const releaseHandler=(event) => {
-            // event.currentTarget.releasePointerCapture(event.data.originalEvent.pointerId);
+            this._viewer.innerTracker.setTracking(true);
+            this.#markerContainer.interactiveChildren = true;
             tmapp.setCursorStatus({held: false});
-            pressed=false;
+            this.#markerPressed=false;
             marker.pressed=false;
             this.#currentMouseUpdateFun=null;
-            this.#renderer.plugins.interaction.moveWhenInside = true;
             unHighlight(event);
             this.#drawUpdate();
         }
-        const dragHandler=(event) => {
-            if (!pressed) return;
-            regionEditor.stopEditingRegion();
-            mouse_pos = new OpenSeadragon.Point(event.data.global.x,event.data.global.y);
-            updateMousePos();
-        }
         const updateMousePos=() => {
-            if (!pressed) return;
-            const object_new_pos = coordinateHelper.webToImage(mouse_pos.minus(mouse_offset)); //imageCoords
+            if (!this.#markerPressed) return;
+            const object_new_pos = coordinateHelper.webToImage(this.#mouse_pos.minus(mouse_offset)); //imageCoords
 
             // Use a clone of the annotation to make sure the edit is permitted
             const dClone = annotationHandler.getAnnotationById(id);
@@ -277,7 +289,7 @@ class MarkerLayer extends OverlayLayer {
             });
             annotationHandler.update(id, dClone, "image");
 
-            const viewportCoords = coordinateHelper.webToViewport(mouse_pos);
+            const viewportCoords = coordinateHelper.webToViewport(this.#mouse_pos);
             tmapp.setCursorStatus(viewportCoords);
             this.#drawUpdate();
         }
@@ -307,7 +319,6 @@ class MarkerLayer extends OverlayLayer {
             .on('pointerdown', pressHandler) //calling highlight
             .on('pointerup', releaseHandler) //calling unHighlight
             .on('pointerupoutside', releaseHandler)
-            .on('pointermove', dragHandler)
             .on('pointertap', tapHandler) //replaces click (fired after the pointerdown and pointerup events)
             ;
     }
@@ -493,60 +504,56 @@ class MarkerLayer extends OverlayLayer {
 
     #updateAnnotations(annotations) {
         this.#drawUpdate();
-        if (annotations.length>0) this.#createMarkerTextures();   // This is here temporary, should be handled better
-
-        let timed=false;
-        if (this.#timingLog) {
-            if (!this.updateAnnotations.inProgress()) {
-                console.time('updateAnnotations');  //lets time only the first
-                timed=true;
+        this.#updateMarkerTextures().then(() => {   // This is here temporary, should be handled better
+            let timed=false;
+            if (this.#timingLog) {
+                if (!this.updateAnnotations.inProgress()) {
+                    console.time('updateAnnotations');  //lets time only the first
+                    timed=true;
+                }
             }
-        }
-
-        //Draw annotations and update list asynchronously
-        this.updateAnnotations.inProgress(true); //No function 'self' existing
-        const markers = annotations.filter(annotation =>
-            annotation.points.length === 1
-        );
-
-        const doneMarkers = new Promise((resolve, reject) => {
-            const marks = this.#markerOverlay.selectAll("g")
-                .data(markers, d => d.id)
-                .join(
-                    //function wrapper required to keep this object
-                    enter => this.#enterMarker(enter),
-                    update => this.#updateMarker(update),
-                    exit => this.#exitMarker(exit)
-                );
-
-            if (marks.empty()) {
-                resolve();
-            }
-            else {
-                marks
-                    .transition()
-                    .end()
-                    .then(() => {
-                        // console.log('Done with Marker rendering');
-                        resolve(); 
-                    })
-                    .catch(() => {
-                        // console.warn('Sometimes we get a reject, just ignore!');
-                        resolve(); //This also indicates that we're done
-                    });
-            }
-        });
-
-        Promise.allSettled([doneMarkers])
-            .catch((err) => { 
-                console.warn('Annotation rendering reported an issue: ',err); 
-            })
-            .finally(() => {
-                this.updateAnnotations.inProgress(false);
-                if (timed) {
-                    console.timeEnd('updateAnnotations');
+            //Draw annotations and update list asynchronously
+            this.updateAnnotations.inProgress(true); //No function 'self' existing
+            const markers = annotations.filter(annotation =>
+                annotation.points.length === 1
+            );
+            const doneMarkers = new Promise((resolve, reject) => {
+                const marks = this.#markerOverlay.selectAll("g")
+                    .data(markers, d => d.id)
+                    .join(
+                        //function wrapper required to keep this object
+                        enter => this.#enterMarker(enter),
+                        update => this.#updateMarker(update),
+                        exit => this.#exitMarker(exit)
+                    );
+                if (marks.empty()) {
+                    resolve();
+                }
+                else {
+                    marks
+                        .transition()
+                        .end()
+                        .then(() => {
+                            // console.log('Done with Marker rendering');
+                            resolve(); 
+                        })
+                        .catch(() => {
+                            // console.warn('Sometimes we get a reject, just ignore!');
+                            resolve(); //This also indicates that we're done
+                        });
                 }
             });
+            Promise.allSettled([doneMarkers])
+                .catch((err) => { 
+                    console.warn('Annotation rendering reported an issue: ',err); 
+                })
+                .finally(() => {
+                    this.updateAnnotations.inProgress(false);
+                    if (timed) {
+                        console.timeEnd('updateAnnotations');
+                    }
+                });
+        });
     }
 
 

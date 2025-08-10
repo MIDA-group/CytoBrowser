@@ -27,24 +27,18 @@
      * @returns {Overlay}
      */
     $.Viewer.prototype.pixiOverlay = function(options) {
-        this._pixiOverlayInfo = new Overlay(options?.viewer ?? this, options?.container);
-        return this._pixiOverlayInfo;
+        try {
+            this._pixiOverlayInfo = new Overlay(options?.viewer ?? this, options?.container);
+            this._pixiOverlayInfo.ready.catch(console.error);
+            return this._pixiOverlayInfo;
+        } catch(e) {
+            console.error(e);
+        }
     };
 
-    // Turn off TouchEvents to prevent them propagating, see also https://github.com/pixijs/pixijs/issues/8037
-    function turnOffTouchEvents(interactionManager) {
-        interactionManager.interactionDOMElement.removeEventListener('touchstart', interactionManager.onPointerDown, true);
-        interactionManager.interactionDOMElement.removeEventListener('touchcancel', interactionManager.onPointerCancel, true);
-        interactionManager.interactionDOMElement.removeEventListener('touchend', interactionManager.onPointerUp, true);
-        interactionManager.interactionDOMElement.removeEventListener('touchmove', interactionManager.onPointerMove, true);
-        interactionManager.supportsTouchEvents = false;
-    }     
-      
     // ----------
     // Option to use other container than viewer.canvas, e.g. for internal z-stacking
     var Overlay = function(viewer, container=viewer.canvas) {
-        var self = this;
-
         this._viewer = viewer;
         this._containerWidth = 0;
         this._containerHeight = 0;
@@ -56,75 +50,85 @@
         this._pixi.style.width = '100%';
         this._pixi.style.height = '100%';
         container.appendChild(this._pixi);
+        
+        this.ready = this.init();
 
         // Create the application helper and add its render target to the page
         // TODO: This will lead to running out of WebGL context, better to use separate logics, 
         //  see https://github.com/pixijs/pixijs/wiki/v5-Custom-Application-GameLoop
-
-        try {
-            this._app = new PIXI.Application({
-                //resizeTo: this._pixi,
-                transparent: true,
-                antialias: true,
-                sharedTicker: true
-            });
-            this._app.ticker.maxFPS = 30; // To reduce environmental impact
-            this._app.renderer.plugins.interaction.moveWhenInside = true;
-            this._app.renderer.plugins.interaction.autoPreventDefault=true;
-            turnOffTouchEvents(this._app.renderer.plugins.interaction);
-
-            this._pixi.appendChild(this._app.view);
-
-            // Check if WebGL is supported
-            if (!PIXI.utils.isWebGLSupported()) {
-                console.error("WebGL is not supported. Suggested to switch to Chrome browser.");
-                alert("WebGL initialization failed. Please check your browser settings.");
-            }
-
-        } catch (error) {
-            console.error("Pixi.js failed to initialize:", error);
-            alert("Graphics initialization failed. Please check your browser settings.");
-        }
-
-
-        //TODO: removeHandler functionality
-        this._viewer.addHandler('animation', () => {
-            self.resize();
-        });
-
-        this._viewer.addHandler('open',  () => {
-            self.resize();
-        });
-
-        this._viewer.addHandler('rotate',  () => {
-            self.resize();
-        });
-
-        this._viewer.addHandler('resize',  () => {
-            self.resize();
-        });
-
-        this._viewer.addHandler('update-viewport', () => {
-            self.update();
-        });
-
-        this.resize();
-    };
+    }
 
     const _tickerTime = 5 * 1000; // Run ticker for 5 seconds on updates
     let _tickerTimeout = 0;
-    let _requestedAnimationFrame = null;
+    let _requestedAnimationFrame = false;
 
     // ----------
     Overlay.prototype = {
+        init: async function() {
+            var self = this;
+            try {
+                this._app = new PIXI.Application();
+                await this._app.init({
+                    antialias: true,
+                    backgroundAlpha: 0,
+                    culler: false,
+                    eventFeatures: {
+                        move: true,
+                        click: true,
+                        wheel: false,
+                        globalMove: false
+                    },
+                    eventMode: 'static',
+                    preference: 'webgl',
+                    sharedTicker: true,
+                    preserveDrawingBuffer: false
+                });
+
+                this._app.ticker.maxFPS = 30; // To reduce environmental impact
+                this._app.renderer.events.preventDefault = true;
+                this._app.renderer.events.supportsTouchEvents = false;
+                this._app.stage.interactive = false;
+
+                this._pixi.appendChild(this._app.canvas);
+
+                // Check if WebGL is supported
+                if (!PIXI.isWebGLSupported()) {
+                    console.error("WebGL is not supported. Suggested to switch to Chrome browser.");
+                    alert("WebGL initialization failed. Please check your browser settings.");
+                }
+            } catch (error) {
+                console.error("Pixi.js failed to initialize:", error, error?.stack);
+                alert(`Graphics initialization failed: ${error?.message || 'Please check your browser settings (unknown error)'}`);
+            }
+
+            //TODO: removeHandler functionality
+            this._viewer.addHandler('animation', () => {
+                self.resize();
+                self.update();
+            });
+
+            this._viewer.addHandler('open',  () => {
+                self.resize();
+            });
+
+            this._viewer.addHandler('rotate',  () => {
+                self.resize();
+            });
+
+            this._viewer.addHandler('resize',  () => {
+                self.resize();
+            });
+
+            this._viewer.addHandler('update-viewport', () => {
+                self.update();
+            });
+
+            this.resize();
+        },
         // ----------
         destroy: function() {
             //console.log('Destroying Pixi app');
-            if (_requestedAnimationFrame !== null) {
-                cancelAnimationFrame(_requestedAnimationFrame);
-                _requestedAnimationFrame = null;
-            }
-            this._app.destroy(true,true);
+            this._app.destroy({ children: true, texture: true, baseTexture: true });
             this._app=null;
         },
         app: function() {
@@ -135,30 +139,28 @@
         },
         update: function() { // Call this function whenever drawing, to allow animations to run _tickerTime 
             if (!this.app()) return; // Destroyed (instead of running through removeHandler)
-            if (_requestedAnimationFrame !== null) return; // Already scheduled
+            if (_requestedAnimationFrame) return; // Already scheduled
 
-            _requestedAnimationFrame = requestAnimationFrame(() =>{
-                _requestedAnimationFrame = null;
-                // console.time('render');
-                const start = performance.now();
-                this._app.renderer.render(this._app.stage); // Call render directly to reduce lag
-                const renderTime = performance.now() - start;
-                if (renderTime > 16) console.log("Render time: ", renderTime);
-                // console.timeEnd('render');
+            _requestedAnimationFrame = true;
+            this._app.renderer.render(this._app.stage); // Call render directly to reduce lag
 
-                if (!this._app.ticker.started) {
-                    this._app.ticker.start(); // Start render loop
-                    console.log('Ticker started');
-                }
-                if (_tickerTimeout) {
-                    clearTimeout(_tickerTimeout);
-                }
-                _tickerTimeout = setTimeout(() => {
-                    this._app.ticker.stop();
-                    _tickerTimeout = 0;
-                    console.log('Ticker paused');
-                }, _tickerTime); // Pause render loop after a while
+            // Call requestAnimationFrame to block further renders until the next frame
+            requestAnimationFrame(() =>{
+                _requestedAnimationFrame = false;
             });
+
+            if (!this._app.ticker.started) {
+                this._app.ticker.start(); // Start render loop
+                console.log('Ticker started');
+            }
+            if (_tickerTimeout) {
+                clearTimeout(_tickerTimeout);
+            }
+            _tickerTimeout = setTimeout(() => {
+                this._app.ticker.stop();
+                _tickerTimeout = 0;
+                console.log('Ticker paused');
+            }, _tickerTime); // Pause render loop after a while
         },
 
         // ----------

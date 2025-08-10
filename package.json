@@ -38,7 +38,7 @@
       "to": "public/js/jquery/"
     },
     {
-      "from": "node_modules/pixi.js/dist/browser/pixi.min.js{,.map}",
+      "from": "node_modules/pixi.js/dist/pixi.min.js{,.map}",
       "to": "public/js/pixi/"
     }
   ],
@@ -72,7 +72,7 @@
     "jsondiffpatch": "^0.7.3",
     "minimist": "^1.2.8",
     "openseadragon": "^5.0.1",
-    "pixi.js": "^6",
+    "pixi.js": "^8",
     "sanitize-filename": "^1.6.3"
   }
 }

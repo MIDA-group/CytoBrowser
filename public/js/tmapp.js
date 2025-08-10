@@ -528,8 +528,11 @@ const tmapp = (function() {
         _viewer.canvas.appendChild(overlayDiv);
 
         //Since scale < image.size, it is not pixel-perfect
-        const attentionLayer = new AttentionLayer("attention", _viewer.pixiOverlay({container:overlayDiv}));
-        layerHandler.addLayer(attentionLayer);
+        // const attentionOverlay = _viewer.pixiOverlay({container:overlayDiv});
+        // attentionOverlay.ready.then(() => {
+        //     const attentionLayer = new AttentionLayer("attention", attentionOverlay);
+        //     layerHandler.addLayer(attentionLayer);
+        // });
     
         const svgOverlay = _viewer.svgOverlay(overlayDiv); //Shared for regions and collab (for the moment)
         const collabLayer = new CollabLayer("collab",svgOverlay);
@@ -537,9 +540,12 @@ const tmapp = (function() {
         
         const regionLayer = new RegionLayer("region",svgOverlay);
         layerHandler.addLayer(regionLayer);
-  
-        const markerLayer = new MarkerLayer("marker", _viewer.pixiOverlay({container:overlayDiv}));
-        layerHandler.addLayer(markerLayer);
+
+        const markerOverlay = _viewer.pixiOverlay({container:overlayDiv});
+        markerOverlay.ready.then(() => {
+            const markerLayer = new MarkerLayer("marker", markerOverlay);
+            layerHandler.addLayer(markerLayer);
+        });
 
 
 
