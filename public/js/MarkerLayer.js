@@ -237,7 +237,6 @@ class MarkerLayer extends OverlayLayer {
 
         //Arrow functions required to preserve this
         const highlight = (event) => {
-            if (layerHandler.getActiveAnnotationOverlay() !== 'marker') return;
             scale(marker, 1.25*this.#markerSize);
             if (!marker.getChildByName('label')) //Add text if not there
                 marker.addChild(this.#pixiMarkerLabel(d));
@@ -611,6 +610,7 @@ class MarkerLayer extends OverlayLayer {
     blur() {
         if (this.#markerContainer) {
             this.#alpha(this.#markerContainer,0.4);
+            this.#markerContainer.interactiveChildren = false;
         }
         this.#drawUpdate();
     }
@@ -621,6 +621,7 @@ class MarkerLayer extends OverlayLayer {
     focus() {
         if (this.#markerContainer) {
             this.#alpha(this.#markerContainer,1);
+            this.#markerContainer.interactiveChildren = true;
         }
         this.#drawUpdate();
     }
