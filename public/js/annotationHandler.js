@@ -574,7 +574,8 @@ const annotationHandler = (function (){
     function updateClassConfig(classConfig, transmit = true) {
         // Call private function to restart annotation counts.
         _restartAnnotationCounts();
-
+        // Update the pre-rendered marker textures in the marker overlay
+        layerHandler.getLayer("marker").updateMarkerTextures().then();
         // Send the update to collaborators
         transmit && collabClient.updateClassConfig(classConfig);
     }

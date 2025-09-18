@@ -11,7 +11,7 @@
         }
     }
 
-    _timinglog = true;
+    _timinglog = false;
 
     /**
      * Adds pixi.js overlay capability to your OpenSeadragon Viewer

@@ -134,7 +134,7 @@ class MarkerLayer extends OverlayLayer {
         }
     }
 
-    async #updateMarkerTextures() {
+    async updateMarkerTextures() {
         const currentClassConfigString  = classUtils.getClassConfig().map(c => c.name).sort().join(',');
         if (!this.#markerTextures || currentClassConfigString !== this.#lastClassConfigString) {
             await this.#createMarkerTextures();
@@ -483,7 +483,10 @@ class MarkerLayer extends OverlayLayer {
     clear() {
         this.#markerOverlay.selectAll("g").remove(); //d3 still used as container
 
-        this.#markerList.forEach(item=>item.destroy(true));
+        this.#markerList.forEach(item => {
+            Ease.ease.removeEase(item);
+            item.destroy({children: true, texture: false});
+        });
         this.#markerList=[];
         
         this.#markerContainer.removeChildren(); //Without this, we get an error in cullMarkers
@@ -515,56 +518,54 @@ class MarkerLayer extends OverlayLayer {
 
     #updateAnnotations(annotations) {
         this.#drawUpdate();
-        this.#updateMarkerTextures().then(() => {   // This is here temporary, should be handled better
-            let timed=false;
-            if (this.#timingLog) {
-                if (!this.updateAnnotations.inProgress()) {
-                    console.time('updateAnnotations');  //lets time only the first
-                    timed=true;
-                }
+        let timed=false;
+        if (this.#timingLog) {
+            if (!this.updateAnnotations.inProgress()) {
+                console.time('updateAnnotations');  //lets time only the first
+                timed=true;
             }
-            //Draw annotations and update list asynchronously
-            this.updateAnnotations.inProgress(true); //No function 'self' existing
-            const markers = annotations.filter(annotation =>
-                annotation.points.length === 1
-            );
-            const doneMarkers = new Promise((resolve, reject) => {
-                const marks = this.#markerOverlay.selectAll("g")
-                    .data(markers, d => d.id)
-                    .join(
-                        //function wrapper required to keep this object
-                        enter => this.#enterMarker(enter),
-                        update => this.#updateMarker(update),
-                        exit => this.#exitMarker(exit)
-                    );
-                if (marks.empty()) {
-                    resolve();
-                }
-                else {
-                    marks
-                        .transition()
-                        .end()
-                        .then(() => {
-                            // console.log('Done with Marker rendering');
-                            resolve(); 
-                        })
-                        .catch(() => {
-                            // console.warn('Sometimes we get a reject, just ignore!');
-                            resolve(); //This also indicates that we're done
-                        });
+        }
+        //Draw annotations and update list asynchronously
+        this.updateAnnotations.inProgress(true); //No function 'self' existing
+        const markers = annotations.filter(annotation =>
+            annotation.points.length === 1
+        );
+        const doneMarkers = new Promise((resolve, reject) => {
+            const marks = this.#markerOverlay.selectAll("g")
+                .data(markers, d => d.id)
+                .join(
+                    //function wrapper required to keep this object
+                    enter => this.#enterMarker(enter),
+                    update => this.#updateMarker(update),
+                    exit => this.#exitMarker(exit)
+                );
+            if (marks.empty()) {
+                resolve();
+            }
+            else {
+                marks
+                    .transition()
+                    .end()
+                    .then(() => {
+                        // console.log('Done with Marker rendering');
+                        resolve(); 
+                    })
+                    .catch(() => {
+                        // console.warn('Sometimes we get a reject, just ignore!');
+                        resolve(); //This also indicates that we're done
+                    });
+            }
+        });
+        Promise.allSettled([doneMarkers])
+            .catch((err) => { 
+                console.warn('Annotation rendering reported an issue: ',err); 
+            })
+            .finally(() => {
+                this.updateAnnotations.inProgress(false);
+                if (timed) {
+                    console.timeEnd('updateAnnotations');
                 }
             });
-            Promise.allSettled([doneMarkers])
-                .catch((err) => { 
-                    console.warn('Annotation rendering reported an issue: ',err); 
-                })
-                .finally(() => {
-                    this.updateAnnotations.inProgress(false);
-                    if (timed) {
-                        console.timeEnd('updateAnnotations');
-                    }
-                });
-        });
     }
 
 
