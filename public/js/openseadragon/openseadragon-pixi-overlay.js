@@ -202,21 +202,6 @@
             this._app.stage.position.set(p.x,p.y);
             this._app.stage.rotation=rotation;
 
-        // Draw a red frame around the overlay
-/*         {
-            const graphics = new PIXI.Graphics();
-            graphics.lineStyle(1, 0xFF0000);
-            graphics.drawRect(0,0,1000,1000);
-            this._app.stage.addChild(graphics);
-        } */
-
-
-//         // Listen for animate update
-// this._app.ticker.add((delta) => {
-//     // rotate the container!
-//     // use delta to create frame-independent transform
-//     this._app.stage.rotation -= 0.001 * delta;
-// });
             this.update();
         },
 
