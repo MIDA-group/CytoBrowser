@@ -237,6 +237,7 @@ class MarkerLayer extends OverlayLayer {
 
         //Arrow functions required to preserve this
         const highlight = (event) => {
+            if (layerHandler.getActiveAnnotationOverlay() !== 'marker') return;
             scale(marker, 1.25*this.#markerSize);
             if (!marker.getChildByName('label')) //Add text if not there
                 marker.addChild(this.#pixiMarkerLabel(d));
