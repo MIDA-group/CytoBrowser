@@ -154,6 +154,10 @@ class MarkerLayer extends OverlayLayer {
             //Check if the view actually changed
             const ul=coordinateHelper.overlayToWeb({x:0,y:0});
             const dr=coordinateHelper.overlayToWeb({x:1000,y:1000});
+            ul.x = Math.round(ul.x);
+            ul.y = Math.round(ul.y);
+            dr.x = Math.round(dr.x);
+            dr.y = Math.round(dr.y);
             if (this.#first || ul.x!=this.#oldUl.x || ul.y!=this.#oldUl.y || dr.x!=this.#oldDr.x || dr.y!=this.#oldDr.y) {
                 this.#first=false;
                 this.#oldUl.x = ul.x;
@@ -163,14 +167,20 @@ class MarkerLayer extends OverlayLayer {
                 rect=rect.clone().pad(this.#markerDiameter/2); //So we see frame also when outside
 
                 const topLeft = coordinateHelper.webToImage({ x: rect.x, y: rect.y });
+                const topRight = coordinateHelper.webToImage({ x: rect.x + rect.width, y: rect.y });
+                const bottomLeft = coordinateHelper.webToImage({ x: rect.x, y: rect.y + rect.height });
                 const bottomRight = coordinateHelper.webToImage({ x: rect.x + rect.width, y: rect.y + rect.height });
 
-                const visibleMarkers = this.#spatialMarkerIndex.search({
-                    minX: topLeft.x,
-                    minY: topLeft.y,
-                    maxX: bottomRight.x,
-                    maxY: bottomRight.y
-                });
+                const xs = [topLeft.x, topRight.x, bottomLeft.x, bottomRight.x];
+                const ys = [topLeft.y, topRight.y, bottomLeft.y, bottomRight.y];
+
+                const bbox = {
+                    minX: Math.min(...xs),
+                    minY: Math.min(...ys),
+                    maxX: Math.max(...xs),
+                    maxY: Math.max(...ys)
+                };
+                const visibleMarkers = this.#spatialMarkerIndex.search(bbox);
                 const visibleIDs = new Set();
                 for (const m of visibleMarkers) {
                     visibleIDs.add(m.id);

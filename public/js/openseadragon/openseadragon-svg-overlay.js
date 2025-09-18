@@ -83,7 +83,7 @@
 
             var p = this._viewer.viewport.viewerElementToViewportCoordinates(new $.Point(0, 0), true);
             var zoom = this._viewer.viewport.getZoom(true);
-            var rotation = this._viewer.viewport.getRotation();
+            var rotation = this._viewer.viewport.getRotation(true);
             // TODO: Expose an accessor for _containerInnerSize in the OSD API so we don't have to use the private variable.
             var scale = this._viewer.viewport._containerInnerSize.x * zoom;
             this._node.setAttribute('transform',

@@ -48,6 +48,7 @@ const tmapp = (function() {
             y: 0.5,
             z: 0,
             rotation: 0,
+            targetRotation: 0,
             zoom: 1,
             brightness: 0,
             contrast: 0
@@ -126,11 +127,12 @@ const tmapp = (function() {
         _viewer.world.draw();
     }
 
-    function _updateZoom() {
+    function _updateZoom(init = false) {
         if (!_viewer) {
             throw new Error("Tried to update zoom of nonexistent viewer.");
         }
         const zoom = _viewer.viewport.getZoom();
+        if (!init && _currState.zoom === zoom) return;
         if (zoom < _viewer.viewport.getMinZoom()) {
             // console.log('Is this an OSD-5 bug?');
             _viewer.viewport.zoomTo(_viewer.viewport.getMinZoom());
@@ -146,32 +148,36 @@ const tmapp = (function() {
         _updatePosition();
     }
 
-    function _updatePosition() {
+    function _updatePosition(init = false) {
         if (!_viewer) {
             throw new Error("Tried to update position of nonexistent viewer.");
         }
         const position = _viewer.viewport.getCenter();
+        if (!init && _currState.x === position.x && _currState.y === position.y) return;
         _currState.x = position.x;
         _currState.y = position.y;
         _updateCollabPosition();
         _updateURLParams();
     }
 
-    function _updateRotation() {
+    function _updateRotation(init = false) {
         if (!_viewer) {
             throw new Error("Tried to update rotation of nonexistent viewer.");
         }
-        const rotation = _viewer.viewport.getRotation();
-        layerHandler.setRotation(rotation);
-        tmappUI.setImageRotation(rotation);
-        _currState.rotation = rotation;
+        const currRotation = (Math.round(_viewer.viewport.getRotation(true)) + 360) % 360; 
+        if (!init && _currState.rotation === currRotation) return;
+        const targetRotation = _viewer.viewport.getRotation(false);
+        layerHandler.setRotation(currRotation);
+        tmappUI.setImageRotation(currRotation);
+        _currState.rotation = currRotation;
+        _currState.targetRotation = targetRotation;
         _updateCollabPosition();
         _updateURLParams();
     }
 
     const roundTo = (x, n) => Math.round(x * Math.pow(10, n)) / Math.pow(10, n);
     let urlCache=null;
-    function makeURL({x, y, z, rotation, zoom}={},update=false) {
+    function makeURL({x, y, z, targetRotation, zoom}={},update=false) {
         const url = (update&&urlCache)?urlCache:new URL(window.location.href);
         const params = url.searchParams;
         if (_currentImage) {
@@ -180,7 +186,7 @@ const tmapp = (function() {
             x!=null && params.set("x", roundTo(x, 5));
             y!=null && params.set("y", roundTo(y, 5));
             z!=null && params.set("z", z);
-            rotation!=null && params.set("rotation", rotation||0);
+            targetRotation!=null && params.set("rotation", targetRotation||0);
         }
         update || (_collab ? params.set("collab", _collab) : params.delete("collab"));
         urlCache=url;
@@ -410,8 +416,8 @@ const tmapp = (function() {
             // Shift scroll -> Rotate
             if (event.originalEvent.shiftKey) {
                 event.preventDefaultAction = true;
-                const rotation = _currState.rotation;
-                _viewer.viewport.setRotation(rotation + 15*Math.sign(event.scroll));
+                const rotation = _currState.targetRotation;
+                _viewer.viewport.setRotation(((rotation + 15*Math.sign(event.scroll)) % 360 + 360) % 360);
             }
         };
 
@@ -424,9 +430,11 @@ const tmapp = (function() {
         var context_menu_node = null;
         // Change-of-Page (z-level) handler
         viewer.addHandler("page", _updateFocus);
-        viewer.addHandler("zoom", _updateZoom);
-        viewer.addHandler("pan", _updatePosition);
-        viewer.addHandler("rotate", _updateRotation);
+        viewer.addHandler("animation", () => {
+            _updateZoom();
+            _updatePosition();
+            _updateRotation();
+        });
 
         // Store and add #context_menu element, s.t. we can use it in full-page/screen mode
         viewer.addHandler("pre-full-page", (event) => {context_menu_node = document.getElementById("context_menu"); console.log('stored');});
@@ -441,10 +449,10 @@ const tmapp = (function() {
             _addMouseTracking(viewer);
             viewer.canvas.focus();
             viewer.viewport.goHome();
-            _updateZoom();
+            _updateZoom(true);
             _updateFocus(); //coordinateHelper.setImage
-            _updatePosition();
-            _updateRotation();
+            _updatePosition(true);
+            _updateRotation(true);
             _updateBrightnessContrast();
 
             const siz=_viewer.world.getItemAt(0).getContentSize();
