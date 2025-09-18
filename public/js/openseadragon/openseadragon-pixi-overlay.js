@@ -11,6 +11,8 @@
         }
     }
 
+    _timinglog = true;
+
     /**
      * Adds pixi.js overlay capability to your OpenSeadragon Viewer
      *
@@ -50,6 +52,8 @@
         this._pixi.style.width = '100%';
         this._pixi.style.height = '100%';
         container.appendChild(this._pixi);
+
+        this._renderPending = false;
         
         this.ready = this.init();
 
@@ -60,7 +64,15 @@
 
     const _tickerTime = 5 * 1000; // Run ticker for 5 seconds on updates
     let _tickerTimeout = 0;
-    let _requestedAnimationFrame = false;
+    let _renderCount = 0;
+
+    if (_timinglog) {
+        // Print stats every second
+        setInterval(() => {
+            console.log(`Render rate: ${_renderCount} fps`);
+            _renderCount = 0;
+        }, 1000);
+    }
 
     // ----------
     Overlay.prototype = {
@@ -104,14 +116,9 @@
             //TODO: removeHandler functionality
             this._viewer.addHandler('animation', () => {
                 self.resize();
-                self.update();
             });
 
             this._viewer.addHandler('open',  () => {
-                self.resize();
-            });
-
-            this._viewer.addHandler('rotate',  () => {
                 self.resize();
             });
 
@@ -120,7 +127,7 @@
             });
 
             this._viewer.addHandler('update-viewport', () => {
-                self.update();
+                self.resize();
             });
 
             this.resize();
@@ -139,14 +146,14 @@
         },
         update: function() { // Call this function whenever drawing, to allow animations to run _tickerTime 
             if (!this.app()) return; // Destroyed (instead of running through removeHandler)
-            if (_requestedAnimationFrame) return; // Already scheduled
 
-            _requestedAnimationFrame = true;
-            this._app.renderer.render(this._app.stage); // Call render directly to reduce lag
-
-            // Call requestAnimationFrame to block further renders until the next frame
-            requestAnimationFrame(() =>{
-                _requestedAnimationFrame = false;
+            if (this._renderPending) return;
+            this._renderPending = true;
+            Promise.resolve().then(() => {
+                if (!this.app()) return;
+                this._app.renderer.render(this._app.stage);
+                _timinglog = _renderCount++;
+                this._renderPending = false;
             });
 
             if (!this._app.ticker.started) {
