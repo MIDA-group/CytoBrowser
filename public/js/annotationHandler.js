@@ -44,7 +44,7 @@ const annotationHandler = (function (){
      * systems {@link https://openseadragon.github.io/examples/viewport-coordinates/ |here.}
      * @typedef {string} CoordSystem
      */
-    const _annotations = [];
+    const _annotationMap = new Map();
     let _nMarkers = 0;
     let _nRegions = 0;
     let _classCounts = {};
@@ -53,9 +53,13 @@ const annotationHandler = (function (){
 
     // True if any predictions exist
     function _checkPrediction() {
-        return _annotations.some(x => x.prediction!=null);
+        for (const elem of _annotationMap.values()) {
+            if (elem.prediction != null) {
+                return true;
+            }
+        }
+        return false;
     }
-
 
     // Updates visuals
     function updateAnnotationCounts() {
@@ -87,9 +91,8 @@ const annotationHandler = (function (){
         return (p.y>>_gridShift)<<_gridMax | (p.x>>_gridShift);
     }
     function _addAnnotation(annotation) {
-        const idx=_annotations.push(annotation);
+        _annotationMap.set(annotation.id, annotation);
         _addGridAnnotation(annotation);
-        return idx;
     }
     function _addGridAnnotation(annotation) {
         const grid=_getGridIdx(annotation);
@@ -108,7 +111,7 @@ const annotationHandler = (function (){
     }
 
     function _generateId() {
-        const order = Math.ceil(Math.log10((1 + _annotations.length) * 100));
+        const order = Math.ceil(Math.log10((1 + _annotationMap.size) * 100));
         const multiplier = Math.pow(10, order);
         let id;
         do {
@@ -179,7 +182,7 @@ const annotationHandler = (function (){
     }
 
     function _updateVisuals() {
-        annotationVisuals.update(_annotations);
+        annotationVisuals.update(Array.from(_annotationMap.values()));
     }
 
     /**
@@ -252,26 +255,24 @@ const annotationHandler = (function (){
         let classes = classUtils.getSortedNames(classUtils.getClassConfig());
 
         annotations.forEach(annotation => {
-            const addedAnnotation = _cloneAnnotation(annotation);
-
             // Store the coordinates in all systems and set the image coordinates
-            const coords = addedAnnotation.points.map(point =>
+            const coords = annotation.points.map(point =>
                 _getCoordSystems(point, coordSystem)
             );
             if (coordSystem !== "image")
-                addedAnnotation.points = coords.map(coord => coord.image);
-            if (!addedAnnotation.points.every(coordinateHelper.pointIsInsideImage)) {
+                annotation.points = coords.map(coord => coord.image);
+            if (!annotation.points.every(coordinateHelper.pointIsInsideImage)) {
                 console.warn("Cannot add an annotation with points outside the image.");
                 return;
             }
 
-            if (!(classes.includes(addedAnnotation.mclass))) {
+            if (!(classes.includes(annotation.mclass))) {
                 console.warn("Cannot add an annotation with unrecognised/incompatible class.");
                 return;
             }
 
             // Check if an identical annotation already exists, remove old one if it does
-            let replacedAnnotation = _findDuplicateAnnotation(addedAnnotation);
+            let replacedAnnotation = _findDuplicateAnnotation(annotation);
             if (replacedAnnotation) {
                 // old node does not like ||=
                 once || (console.warn("Adding annotation(s) with identical properties as existing one, ignoring."), once=true);
@@ -281,51 +282,51 @@ const annotationHandler = (function (){
             }
 
             // Make sure the annotation has an id
-            if (addedAnnotation.id === undefined) {
-                addedAnnotation.id = _generateId();
+            if (annotation.id === undefined) {
+                annotation.id = _generateId();
             }
             else {
                 // If the id has been specified, check if it's not taken
-                const existingAnnotation = getAnnotationById(addedAnnotation.id);
+                const existingAnnotation = getAnnotationById(annotation.id);
                 if (existingAnnotation !== undefined) {
                     console.info("Tried to assign an already-used id, reassigning.");
-                    addedAnnotation.originalId === undefined && (addedAnnotation.originalId = addedAnnotation.id);
-                    addedAnnotation.id = _generateId();
+                    annotation.originalId === undefined && (annotation.originalId = annotation.id);
+                    annotation.id = _generateId();
                 }
             }
 
             // Set the bookmark field of the annotation
-            if (addedAnnotation.bookmarked === undefined)
-                addedAnnotation.bookmarked = false;
+            if (annotation.bookmarked === undefined)
+                annotation.bookmarked = false;
 
             // Set the centroid of the annotation
-            if (!addedAnnotation.centroid)
-                addedAnnotation.centroid = mathUtils.getCentroid(addedAnnotation.points);
+            if (!annotation.centroid)
+                annotation.centroid = mathUtils.getCentroid(annotation.points);
 
             // Set the diameter of the annotation
-            if (!addedAnnotation.diameter)
-                addedAnnotation.diameter = mathUtils.getDiameter(addedAnnotation.points);
+            if (!annotation.diameter)
+                annotation.diameter = mathUtils.getDiameter(annotation.points);
 
             // Set the author of the annotation
-            if (!addedAnnotation.author)
-                addedAnnotation.author = userInfo.getName();
+            if (!annotation.author)
+                annotation.author = userInfo.getName();
             
             // Set the prediction score
-            if (addedAnnotation.prediction === undefined)
-                addedAnnotation.prediction = _generatePrediction();
+            if (annotation.prediction === undefined)
+                annotation.prediction = _generatePrediction();
 
             // Store a data representation of the annotation
-            _addAnnotation(addedAnnotation);
+            _addAnnotation(annotation);
 
             // Update the annotation count
-            if (addedAnnotation.points.length === 1) {
+            if (annotation.points.length === 1) {
                 _nMarkers++;
             }
             else {
                 _nRegions++;
             }
-            _classCounts[addedAnnotation.mclass]++;
-            _hasPrediction = _hasPrediction || (addedAnnotation.prediction!=null); //old Node dislikes ||=
+            _classCounts[annotation.mclass]++;
+            _hasPrediction = _hasPrediction || (annotation.prediction!=null); //old Node dislikes ||=
 
             // Send the update to collaborators
             transmit && collabClient.addAnnotation(addedAnnotation);
@@ -414,17 +415,15 @@ const annotationHandler = (function (){
 
 
         // Store the annotation in data
-        const updatedIndex = _annotations.findIndex(annotationx => annotationx.id === id);
-
         if (newGridIndex !== oldGridIndex) {
             // console.log(`Moving from idx ${oldGridIndex} to ${newGridIndex}`);
-            _removeGridAnnotation(_annotations[updatedIndex]);
+            _removeGridAnnotation(_annotationMap.get(id));
         }
 
-        Object.assign(_annotations[updatedIndex], updatedAnnotation);
+        Object.assign(_annotationMap.get(id), updatedAnnotation);
 
         if (newGridIndex !== oldGridIndex) {
-            _addGridAnnotation(_annotations[updatedIndex]);
+            _addGridAnnotation(_annotationMap.get(id));
         }
 
 
@@ -474,16 +473,11 @@ const annotationHandler = (function (){
         }
         // console.log('rmv: ',ids);
         ids.forEach(id => {
-            const annotations = _annotations;
-            const deletedIndex = annotations.findIndex(annotation => annotation.id === id);
-
-            // Check if the annotation exists first
-            if (deletedIndex === -1) {
+            if (!_annotationMap.has(id)) {
                 throw new Error("Tried to remove an annotation that doesn't exist");
             }
-
-            // Remove the annotation from the data
-            const removedAnnotation = annotations.splice(deletedIndex, 1)[0];
+            const removedAnnotation = _annotationMap.get(id);
+            _annotationMap.delete(id);
 
             // Remove from gridded
             _removeGridAnnotation(removedAnnotation);
@@ -515,8 +509,7 @@ const annotationHandler = (function (){
      * be told to clear their annotations.
      */
     function clear(transmit = true) {
-        const annotations = _annotations;
-        const ids = annotations.map(annotation => annotation.id);
+        const ids = Array.from(_annotationMap.keys());
         remove(ids, false);
 
         // Send the update to collaborators
@@ -534,7 +527,9 @@ const annotationHandler = (function (){
      * @param {function} f Function to be called with each annotation.
      */
     function forEachAnnotation(f, include_computable=true) {
-        _annotations.map((elem) => _cloneAnnotation(elem,include_computable)).forEach(f);
+        for (const elem of _annotationMap.values()) {
+            f(_cloneAnnotation(elem, include_computable));
+        }
     }
 
     /**
@@ -542,12 +537,10 @@ const annotationHandler = (function (){
      * @param {number} id The id used for looking up the annotation.
      * @returns {Object} A clone of the annotation with the specified id,
      * or undefined if not in use.
-     * 
-     * Currently O(N) slow, so don't overuse!
      */
     //let gaid=0; 
     function getAnnotationById(id) {
-        const annotation = _annotations.find(annotation => annotation.id === id);
+        const annotation = _annotationMap.get(id);
         if (annotation === undefined) {
             return undefined;
         }
@@ -561,7 +554,7 @@ const annotationHandler = (function (){
      * @returns {boolean} Whether or not the list is empty.
      */
     function isEmpty() {
-        return _annotations.length === 0;
+        return _annotationMap.size === 0;
     }
 
     /**
