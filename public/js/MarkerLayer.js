@@ -537,42 +537,18 @@ class MarkerLayer extends OverlayLayer {
         const markers = annotations.filter(annotation =>
             annotation.points.length === 1
         );
-        const doneMarkers = new Promise((resolve, reject) => {
-            const marks = this.#markerOverlay.selectAll("g")
-                .data(markers, d => d.id)
-                .join(
-                    //function wrapper required to keep this object
-                    enter => this.#enterMarker(enter),
-                    update => this.#updateMarker(update),
-                    exit => this.#exitMarker(exit)
-                );
-            if (marks.empty()) {
-                resolve();
-            }
-            else {
-                marks
-                    .transition()
-                    .end()
-                    .then(() => {
-                        // console.log('Done with Marker rendering');
-                        resolve(); 
-                    })
-                    .catch(() => {
-                        // console.warn('Sometimes we get a reject, just ignore!');
-                        resolve(); //This also indicates that we're done
-                    });
-            }
-        });
-        Promise.allSettled([doneMarkers])
-            .catch((err) => { 
-                console.warn('Annotation rendering reported an issue: ',err); 
-            })
-            .finally(() => {
-                this.updateAnnotations.inProgress(false);
-                if (timed) {
-                    console.timeEnd('updateAnnotations');
-                }
-            });
+        this.#markerOverlay.selectAll("g")
+            .data(markers, d => d.id)
+            .join(
+                //function wrapper required to keep this object
+                enter => this.#enterMarker(enter),
+                update => this.#updateMarker(update),
+                exit => this.#exitMarker(exit)
+            );
+        this.updateAnnotations.inProgress(false);
+        if (timed) {
+            console.timeEnd('updateAnnotations');
+        }
     }
 
 
