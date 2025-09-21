@@ -124,6 +124,14 @@ class MarkerLayer extends OverlayLayer {
             graphics.addChild(square, circle);
             const texture = await this.#renderer.generateTexture(graphics);
             graphics.destroy({ children: true });
+            const c = 0.7071068; // sin/cos of 45 degrees
+            const boundaryPoints = [
+                -step*c - -step*c, -step*c + -step*c,
+                step*c - -step*c,  step*c + -step*c,
+                step*c - step*c,   step*c + step*c,
+                -step*c - step*c,  -step*c + step*c
+            ];
+            texture.hitArea = new PIXI.Polygon(boundaryPoints);
             return texture;
         };
 
@@ -349,6 +357,7 @@ class MarkerLayer extends OverlayLayer {
         sprite.scale.set(0);
         sprite.id = d.id;
         sprite.mclass = d.mclass;
+        sprite.hitArea = texture.hitArea;
 
         this.#addMarkerInteraction(d, sprite, sprite);
         this.#markerContainer.addChild(sprite);
