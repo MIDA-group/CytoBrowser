@@ -327,10 +327,10 @@ const annotationHandler = (function (){
             }
             _classCounts[annotation.mclass]++;
             _hasPrediction = _hasPrediction || (annotation.prediction!=null); //old Node dislikes ||=
-
-            // Send the update to collaborators
-            transmit && collabClient.addAnnotation(addedAnnotation);
         });
+
+        // Send the update to collaborators
+        transmit && collabClient.addAnnotation(annotations);
 
         updateAnnotationCounts();
         timingLog && console.timeEnd('addAnnotation');
@@ -491,10 +491,11 @@ const annotationHandler = (function (){
             }
             _classCounts[removedAnnotation.mclass]--;
 
-            // Send the update to collaborators
-            transmit && collabClient.removeAnnotation(id);
             regionEditor.stopEditingRegionIfBeingEdited(id);
         });
+
+        // Send the update to collaborators
+        transmit && collabClient.removeAnnotation(ids);
 
         _hasPrediction = _checkPrediction();
         updateAnnotationCounts();
