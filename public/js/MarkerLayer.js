@@ -289,7 +289,6 @@ class MarkerLayer extends OverlayLayer {
             this.#markerPressed=false;
             marker.pressed=false;
             this.#currentMouseUpdateFun=null;
-            unHighlight(event);
             this.#drawUpdate();
         }
         const updateMousePos=() => {
@@ -474,7 +473,7 @@ class MarkerLayer extends OverlayLayer {
             }
             Ease.ease.add(this.#markerList[d.id],{scale:this.#markerList[d.id].scale.x*1.5},{duration:30})
                 .once('complete', (ease) => {
-                    ease.elements.forEach(item=>item.destroy(true)); //Self destruct after animation
+                    ease.elements.forEach(item=>item.destroy({children: true, texture: false})); //Self destruct after animation
                 });
             delete this.#markerList[d.id];
             const existingMarker = this.#annotationIdToMarker.get(d.id);
