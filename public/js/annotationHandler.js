@@ -253,26 +253,29 @@ const annotationHandler = (function (){
         timingLog && console.time('addAnnotation');
 
         let classes = classUtils.getSortedNames(classUtils.getClassConfig());
-
+        
+        const addedAnntotations = [];
         annotations.forEach(annotation => {
+            const addedAnnotation = _cloneAnnotation(annotation);
+            
             // Store the coordinates in all systems and set the image coordinates
-            const coords = annotation.points.map(point =>
+            const coords = addedAnnotation.points.map(point =>
                 _getCoordSystems(point, coordSystem)
             );
             if (coordSystem !== "image")
-                annotation.points = coords.map(coord => coord.image);
-            if (!annotation.points.every(coordinateHelper.pointIsInsideImage)) {
+                addedAnnotation.points = coords.map(coord => coord.image);
+            if (!addedAnnotation.points.every(coordinateHelper.pointIsInsideImage)) {
                 console.warn("Cannot add an annotation with points outside the image.");
                 return;
             }
 
-            if (!(classes.includes(annotation.mclass))) {
+            if (!(classes.includes(addedAnnotation.mclass))) {
                 console.warn("Cannot add an annotation with unrecognised/incompatible class.");
                 return;
             }
 
             // Check if an identical annotation already exists, remove old one if it does
-            let replacedAnnotation = _findDuplicateAnnotation(annotation);
+            let replacedAnnotation = _findDuplicateAnnotation(addedAnnotation);
             if (replacedAnnotation) {
                 // old node does not like ||=
                 once || (console.warn("Adding annotation(s) with identical properties as existing one, ignoring."), once=true);
@@ -282,55 +285,58 @@ const annotationHandler = (function (){
             }
 
             // Make sure the annotation has an id
-            if (annotation.id === undefined) {
-                annotation.id = _generateId();
+            if (addedAnnotation.id === undefined) {
+                addedAnnotation.id = _generateId();
             }
             else {
                 // If the id has been specified, check if it's not taken
-                const existingAnnotation = getAnnotationById(annotation.id);
+                const existingAnnotation = getAnnotationById(addedAnnotation.id);
                 if (existingAnnotation !== undefined) {
                     console.info("Tried to assign an already-used id, reassigning.");
-                    annotation.originalId === undefined && (annotation.originalId = annotation.id);
-                    annotation.id = _generateId();
+                    addedAnnotation.originalId === undefined && (addedAnnotation.originalId = addedAnnotation.id);
+                    addedAnnotation.id = _generateId();
                 }
             }
 
             // Set the bookmark field of the annotation
-            if (annotation.bookmarked === undefined)
-                annotation.bookmarked = false;
+            if (addedAnnotation.bookmarked === undefined)
+                addedAnnotation.bookmarked = false;
 
             // Set the centroid of the annotation
-            if (!annotation.centroid)
-                annotation.centroid = mathUtils.getCentroid(annotation.points);
+            if (!addedAnnotation.centroid)
+                addedAnnotation.centroid = mathUtils.getCentroid(addedAnnotation.points);
 
             // Set the diameter of the annotation
-            if (!annotation.diameter)
-                annotation.diameter = mathUtils.getDiameter(annotation.points);
+            if (!addedAnnotation.diameter)
+                addedAnnotation.diameter = mathUtils.getDiameter(addedAnnotation.points);
 
             // Set the author of the annotation
-            if (!annotation.author)
-                annotation.author = userInfo.getName();
+            if (!addedAnnotation.author)
+                addedAnnotation.author = userInfo.getName();
             
             // Set the prediction score
-            if (annotation.prediction === undefined)
-                annotation.prediction = _generatePrediction();
+            if (addedAnnotation.prediction === undefined)
+                addedAnnotation.prediction = _generatePrediction();
 
             // Store a data representation of the annotation
-            _addAnnotation(annotation);
+            _addAnnotation(addedAnnotation);
+            addedAnntotations.push(addedAnnotation);
 
             // Update the annotation count
-            if (annotation.points.length === 1) {
+            if (addedAnnotation.points.length === 1) {
                 _nMarkers++;
             }
             else {
                 _nRegions++;
             }
-            _classCounts[annotation.mclass]++;
-            _hasPrediction = _hasPrediction || (annotation.prediction!=null); //old Node dislikes ||=
+            _classCounts[addedAnnotation.mclass]++;
+            _hasPrediction = _hasPrediction || (addedAnnotation.prediction!=null); //old Node dislikes ||=
         });
 
         // Send the update to collaborators
-        transmit && collabClient.addAnnotation(annotations);
+        if (addedAnntotations.length > 0) {
+            transmit && collabClient.addAnnotation(addedAnntotations);
+        }
 
         updateAnnotationCounts();
         timingLog && console.timeEnd('addAnnotation');
