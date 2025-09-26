@@ -193,7 +193,7 @@ const collabClient = (function(){
                 _joinBatch.push(annotation);
             });
         }
-        metadataHandler.clear();
+        //metadataHandler.clear(); /* To allow SizeN to remain from load */
         globalDataHandler.clear();
         metadataHandler.updateMetadataValues(msg.metadata);
         annotationHandler.clear(false);

@@ -447,6 +447,10 @@ const tmapp = (function() {
             _updateRotation();
             _updateBrightnessContrast();
 
+            const siz=_viewer.world.getItemAt(0).getContentSize();
+            const count=_viewer.world.getItemCount();
+            metadataHandler.updateMetadataValues({ SizeX:siz.x, SizeY:siz.y, SizeZ:count});
+
             //Set better aspect ratio of navigator, based on image, not viewer
             function setNavSize() {
                 if (!viewer.element) return;
