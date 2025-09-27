@@ -804,7 +804,14 @@ const tmapp = (function() {
         //init OSD viewer
         _viewer = OpenSeadragon(_optionsOSD);
         _viewer.scalebar();
-        
+
+        //For some reason the Navigator animations gets slowed down by roughly a factor three
+        //And, there is no apparent way to set the navigator.animationTime on instantiation
+        _viewer.navigator.viewport.centerSpringX.animationTime=_viewer.animationTime/3;
+        _viewer.navigator.viewport.centerSpringY.animationTime=_viewer.animationTime/3;
+        _viewer.navigator.viewport.zoomSpring.animationTime=_viewer.animationTime/3;
+        _viewer.navigator.viewport.degreesSpring.animationTime=_viewer.animationTime/3;
+
         //open the DZI xml file pointing to the tiles
         const imageName = _currentImage.name;
         const imageStack = _expandImageName(imageName);
