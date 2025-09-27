@@ -15,7 +15,6 @@ const tmapp = (function() {
         navigatorPosition: "BOTTOM_LEFT",
         navigatorSizeRatio: 0.3,
         navigatorMaintainSizeRatio: true, 
-        animationTime: 0.0,
         blendTime: 0,
         maxImageCacheCount: 800, //need more for z-stacks
         minZoomImageRatio: 1,
@@ -210,6 +209,7 @@ const tmapp = (function() {
         return {imageName, collab, state};
     }
 
+    // Immediate moveTo from URL
     function processURL(url) {
         const {imageName, collab, state}=parseURL(url);
         if (imageName && imageName!==_currentImage.name) {
@@ -217,7 +217,7 @@ const tmapp = (function() {
                 openImage(imageName, () => {
                     collabClient.connect(collab);
                     if (state) {
-                        moveTo(state);
+                        moveTo(state, true);
                     }
                 });
             }
@@ -225,7 +225,7 @@ const tmapp = (function() {
                 openImage(imageName, () => {
                     collabPicker.open(imageName, true, true, () => {
                         if (state) {
-                            moveTo(state);
+                            moveTo(state, true);
                         }
                     });
                 });
@@ -234,11 +234,11 @@ const tmapp = (function() {
         else if (collab && collab!==_collab) {
             collabClient.connect(collab);
             if (state) {
-                moveTo(state);
+                moveTo(state, true);
             }
         }
         else if (state && state!==_currState) {
-            moveTo(state);
+            moveTo(state, true);
         }
     }
 
@@ -924,7 +924,7 @@ const tmapp = (function() {
                         openImage(imageName, () => {
                             collabClient.connect(collab);
                             if (initialState) {
-                                moveTo(initialState);
+                                moveTo(initialState, true);
                             }
                         });
                     }
@@ -932,7 +932,7 @@ const tmapp = (function() {
                         openImage(imageName, () => {
                             collabPicker.open(imageName, true, true, () => {
                                 if (initialState) {
-                                    moveTo(initialState);
+                                    moveTo(initialState, true);
                                 }
                             });
                         });
@@ -1011,7 +1011,7 @@ const tmapp = (function() {
      * @param {number} state.rotation The rotation in the viewport.
      * @param {number} state.zoom The zoom in the viewport.
      */
-    function moveTo({x, y, z, rotation, zoom}) {
+    function moveTo({x, y, z, rotation, zoom}, immediately=false) {
         const capValue = (val, min, max) => Math.max(Math.min(val, max), min);
         if (!_viewer) {
             throw new Error("Tried to move viewport without a viewer.");
@@ -1020,7 +1020,7 @@ const tmapp = (function() {
             const min = _viewer.viewport.getMinZoom();
             const max = _viewer.viewport.getMaxZoom();
             const boundZoom = capValue(zoom, min, max);
-            _viewer.viewport.zoomTo(boundZoom, false); //true);
+            _viewer.viewport.zoomTo(boundZoom, immediately);
         }
         if (x !== undefined && y !== undefined) {
             const imageBounds = _viewer.world.getItemAt(0).getBounds();
@@ -1040,10 +1040,10 @@ const tmapp = (function() {
             const boundX = capValue(x, minX, maxX);
             const boundY = capValue(y, minY, maxY);
             const point = new OpenSeadragon.Point(boundX, boundY);
-            _viewer.viewport.panTo(point, false); // true);
+            _viewer.viewport.panTo(point, immediately);
         }
         if (rotation !== undefined) {
-            _viewer.viewport.setRotation(rotation, false);
+            _viewer.viewport.setRotation(rotation, immediately);
         }
         if (z !== undefined) {
             _setFocusLevel(z);
@@ -1068,9 +1068,7 @@ const tmapp = (function() {
 
     /**
      * Move the viewport to look at a specific annotation.
-     * @param {number} x The annottation or its id where to move.
-     *
-     * Note: getAnnotationById is currently O(N) slow!
+     * @param {number} x The annotation or its id where to move.
      */
     function moveToAnnotation(x) {
         // Only move if you're not following anyone
