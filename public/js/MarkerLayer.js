@@ -270,7 +270,10 @@ class MarkerLayer extends OverlayLayer {
             }
             else {
                 this._viewer.innerTracker.setTracking(false);
-                this.#markerContainer.interactiveChildren = false;
+                
+                //This prevents release event on the same object, thus preventing 'tap'
+                //this.#markerContainer.interactiveChildren = false;
+                
                 tmapp.setCursorStatus({held: true});
                 this.#markerPressed=true;
                 marker.pressed=true;
@@ -293,6 +296,7 @@ class MarkerLayer extends OverlayLayer {
         }
         const updateMousePos=() => {
             if (!this.#markerPressed) return;
+            this.#markerContainer.interactiveChildren = false;
             const object_new_pos = coordinateHelper.webToImage(this.#mouse_pos.minus(mouse_offset)); //imageCoords
 
             // Use a clone of the annotation to make sure the edit is permitted
