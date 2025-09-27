@@ -74,7 +74,7 @@ const classUtils = (function(){
         else {
             _classes = defaultClassConfig;
         }
-        
+        layerHandler.getLayer("marker").updateMarkerTextures().then();
     }
 
     /**

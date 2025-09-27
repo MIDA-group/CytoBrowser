@@ -35,6 +35,7 @@ class Collaboration {
     constructor(id, image, author) {
         this.members = new Map();
         this.annotations = [];
+        this.annotationMap = new Map();
         this.comments = [];
         this.nextCommentId = 0;
         this.id = id;
@@ -191,19 +192,19 @@ class Collaboration {
         }
         switch (msg.actionType) {
             case "add":
-                if (!this.isDuplicateAnnotation(msg.annotation)) {
-                    this.annotations.push(msg.annotation);
+                {
+                    msg.annotations.forEach(newAnnotation => {
+                        this.annotations.push(newAnnotation);
+                        this.annotationMap.set(newAnnotation.id, newAnnotation);
+                    });
                     this.forwardMessage(sender, msg);
-                }
-                else {
-                    this.log(`${member.name} tried to add a duplicate annotation, ignoring.`, console.info);
                 }
                 break;
             case "update":
                 {
-                    const index = this.annotations.findIndex(annotation => annotation.id === msg.id);
-                    if (index >= 0) {
-                        Object.assign(this.annotations[index], msg.annotation);
+                    const annotation = this.annotationMap.get(msg.id);
+                    if (annotation) {
+                        Object.assign(annotation, msg.annotation);
                     }
                     else {
                         this.log(`${member.name} tried to update nonexisting annotation with ID ${msg.id}`, console.warn);
@@ -213,18 +214,25 @@ class Collaboration {
                 break;
             case "remove":
                 {
-                    const index = this.annotations.findIndex(annotation => annotation.id === msg.id);
-                    if (index >=0) {
-                        this.annotations.splice(index, 1);
-                    }
-                    else {
-                        this.log(`${member.name} tried to remove nonexisting annotation with ID ${msg.id}`, console.warn);
-                    }
+                    msg.ids.forEach(id => {
+                        const annotation = this.annotationMap.get(id);
+                        if (annotation) {
+                            this.annotationMap.delete(id);
+                            const index = this.annotations.indexOf(annotation);
+                            if (index >= 0) {
+                                this.annotations.splice(index, 1);
+                            }
+                        }
+                        else {
+                            this.log(`${member.name} tried to remove nonexisting annotation with ID ${id}`, console.warn);
+                        }
+                    });
                     this.forwardMessage(sender, msg);
                 }
                 break;
             case "clear":
                 this.annotations = [];
+                this.annotationMap.clear();
                 this.forwardMessage(sender, msg);
                 break;
             default:
@@ -395,6 +403,9 @@ class Collaboration {
                     this.name = data.name;
                 }
                 this.annotations = data.annotations;
+                for (const annotation of data.annotations) {
+                    this.annotationMap.set(annotation.id, annotation);
+                }
             }
             if (data.version === "1.1") {
                 this.author = data.author;
@@ -413,6 +424,7 @@ class Collaboration {
         }).catch(() => {
             this.log(`Couldn't load preexisting annotations for ${this.image}.`, console.info);
             this.annotations = [];
+            this.annotationMap.clear();
             this.comments = [];
         }).finally(() => {
             const nameChangeMsg = {type: "nameChange", name: this.name};
@@ -464,24 +476,6 @@ class Collaboration {
             this.saveState();
             this.autosaveTimeout = null;
         }, autosaveTimeout); //Autosave timeout in ms
-    }
-
-    pointsAreDuplicate(pointsA, pointsB) {
-        if (pointsA.length !== pointsB.length)
-            return false;
-
-        return pointsA.every((pointA, index) => {
-            const pointB = pointsB[index];
-            return pointA.x === pointB.x && pointA.y === pointB.y;
-        });
-    }
-
-    isDuplicateAnnotation(annotation) {
-        return this.annotations.some(existingAnnotation =>
-            existingAnnotation.z === annotation.z
-            && existingAnnotation.mclass === annotation.mclass
-            && this.pointsAreDuplicate(annotation.points, existingAnnotation.points)
-        );
     }
 
     log(msg, f = console.log) {

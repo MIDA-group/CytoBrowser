@@ -69,13 +69,13 @@ const collabClient = (function(){
     function _handleAnnotationAction(msg) {
         switch(msg.actionType) {
             case "add":
-                annotationHandler.add(msg.annotation, "image", false);
+                annotationHandler.add(msg.annotations, "image", false);
                 break;
             case "update":
                 annotationHandler.update(msg.id, msg.annotation, "image", false);
                 break;
             case "remove":
-                annotationHandler.remove(msg.id, false);
+                annotationHandler.remove(msg.ids, false);
                 break;
             case "clear":
                 annotationHandler.clear(false);
@@ -202,7 +202,9 @@ const collabClient = (function(){
         tmappUI.updateClassSelectionButtons();
         annotationHandler.updateClassConfig(msg.classConfig, false);
 
+        const c4 = performance.now();
         annotationHandler.add(msg.annotations, "image", false);
+        const c5 = performance.now();
         if (_joinBatch) {
             annotationHandler.add(_joinBatch, "image");
             _joinBatch = null;
@@ -221,6 +223,7 @@ const collabClient = (function(){
             _onCreated();
             _onCreated = null;
         }
+        console.log("Add annotations: ", (c5-c4).toFixed(2));
     }
 
     function _requestSummary() {
@@ -515,16 +518,19 @@ const collabClient = (function(){
     }
 
     /**
-     * Notify collaborators about an annotation being added.
-     * @param {Object} annotation Data for the added annotation.
+     * Notify collaborators about annotation(s) being added.
+     * @param {Array<Object>} annotations Data for the added annotation(s).
      */
-    function addAnnotation(annotation) {
+    function addAnnotation(annotations) {
         //skip computables
-        const {centroid, diameter, ...essentials} = annotation;
+        const essentialsArr = annotations.map(annotation => {
+            const {centroid, diameter, ...essentials} = annotation;
+            return essentials;
+        });
         send({
             type: "annotationAction",
             actionType: "add",
-            annotation: essentials
+            annotations: essentialsArr
         });
     }
 
@@ -545,14 +551,14 @@ const collabClient = (function(){
     }
 
     /**
-     * Notify collaborators about an annotation being removed.
-     * @param {number} id The id of the annotation being removed.
+     * Notify collaborators about annotation(s) being removed.
+     * @param {number} ids The id of the annotation(s) being removed.
      */
-    function removeAnnotation(id) {
+    function removeAnnotation(ids) {
         send({
             type: "annotationAction",
             actionType: "remove",
-            id: id
+            ids: ids
         });
     }
 

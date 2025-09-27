@@ -15,7 +15,6 @@ const tmapp = (function() {
         navigatorPosition: "BOTTOM_LEFT",
         navigatorSizeRatio: 0.3,
         navigatorMaintainSizeRatio: true, 
-        animationTime: 0.0,
         blendTime: 0,
         maxImageCacheCount: 800, //need more for z-stacks
         minZoomImageRatio: 1,
@@ -48,6 +47,7 @@ const tmapp = (function() {
             y: 0.5,
             z: 0,
             rotation: 0,
+            targetRotation: 0,
             zoom: 1,
             brightness: 0,
             contrast: 0
@@ -126,11 +126,12 @@ const tmapp = (function() {
         _viewer.world.draw();
     }
 
-    function _updateZoom() {
+    function _updateZoom(init = false) {
         if (!_viewer) {
             throw new Error("Tried to update zoom of nonexistent viewer.");
         }
         const zoom = _viewer.viewport.getZoom();
+        if (!init && _currState.zoom === zoom) return;
         if (zoom < _viewer.viewport.getMinZoom()) {
             // console.log('Is this an OSD-5 bug?');
             _viewer.viewport.zoomTo(_viewer.viewport.getMinZoom());
@@ -141,37 +142,40 @@ const tmapp = (function() {
         layerHandler.setZoom(zoom, maxZoom, size.x, size.y);
         tmappUI.setImageZoom(Math.round(zoom*10)/10);
         _currState.zoom = zoom;
-
-        // Zooming often changes the position too, based on cursor position
-        _updatePosition();
+        _updateCollabPosition();
+        _updateURLParams();
     }
 
-    function _updatePosition() {
+    function _updatePosition(init = false) {
         if (!_viewer) {
             throw new Error("Tried to update position of nonexistent viewer.");
         }
         const position = _viewer.viewport.getCenter();
+        if (!init && _currState.x === position.x && _currState.y === position.y) return;
         _currState.x = position.x;
         _currState.y = position.y;
         _updateCollabPosition();
         _updateURLParams();
     }
 
-    function _updateRotation() {
+    function _updateRotation(init = false) {
         if (!_viewer) {
             throw new Error("Tried to update rotation of nonexistent viewer.");
         }
-        const rotation = _viewer.viewport.getRotation();
-        layerHandler.setRotation(rotation);
-        tmappUI.setImageRotation(rotation);
-        _currState.rotation = rotation;
+        const currRotation = (Math.round(_viewer.viewport.getRotation(true)) + 360) % 360; 
+        if (!init && _currState.rotation === currRotation) return;
+        const targetRotation = _viewer.viewport.getRotation(false);
+        layerHandler.setRotation(currRotation);
+        tmappUI.setImageRotation(currRotation);
+        _currState.rotation = currRotation;
+        _currState.targetRotation = targetRotation;
         _updateCollabPosition();
         _updateURLParams();
     }
 
     const roundTo = (x, n) => Math.round(x * Math.pow(10, n)) / Math.pow(10, n);
     let urlCache=null;
-    function makeURL({x, y, z, rotation, zoom}={},update=false) {
+    function makeURL({x, y, z, targetRotation, zoom}={},update=false) {
         const url = (update&&urlCache)?urlCache:new URL(window.location.href);
         const params = url.searchParams;
         if (_currentImage) {
@@ -180,7 +184,7 @@ const tmapp = (function() {
             x!=null && params.set("x", roundTo(x, 5));
             y!=null && params.set("y", roundTo(y, 5));
             z!=null && params.set("z", z);
-            rotation!=null && params.set("rotation", rotation||0);
+            targetRotation!=null && params.set("rotation", targetRotation||0);
         }
         update || (_collab ? params.set("collab", _collab) : params.delete("collab"));
         urlCache=url;
@@ -205,6 +209,7 @@ const tmapp = (function() {
         return {imageName, collab, state};
     }
 
+    // Immediate moveTo from URL
     function processURL(url) {
         const {imageName, collab, state}=parseURL(url);
         if (imageName && imageName!==_currentImage.name) {
@@ -212,7 +217,7 @@ const tmapp = (function() {
                 openImage(imageName, () => {
                     collabClient.connect(collab);
                     if (state) {
-                        moveTo(state);
+                        moveTo(state, true);
                     }
                 });
             }
@@ -220,7 +225,7 @@ const tmapp = (function() {
                 openImage(imageName, () => {
                     collabPicker.open(imageName, true, true, () => {
                         if (state) {
-                            moveTo(state);
+                            moveTo(state, true);
                         }
                     });
                 });
@@ -229,11 +234,11 @@ const tmapp = (function() {
         else if (collab && collab!==_collab) {
             collabClient.connect(collab);
             if (state) {
-                moveTo(state);
+                moveTo(state, true);
             }
         }
         else if (state && state!==_currState) {
-            moveTo(state);
+            moveTo(state, true);
         }
     }
 
@@ -410,8 +415,8 @@ const tmapp = (function() {
             // Shift scroll -> Rotate
             if (event.originalEvent.shiftKey) {
                 event.preventDefaultAction = true;
-                const rotation = _currState.rotation;
-                _viewer.viewport.setRotation(rotation + 15*Math.sign(event.scroll));
+                const rotation = _currState.targetRotation;
+                _viewer.viewport.setRotation(((rotation + 15*Math.sign(event.scroll)) % 360 + 360) % 360);
             }
         };
 
@@ -424,9 +429,297 @@ const tmapp = (function() {
         var context_menu_node = null;
         // Change-of-Page (z-level) handler
         viewer.addHandler("page", _updateFocus);
-        viewer.addHandler("zoom", _updateZoom);
-        viewer.addHandler("pan", _updatePosition);
-        viewer.addHandler("rotate", _updateRotation);
+        viewer.addHandler("animation", () => {
+            _updateZoom();
+            _updatePosition();
+            _updateRotation();
+        });
+
+        // // function getRotatedImageBounds() {
+        // //     const worldBounds = viewer.world.getHomeBounds(); // image dimensions in world coords
+        // //     const rotation = viewer.viewport.getRotation() * Math.PI / 180;
+
+        // //     const cosR = Math.abs(Math.cos(rotation));
+        // //     const sinR = Math.abs(Math.sin(rotation));
+
+        // //     const rotatedWidth = worldBounds.width * cosR + worldBounds.height * sinR;
+        // //     const rotatedHeight = worldBounds.width * sinR + worldBounds.height * cosR;
+
+        // //     return { width: rotatedWidth, height: rotatedHeight };
+        // // }
+
+        // // function isViewportWiderThanImage() {
+        // //     const viewportSize = viewer.viewport.getContainerSize();
+        // //     const zoom = viewer.viewport.getZoom(true);
+        // //     const bounds = getRotatedImageBounds(viewer);
+
+        // //     const imageWidthInViewport = bounds.width * zoom;
+        // //     return viewportSize.x > imageWidthInViewport;
+        // // }
+
+        // // function isViewportHigherThanImage() {
+        // //     const viewportSize = viewer.viewport.getContainerSize();
+        // //     const zoom = viewer.viewport.getZoom(true);
+        // //     const bounds = getRotatedImageBounds(viewer);
+
+        // //     const imageHeightInViewport = bounds.height * zoom;
+        // //     console.log(viewportSize.y, imageHeightInViewport);
+        // //     return viewportSize.y > imageHeightInViewport;
+        // // }
+
+
+        // function isViewportLargerThanImage() {
+        //     const viewportBounds = viewer.viewport.getBounds(true);
+        //     const worldBounds = viewer.world.getHomeBounds();
+
+        //     console.log(viewportBounds);
+        //     console.log(worldBounds);
+        //     console.log(viewer.viewport.getCenter());
+
+        //     const rotation = viewer.viewport.getRotation(false) * Math.PI / 180;
+        //     const cosR = Math.abs(Math.cos(rotation));
+        //     const sinR = Math.abs(Math.sin(rotation));
+        //     const rotatedWorldBounds = {
+        //         width: worldBounds.width * cosR + worldBounds.height * sinR,
+        //         height: worldBounds.width * sinR + worldBounds.height * cosR
+        //     }
+
+        //     console.log(viewportBounds.width, rotatedWorldBounds.width);
+        //     console.log(viewportBounds.height, rotatedWorldBounds.height);
+        //     return {
+        //         x: viewportBounds.width > rotatedWorldBounds.width,
+        //         y: viewportBounds.height > rotatedWorldBounds.height
+        //     }
+        // }
+
+        // function isViewportOutsideImage() {
+        //     const viewportBounds = viewer.viewport.getBounds(true);
+        //     const worldBounds = viewer.world.getHomeBounds();
+
+        //     // console.log(viewportBounds);
+        //     // console.log(worldBounds);
+        //     // console.log(viewer.viewport.getCenter());
+        //     const center = viewer.viewport.getCenter(); // 0 to 1 in image coords
+
+        //     const rotation = viewer.viewport.getRotation(false) * Math.PI / 180;
+        //     const cosR = Math.abs(Math.cos(rotation));
+        //     const sinR = Math.abs(Math.sin(rotation));
+        //     const rotatedWorldBounds = {
+        //         width: worldBounds.width * cosR + worldBounds.height * sinR,
+        //         height: worldBounds.width * sinR + worldBounds.height * cosR
+        //     }
+
+        //     console.log(center, worldBounds, viewportBounds);
+
+        //     // console.log(viewportBounds.width, rotatedWorldBounds.width);
+        //     // console.log(viewportBounds.height, rotatedWorldBounds.height);
+        //     return {
+        //         x: viewportBounds.width > rotatedWorldBounds.width,
+        //         y: viewportBounds.height > rotatedWorldBounds.height
+        //     }
+        // }
+
+        // let panLockActive = false;
+        // viewer.addHandler("pan", (event) => {
+        //     if (panLockActive) return;
+        //     const viewportLockDimension = isViewportLargerThanImage();
+        //     const viewportBoundsViolation = isViewportOutsideImage();
+        //     console.log(viewportLockDimension);
+        //     console.log(viewportBoundsViolation);
+        //     if (viewportLockDimension.x || viewportLockDimension.y) {
+        //         panLockActive = true;
+        //         viewer.viewport.panTo({
+        //             x: viewportLockDimension.x ? 0.5 : event.center.x,
+        //             y: viewportLockDimension.y ? 0.5 : event.center.y
+        //         });
+        //         panLockActive = false;
+        //         event.preventDefaultAction = true;
+        //     }
+        // });
+
+        // // viewer.addHandler("zoom", (event) => {
+        // //     const minZoom = viewer.viewport.getMinZoom();
+        // //     if (viewer.viewport.getZoom() < minZoom) {
+        // //         viewer.viewport.zoomTo(minZoom, viewer.viewport.getCenter(), false);
+        // //         event.preventDefaultAction = true;
+        // //     }
+        // //     // if (panLockActive) return;
+        // //     // const violatedBounds = isViewportLargerThanImage();
+        // //     // if (violatedBounds.x || violatedBounds.y) {
+        // //     //     panLockActive = true;
+        // //     //     viewer.viewport.panTo({
+        // //     //         x: violatedBounds.x ? 0.5 : event.center.x,
+        // //     //         y: violatedBounds.y ? 0.5 : event.center.y
+        // //     //     });
+        // //     //     panLockActive = false;
+        // //     //     event.preventDefaultAction = true;
+        // //     // }
+        // // });
+
+
+
+
+        // // function getHardClampedCenter(viewer, targetCenter) {
+        // //     const viewport = viewer.viewport;
+        // //     const worldBounds = viewer.world.getHomeBounds();
+        // //     const rotation = viewport.getRotation() * Math.PI / 180;
+
+        // //     const worldCenterX = worldBounds.x + worldBounds.width / 2;
+        // //     const worldCenterY = worldBounds.y + worldBounds.height / 2;
+
+        // //     const cosR = Math.abs(Math.cos(rotation));
+        // //     const sinR = Math.abs(Math.sin(rotation));
+        // //     const halfRotatedWidth  = (worldBounds.width * cosR + worldBounds.height * sinR) / 2;
+        // //     const halfRotatedHeight = (worldBounds.width * sinR + worldBounds.height * cosR) / 2;
+
+        // //     const viewportBounds = viewport.getBounds(true);
+        // //     const halfViewportWidth  = viewportBounds.width / 2;
+        // //     const halfViewportHeight = viewportBounds.height / 2;
+
+        // //     const newCenter = targetCenter.clone();
+
+        // //     // X axis
+        // //     if (halfViewportWidth >= halfRotatedWidth) {
+        // //         newCenter.x = worldCenterX; // lock to center
+        // //     } else {
+        // //         const minX = worldCenterX - (halfRotatedWidth - halfViewportWidth);
+        // //         const maxX = worldCenterX + (halfRotatedWidth - halfViewportWidth);
+        // //         newCenter.x = Math.min(Math.max(newCenter.x, minX), maxX);
+        // //     }
+
+        // //     // Y axis
+        // //     if (halfViewportHeight >= halfRotatedHeight) {
+        // //         newCenter.y = worldCenterY; // lock to center
+        // //     } else {
+        // //         const minY = worldCenterY - (halfRotatedHeight - halfViewportHeight);
+        // //         const maxY = worldCenterY + (halfRotatedHeight - halfViewportHeight);
+        // //         newCenter.y = Math.min(Math.max(newCenter.y, minY), maxY);
+        // //     }
+
+        // //     return newCenter;
+        // // }
+
+        // // function getHardClampedCenter(viewer, targetCenter) {
+        // //     const viewport = viewer.viewport;
+        // //     const worldBounds = viewer.world.getHomeBounds();
+        // //     const rotation = viewport.getRotation() * Math.PI / 180;
+
+        // //     const worldCenterX = worldBounds.x + worldBounds.width / 2;
+        // //     const worldCenterY = worldBounds.y + worldBounds.height / 2;
+
+        // //     const cosR = Math.abs(Math.cos(rotation));
+        // //     const sinR = Math.abs(Math.sin(rotation));
+        // //     const halfRotatedWidth  = (worldBounds.width * cosR + worldBounds.height * sinR) / 2;
+        // //     const halfRotatedHeight = (worldBounds.width * sinR + worldBounds.height * cosR) / 2;
+
+        // //     const viewportBounds = viewport.getBounds(true);
+        // //     const halfViewportWidth  = viewportBounds.width / 2;
+        // //     const halfViewportHeight = viewportBounds.height / 2;
+
+        // //     const newCenter = targetCenter.clone();
+
+        // //     // --- X axis ---
+        // //     if (halfViewportWidth >= halfRotatedWidth) {
+        // //         // Lock hard to center if viewport covers image fully in X
+        // //         newCenter.x = worldCenterX;
+        // //     } else {
+        // //         // Otherwise clamp inside bounds
+        // //         const minX = worldCenterX - (halfRotatedWidth - halfViewportWidth);
+        // //         const maxX = worldCenterX + (halfRotatedWidth - halfViewportWidth);
+        // //         newCenter.x = Math.min(Math.max(newCenter.x, minX), maxX);
+        // //     }
+
+        // //     // --- Y axis ---
+        // //     if (halfViewportHeight >= halfRotatedHeight) {
+        // //         // Lock hard to center if viewport covers image fully in Y
+        // //         newCenter.y = worldCenterY;
+        // //     } else {
+        // //         const minY = worldCenterY - (halfRotatedHeight - halfViewportHeight);
+        // //         const maxY = worldCenterY + (halfRotatedHeight - halfViewportHeight);
+        // //         newCenter.y = Math.min(Math.max(newCenter.y, minY), maxY);
+        // //     }
+        // //     console.log(newCenter);
+
+        // //     return newCenter;
+        // // }
+
+        // // // Intercept panning immediately
+        // // viewer.addHandler("pan", function(event) {
+        // //     // event.center = getHardClampedCenter(viewer, event.center);
+            
+        // //     const clamped = getHardClampedCenter(viewer, event.center);
+        // //     if (!event.center.equals(clamped)) {
+        // //         viewer.viewport.panTo(clamped, false); // actively override
+        // //         event.preventDefaultAction = true;     // stop default movement
+        // //     }
+        // // });
+
+        // // viewer.addHandler("zoom", function(event) {
+        // //     // // Zoom events include a "center" around which zoom happens
+        // //     // if (event.refPoint) {
+        // //     //     const clamped = getHardClampedCenter(viewer, event.refPoint);
+        // //     //     viewer.viewport.panTo(clamped, false);
+        // //     // } else {
+        // //     //     // If no refPoint, just clamp current center
+        // //     //     const clamped = getHardClampedCenter(viewer, viewer.viewport.getCenter());
+        // //     //     viewer.viewport.panTo(clamped, false);
+        // //     // }
+        // //     const clamped = getHardClampedCenter(viewer, viewer.viewport.getCenter());
+        // //     if (!viewer.viewport.getCenter().equals(clamped)) {
+        // //         viewer.viewport.panTo(clamped, false); // actively override
+        // //         event.preventDefaultAction = true;     // stop default movement
+        // //     }
+        // // });
+
+        // // viewer.addHandler("animate", function(event) {
+        // //     const clamped = getHardClampedCenter(viewer, viewer.viewport.getCenter());
+        // //     if (!viewer.viewport.getCenter().equals(clamped)) {
+        // //         viewer.viewport.panTo(clamped, false); // actively override
+        // //         event.preventDefaultAction = true;     // stop default movement
+        // //     }
+        // // });
+
+
+
+
+        // // const originalApplyConstraints = viewer.viewport.applyConstraints.bind(viewer.viewport);
+        // // viewer.viewport.applyConstraints = function() {
+        // //     // const viewport = viewer.viewport
+        // //     // // Call the original method first to preserve OSD's built-in constraints
+        // //     // originalApplyConstraints();
+        // //     // const minZoom = viewport.getMinZoom();
+        // //     // if (viewport.getZoom() < minZoom) {
+        // //     //     viewport.zoomTo(minZoom, viewport.getCenter(), false);
+        // //     // }
+        // //     // // Pan clamp with one-axis centering
+        // //     // const worldBounds = viewer.world.getHomeBounds();
+        // //     // const rotation = viewport.getRotation() * Math.PI / 180;
+        // //     // const worldCenterX = worldBounds.x + worldBounds.width / 2;
+        // //     // const worldCenterY = worldBounds.y + worldBounds.height / 2;
+        // //     // const cosR = Math.abs(Math.cos(rotation));
+        // //     // const sinR = Math.abs(Math.sin(rotation));
+        // //     // const halfRotatedWidth = (worldBounds.width * cosR + worldBounds.height * sinR) / 2;
+        // //     // const halfRotatedHeight = (worldBounds.width * sinR + worldBounds.height * cosR) / 2;
+        // //     // const viewportBounds = viewport.getBounds(true);
+        // //     // const halfViewportWidth = viewportBounds.width / 2;
+        // //     // const halfViewportHeight = viewportBounds.height / 2;
+        // //     // let center = viewport.getCenter();
+        // //     // if (halfRotatedWidth < halfViewportWidth) {
+        // //     //     center.x = worldCenterX;
+        // //     // } else {
+        // //     //     const minX = worldCenterX - (halfRotatedWidth - halfViewportWidth);
+        // //     //     const maxX = worldCenterX + (halfRotatedWidth - halfViewportWidth);
+        // //     //     center.x = Math.min(Math.max(center.x, minX), maxX);
+        // //     // }
+        // //     // if (halfRotatedHeight < halfViewportHeight) {
+        // //     //     center.y = worldCenterY;
+        // //     // } else {
+        // //     //     const minY = worldCenterY - (halfRotatedHeight - halfViewportHeight);
+        // //     //     const maxY = worldCenterY + (halfRotatedHeight - halfViewportHeight);
+        // //     //     center.y = Math.min(Math.max(center.y, minY), maxY);
+        // //     // }
+        // //     // viewport.panTo(center, false);
+        // // };
 
         // Store and add #context_menu element, s.t. we can use it in full-page/screen mode
         viewer.addHandler("pre-full-page", (event) => {context_menu_node = document.getElementById("context_menu"); console.log('stored');});
@@ -441,10 +734,10 @@ const tmapp = (function() {
             _addMouseTracking(viewer);
             viewer.canvas.focus();
             viewer.viewport.goHome();
-            _updateZoom();
+            _updateZoom(true);
             _updateFocus(); //coordinateHelper.setImage
-            _updatePosition();
-            _updateRotation();
+            _updatePosition(true);
+            _updateRotation(true);
             _updateBrightnessContrast();
 
             const siz=_viewer.world.getItemAt(0).getContentSize();
@@ -511,7 +804,14 @@ const tmapp = (function() {
         //init OSD viewer
         _viewer = OpenSeadragon(_optionsOSD);
         _viewer.scalebar();
-        
+
+        //For some reason the Navigator animations gets slowed down by roughly a factor three
+        //And, there is no apparent way to set the navigator.animationTime on instantiation
+        _viewer.navigator.viewport.centerSpringX.animationTime=_viewer.animationTime/3;
+        _viewer.navigator.viewport.centerSpringY.animationTime=_viewer.animationTime/3;
+        _viewer.navigator.viewport.zoomSpring.animationTime=_viewer.animationTime/3;
+        _viewer.navigator.viewport.degreesSpring.animationTime=_viewer.animationTime/3;
+
         //open the DZI xml file pointing to the tiles
         const imageName = _currentImage.name;
         const imageStack = _expandImageName(imageName);
@@ -532,8 +832,11 @@ const tmapp = (function() {
         _viewer.canvas.appendChild(overlayDiv);
 
         //Since scale < image.size, it is not pixel-perfect
-        const attentionLayer = new AttentionLayer("attention", _viewer.pixiOverlay({container:overlayDiv}));
-        layerHandler.addLayer(attentionLayer);
+        // const attentionOverlay = _viewer.pixiOverlay({container:overlayDiv});
+        // attentionOverlay.ready.then(() => {
+        //     const attentionLayer = new AttentionLayer("attention", attentionOverlay);
+        //     layerHandler.addLayer(attentionLayer);
+        // });
     
         const svgOverlay = _viewer.svgOverlay(overlayDiv); //Shared for regions and collab (for the moment)
         const collabLayer = new CollabLayer("collab",svgOverlay);
@@ -541,9 +844,12 @@ const tmapp = (function() {
         
         const regionLayer = new RegionLayer("region",svgOverlay);
         layerHandler.addLayer(regionLayer);
-  
-        const markerLayer = new MarkerLayer("marker", _viewer.pixiOverlay({container:overlayDiv}));
-        layerHandler.addLayer(markerLayer);
+
+        const markerOverlay = _viewer.pixiOverlay({container:overlayDiv});
+        markerOverlay.ready.then(() => {
+            const markerLayer = new MarkerLayer("marker", markerOverlay);
+            layerHandler.addLayer(markerLayer);
+        });
 
 
 
@@ -625,7 +931,7 @@ const tmapp = (function() {
                         openImage(imageName, () => {
                             collabClient.connect(collab);
                             if (initialState) {
-                                moveTo(initialState);
+                                moveTo(initialState, true);
                             }
                         });
                     }
@@ -633,7 +939,7 @@ const tmapp = (function() {
                         openImage(imageName, () => {
                             collabPicker.open(imageName, true, true, () => {
                                 if (initialState) {
-                                    moveTo(initialState);
+                                    moveTo(initialState, true);
                                 }
                             });
                         });
@@ -712,7 +1018,7 @@ const tmapp = (function() {
      * @param {number} state.rotation The rotation in the viewport.
      * @param {number} state.zoom The zoom in the viewport.
      */
-    function moveTo({x, y, z, rotation, zoom}) {
+    function moveTo({x, y, z, rotation, zoom}, immediately=false) {
         const capValue = (val, min, max) => Math.max(Math.min(val, max), min);
         if (!_viewer) {
             throw new Error("Tried to move viewport without a viewer.");
@@ -721,7 +1027,7 @@ const tmapp = (function() {
             const min = _viewer.viewport.getMinZoom();
             const max = _viewer.viewport.getMaxZoom();
             const boundZoom = capValue(zoom, min, max);
-            _viewer.viewport.zoomTo(boundZoom, false); //true);
+            _viewer.viewport.zoomTo(boundZoom, immediately);
         }
         if (x !== undefined && y !== undefined) {
             const imageBounds = _viewer.world.getItemAt(0).getBounds();
@@ -741,10 +1047,10 @@ const tmapp = (function() {
             const boundX = capValue(x, minX, maxX);
             const boundY = capValue(y, minY, maxY);
             const point = new OpenSeadragon.Point(boundX, boundY);
-            _viewer.viewport.panTo(point, false); // true);
+            _viewer.viewport.panTo(point, immediately);
         }
         if (rotation !== undefined) {
-            _viewer.viewport.setRotation(rotation, false);
+            _viewer.viewport.setRotation(rotation, immediately);
         }
         if (z !== undefined) {
             _setFocusLevel(z);
@@ -769,9 +1075,7 @@ const tmapp = (function() {
 
     /**
      * Move the viewport to look at a specific annotation.
-     * @param {number} x The annottation or its id where to move.
-     *
-     * Note: getAnnotationById is currently O(N) slow!
+     * @param {number} x The annotation or its id where to move.
      */
     function moveToAnnotation(x) {
         // Only move if you're not following anyone
