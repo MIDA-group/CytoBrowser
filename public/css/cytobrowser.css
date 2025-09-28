@@ -9,17 +9,17 @@ body {
     display: grid;
 
     grid-template-areas:
-      "header header"
-      "main rside";
+      "header header log"
+      "main rside log";
   
-    grid-template-columns: 1fr auto;
+    grid-template-columns: 1fr auto 0;
     grid-template-rows: auto minmax(0, 1fr);
  
     height: 100vh; /* old browsers */  
     height: 100dvh; /* new browsers */
     width: 100vw;
     width: 100dvw; /* not really needed, but shouldn't harm */
-    overflow: hidden;
+    overflow: auto; /* hidden; */
 }
 
 body:fullscreen {
@@ -61,11 +61,11 @@ body:fullscreen {
 @media (max-width: 768px) {
     body {
         grid-template-areas:
-            "header"
-            "main"
-            "rside";
+            "header log"
+            "main log"
+            "rside log";
     
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr 0;
         grid-template-rows:
             auto /* header */
             minmax(48dvh, 1fr) /* main */
@@ -79,9 +79,13 @@ body:fullscreen {
     }
 }
 body:fullscreen {
-    grid-template-areas: "main";
-    grid-template-columns: 1fr;
+    grid-template-areas: "main log";
+    grid-template-columns: 1fr 0;
     grid-template-rows: 1fr;
+}
+
+log {
+    grid-area: log;
 }
 
 header {

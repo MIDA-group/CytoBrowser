@@ -18,6 +18,13 @@
 </head>
 
 <body>
+    <!-- Log element for console output -->
+    <log>
+        <div id="log-container">
+            <pre id="log"></pre>
+        </div>
+    </log>    
+
     <!-- Header -->
     <header>
         <!-- Navbar -->
@@ -152,6 +159,10 @@
                                 <div class="custom-control custom-switch">
                                     <input type="checkbox" class="custom-control-input" id="fps_switch">
                                     <label class="custom-control-label px-1" for="fps_switch">Show FPS counter</label>
+                                </div>
+                                <div class="custom-control custom-switch">
+                                    <input type="checkbox" class="custom-control-input" id="log_switch">
+                                    <label class="custom-control-label px-1" for="log_switch">Show console log</label>
                                 </div>
                             </div>
                         </div>
