@@ -294,9 +294,9 @@ class MarkerLayer extends OverlayLayer {
             this.#currentMouseUpdateFun=null;
             this.#drawUpdate();
         }
-        const updateMousePos=() => {
+        const updateMousePos=(event) => {
             if (!this.#markerPressed) return;
-            this.#markerContainer.interactiveChildren = false;
+
             const object_new_pos = coordinateHelper.webToImage(this.#mouse_pos.minus(mouse_offset)); //imageCoords
 
             // Use a clone of the annotation to make sure the edit is permitted
@@ -304,6 +304,10 @@ class MarkerLayer extends OverlayLayer {
             const object_pos = dClone.centroid; //current pos imageCoords
 
             const delta = object_new_pos.minus(object_pos);
+            if (Math.hypot(delta.x,delta.y) > 2) {
+                this.#markerContainer.interactiveChildren = false;
+            }
+
             dClone.points.forEach(point => {
                 point.x += delta.x;
                 point.y += delta.y;
