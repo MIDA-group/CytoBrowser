@@ -50,7 +50,7 @@ class MarkerLayer extends OverlayLayer {
      */
     constructor(name,pixiOverlay) {
         super(name,pixiOverlay._viewer,pixiOverlay._pixi);
-        this.overlayObject=pixiOverlay;
+        this.#overlayObject=pixiOverlay;
 
         this.#stage=pixiOverlay._app.stage;
         this.#canvas=pixiOverlay._app.canvas;
@@ -88,9 +88,9 @@ class MarkerLayer extends OverlayLayer {
     }
 
     destroy(destroyOverlay = false) {
-        if (destroyOverlay && this.overlayObject) {
-            this.overlayObject.destroy();
-            this.overlayObject=null;
+        if (destroyOverlay && this.#overlayObject) {
+            this.#overlayObject.destroy();
+            this.#overlayObject=null;
         }
     }
 
