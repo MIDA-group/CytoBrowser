@@ -245,6 +245,15 @@ class MarkerLayer extends OverlayLayer {
 
         //Arrow functions required to preserve this
         const highlight = (event) => {
+            // Perform hit test, to check if marker, at mouse pos, is covered by something else
+            const topElement = document.elementFromPoint(event.clientX, event.clientY);
+            if (topElement === this.#canvas) {
+                // console.log("Sprite is visible (not covered by DOM)");
+            } else {
+                // console.log("Sprite is covered by:", topElement);
+                return;
+            }
+
             scale(marker, 1.25*this.#markerSize);
             if (!marker.getChildByName('label')) //Add text if not there
                 marker.addChild(this.#pixiMarkerLabel(d));
@@ -340,7 +349,7 @@ class MarkerLayer extends OverlayLayer {
         //obj.buttonMode = true; //Button style cursor
         obj.interactiveChildren = false; //Just in case
         obj
-            .on('pointerover', highlight) //enter is not enough
+            .on('pointerover', highlight) //enter is not enough (comment from 2022, not sure if it still holds)
             .on('pointerout', unHighlight) 
             .on('pointerdown', pressHandler) //calling highlight
             .on('pointerup', releaseHandler) //calling unHighlight
