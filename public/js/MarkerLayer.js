@@ -292,6 +292,7 @@ class MarkerLayer extends OverlayLayer {
             this.#markerPressed=false;
             marker.pressed=false;
             this.#currentMouseUpdateFun=null;
+            unHighlight(event);
             this.#drawUpdate();
         }
         const updateMousePos=(event) => {
