@@ -602,7 +602,7 @@ class MarkerLayer extends OverlayLayer {
     blur() {
         if (this.#markerContainer) {
             this.#alpha(this.#markerContainer,0.4);
-            this.#markerContainer.interactiveChildren = false;
+            this.#markerContainer.eventMode='none';
         }
         this.#drawUpdate();
     }
@@ -613,7 +613,7 @@ class MarkerLayer extends OverlayLayer {
     focus() {
         if (this.#markerContainer) {
             this.#alpha(this.#markerContainer,1);
-            this.#markerContainer.interactiveChildren = true;
+            this.#markerContainer.eventMode='passive';
         }
         this.#drawUpdate();
     }
