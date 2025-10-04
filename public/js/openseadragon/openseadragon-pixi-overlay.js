@@ -90,7 +90,7 @@
                         wheel: false,
                         globalMove: false
                     },
-                    eventMode: 'static',
+                    eventMode: 'passive', // sets stage.eventMode
                     preference: 'webgl',
                     sharedTicker: true,
                     preserveDrawingBuffer: false
@@ -99,9 +99,8 @@
                 this._app.ticker.maxFPS = 30; // To reduce environmental impact
                 this._app.renderer.events.preventDefault = true;
                 this._app.renderer.events.supportsTouchEvents = false;
-                this._app.stage.interactive = false;
 
-                this._pixi.appendChild(this._app.canvas);
+                this._pixi.appendChild(this._app.canvas); // Add pixi's HTMLCanvasElement to the pixiOverlay
 
                 // Check if WebGL is supported
                 if (!PIXI.isWebGLSupported()) {
