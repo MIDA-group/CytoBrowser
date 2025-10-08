@@ -144,6 +144,7 @@ const tmapp = (function() {
         _currState.zoom = zoom;
         _updateCollabPosition();
         _updateURLParams();
+        //console.log('zoom update',zoom)
     }
 
     function _updatePosition(init = false) {
@@ -151,11 +152,15 @@ const tmapp = (function() {
             throw new Error("Tried to update position of nonexistent viewer.");
         }
         const position = _viewer.viewport.getCenter();
+        // Rounding to 10 decimals to avoid silly-small update jitter
+        position.x = Math.round(position.x*1e10)/1e10;
+        position.y = Math.round(position.y*1e10)/1e10;
         if (!init && _currState.x === position.x && _currState.y === position.y) return;
         _currState.x = position.x;
         _currState.y = position.y;
         _updateCollabPosition();
         _updateURLParams();
+        //console.log('pos update',position)
     }
 
     function _updateRotation(init = false) {
@@ -171,6 +176,7 @@ const tmapp = (function() {
         _currState.targetRotation = targetRotation;
         _updateCollabPosition();
         _updateURLParams();
+        //console.log('rot update',currRotation)
     }
 
     const roundTo = (x, n) => Math.round(x * Math.pow(10, n)) / Math.pow(10, n);
