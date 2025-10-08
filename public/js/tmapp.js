@@ -130,7 +130,7 @@ const tmapp = (function() {
         if (!_viewer) {
             throw new Error("Tried to update zoom of nonexistent viewer.");
         }
-        const zoom = _viewer.viewport.getZoom();
+        const zoom = Math.round(_viewer.viewport.getZoom()*1000)/1000;
         if (!init && _currState.zoom === zoom) return;
         if (zoom < _viewer.viewport.getMinZoom()) {
             // console.log('Is this an OSD-5 bug?');
