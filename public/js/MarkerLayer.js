@@ -237,9 +237,11 @@ class MarkerLayer extends OverlayLayer {
         let mouse_offset; //offset (in webCoords) between mouse click and object
 
         function scale(obj,s) {
+            if (!obj || obj.destroyed) return null;
             return Ease.ease.add(obj,{scale:s},{duration:100});
         }
         function alpha(obj,s) {
+            if (!obj || obj.destroyed) return null;
             return Ease.ease.add(obj,{alpha:s},{duration:100});
         }
 
@@ -485,14 +487,19 @@ class MarkerLayer extends OverlayLayer {
     #exitMarker(exit) {
         return exit.each(d => {
             // console.log('EID:',d.id);
-            if (!this.#markerList[d.id]) {
+            const marker = this.#markerList[d.id]
+            if (!marker) {
                 console.log(`EXIT: Marker #${d.id} lost before exit, probably from clearAnnotation.`);
                 return;
             }
-            Ease.ease.add(this.#markerList[d.id],{scale:this.#markerList[d.id].scale.x*1.5},{duration:30})
-                .once('complete', (ease) => {
-                    ease.elements.forEach(item=>item.destroy({children: true, texture: false})); //Self destruct after animation
-                });
+            Ease.ease.removeEase(marker);
+            marker.interactive = false;
+            if (!marker.destroyed) {
+                Ease.ease.add(marker,{scale:marker.scale.x*1.5},{duration:30})
+                    .once('complete', (ease) => {
+                        ease.elements.forEach(item=>item.destroy({children: true, texture: false})); //Self destruct after animation
+                    });
+            }
             delete this.#markerList[d.id];
             const existingMarker = this.#annotationIdToMarker.get(d.id);
             this.#spatialMarkerIndex.remove(existingMarker, (a, b) => a.id === b.id);
