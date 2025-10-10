@@ -274,7 +274,7 @@ class MarkerLayer extends OverlayLayer {
 
         const pressHandler=(event) => {
 //            console.log('PH: ',JSON.stringify(event.data)); //The event ages before logged
-
+            event.preventDefault(); // Clicks had a tendency to leak through to the context menu
             const isRightButton = event.data.button === 2;
             if (isRightButton) {
                 tmappUI.openAnnotationEditMenu(id, event.data.global);

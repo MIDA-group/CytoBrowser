@@ -924,7 +924,7 @@
     $(document).ready(() => {
         window.addEventListener('resize', setCollapseDir);
         // Prevent scrolling away the Header/Navbar (e.g. on mobile phone)
-        window.addEventListener("scroll", (event) => {window.scrollTop(0);});
+        window.addEventListener("scroll", (event) => {$(window).scrollTop(0);});
 
         getServerVersion();
 
