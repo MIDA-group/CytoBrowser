@@ -21,7 +21,7 @@ class MarkerLayer extends OverlayLayer {
 
     #overlayObject = null; //For destroy
     #stage = null; //Pixi stage
-    #canvas = null;
+    #canvas = null; //The relevant DOM element
     #renderer = null; //Pixi renderer (for interaction manipulation)
     #drawUpdate = null; //Rendring update function
 
@@ -287,6 +287,7 @@ class MarkerLayer extends OverlayLayer {
                 
                 tmapp.setCursorStatus({held: true});
                 this.#markerPressed=true;
+                this.#canvas.setPointerCapture(event.pointerId); //Enable dragging marker under other DOM elements
                 marker.pressed=true;
                 this.#currentMouseUpdateFun=updateMousePos;
                 this.#mouse_pos = new OpenSeadragon.Point(event.data.global.x,event.data.global.y);
