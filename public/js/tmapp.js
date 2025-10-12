@@ -49,6 +49,7 @@ const tmapp = (function() {
             rotation: 0,
             targetRotation: 0,
             zoom: 1,
+            targetZoom: 1,
             brightness: 0,
             contrast: 0
         },
@@ -130,18 +131,20 @@ const tmapp = (function() {
         if (!_viewer) {
             throw new Error("Tried to update zoom of nonexistent viewer.");
         }
-        const zoom = Math.round(_viewer.viewport.getZoom()*1000)/1000;
-        if (!init && _currState.zoom === zoom) return;
-        if (zoom < _viewer.viewport.getMinZoom()) {
+        const currZoom = Math.round(_viewer.viewport.getZoom(true)*1000)/1000;
+        if (!init && _currState.zoom === currZoom) return;
+        const targetZoom = _viewer.viewport.getZoom(false);
+        if (targetZoom < _viewer.viewport.getMinZoom()) {
             // console.log('Is this an OSD-5 bug?');
             _viewer.viewport.zoomTo(_viewer.viewport.getMinZoom());
             return; //This function will be called again due to zoom change
         }
         const maxZoom = _viewer.viewport.getMaxZoom();
         const size = _viewer.viewport.getContainerSize();
-        layerHandler.setZoom(zoom, maxZoom, size.x, size.y);
-        tmappUI.setImageZoom(Math.round(zoom*10)/10);
-        _currState.zoom = zoom;
+        layerHandler.setZoom(currZoom, maxZoom, size.x, size.y);
+        tmappUI.setImageZoom(Math.round(currZoom*10)/10);
+        _currState.zoom = currZoom;
+        _currState.targetZoom = targetZoom;
         _updateCollabPosition();
         _updateURLParams();
         //console.log('zoom update',zoom)
@@ -181,12 +184,12 @@ const tmapp = (function() {
 
     const roundTo = (x, n) => Math.round(x * Math.pow(10, n)) / Math.pow(10, n);
     let urlCache=null;
-    function makeURL({x, y, z, targetRotation, zoom}={},update=false) {
+    function makeURL({x, y, z, targetRotation, targetZoom}={},update=false) {
         const url = (update&&urlCache)?urlCache:new URL(window.location.href);
         const params = url.searchParams;
         if (_currentImage) {
             update || params.set("image", _currentImage.name);
-            zoom!=null && params.set("zoom", roundTo(zoom, 2));
+            targetZoom!=null && params.set("zoom", roundTo(targetZoom, 2));
             x!=null && params.set("x", roundTo(x, 5));
             y!=null && params.set("y", roundTo(y, 5));
             z!=null && params.set("z", z);
