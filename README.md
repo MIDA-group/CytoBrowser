@@ -11,6 +11,9 @@ Origintating as a fork[^1] of [TissUUmaps](https://github.com/wahlby-lab/TissUUm
 4. Point and region annotations with class label and textual comments
 5. Automatic server side storage of annotations; import/export of annotations in JSON format
 
+### Demo
+You can try out a limited bandwidth live demo of the latest stable release (just running `npx cytobrowser`) [here](https://cytobrowser.research.it.uu.se/).
+
 #### Express setup
 1. Install [Node.js](https://nodejs.org/en/download) 
 2. Run `npx cytobrowser --open-browser`[^2]

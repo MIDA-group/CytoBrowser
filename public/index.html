@@ -5,8 +5,8 @@
     <link el="shortcut icon" href="favicon.ico">
     <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="css/bootstrap-slider.min.css">
-    <link rel="stylesheet" type="text/css" href="css/cytobrowser.css">
     <link rel="stylesheet" type="text/css" href="css/cytobrowsertheme.css">
+    <link rel="stylesheet" type="text/css" href="css/cytobrowser.css">
     <link rel="stylesheet" type="text/css" href="css/tm-icon-style.css">
     <title>CytoBrowser</title>
     <meta name="description" content="CytoBrowser, a JavaScript and Node.js driven environment for fast and accessible collaborative online visualization, assessment, and annotation of very large microscopy images.">
@@ -14,10 +14,17 @@
     <meta property="og:image" content="https://raw.githubusercontent.com/MIDA-group/CytoBrowser/master/public/misc/uulogoredCyBr.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <script src="js/d3/d3.min.js"></script>
-    <script src="js/jquery/jquery-3.4.1.slim.min.js"></script>
+    <script src="js/jquery/jquery.slim.min.js"></script>
 </head>
 
 <body>
+    <!-- Log element for console output -->
+    <log>
+        <div id="log-container">
+            <pre id="log"></pre>
+        </div>
+    </log>    
+
     <!-- Header -->
     <header>
         <!-- Navbar -->
@@ -85,17 +92,17 @@
                 <div class="card-body py-0 py-lg-1 px-1 px-md-2">
                     <div class="row py-1 pt-md-2 pb-lg-2 no-gutters">
                         <div class="col-5 pr-2">
-                            <button type="button" class="btn btn-block btn-primary" data-toggle="modal" data-target="#image_browser">
+                            <button type="button" class="btn btn-block btn-primary text-nowrap" data-toggle="modal" data-target="#image_browser">
                                 Image browser
                             </button>
                         </div>
                         <div class="col-5 px-2">
-                            <button type="button" class="btn btn-block btn-primary" data-toggle="modal" data-target="#collaboration_menu">
+                            <button type="button" class="btn btn-block btn-primary text-nowrap" data-toggle="modal" data-target="#collaboration_menu">
                                 Session menu
                             </button>
                         </div>
                         <div class="col-2 pl-2">
-                            <button type="button" class="btn btn-block btn-secondary" data-toggle="modal" data-target="#instructions">
+                            <button type="button" class="btn btn-block btn-secondary text-nowrap" data-toggle="modal" data-target="#instructions">
                                 Help
                             </button>
                         </div>
@@ -106,14 +113,14 @@
                         <!-- Inspired by: https://disjfa.github.io/bootstrap-tricks/card-collapse-tricks/ -->
                         <div class="col-7 pr-2">
                             <button type="button" class="btn btn-block btn-primary collapsed" data-toggle="collapse" data-target="#visualization_collapse">
-                                <div class="d-flex flex-row w-100"><div class="w-100">Visualization adjustments</div> <i class="collapse_rotate_90 fa fa-chevron-down pull-right pt-1"></i></div>
+                                <div class="d-flex flex-row w-100"><div class="w-100 text-nowrap">Visualization adjustments</div> <i class="collapse_rotate_90 fa fa-chevron-down pull-right pt-1"></i></div>
                             </button>
                         </div>
                         <!-- Collapse for metadata and global comments and metadata -->
                         <div class="col-5 pl-2">
                             <button type="button" class="btn btn-block btn-primary collapsed" data-toggle="collapse" data-target="#comments_collapse">
                                 <div class="d-flex flex-row w-100">
-                                    <div class="w-100 position-relative">
+                                    <div class="w-100 position-relative text-nowrap">
                                         <div class="position-absolute">
                                             <span class="badge bg-dark hide" id="unseen_comments" style="display: none;">0</span>
                                         </div>
@@ -152,6 +159,10 @@
                                 <div class="custom-control custom-switch">
                                     <input type="checkbox" class="custom-control-input" id="fps_switch">
                                     <label class="custom-control-label px-1" for="fps_switch">Show FPS counter</label>
+                                </div>
+                                <div class="custom-control custom-switch">
+                                    <input type="checkbox" class="custom-control-input" id="log_switch">
+                                    <label class="custom-control-label px-1" for="log_switch">Show console log</label>
                                 </div>
                             </div>
                         </div>
@@ -228,7 +239,8 @@
                 <!-- Functionality buttons -->
                 <div class="card-body pb-0 pt-1 pt-lg-2 px-1 px-md-2">
                     <div class="card-block pb-3 pb-xl-4">
-                        <div class="row mb-2" style="margin-top:-5px;">
+                        <!-- Attention tracking disabled since Pixi v8 update -->
+                        <!-- <div class="row mb-2" style="margin-top:-5px;">
                             <div class="col-5 pr-1">
                                 <div class="custom-control custom-switch">
                                     <input type="checkbox" class="custom-control-input" id="attention_track_switch">
@@ -241,7 +253,8 @@
                                     <label class="custom-control-label px-1" for="attention_view_switch">Overlay attention map</label>
                                 </div>
                             </div>
-                        </div>
+                        </div> -->
+
                         <div class="row">
                             <!-- Annotation tools -->
                             <div class="col-8 pr-1">
@@ -796,10 +809,10 @@
 
 </body>
 
-<script src="js/bootstrap/bootstrap.4.0.0.bundle.min.js" ></script>
+<script src="js/bootstrap/bootstrap.bundle.min.js" ></script>
 <script src="js/bootstrap/bootstrap-slider.min.js" ></script>
 
-<script src="js/openseadragon/openseadragon.2.4.0.min.js"></script>
+<script src="js/openseadragon/openseadragon.min.js"></script>
 <script src="js/openseadragon/openseadragon-focus-levels.js"></script>
 <script src="js/openseadragon/openseadragon-viewerinputhook.js"></script>
 <!-- <script src="js/openseadragon/openseadragon-filtering.js"></script> -->
@@ -809,6 +822,7 @@
 <script src="js/pixi/pixi.min.js"></script>
 <script src="js/pixi/ease.js"></script>
 <script src="js/openseadragon/openseadragon-pixi-overlay.js"></script>
+<script src="js/rbush/rbush.min.js"></script>
 
 <script src="defaultClassConfig.js"></script>
 <script src="js/misc/clientVersion.js"></script>
@@ -829,7 +843,9 @@
 <script src="js/MarkerLayer.js"></script>
 <script src="js/RegionLayer.js"></script>
 <script src="js/CanvasLayer.js"></script>
-<script src="js/AttentionLayer.js"></script>
+
+<!-- Attention tracking disabled since Pixi v8 update -->
+<!-- <script src="js/AttentionLayer.js"></script> -->
 
 <script src="js/regionEditor.js"></script>
 <script src="js/tmappUI.js"></script>
@@ -908,7 +924,7 @@
     $(document).ready(() => {
         window.addEventListener('resize', setCollapseDir);
         // Prevent scrolling away the Header/Navbar (e.g. on mobile phone)
-        window.addEventListener("scroll", (event) => {window.scrollTop(0);});
+        window.addEventListener("scroll", (event) => {$(window).scrollTop(0);});
 
         getServerVersion();
 

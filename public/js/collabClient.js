@@ -69,13 +69,13 @@ const collabClient = (function(){
     function _handleAnnotationAction(msg) {
         switch(msg.actionType) {
             case "add":
-                annotationHandler.add(msg.annotation, "image", false);
+                annotationHandler.add(msg.annotations, "image", false);
                 break;
             case "update":
                 annotationHandler.update(msg.id, msg.annotation, "image", false);
                 break;
             case "remove":
-                annotationHandler.remove(msg.id, false);
+                annotationHandler.remove(msg.ids, false);
                 break;
             case "clear":
                 annotationHandler.clear(false);
@@ -193,7 +193,7 @@ const collabClient = (function(){
                 _joinBatch.push(annotation);
             });
         }
-        metadataHandler.clear();
+        //metadataHandler.clear(); /* To allow SizeN to remain from load */
         globalDataHandler.clear();
         metadataHandler.updateMetadataValues(msg.metadata);
         annotationHandler.clear(false);
@@ -202,7 +202,9 @@ const collabClient = (function(){
         tmappUI.updateClassSelectionButtons();
         annotationHandler.updateClassConfig(msg.classConfig, false);
 
+        const c4 = performance.now();
         annotationHandler.add(msg.annotations, "image", false);
+        const c5 = performance.now();
         if (_joinBatch) {
             annotationHandler.add(_joinBatch, "image");
             _joinBatch = null;
@@ -221,6 +223,7 @@ const collabClient = (function(){
             _onCreated();
             _onCreated = null;
         }
+        console.log("Add annotations: ", (c5-c4).toFixed(2));
     }
 
     function _requestSummary() {
@@ -281,7 +284,7 @@ const collabClient = (function(){
     }
 
     function _becomeIdle() {
-        if (_ws && _ws.readyState === 1) {
+        if (_ws && _ws.readyState === WebSocket.OPEN) {
             _ws.close(4000, "User was idle for too long.");
         }
     }
@@ -380,7 +383,7 @@ const collabClient = (function(){
     function connect(id, name=getDefaultName(), include=false, askAboutInclude=false) {
         tmappUI.displayImageError("loadingcollab");
         if (_ws) {
-            if (_ws.readyState === 1) {
+            if (_ws.readyState === WebSocket.OPEN) {
                 swapImage(tmapp.getImageName(), id);
             }
             disconnect();
@@ -484,14 +487,18 @@ const collabClient = (function(){
      */
     function send(msg, resetIdle=true) {
         if (_ws) {
-            if (resetIdle) {
-                _postponeIdle();
-            }
-            if (typeof(msg) === "object") {
-                _ws.send(JSON.stringify(msg));
-            }
-            else {
-                _ws.send(msg);
+            if (_ws.readyState === WebSocket.OPEN) {
+                if (resetIdle) {
+                    _postponeIdle();
+                }
+                if (typeof(msg) === "object") {
+                    _ws.send(JSON.stringify(msg));
+                }
+                else {
+                    _ws.send(msg);
+                }
+            } else {
+                console.log('Not sending msg since WebSocket not open.');
             }
         }
     }
@@ -511,16 +518,19 @@ const collabClient = (function(){
     }
 
     /**
-     * Notify collaborators about an annotation being added.
-     * @param {Object} annotation Data for the added annotation.
+     * Notify collaborators about annotation(s) being added.
+     * @param {Array<Object>} annotations Data for the added annotation(s).
      */
-    function addAnnotation(annotation) {
+    function addAnnotation(annotations) {
         //skip computables
-        const {centroid, diameter, ...essentials} = annotation;
+        const essentialsArr = annotations.map(annotation => {
+            const {centroid, diameter, ...essentials} = annotation;
+            return essentials;
+        });
         send({
             type: "annotationAction",
             actionType: "add",
-            annotation: essentials
+            annotations: essentialsArr
         });
     }
 
@@ -541,14 +551,14 @@ const collabClient = (function(){
     }
 
     /**
-     * Notify collaborators about an annotation being removed.
-     * @param {number} id The id of the annotation being removed.
+     * Notify collaborators about annotation(s) being removed.
+     * @param {number} ids The id of the annotation(s) being removed.
      */
-    function removeAnnotation(id) {
+    function removeAnnotation(ids) {
         send({
             type: "annotationAction",
             actionType: "remove",
-            id: id
+            ids: ids
         });
     }
 

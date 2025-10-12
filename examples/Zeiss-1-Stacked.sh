@@ -5,6 +5,9 @@
 #Exit on error (sourced or subshell)
 trap 'echo Error $? on line $LINENO; trap - ERR; return 2>/dev/null || exit' ERR
 
+#First, verify that we have vips installed
+vips --version
+
 
 #Download an example image - HER2 FISH, fluorescence, 3 channels, 13 Z-planes; credited to Yves Sucaet
 file="Zeiss-1-Stacked.zvi"
@@ -32,6 +35,12 @@ for a in tmp/"${name}"_z*.tiff; do
 	rm -f "$a"
 done
 rmdir --ignore-fail-on-non-empty tmp
+
+
+# Extract metadata with bftools/showinf
+
+#bftools/showinf -nocore -no-sas -nopix -omexml -omexml-only "${file}" > "${name}".ome.xml
+#node server/metadata.js "${name}".ome.xml data
 
 
 printf "\nTo directly open this image, run:\n node cytobrowser.js --open-browser --query 'image=${name}'\n"

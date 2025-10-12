@@ -150,6 +150,11 @@ const layerHandler = (function (){
         _layers[0].focus();
     }
 
+    function getTopLayer() {
+        if (!_layers.length) return;
+        return _layers[0].name;
+    }
+
     function updateAnnotations(annotations) {
         _forEachLayer("updateAnnotations", annotations);
     }
@@ -170,6 +175,7 @@ const layerHandler = (function (){
         setMarkerScale,
         setRotation,
         setActiveAnnotationOverlay:setTopLayer,
+        getActiveAnnotationOverlay:getTopLayer,
 
         addLayer,
         getLayer,

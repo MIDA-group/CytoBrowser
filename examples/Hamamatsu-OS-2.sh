@@ -5,6 +5,8 @@
 #Exit on error (sourced or subshell)
 trap 'echo Error $? on line $LINENO; trap - ERR; return 2>/dev/null || exit' ERR
 
+#First, verify that we have vips installed
+vips --version
 
 #Download a 1GB example image - Ki-67 stain, brightfield, circa 2012
 file="OS-2.ndpi"
@@ -22,6 +24,13 @@ vips --vips-progress dzsave "${file}" --tile-size 256 --overlap 0 --suffix '.jpg
 
 #If you have a z-stacked ndpi file, we suggest to use ndpisplit of NDPITools to extract the individual z-planes
 # https://www.imnc.in2p3.fr/pagesperso/deroulers/software/ndpitools/
+
+
+# Extract metadata with bftools/showinf
+# https://www.openmicroscopy.org/bio-formats/downloads/
+
+#bftools/showinf -nocore -no-sas -nopix -omexml -omexml-only "${file}" > "${name}".ome.xml
+#node server/metadata.js "${name}".ome.xml data
 
 
 printf "\nTo directly open this image, run:\n node cytobrowser.js --open-browser --query 'image=${name}'\n"

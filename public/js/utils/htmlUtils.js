@@ -15,10 +15,34 @@
         return unsafe.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#039;');
     }
 
+    /** Insert script */
+    const loadJS = function(url, element, implementationCode=null) {
+        //url is URL of external file
+        //element is where to append the <script> element
+        //implementationCode is code to be called from the file
+        var scriptTag = document.createElement('script');
+        scriptTag.src = url;
+        scriptTag.type = "module"; // Modules are loaded only once
+        if (implementationCode) {
+            scriptTag.onload = implementationCode;
+        }
+        element.appendChild(scriptTag);
+    };
+ 
+    const loadCSS = function(url) {
+        document.head.insertAdjacentHTML(
+            'beforeend',
+            '<link rel="stylesheet" type="text/css" href="css/console2html.css" />');
+    }
+
     return {
-        escapeHtml
+        escapeHtml,
+        loadJS,
+        loadCSS
     };
 })();
 
-//I think this one may live in the global namespace
+//I think these may live in the global namespace
 const escapeHtml = htmlUtils.escapeHtml;
+const loadJS = htmlUtils.loadJS;
+const loadCSS = htmlUtils.loadCSS;

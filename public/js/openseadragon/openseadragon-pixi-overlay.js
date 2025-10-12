@@ -11,6 +11,8 @@
         }
     }
 
+    _timinglog = false;
+
     /**
      * Adds pixi.js overlay capability to your OpenSeadragon Viewer
      *
@@ -27,24 +29,18 @@
      * @returns {Overlay}
      */
     $.Viewer.prototype.pixiOverlay = function(options) {
-        this._pixiOverlayInfo = new Overlay(options?.viewer ?? this, options?.container);
-        return this._pixiOverlayInfo;
+        try {
+            this._pixiOverlayInfo = new Overlay(options?.viewer ?? this, options?.container);
+            this._pixiOverlayInfo.ready.catch(console.error);
+            return this._pixiOverlayInfo;
+        } catch(e) {
+            console.error(e);
+        }
     };
 
-    // Turn off TouchEvents to prevent them propagating, see also https://github.com/pixijs/pixijs/issues/8037
-    function turnOffTouchEvents(interactionManager) {
-        interactionManager.interactionDOMElement.removeEventListener('touchstart', interactionManager.onPointerDown, true);
-        interactionManager.interactionDOMElement.removeEventListener('touchcancel', interactionManager.onPointerCancel, true);
-        interactionManager.interactionDOMElement.removeEventListener('touchend', interactionManager.onPointerUp, true);
-        interactionManager.interactionDOMElement.removeEventListener('touchmove', interactionManager.onPointerMove, true);
-        interactionManager.supportsTouchEvents = false;
-    }     
-      
     // ----------
     // Option to use other container than viewer.canvas, e.g. for internal z-stacking
     var Overlay = function(viewer, container=viewer.canvas) {
-        var self = this;
-
         this._viewer = viewer;
         this._containerWidth = 0;
         this._containerHeight = 0;
@@ -57,70 +53,88 @@
         this._pixi.style.height = '100%';
         container.appendChild(this._pixi);
 
+        this._renderPending = false;
+        
+        this.ready = this.init();
+
         // Create the application helper and add its render target to the page
         // TODO: This will lead to running out of WebGL context, better to use separate logics, 
         //  see https://github.com/pixijs/pixijs/wiki/v5-Custom-Application-GameLoop
-
-        try {
-            this._app = new PIXI.Application({
-                //resizeTo: this._pixi,
-                transparent: true,
-                antialias: true,
-                sharedTicker: true
-            });
-            this._app.ticker.maxFPS = 30; // To reduce environmental impact
-            this._app.renderer.plugins.interaction.moveWhenInside = true;
-            this._app.renderer.plugins.interaction.autoPreventDefault=true;
-            turnOffTouchEvents(this._app.renderer.plugins.interaction);
-
-            this._pixi.appendChild(this._app.view);
-
-            // Check if WebGL is supported
-            if (!PIXI.utils.isWebGLSupported()) {
-                console.error("WebGL is not supported. Suggested to switch to Chrome browser.");
-                alert("WebGL initialization failed. Please check your browser settings.");
-            }
-
-        } catch (error) {
-            console.error("Pixi.js failed to initialize:", error);
-            alert("Graphics initialization failed. Please check your browser settings.");
-        }
-
-
-        //TODO: removeHandler functionality
-        this._viewer.addHandler('animation', () => {
-            self.resize();
-        });
-
-        this._viewer.addHandler('open',  () => {
-            self.resize();
-        });
-
-        this._viewer.addHandler('rotate',  () => {
-            self.resize();
-        });
-
-        this._viewer.addHandler('resize',  () => {
-            self.resize();
-        });
-
-        this._viewer.addHandler('update-viewport', () => {
-            self.update();
-        });
-
-        this.resize();
-    };
+    }
 
     const _tickerTime = 5 * 1000; // Run ticker for 5 seconds on updates
     let _tickerTimeout = 0;
-    let _lastUpdateTime = performance.now();
+    let _renderCount = 0;
+
+    if (_timinglog) {
+        // Print stats every second
+        setInterval(() => {
+            console.log(`Render rate: ${_renderCount} fps`);
+            _renderCount = 0;
+        }, 1000);
+    }
 
     // ----------
     Overlay.prototype = {
+        init: async function() {
+            var self = this;
+            try {
+                this._app = new PIXI.Application();
+                await this._app.init({
+                    antialias: true,
+                    backgroundAlpha: 0,
+                    culler: false,
+                    eventFeatures: {
+                        move: true,
+                        click: true,
+                        wheel: false,
+                        globalMove: false
+                    },
+                    eventMode: 'passive', // sets stage.eventMode
+                    preference: 'webgl',
+                    sharedTicker: true,
+                    preserveDrawingBuffer: false
+                });
+
+                this._app.ticker.maxFPS = 30; // To reduce environmental impact
+                this._app.renderer.events.preventDefault = true;
+                this._app.renderer.events.supportsTouchEvents = false;
+
+                this._pixi.appendChild(this._app.canvas); // Add pixi's HTMLCanvasElement to the pixiOverlay
+
+                // Check if WebGL is supported
+                if (!PIXI.isWebGLSupported()) {
+                    console.error("WebGL is not supported. Suggested to switch to Chrome browser.");
+                    alert("WebGL initialization failed. Please check your browser settings.");
+                }
+            } catch (error) {
+                console.error("Pixi.js failed to initialize:", error, error?.stack);
+                alert(`Graphics initialization failed: ${error?.message || 'Please check your browser settings (unknown error)'}`);
+            }
+
+            //TODO: removeHandler functionality
+            this._viewer.addHandler('animation', () => {
+                self.resize();
+            });
+
+            this._viewer.addHandler('open',  () => {
+                self.resize();
+            });
+
+            this._viewer.addHandler('resize',  () => {
+                self.resize();
+            });
+
+            this._viewer.addHandler('update-viewport', () => {
+                self.resize();
+            });
+
+            this.resize();
+        },
         // ----------
         destroy: function() {
             //console.log('Destroying Pixi app');
-            this._app.destroy(true,true);
+            this._app.destroy({ children: true, texture: true, baseTexture: true });
             this._app=null;
         },
         app: function() {
@@ -131,11 +145,15 @@
         },
         update: function() { // Call this function whenever drawing, to allow animations to run _tickerTime 
             if (!this.app()) return; // Destroyed (instead of running through removeHandler)
-            if (performance.now()-_lastUpdateTime < 0.1) { // Ignore is less than 0.1ms since last exectuted call
-                return; // Avoid flooding
-            }
-            this._app.renderer.render(this._app.stage); // Call render directly to reduce lag
-            _lastUpdateTime = performance.now();
+
+            if (this._renderPending) return;
+            this._renderPending = true;
+            Promise.resolve().then(() => {
+                if (!this.app()) return;
+                this._app.renderer.render(this._app.stage);
+                _timinglog = _renderCount++;
+                this._renderPending = false;
+            });
 
             if (!this._app.ticker.started) {
                 this._app.ticker.start(); // Start render loop
@@ -175,7 +193,7 @@
 
             const p = this._viewer.viewport.viewportToViewerElementCoordinates(new $.Point(0, 0), true);
             const zoom = this._viewer.viewport.getZoom(true);
-            const rotation = Math.PI/180*this._viewer.viewport.getRotation();
+            const rotation = Math.PI/180*this._viewer.viewport.getRotation(true);
             // TODO: Expose an accessor for _containerInnerSize in the OSD API so we don't have to use the private variable.
             const scale = this._viewer.viewport._containerInnerSize.x * zoom;
             
@@ -183,21 +201,6 @@
             this._app.stage.position.set(p.x,p.y);
             this._app.stage.rotation=rotation;
 
-        // Draw a red frame around the overlay
-/*         {
-            const graphics = new PIXI.Graphics();
-            graphics.lineStyle(1, 0xFF0000);
-            graphics.drawRect(0,0,1000,1000);
-            this._app.stage.addChild(graphics);
-        } */
-
-
-//         // Listen for animate update
-// this._app.ticker.add((delta) => {
-//     // rotate the container!
-//     // use delta to create frame-independent transform
-//     this._app.stage.rotation -= 0.001 * delta;
-// });
             this.update();
         },
 

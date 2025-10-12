@@ -44,7 +44,7 @@ const annotationHandler = (function (){
      * systems {@link https://openseadragon.github.io/examples/viewport-coordinates/ |here.}
      * @typedef {string} CoordSystem
      */
-    const _annotations = [];
+    const _annotationMap = new Map();
     let _nMarkers = 0;
     let _nRegions = 0;
     let _classCounts = {};
@@ -53,9 +53,13 @@ const annotationHandler = (function (){
 
     // True if any predictions exist
     function _checkPrediction() {
-        return _annotations.some(x => x.prediction!=null);
+        for (const elem of _annotationMap.values()) {
+            if (elem.prediction != null) {
+                return true;
+            }
+        }
+        return false;
     }
-
 
     // Updates visuals
     function updateAnnotationCounts() {
@@ -87,9 +91,8 @@ const annotationHandler = (function (){
         return (p.y>>_gridShift)<<_gridMax | (p.x>>_gridShift);
     }
     function _addAnnotation(annotation) {
-        const idx=_annotations.push(annotation);
+        _annotationMap.set(annotation.id, annotation);
         _addGridAnnotation(annotation);
-        return idx;
     }
     function _addGridAnnotation(annotation) {
         const grid=_getGridIdx(annotation);
@@ -108,7 +111,7 @@ const annotationHandler = (function (){
     }
 
     function _generateId() {
-        const order = Math.ceil(Math.log10((1 + _annotations.length) * 100));
+        const order = Math.ceil(Math.log10((1 + _annotationMap.size) * 100));
         const multiplier = Math.pow(10, order);
         let id;
         do {
@@ -179,7 +182,7 @@ const annotationHandler = (function (){
     }
 
     function _updateVisuals() {
-        annotationVisuals.update(_annotations);
+        annotationVisuals.update(Array.from(_annotationMap.values()));
     }
 
     /**
@@ -250,10 +253,11 @@ const annotationHandler = (function (){
         timingLog && console.time('addAnnotation');
 
         let classes = classUtils.getSortedNames(classUtils.getClassConfig());
-
+        
+        const addedAnntotations = [];
         annotations.forEach(annotation => {
             const addedAnnotation = _cloneAnnotation(annotation);
-
+            
             // Store the coordinates in all systems and set the image coordinates
             const coords = addedAnnotation.points.map(point =>
                 _getCoordSystems(point, coordSystem)
@@ -316,6 +320,7 @@ const annotationHandler = (function (){
 
             // Store a data representation of the annotation
             _addAnnotation(addedAnnotation);
+            addedAnntotations.push(addedAnnotation);
 
             // Update the annotation count
             if (addedAnnotation.points.length === 1) {
@@ -326,10 +331,12 @@ const annotationHandler = (function (){
             }
             _classCounts[addedAnnotation.mclass]++;
             _hasPrediction = _hasPrediction || (addedAnnotation.prediction!=null); //old Node dislikes ||=
-
-            // Send the update to collaborators
-            transmit && collabClient.addAnnotation(addedAnnotation);
         });
+
+        // Send the update to collaborators
+        if (addedAnntotations.length > 0) {
+            transmit && collabClient.addAnnotation(addedAnntotations);
+        }
 
         updateAnnotationCounts();
         timingLog && console.timeEnd('addAnnotation');
@@ -414,17 +421,15 @@ const annotationHandler = (function (){
 
 
         // Store the annotation in data
-        const updatedIndex = _annotations.findIndex(annotationx => annotationx.id === id);
-
         if (newGridIndex !== oldGridIndex) {
             // console.log(`Moving from idx ${oldGridIndex} to ${newGridIndex}`);
-            _removeGridAnnotation(_annotations[updatedIndex]);
+            _removeGridAnnotation(_annotationMap.get(id));
         }
 
-        Object.assign(_annotations[updatedIndex], updatedAnnotation);
+        Object.assign(_annotationMap.get(id), updatedAnnotation);
 
         if (newGridIndex !== oldGridIndex) {
-            _addGridAnnotation(_annotations[updatedIndex]);
+            _addGridAnnotation(_annotationMap.get(id));
         }
 
 
@@ -474,16 +479,11 @@ const annotationHandler = (function (){
         }
         // console.log('rmv: ',ids);
         ids.forEach(id => {
-            const annotations = _annotations;
-            const deletedIndex = annotations.findIndex(annotation => annotation.id === id);
-
-            // Check if the annotation exists first
-            if (deletedIndex === -1) {
+            if (!_annotationMap.has(id)) {
                 throw new Error("Tried to remove an annotation that doesn't exist");
             }
-
-            // Remove the annotation from the data
-            const removedAnnotation = annotations.splice(deletedIndex, 1)[0];
+            const removedAnnotation = _annotationMap.get(id);
+            _annotationMap.delete(id);
 
             // Remove from gridded
             _removeGridAnnotation(removedAnnotation);
@@ -497,10 +497,11 @@ const annotationHandler = (function (){
             }
             _classCounts[removedAnnotation.mclass]--;
 
-            // Send the update to collaborators
-            transmit && collabClient.removeAnnotation(id);
             regionEditor.stopEditingRegionIfBeingEdited(id);
         });
+
+        // Send the update to collaborators
+        transmit && collabClient.removeAnnotation(ids);
 
         _hasPrediction = _checkPrediction();
         updateAnnotationCounts();
@@ -515,8 +516,7 @@ const annotationHandler = (function (){
      * be told to clear their annotations.
      */
     function clear(transmit = true) {
-        const annotations = _annotations;
-        const ids = annotations.map(annotation => annotation.id);
+        const ids = Array.from(_annotationMap.keys());
         remove(ids, false);
 
         // Send the update to collaborators
@@ -534,7 +534,9 @@ const annotationHandler = (function (){
      * @param {function} f Function to be called with each annotation.
      */
     function forEachAnnotation(f, include_computable=true) {
-        _annotations.map((elem) => _cloneAnnotation(elem,include_computable)).forEach(f);
+        for (const elem of _annotationMap.values()) {
+            f(_cloneAnnotation(elem, include_computable));
+        }
     }
 
     /**
@@ -542,12 +544,10 @@ const annotationHandler = (function (){
      * @param {number} id The id used for looking up the annotation.
      * @returns {Object} A clone of the annotation with the specified id,
      * or undefined if not in use.
-     * 
-     * Currently O(N) slow, so don't overuse!
      */
     //let gaid=0; 
     function getAnnotationById(id) {
-        const annotation = _annotations.find(annotation => annotation.id === id);
+        const annotation = _annotationMap.get(id);
         if (annotation === undefined) {
             return undefined;
         }
@@ -561,7 +561,7 @@ const annotationHandler = (function (){
      * @returns {boolean} Whether or not the list is empty.
      */
     function isEmpty() {
-        return _annotations.length === 0;
+        return _annotationMap.size === 0;
     }
 
     /**
@@ -574,7 +574,8 @@ const annotationHandler = (function (){
     function updateClassConfig(classConfig, transmit = true) {
         // Call private function to restart annotation counts.
         _restartAnnotationCounts();
-
+        // Update the pre-rendered marker textures in the marker overlay
+        layerHandler.getLayer("marker").updateMarkerTextures().then();
         // Send the update to collaborators
         transmit && collabClient.updateClassConfig(classConfig);
     }

@@ -10,7 +10,7 @@ class CanvasLayer extends OverlayLayer {
     
     constructor(name,pixiOverlay) {
         super(name,pixiOverlay._viewer,pixiOverlay._pixi);
-        this.overlayObject=pixiOverlay;
+        this.#overlayObject=pixiOverlay;
         
         //Drawing canvas
         this.#canvas = document.createElement('canvas');
@@ -36,9 +36,9 @@ class CanvasLayer extends OverlayLayer {
     }
 
     destroy(destroyOverlay = false) {
-        if (destroyOverlay && this.overlayObject) {
-            this.overlayObject.destroy();
-            this.overlayObject=null;
+        if (destroyOverlay && this.#overlayObject) {
+            this.#overlayObject.destroy();
+            this.#overlayObject=null;
         }
     }
 

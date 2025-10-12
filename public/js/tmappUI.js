@@ -324,6 +324,24 @@ const tmappUI = (function(){
         $("#focus_prev").click(tmapp.decrementFocus);
     }
 
+    // Adjust size of rightmost grid column
+    function _setLogWidth(width) {
+        function handleWidthChange(small) {
+            console.log("columns in: ",document.body.style.gridTemplateColumns);
+            if (small) {
+                document.body.style.gridTemplateColumns = `1fr ${width}`;
+            }
+            else {
+                document.body.style.gridTemplateColumns = `1fr auto ${width}`;
+            }
+            console.log("columns out: ",document.body.style.gridTemplateColumns);
+        }
+
+        const media = window.matchMedia("(max-width: 768px)");
+        media.addEventListener("change", (event) => handleWidthChange(event.matches));
+        handleWidthChange(media.matches); //initial state
+    }
+
     function _initVisualizationSliders() {
         $("#marker_size_slider").slider({focus: true}).on('change', function(e) {layerHandler.setMarkerScale(e.value.newValue);});
         $("#brightness_slider").slider({focus: true}).on('change', function(e) {tmapp.setBrightness(e.value.newValue);});
@@ -357,6 +375,18 @@ const tmappUI = (function(){
             }
             else {
                 $("#fps").text('');
+            }
+        }); 
+
+        $("#log_switch").prop('checked',false); // force it to false, since some browsers cache it incorrectly
+        $("#log_switch").change(function(e) {
+            if (e.target.checked) {
+                loadCSS('css/console2html.css');
+                // Send console output to html element
+                loadJS('js/utils/console2html.js', document.body, () => _setLogWidth("20%"));
+            }
+            else {
+                _setLogWidth("0");
             }
         }); 
     }

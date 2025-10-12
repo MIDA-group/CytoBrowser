@@ -15,7 +15,6 @@ const tmapp = (function() {
         navigatorPosition: "BOTTOM_LEFT",
         navigatorSizeRatio: 0.3,
         navigatorMaintainSizeRatio: true, 
-        animationTime: 0.0,
         blendTime: 0,
         maxImageCacheCount: 800, //need more for z-stacks
         minZoomImageRatio: 1,
@@ -48,6 +47,7 @@ const tmapp = (function() {
             y: 0.5,
             z: 0,
             rotation: 0,
+            targetRotation: 0,
             zoom: 1,
             brightness: 0,
             contrast: 0
@@ -126,47 +126,62 @@ const tmapp = (function() {
         _viewer.world.draw();
     }
 
-    function _updateZoom() {
+    function _updateZoom(init = false) {
         if (!_viewer) {
             throw new Error("Tried to update zoom of nonexistent viewer.");
         }
-        const zoom = _viewer.viewport.getZoom();
+        const zoom = Math.round(_viewer.viewport.getZoom()*1000)/1000;
+        if (!init && _currState.zoom === zoom) return;
+        if (zoom < _viewer.viewport.getMinZoom()) {
+            // console.log('Is this an OSD-5 bug?');
+            _viewer.viewport.zoomTo(_viewer.viewport.getMinZoom());
+            return; //This function will be called again due to zoom change
+        }
         const maxZoom = _viewer.viewport.getMaxZoom();
         const size = _viewer.viewport.getContainerSize();
         layerHandler.setZoom(zoom, maxZoom, size.x, size.y);
         tmappUI.setImageZoom(Math.round(zoom*10)/10);
         _currState.zoom = zoom;
-
-        // Zooming often changes the position too, based on cursor position
-        _updatePosition();
+        _updateCollabPosition();
+        _updateURLParams();
+        //console.log('zoom update',zoom)
     }
 
-    function _updatePosition() {
+    function _updatePosition(init = false) {
         if (!_viewer) {
             throw new Error("Tried to update position of nonexistent viewer.");
         }
         const position = _viewer.viewport.getCenter();
+        // Rounding to 10 decimals to avoid silly-small update jitter
+        position.x = Math.round(position.x*1e10)/1e10;
+        position.y = Math.round(position.y*1e10)/1e10;
+        if (!init && _currState.x === position.x && _currState.y === position.y) return;
         _currState.x = position.x;
         _currState.y = position.y;
         _updateCollabPosition();
         _updateURLParams();
+        //console.log('pos update',position)
     }
 
-    function _updateRotation() {
+    function _updateRotation(init = false) {
         if (!_viewer) {
             throw new Error("Tried to update rotation of nonexistent viewer.");
         }
-        const rotation = _viewer.viewport.getRotation();
-        layerHandler.setRotation(rotation);
-        tmappUI.setImageRotation(rotation);
-        _currState.rotation = rotation;
+        const currRotation = (Math.round(_viewer.viewport.getRotation(true)) + 360) % 360; 
+        if (!init && _currState.rotation === currRotation) return;
+        const targetRotation = _viewer.viewport.getRotation(false);
+        layerHandler.setRotation(currRotation);
+        tmappUI.setImageRotation(currRotation);
+        _currState.rotation = currRotation;
+        _currState.targetRotation = targetRotation;
         _updateCollabPosition();
         _updateURLParams();
+        //console.log('rot update',currRotation)
     }
 
     const roundTo = (x, n) => Math.round(x * Math.pow(10, n)) / Math.pow(10, n);
     let urlCache=null;
-    function makeURL({x, y, z, rotation, zoom}={},update=false) {
+    function makeURL({x, y, z, targetRotation, zoom}={},update=false) {
         const url = (update&&urlCache)?urlCache:new URL(window.location.href);
         const params = url.searchParams;
         if (_currentImage) {
@@ -175,7 +190,7 @@ const tmapp = (function() {
             x!=null && params.set("x", roundTo(x, 5));
             y!=null && params.set("y", roundTo(y, 5));
             z!=null && params.set("z", z);
-            rotation!=null && params.set("rotation", rotation||0);
+            targetRotation!=null && params.set("rotation", targetRotation||0);
         }
         update || (_collab ? params.set("collab", _collab) : params.delete("collab"));
         urlCache=url;
@@ -200,6 +215,7 @@ const tmapp = (function() {
         return {imageName, collab, state};
     }
 
+    // Immediate moveTo from URL
     function processURL(url) {
         const {imageName, collab, state}=parseURL(url);
         if (imageName && imageName!==_currentImage.name) {
@@ -207,7 +223,7 @@ const tmapp = (function() {
                 openImage(imageName, () => {
                     collabClient.connect(collab);
                     if (state) {
-                        moveTo(state);
+                        moveTo(state, true);
                     }
                 });
             }
@@ -215,7 +231,7 @@ const tmapp = (function() {
                 openImage(imageName, () => {
                     collabPicker.open(imageName, true, true, () => {
                         if (state) {
-                            moveTo(state);
+                            moveTo(state, true);
                         }
                     });
                 });
@@ -224,11 +240,11 @@ const tmapp = (function() {
         else if (collab && collab!==_collab) {
             collabClient.connect(collab);
             if (state) {
-                moveTo(state);
+                moveTo(state, true);
             }
         }
         else if (state && state!==_currState) {
-            moveTo(state);
+            moveTo(state, true);
         }
     }
 
@@ -338,17 +354,50 @@ const tmapp = (function() {
             };
         }
 
-        //OSD handlers have to be registered using MouseTracker OSD objects
-        _mouseHandler = new OpenSeadragon.MouseTracker({
+        // Only used to access mouse handler functions elsewhere
+        _mouseHandler = {
             element: viewer.canvas,
             clickHandler: clickHandler,
             dblClickHandler: dblClickHandler,
             moveHandler: moveHandler,
             enterHandler: insideHandler(true),
-            exitHandler: insideHandler(false),
+            leaveHandler: insideHandler(false),
             pressHandler: heldHandler(true),
             releaseHandler: heldHandler(false)
-        }).setTracking(true);
+        };
+
+        viewer.addHandler('canvas-click', function(event) {
+            clickHandler(event);
+        });
+
+        viewer.addHandler('canvas-double-click', function(event) {
+            dblClickHandler(event);
+        });
+
+        viewer.addHandler('canvas-enter', function(event) {
+            insideHandler(true)(event);
+        });
+
+        viewer.addHandler('canvas-exit', function(event) {
+            insideHandler(false)(event);
+        });
+
+        viewer.addHandler('canvas-press', function(event) {
+            heldHandler(true)(event);
+        });
+
+        viewer.addHandler('canvas-release', function(event) {
+            heldHandler(false)(event);
+        });
+
+        viewer.addHandler('canvas-drag', function(event) {
+            moveHandler(event);
+        });
+
+        viewer.container.addEventListener('mousemove', event => {
+            event.position = new OpenSeadragon.Point(event.offsetX,event.offsetY);
+            moveHandler(event);
+        });
 
         // Add hook to scroll without zooming, didn't seem possible without
         function scrollHook(event){
@@ -372,27 +421,25 @@ const tmapp = (function() {
             // Shift scroll -> Rotate
             if (event.originalEvent.shiftKey) {
                 event.preventDefaultAction = true;
-                const rotation = _currState.rotation;
-                _viewer.viewport.setRotation(rotation + 15*Math.sign(event.scroll));
+                const rotation = _currState.targetRotation;
+                _viewer.viewport.setRotation(((rotation + 15*Math.sign(event.scroll)) % 360 + 360) % 360);
             }
         };
 
-        viewer.addViewerInputHook({hooks: [
-            {
-                tracker: "viewer",
-                handler: "scrollHandler",
-                hookHandler: scrollHook
-            }
-        ]});
+        viewer.addHandler("canvas-scroll", function(event) {
+            scrollHook(event);
+        });
     }
 
     function _addHandlers(viewer, callback) {
         var context_menu_node = null;
         // Change-of-Page (z-level) handler
         viewer.addHandler("page", _updateFocus);
-        viewer.addHandler("zoom", _updateZoom);
-        viewer.addHandler("pan", _updatePosition);
-        viewer.addHandler("rotate", _updateRotation);
+        viewer.addHandler("animation", () => {
+            _updateZoom();
+            _updatePosition();
+            _updateRotation();
+        });
 
         // Store and add #context_menu element, s.t. we can use it in full-page/screen mode
         viewer.addHandler("pre-full-page", (event) => {context_menu_node = document.getElementById("context_menu"); console.log('stored');});
@@ -407,43 +454,41 @@ const tmapp = (function() {
             _addMouseTracking(viewer);
             viewer.canvas.focus();
             viewer.viewport.goHome();
-            _updateZoom();
+            _updateZoom(true);
             _updateFocus(); //coordinateHelper.setImage
-            _updatePosition();
-            _updateRotation();
+            _updatePosition(true);
+            _updateRotation(true);
             _updateBrightnessContrast();
 
-            //Set better aspect ratio of navigator
+            const siz=_viewer.world.getItemAt(0).getContentSize();
+            const count=_viewer.world.getItemCount();
+            metadataHandler.updateMetadataValues({ SizeX:siz.x, SizeY:siz.y, SizeZ:count});
+
+            //Set better aspect ratio of navigator, based on image, not viewer
             function setNavSize() {
                 if (!viewer.element) return;
-                
-                viewer.navigator._resizeWithViewer = false;
-                
-                var $ = window.OpenSeadragon;
-                const viewerSize = $.getElementSize( viewer.element ); //Relying on OSD's fun
+                const image=_getImage();
+                if (!image) return; //No image -> No sensible navigator
 
+                const viewerSize = window.OpenSeadragon.getElementSize( viewer.element ); //Relying on OSD's fun
                 let newWidth  = viewerSize.x * viewer.navigator.sizeRatio;
                 let newHeight = viewerSize.y * viewer.navigator.sizeRatio;
-                const image=_getImage();
-                if (image) { //Aspect ratio based on image, not viewer
-                    const viewAspect = newHeight/newWidth;
-                    const imAspect = image.getBounds().height;
-                    if (imAspect < viewAspect) { //Pick the smallest
-                        newHeight = imAspect * newWidth;
-                    }
-                    else {
-                        newWidth = newHeight / imAspect;
-                    }
-                }
-                
-                viewer.navigator.element.style.width  = Math.round( newWidth ) + 'px';
-                viewer.navigator.element.style.height = Math.round( newHeight ) + 'px';
 
-                viewer.navigator.update( viewer.viewport );
+                const viewAspect = newHeight/newWidth;
+                const imAspect = image.getBounds().height; //width===1.0
+                if (imAspect < viewAspect) { //Adjust as to get the smallest resulting navigator
+                    newHeight = imAspect * newWidth;
+                }
+                else {
+                    newWidth = newHeight / imAspect;
+                }
+
+                //these set navigator._resizeWithViewer=false and calls navigator.updateSize()
+                viewer.navigator.setWidth(newWidth);
+                viewer.navigator.setHeight(newHeight);
             }
             setNavSize();
-            viewer.addHandler("update-viewport", setNavSize);
-            viewer.navigator.addHandler("resize", setNavSize);
+            viewer.addHandler("after-resize", setNavSize);
 
             tmappUI.clearImageError();
             callback && callback();
@@ -461,7 +506,8 @@ const tmapp = (function() {
             tmappUI.displayImageError("tilefail", 1000);
         });
 
-        // What is the difference between 'update-viewport' and 'viewport-change' ?
+        // When viewport position changes (before drawing)
+        // ('update-viewport' is called after viewport is redrawn)
         viewer.addHandler('viewport-change', (event) => {
             _currentMouseUpdateFun && _currentMouseUpdateFun(); //set cursor position if view-port changed by external source
         });
@@ -478,7 +524,14 @@ const tmapp = (function() {
         //init OSD viewer
         _viewer = OpenSeadragon(_optionsOSD);
         _viewer.scalebar();
-        
+
+        //For some reason the Navigator animations gets slowed down by roughly a factor three
+        //And, there is no apparent way to set the navigator.animationTime on instantiation
+        _viewer.navigator.viewport.centerSpringX.animationTime=_viewer.animationTime/3;
+        _viewer.navigator.viewport.centerSpringY.animationTime=_viewer.animationTime/3;
+        _viewer.navigator.viewport.zoomSpring.animationTime=_viewer.animationTime/3;
+        _viewer.navigator.viewport.degreesSpring.animationTime=_viewer.animationTime/3;
+
         //open the DZI xml file pointing to the tiles
         const imageName = _currentImage.name;
         const imageStack = _expandImageName(imageName);
@@ -499,8 +552,11 @@ const tmapp = (function() {
         _viewer.canvas.appendChild(overlayDiv);
 
         //Since scale < image.size, it is not pixel-perfect
-        const attentionLayer = new AttentionLayer("attention", _viewer.pixiOverlay({container:overlayDiv}));
-        layerHandler.addLayer(attentionLayer);
+        // const attentionOverlay = _viewer.pixiOverlay({container:overlayDiv});
+        // attentionOverlay.ready.then(() => {
+        //     const attentionLayer = new AttentionLayer("attention", attentionOverlay);
+        //     layerHandler.addLayer(attentionLayer);
+        // });
     
         const svgOverlay = _viewer.svgOverlay(overlayDiv); //Shared for regions and collab (for the moment)
         const collabLayer = new CollabLayer("collab",svgOverlay);
@@ -508,9 +564,12 @@ const tmapp = (function() {
         
         const regionLayer = new RegionLayer("region",svgOverlay);
         layerHandler.addLayer(regionLayer);
-  
-        const markerLayer = new MarkerLayer("marker", _viewer.pixiOverlay({container:overlayDiv}));
-        layerHandler.addLayer(markerLayer);
+
+        const markerOverlay = _viewer.pixiOverlay({container:overlayDiv});
+        markerOverlay.ready.then(() => {
+            const markerLayer = new MarkerLayer("marker", markerOverlay);
+            layerHandler.addLayer(markerLayer);
+        });
 
 
 
@@ -592,7 +651,7 @@ const tmapp = (function() {
                         openImage(imageName, () => {
                             collabClient.connect(collab);
                             if (initialState) {
-                                moveTo(initialState);
+                                moveTo(initialState, true);
                             }
                         });
                     }
@@ -600,7 +659,7 @@ const tmapp = (function() {
                         openImage(imageName, () => {
                             collabPicker.open(imageName, true, true, () => {
                                 if (initialState) {
-                                    moveTo(initialState);
+                                    moveTo(initialState, true);
                                 }
                             });
                         });
@@ -679,7 +738,7 @@ const tmapp = (function() {
      * @param {number} state.rotation The rotation in the viewport.
      * @param {number} state.zoom The zoom in the viewport.
      */
-    function moveTo({x, y, z, rotation, zoom}) {
+    function moveTo({x, y, z, rotation, zoom}, immediately=false) {
         const capValue = (val, min, max) => Math.max(Math.min(val, max), min);
         if (!_viewer) {
             throw new Error("Tried to move viewport without a viewer.");
@@ -688,7 +747,7 @@ const tmapp = (function() {
             const min = _viewer.viewport.getMinZoom();
             const max = _viewer.viewport.getMaxZoom();
             const boundZoom = capValue(zoom, min, max);
-            _viewer.viewport.zoomTo(boundZoom, false); //true);
+            _viewer.viewport.zoomTo(boundZoom, immediately);
         }
         if (x !== undefined && y !== undefined) {
             const imageBounds = _viewer.world.getItemAt(0).getBounds();
@@ -708,10 +767,10 @@ const tmapp = (function() {
             const boundX = capValue(x, minX, maxX);
             const boundY = capValue(y, minY, maxY);
             const point = new OpenSeadragon.Point(boundX, boundY);
-            _viewer.viewport.panTo(point, false); // true);
+            _viewer.viewport.panTo(point, immediately);
         }
         if (rotation !== undefined) {
-            _viewer.viewport.setRotation(rotation, false);
+            _viewer.viewport.setRotation(rotation, immediately);
         }
         if (z !== undefined) {
             _setFocusLevel(z);
@@ -736,9 +795,7 @@ const tmapp = (function() {
 
     /**
      * Move the viewport to look at a specific annotation.
-     * @param {number} x The annottation or its id where to move.
-     *
-     * Note: getAnnotationById is currently O(N) slow!
+     * @param {number} x The annotation or its id where to move.
      */
     function moveToAnnotation(x) {
         // Only move if you're not following anyone
@@ -905,8 +962,27 @@ const tmapp = (function() {
      * Sending events to OSDs keyboard handlers
      */
     function keyDownHandler(event) {
-        // Only arrow keys
-        _viewer.innerTracker.keyDownHandler(event);
+        let caught=true; //Assume we use the key (setting to false in 'default')
+        //console.log('Key: ',event.which);
+        switch(event.which) {
+            case 107: // NumPad +
+                // How to reach singleZoomInAction() in viewer.js?
+                _viewer.viewport.zoomBy( _viewer.zoomPerClick / 1.0 );
+                _viewer.viewport.applyConstraints();
+                break;
+            case 109: // NumPad -
+                _viewer.viewport.zoomBy( 1.0 / _viewer.zoomPerClick );
+                _viewer.viewport.applyConstraints();
+                break;
+            default:
+                caught=false; //Assume we miss the key
+        }
+        if (caught) {
+            event.preventDefault(); //prevent e.g. Firefox to open search box
+        }
+        else {
+            _viewer.innerTracker.keyDownHandler(event);
+        }
     }
     function keyHandler(event) {
         // All other OSD keys

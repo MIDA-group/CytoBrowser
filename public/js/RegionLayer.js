@@ -262,7 +262,7 @@ class RegionLayer extends OverlayLayer {
             enterHandler: (event) => {
                 regionEditor.isEditingRegion() || annotationTool.isEditing() || this.#highlight(node);
             },
-            exitHandler: (event) => {
+            leaveHandler: (event) => {
                 regionEditor.isEditingRegion() || annotationTool.isEditing() || this.#unHighlight(node);
             }
         }).setTracking(true);
