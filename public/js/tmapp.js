@@ -44,7 +44,9 @@ const tmapp = (function() {
         _viewer, //the OSD-viewer
         _currState = {
             x: 0.5,
+            targetX: 0.5,
             y: 0.5,
+            targetY: 0.5,
             z: 0,
             rotation: 0,
             targetRotation: 0,
@@ -132,19 +134,23 @@ const tmapp = (function() {
             throw new Error("Tried to update zoom of nonexistent viewer.");
         }
         const currZoom = Math.round(_viewer.viewport.getZoom(true)*1000)/1000;
-        if (!init && _currState.zoom === currZoom) return;
         const targetZoom = _viewer.viewport.getZoom(false);
+        if (!init && _currState.zoom === currZoom && _currState.targetZoom === targetZoom) return;
+
         if (targetZoom < _viewer.viewport.getMinZoom()) {
             // console.log('Is this an OSD-5 bug?');
             _viewer.viewport.zoomTo(_viewer.viewport.getMinZoom());
             return; //This function will be called again due to zoom change
         }
+        
         const maxZoom = _viewer.viewport.getMaxZoom();
         const size = _viewer.viewport.getContainerSize();
         layerHandler.setZoom(currZoom, maxZoom, size.x, size.y);
         tmappUI.setImageZoom(Math.round(currZoom*10)/10);
+
         _currState.zoom = currZoom;
         _currState.targetZoom = targetZoom;
+
         _updateCollabPosition();
         _updateURLParams();
         //console.log('zoom update',zoom)
@@ -154,13 +160,19 @@ const tmapp = (function() {
         if (!_viewer) {
             throw new Error("Tried to update position of nonexistent viewer.");
         }
-        const position = _viewer.viewport.getCenter();
+        const currPosition = _viewer.viewport.getCenter(true);
         // Rounding to 10 decimals to avoid silly-small update jitter
-        position.x = Math.round(position.x*1e10)/1e10;
-        position.y = Math.round(position.y*1e10)/1e10;
-        if (!init && _currState.x === position.x && _currState.y === position.y) return;
-        _currState.x = position.x;
-        _currState.y = position.y;
+        currPosition.x = Math.round(currPosition.x*1e10)/1e10;
+        currPosition.y = Math.round(currPosition.y*1e10)/1e10;
+        const targetPosition = _viewer.viewport.getCenter(false);
+        if (!init && _currState.x === currPosition.x && _currState.y === currPosition.y
+            && _currState.targetX === targetPosition.x && _currState.targetY === targetPosition.y) return;
+
+        _currState.x = currPosition.x;
+        _currState.y = currPosition.y;
+        _currState.targetX = targetPosition.x;
+        _currState.targetY = targetPosition.y;
+
         _updateCollabPosition();
         _updateURLParams();
         //console.log('pos update',position)
@@ -171,12 +183,16 @@ const tmapp = (function() {
             throw new Error("Tried to update rotation of nonexistent viewer.");
         }
         const currRotation = (Math.round(_viewer.viewport.getRotation(true)) + 360) % 360; 
-        if (!init && _currState.rotation === currRotation) return;
         const targetRotation = _viewer.viewport.getRotation(false);
+        if (!init && _currState.rotation === currRotation 
+            && _currState.targetRotation === targetRotation) return;
+        
         layerHandler.setRotation(currRotation);
         tmappUI.setImageRotation(currRotation);
+
         _currState.rotation = currRotation;
         _currState.targetRotation = targetRotation;
+
         _updateCollabPosition();
         _updateURLParams();
         //console.log('rot update',currRotation)
@@ -184,14 +200,14 @@ const tmapp = (function() {
 
     const roundTo = (x, n) => Math.round(x * Math.pow(10, n)) / Math.pow(10, n);
     let urlCache=null;
-    function makeURL({x, y, z, targetRotation, targetZoom}={},update=false) {
+    function makeURL({targetX, targetY, z, targetRotation, targetZoom}={},update=false) {
         const url = (update&&urlCache)?urlCache:new URL(window.location.href);
         const params = url.searchParams;
         if (_currentImage) {
             update || params.set("image", _currentImage.name);
             targetZoom!=null && params.set("zoom", roundTo(targetZoom, 2));
-            x!=null && params.set("x", roundTo(x, 5));
-            y!=null && params.set("y", roundTo(y, 5));
+            targetX!=null && params.set("x", roundTo(targetX, 5));
+            targetY!=null && params.set("y", roundTo(targetY, 5));
             z!=null && params.set("z", z);
             targetRotation!=null && params.set("rotation", targetRotation||0);
         }
