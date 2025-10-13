@@ -322,7 +322,7 @@ const collabClient = (function(){
 
         if (_followedMember) {
             if (_followedMember.updated) {
-                tmapp.moveTo(_followedMember.position);
+                tmapp.moveTo(_followedMember.position, true); //immediate move
                 _followedMember.updated = false;
             }
             if (_followedMember.removed) {
