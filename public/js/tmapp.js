@@ -224,6 +224,7 @@ const tmapp = (function() {
         // Get params from URL
         const params = url.searchParams;
         const imageName = params.get("image");
+        console.log('AAA:',imageName);
         const collab = params.get("collab");
         const state = {
             zoom: params.get("zoom"),
@@ -238,6 +239,7 @@ const tmapp = (function() {
     // Immediate moveTo from URL
     function processURL(url) {
         const {imageName, collab, state}=parseURL(url);
+        console.log('PPP:',imageName);
         if (imageName && imageName!==_currentImage.name) {
             if (collab) {
                 openImage(imageName, () => {
@@ -249,6 +251,7 @@ const tmapp = (function() {
             }
             else if (imageName) {
                 openImage(imageName, () => {
+                    console.log('XXX:',imageName);
                     collabPicker.open(imageName, true, true, () => {
                         if (state) {
                             moveTo(state, true);
@@ -649,10 +652,14 @@ const tmapp = (function() {
      * @param {number} options.initialState.zoom Zoom in viewport.
      */
     function init({imageName, collab, initialState}) {
+        let activePath = "";
+        if (imageName) {
+            activePath = imageName.substring(0, imageName.lastIndexOf('/'));
+        }
 
         // Initiate a HTTP request and send it to the image info endpoint
         const imageReq = new XMLHttpRequest();
-        imageReq.open("GET", window.location.api + "/images", true);
+        imageReq.open("GET", window.location.api + "/images/" + activePath, true);
         // Turn off caching of response
         imageReq.setRequestHeader("Cache-Control", "no-cache, no-store, must-revalidate, max-age=0"); // HTTP 1.1
         imageReq.setRequestHeader("Pragma", "no-cache"); // HTTP 1.0
@@ -751,6 +758,7 @@ const tmapp = (function() {
             const image = _images.find(image => image.name === imageName);
             if (!image) {
                 tmappUI.displayImageError("badimage");
+                console.log(_images);
                 throw new Error(`Failed to open image ${imageName}.`);
             }
             _clearCurrentImage();

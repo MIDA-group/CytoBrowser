@@ -10,6 +10,8 @@
  * it is assumed to not change often.
  */
 
+const path = require('node:path');
+
 // Declare required modules
 const fs = require("fs");
 const fsPromises = fs.promises;
@@ -17,8 +19,15 @@ const fsPromises = fs.promises;
 // Directory where the data can be found
 let dataDir;
 
+// The current subdirectory
+let activePath = "";
+let activeDir;
+
 // HttpDirectory where the data can be accessed
 const dataOutDir = "data"; // Must match Cytobrowser served directory
+
+// Where the data was last updated
+let lastUpdateDir = null;
 
 // Time when the data was last altered
 let lastUpdate = 0;
@@ -35,7 +44,7 @@ const zEx = /(?<=_z).*(?=\.dzi)/g;
 
 function getZLevels(dir, image) {
     // Only look at dzi files for the right name
-    const nameFilter = RegExp(`^${image.name}.*\.dzi$`);
+    const nameFilter = RegExp(`^${path.basename(image.name)}.*\.dzi$`);
     const names = dir.filter(name => nameFilter.test(name));
 
     // Isolate the z levels in the dzi filenames
@@ -49,7 +58,7 @@ function getZLevels(dir, image) {
  * The overview image is found by looking for the largest image scale that
  * only contains a single image. The detail image is found by taking a tile
  * near the center of an image at the smallest scale over a certain limit.
- * @param {Array<string>} dir The content of the data directory.
+ * @param {Array<string>} dir The content of the data (sub)directory.
  * @param {Object} image The image data of the image for which thumbnails
  * should be found.
  * Thumbnails are returned in image.thumbnails={overview: string, detail: string}
@@ -57,12 +66,13 @@ function getZLevels(dir, image) {
 */
 async function getThumbnails(dir, image) {
     // Find the file directories for the image name
-    const nameFilter = RegExp(`^${image.name}.*_files$`);
+    const nameFilter = RegExp(`^${path.basename(image.name)}.*_files$`);
     const names = dir.filter(name => nameFilter.test(name));
 
     // Look through the middle file directory
     const fileDir = names[Math.floor(names.length / 2)];
-    return fsPromises.readdir(`${dataDir}/${fileDir}`, {withFileTypes: true})
+    console.log(activeDir,fileDir,image.name,names);
+    return fsPromises.readdir(path.join(activeDir,fileDir), {withFileTypes: true})
     .then((dir)=>{
         // Directories only
         dir = dir.filter(dirent => dirent.isDirectory())
@@ -81,9 +91,9 @@ async function getThumbnails(dir, image) {
             if (idx === dir.length) {
                 return;
             }
-            const path = `${dataDir}/${fileDir}/${dir[idx]}`;
-            const outpath = `${dataOutDir}/${fileDir}/${dir[idx]}`;
-            return fsPromises.readdir(path)
+            const inpath = path.join(dataDir,activePath,fileDir,dir[idx]);
+            const outpath = path.join(dataOutDir,activePath,fileDir,dir[idx]);
+            return fsPromises.readdir(inpath)
                 .then( (dir) => {
                     // Store suitable thumbnails
                     if (dir.length === 1) {
@@ -129,7 +139,7 @@ async function getThumbnails(dir, image) {
 function handleDirError(err) {
     lastUpdateFailed = true;
     if (err.code === "ENOENT") {
-        console.error(`WARNING -- The specified data directory \`${dataDir}\` does not exist.`);
+        console.error(`WARNING -- The specified data directory \`${activeDir}\` does not exist.`);
         availableImages = {images: [], missingDataDir: true};
     }
     else {
@@ -144,14 +154,14 @@ function handleDirError(err) {
  * multiple times without having to call this function again.
  */
 async function updateImages() {
-    return fsPromises.readdir(dataDir)
+    return fsPromises.readdir(activeDir)
     .then( (dir) => {
         let names = dir.map(name => name.match(nameEx)).flat();
         names = names.filter(name => name !== null);
         const uniqueNames = [... new Set(names)];
-
+        console.log(uniqueNames);
         const images = [];
-        uniqueNames.map(name => images.push({name: name}));
+        uniqueNames.map(name => images.push({name: path.join(activePath,name)})); // Including path in name
         Promise.all(images.map(image => {
             getZLevels(dir, image);
             return getThumbnails(dir, image);
@@ -167,20 +177,21 @@ async function updateImages() {
  * Look to see if any data has changed since the last time it was
  * collected. If it has, fetch the new data.
  */
-function checkForDataUpdates() {
-    fs.stat(dataDir, (err, stats) => {
+function checkForDataUpdates(forceUpdate=false) {
+    fs.stat(activeDir, (err, stats) => {
         if (err) {
             handleDirError(err);
             return;
         }
 
         const updateTime = stats.ctime.getTime();
-        if (updateTime !== lastUpdate || lastUpdateFailed) {
+        if (activeDir !== lastUpdateDir || updateTime !== lastUpdate || lastUpdateFailed || forceUpdate ) {
             updateImages();
+            lastUpdateDir = activeDir;
             lastUpdate = updateTime;
             lastUpdateFailed = false;
         }
-    })
+    });
 }
 
 /**
@@ -189,8 +200,20 @@ function checkForDataUpdates() {
  * @returns {Array} An array of image information, each entry including
  * an image name, an array of z levels, and two thumbnail routes.
  */
-function getAvailableImages() {
-    return availableImages;
+function getAvailableImages(inPath=['']) {
+    console.log(inPath);
+    const joinPath = path.join(...inPath); //Handles '..'
+    if (joinPath === activePath) {
+        return availableImages;
+    }
+    else { //rescan if new directory
+        console.log('Old activePath: ',activePath);
+        activePath = joinPath;
+        console.log('New activePath: ',activePath);
+        activeDir = path.join(dataDir,activePath);
+        checkForDataUpdates();
+        return availableImages;
+    }
 }
 
 module.exports = function(dir) {
@@ -198,7 +221,8 @@ module.exports = function(dir) {
         throw new Error("A data directory has to be specified.");
     }
     dataDir = dir;
+    activeDir = dir;
     checkForDataUpdates();
-    setInterval(checkForDataUpdates, 10000);
+    setInterval(checkForDataUpdates, 10000); //Check every 10s
     return getAvailableImages;
 }

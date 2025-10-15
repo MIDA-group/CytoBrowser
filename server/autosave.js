@@ -16,7 +16,7 @@ const idPattern = /(?<=_)[^_]*(?=\.json$)/;
 let autosaveDir;
 
 function getSubDirName(image) {
-    const sanitizedImage = sanitize(String(image));
+    const sanitizedImage = String(image); //sanitize(String(image));
     return sanitizedImage;
 }
 
