@@ -396,7 +396,7 @@ const collabClient = (function(){
                 `&userId=${_userId ? _userId : ""}`;
             const ws = new WebSocket(wsProtocol+address);
             ws.onopen = function(event) {
-                console.info(`Successfully connected to collaboration ${id}.`);
+                console.info(`Successfully connected to collaboration ${id} for image ${imageName}.`);
                 retryCount.set(0);
                 tmappUI.clearImageError();
 

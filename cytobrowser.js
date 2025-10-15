@@ -62,7 +62,7 @@ console.info('Serving resources from: ',publicPath);
 app.use(express.static(publicPath));
 
 console.info('Serving image data from: ',dataDir);
-app.use("/data", express.static(dataDir));
+app.use("/data", express.static(dataDir)); // Corresponds to dataOutDir in availableImages.js
 app.use(express.json());
 
 // Serve the index page at the root
@@ -76,10 +76,12 @@ app.get("/api/serverVersion", (req, res) => {
     res.json({serverVersion});
 });
 
-// Get a list of available images
-app.get("/api/images", (req, res) => {
+// Get a list of available images, and image subdirectories
+app.get("/api/images{/*path}", (req, res) => {
     // Get the available images and send them as a response
-    const images = availableImages();
+    console.log('Req.url: ',req.url,'\tparams: ',req.params);
+
+    const images = availableImages(req.params.path);
     if (images === null) {
         res.status(500);
         res.send("The server was unable to find images.");
@@ -115,6 +117,7 @@ app.ws("/collaboration/:id", (ws, req) => {
     const image = req.query.image ? req.query.image : null;
     const userId = req.query.userId ? req.query.userId : null;
     const name = req.query.name || "Unnamed";
+    console.log('Joining: ',name,image);
     collaboration.joinCollab(ws, name, userId, id, image);
 
     ws.on("message", msg => {

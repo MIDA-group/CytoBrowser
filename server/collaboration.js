@@ -49,7 +49,7 @@ class Collaboration {
         this.ongoingLoad = new Promise(r => r()); // Dummy promise just in case
         this.hasUnsavedChanges = false;
         this.loadState(false);
-        this.log(`Initializing collaboration.`, console.info);
+        this.log(`Initializing collaboration: image ${image}.`, console.info);
         this.classConfig = [];
     }
 
@@ -142,6 +142,7 @@ class Collaboration {
     }
 
     handleMessage(sender, msg) {
+        // console.log('Handle: ',msg);
         // Keep track of the member that sent the message
         const member = this.members.get(sender);
         switch (msg.type) {
@@ -523,7 +524,7 @@ function getId() {
  * has an effect if the collaboration has not been created yet.
  */
 function joinCollab(ws, name, userId, id, image) {
-    const cleanImage = sanitize(image);
+    const cleanImage = image; //sanitize(image);
     const collab = getCollab(id, cleanImage, name);
     collab.addMember(ws, name, userId);
 }
@@ -570,7 +571,7 @@ function handleMessage(ws, id, msg) {
  * image ids and their names.
  */
 function getAvailable(image) {
-    const cleanImage = sanitize(image);
+    const cleanImage = image; //sanitize(image);
     return autosave.getSavedCollabInfo(cleanImage).then(available => {
         available.forEach(info => {
             if (collabs[info.id]) {
