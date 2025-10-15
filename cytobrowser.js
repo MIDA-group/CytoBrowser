@@ -81,15 +81,16 @@ app.get("/api/images{/*path}", (req, res) => {
     // Get the available images and send them as a response
     console.log('Req.url: ',req.url,'\tparams: ',req.params);
 
-    const images = availableImages(req.params.path);
-    if (images === null) {
-        res.status(500);
-        res.send("The server was unable to find images.");
-    }
-    else {
-        res.status(200);
-        res.json(images);
-    }
+    availableImages(req.params.path).then(images => {
+        if (images === null) {
+            res.status(500);
+            res.send("The server was unable to find images.");
+        }
+        else {
+            res.status(200);
+            res.json(images);
+        }
+    });
 });
 
 // Get an unused collaboration id

@@ -167,6 +167,8 @@ async function updateImages() {
             return getThumbnails(dir, image);
         }))
         availableImages = {images: images};
+        lastUpdateDir = activeDir;
+        lastUpdateFailed = false;
     })
     .catch( (err) => {
         handleDirError(err);
@@ -177,30 +179,26 @@ async function updateImages() {
  * Look to see if any data has changed since the last time it was
  * collected. If it has, fetch the new data.
  */
-function checkForDataUpdates(forceUpdate=false) {
-    fs.stat(activeDir, (err, stats) => {
-        if (err) {
-            handleDirError(err);
-            return;
+async function checkForDataUpdates(forceUpdate=false) {
+    return fsPromises.stat(activeDir)
+    .then( async (stats) => {
+        if (activeDir !== lastUpdateDir || lastUpdateFailed || forceUpdate ) {
+            await updateImages();
         }
-
-        const updateTime = stats.ctime.getTime();
-        if (activeDir !== lastUpdateDir || updateTime !== lastUpdate || lastUpdateFailed || forceUpdate ) {
-            updateImages();
-            lastUpdateDir = activeDir;
-            lastUpdate = updateTime;
-            lastUpdateFailed = false;
-        }
+    })
+    .catch( (err) => {
+        handleDirError(err);
     });
 }
 
 /**
  * Get the currently available images from the /data directory on the
  * server.
- * @returns {Array} An array of image information, each entry including
- * an image name, an array of z levels, and two thumbnail routes.
+ * @returns {Promise<Array<Object>>} A promise of the list of available
+ * images; each entry including an image name, an array of z levels, 
+ * and two thumbnail routes.
  */
-function getAvailableImages(inPath=['']) {
+async function getAvailableImages(inPath=['']) {
     console.log(inPath);
     const joinPath = path.join(...inPath); //Handles '..'
     if (joinPath === activePath) {
@@ -211,7 +209,7 @@ function getAvailableImages(inPath=['']) {
         activePath = joinPath;
         console.log('New activePath: ',activePath);
         activeDir = path.join(dataDir,activePath);
-        checkForDataUpdates();
+        await checkForDataUpdates();
         return availableImages;
     }
 }
