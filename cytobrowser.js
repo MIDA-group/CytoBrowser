@@ -48,6 +48,17 @@ if (argv.h || argv.help) {
 
 // Declare required modules
 const express = require("express");
+const path = require('node:path');
+const sanitize = require("sanitize-filename"); // Sanitize web-input as early as possible
+// Since sanitize doesn't have an option to allow '/', we divide and conquer 
+function pathSanitize(inPath = '') {
+    const pathSegments = inPath.split('/');
+    const sanitizedPath = pathSegments.map(str => sanitize(str));
+    const joinedPath = path.join(...sanitizedPath); 
+    return joinedPath;
+}
+
+
 const availableImages = require("./server/availableImages")(dataDir);
 const collaboration = require("./server/collaboration")(collabDir, metadataDir);
 const { version : serverVersion } = require("./package.json");
@@ -79,9 +90,10 @@ app.get("/api/serverVersion", (req, res) => {
 // Get a list of available images, and image subdirectories
 app.get("/api/images{/*path}", (req, res) => {
     // Get the available images and send them as a response
-    console.log('Req.url: ',req.url,'\tparams: ',req.params);
+    const sanitizedPath=req.params.path?.map(str => sanitize(str)) ?? '';
+    const joinedPath = path.join(...sanitizedPath); 
 
-    availableImages(req.params.path).then(images => {
+    availableImages(joinedPath).then(images => {
         if (images === null) {
             res.status(500);
             res.send("The server was unable to find images.");
@@ -102,7 +114,7 @@ app.get("/api/collaboration/id", (req, res) => {
 
 // Get a list of existing collaborations
 app.get("/api/collaboration/available", (req, res) => {
-    const image = req.query.image;
+    const image = pathSanitize(req.query.image);
     collaboration.getAvailable(image).then(available => {
         res.status(200);
         res.json({available});
@@ -114,10 +126,11 @@ app.get("/api/collaboration/available", (req, res) => {
 
 // Add websocket endpoints for collaboration
 app.ws("/collaboration/:id", (ws, req) => {
-    const id = req.params.id;
-    const image = req.query.image ? req.query.image : null;
-    const userId = req.query.userId ? req.query.userId : null;
-    const name = req.query.name || "Unnamed";
+    const id = sanitize(req.params.id);
+    const image = req.query.image ? pathSanitize(req.query.image) : null;
+    const userId = req.query.userId ? sanitize(req.query.userId) : null;
+    const name = req.query.name? sanitize(req.query.name) : "Unnamed";
+
     console.log('Joining: ',name,image);
     collaboration.joinCollab(ws, name, userId, id, image);
 

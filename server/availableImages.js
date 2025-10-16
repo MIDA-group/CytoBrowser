@@ -10,6 +10,7 @@
  * it is assumed to not change often.
  */
 
+const sanitize = require("sanitize-filename");
 const path = require('node:path');
 
 // Declare required modules
@@ -39,13 +40,15 @@ let lastUpdateFailed = false;
 let availableImages = null;
 
 // Constant regular expressions
-const nameEx = /.+(?=_z[0-9]+\.dzi)/g;
-const zEx = /(?<=_z).*(?=\.dzi)/g;
+const nameEx = /.+(?=_z[0-9]+\.dzi$)/;
+const filesEx = /.*(?=_z[0-9]+_files$)/;
+const zEx = /(?<=_z).*(?=\.dzi$)/;
 
 function getZLevels(dir, image) {
     // Only look at dzi files for the right name
     const nameFilter = RegExp(`^${path.basename(image.name)}.*\.dzi$`);
-    const names = dir.filter(name => nameFilter.test(name));
+    const names = dir.filter(dirent => dirent.isFile() && nameFilter.test(dirent.name))
+        .map(dirent => dirent.name);
 
     // Isolate the z levels in the dzi filenames
     const zLevels = names.map(name => name.match(zEx)).flat();
@@ -58,7 +61,7 @@ function getZLevels(dir, image) {
  * The overview image is found by looking for the largest image scale that
  * only contains a single image. The detail image is found by taking a tile
  * near the center of an image at the smallest scale over a certain limit.
- * @param {Array<string>} dir The content of the data (sub)directory.
+ * @param {Array<fs.Dirent>} dir The content of the data (sub)directory.
  * @param {Object} image The image data of the image for which thumbnails
  * should be found.
  * Thumbnails are returned in image.thumbnails={overview: string, detail: string}
@@ -67,11 +70,11 @@ function getZLevels(dir, image) {
 async function getThumbnails(dir, image) {
     // Find the file directories for the image name
     const nameFilter = RegExp(`^${path.basename(image.name)}.*_files$`);
-    const names = dir.filter(name => nameFilter.test(name));
+    const names = dir.filter(dirent => dirent.isDirectory() && nameFilter.test(dirent.name))
+        .map(dirent => dirent.name);
 
     // Look through the middle file directory
     const fileDir = names[Math.floor(names.length / 2)];
-    console.log(activeDir,fileDir,image.name,names);
     return fsPromises.readdir(path.join(activeDir,fileDir), {withFileTypes: true})
     .then((dir)=>{
         // Directories only
@@ -154,19 +157,29 @@ function handleDirError(err) {
  * multiple times without having to call this function again.
  */
 async function updateImages() {
-    return fsPromises.readdir(activeDir)
+    return fsPromises.readdir(activeDir, {withFileTypes: true})
     .then( (dir) => {
-        let names = dir.map(name => name.match(nameEx)).flat();
-        names = names.filter(name => name !== null);
-        const uniqueNames = [... new Set(names)];
-        console.log(uniqueNames);
         const images = [];
-        uniqueNames.map(name => images.push({name: path.join(activePath,name)})); // Including path in name
+        {
+            let names = dir.filter(dirent => dirent.isFile())
+                .map(dirent => dirent.name.match(nameEx)).flat(); // One hit for each z-level
+            names = names.filter(name => name !== null);
+            const uniqueNames = [... new Set(names)];
+            uniqueNames.map(name => images.push({name: path.join(activePath,name)}));
+        }
+
+        // All non '*z[0-9]+_files' directories
+        const directories = dir.filter(dirent => dirent.isDirectory() && !filesEx.test(dirent.name))
+            .map(dirent => dirent.name);
+        if (activePath != '') {
+            directories.unshift('..');
+        }
+
         Promise.all(images.map(image => {
             getZLevels(dir, image);
             return getThumbnails(dir, image);
         }))
-        availableImages = {images: images};
+        availableImages = {images: images, directories: directories};
         lastUpdateDir = activeDir;
         lastUpdateFailed = false;
     })
@@ -181,9 +194,9 @@ async function updateImages() {
  */
 async function checkForDataUpdates(forceUpdate=false) {
     return fsPromises.stat(activeDir)
-    .then( async (stats) => {
+    .then( (stats) => {
         if (activeDir !== lastUpdateDir || lastUpdateFailed || forceUpdate ) {
-            await updateImages();
+            return updateImages();
         }
     })
     .catch( (err) => {
@@ -197,17 +210,15 @@ async function checkForDataUpdates(forceUpdate=false) {
  * @returns {Promise<Array<Object>>} A promise of the list of available
  * images; each entry including an image name, an array of z levels, 
  * and two thumbnail routes.
+ * 
+ * We expect **sanitized** inPath!
  */
-async function getAvailableImages(inPath=['']) {
-    console.log(inPath);
-    const joinPath = path.join(...inPath); //Handles '..'
-    if (joinPath === activePath) {
+async function getAvailableImages(inPath='') {
+    if (inPath === activePath) {
         return availableImages;
     }
     else { //rescan if new directory
-        console.log('Old activePath: ',activePath);
-        activePath = joinPath;
-        console.log('New activePath: ',activePath);
+        activePath = inPath;
         activeDir = path.join(dataDir,activePath);
         await checkForDataUpdates();
         return availableImages;
