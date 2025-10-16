@@ -443,7 +443,7 @@ const htmlHelper = (function() {
         `);
     }
 
-    function _imageBrowserEntry(image) {
+    function _imageBrowserImgEntry(image) {
         let entry;
         if (image.thumbnails && image.thumbnails.overview && image.thumbnails.detail) {
             entry = $(`
@@ -490,14 +490,41 @@ const htmlHelper = (function() {
         return entry;
     }
 
-    function _imageBrowserRow(images) {
+    function _imageBrowserDirEntry(dir) {
+        const entry = $(`
+            <div class="d-flex" style="width: 12.5%;">
+                <div class="card w-100">
+                    <img src="misc/folder_icon.svg" class="card-img-top position-absolute"
+                        style="height: 130px; object-fit: contain;">
+                    <div class="card-body text-center" style="padding:0;padding-top:130px;" >
+                        <a class="card-link stretched-link" href="?dir=${dir.name}">
+                            ${dir.name}
+                        </a>
+                    </div>
+                </div>
+            </div>
+            `);
+        return entry;
+    }
+
+    function _imageBrowserImgRow(images) {
         const row = $(`
             <div class="row mb-4">
             </div>
         `);
-        images.forEach(image => row.append(_imageBrowserEntry(image)));
+        images.forEach(image => row.append(_imageBrowserImgEntry(image)));
         return row;
     }
+
+    function _imageBrowserDirRow(directories) {
+        const row = $(`
+            <div class="row mb-4">
+            </div>
+        `);
+        directories.forEach(dir => row.append(_imageBrowserDirEntry(dir)));
+        return row;
+    }
+
 
     /**
      * Fill a jquery selection with a comment section.
@@ -614,19 +641,32 @@ const htmlHelper = (function() {
      * images.
      * @param {Array<Object>} images The images that should be browsable.
      */
-    function buildImageBrowser(container, images) {
-        if (images.length > 0) {
+    function buildImageBrowser(container, images, directories) {
+        const dirsPerRow=8;
+        if (directories.length > 0) {
             let rowNumber = 0;
-            while (rowNumber * 4 < images.length) {
-                const start = rowNumber * 4;
-                const end = start + 4;
-                const rowContent = images.slice(start, end);
-                const row = _imageBrowserRow(rowContent);
+            while (rowNumber * dirsPerRow < directories.length) {
+                const start = rowNumber * dirsPerRow;
+                const end = start + dirsPerRow;
+                const rowContent = directories.slice(start, end);
+                const row = _imageBrowserDirRow(rowContent);
                 container.append(row);
                 rowNumber++;
             }
         }
-        else {
+        const imsPerRow=4;
+        if (images.length > 0) {
+            let rowNumber = 0;
+            while (rowNumber * imsPerRow < images.length) {
+                const start = rowNumber * imsPerRow;
+                const end = start + imsPerRow;
+                const rowContent = images.slice(start, end);
+                const row = _imageBrowserImgRow(rowContent);
+                container.append(row);
+                rowNumber++;
+            }
+        }
+        if (directories.length + images.length == 0) {
             const message = _emptyImageBrowser();
             container.append(message);
         }

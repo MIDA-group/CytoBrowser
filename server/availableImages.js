@@ -10,7 +10,6 @@
  * it is assumed to not change often.
  */
 
-const sanitize = require("sanitize-filename");
 const path = require('node:path');
 
 // Declare required modules
@@ -169,10 +168,13 @@ async function updateImages() {
         }
 
         // All non '*z[0-9]+_files' directories
-        const directories = dir.filter(dirent => dirent.isDirectory() && !filesEx.test(dirent.name))
-            .map(dirent => dirent.name);
+        const directories = [];
         if (activePath != '') {
-            directories.unshift('..');
+            directories.push({name: path.join(activePath,'..')});
+        }
+        {
+            dir.filter(dirent => dirent.isDirectory() && !filesEx.test(dirent.name))
+            .map(dirent => directories.push({name: path.join(activePath,dirent.name)}));
         }
 
         Promise.all(images.map(image => {

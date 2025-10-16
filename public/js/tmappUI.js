@@ -747,9 +747,9 @@ const tmappUI = (function(){
      * @param {Array<ImageDetails>} images Information about the images
      * being added.
      */
-    function updateImageBrowser(images) {
+    function updateImageBrowser(images, directories) {
         const container = $("#available_images");
-        htmlHelper.buildImageBrowser(container, images);
+        htmlHelper.buildImageBrowser(container, images, directories);
     }
 
     /**

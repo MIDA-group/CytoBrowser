@@ -224,6 +224,7 @@ const tmapp = (function() {
         const params = url.searchParams;
         const imageName = params.get("image");
         console.log('AAA:',imageName);
+        const dirName = params.get("dir");
         const collab = params.get("collab");
         const state = {
             zoom: params.get("zoom"),
@@ -232,7 +233,7 @@ const tmapp = (function() {
             z: params.get("z"),
             rotation: params.get("rotation")
         };
-        return {imageName, collab, state};
+        return {imageName, dirName, collab, state};
     }
 
     // Immediate moveTo from URL
@@ -663,7 +664,8 @@ const tmapp = (function() {
                     const response = JSON.parse(imageReq.responseText);
                     const missingDataDir = response.missingDataDir;
                     const images = response.images;
-                    tmappUI.updateImageBrowser(images);
+                    const directories = response.directories;
+                    tmappUI.updateImageBrowser(images,directories);
                     _images = images;
 
                     // Go to the initial image and/or join the collab
