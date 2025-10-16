@@ -931,10 +931,13 @@
 
         // Options when initializing tmapp
         const tmappOptions = {};
-        const {imageName, collab, state}=tmapp.parseURL(new URL(window.location.href));
+        const {imageName, dirName, collab, state}=tmapp.parseURL(new URL(window.location.href));
 
         if (imageName !== null) {
             tmappOptions.imageName = imageName;
+        }
+        if (dirName !== null) {
+            tmappOptions.dirName = dirName; // Only used if no imageName
         }
         if (collab !== null) {
             tmappOptions.collab = collab;
