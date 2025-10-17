@@ -45,10 +45,10 @@ const zEx = /(?<=_z).*(?=\.dzi$)/;
 
 // Following symlinks (synchronous)
 function _isFile(dirent) {
-    return dirent.isFile() || (dirent.isSymbolicLink() && fs.statSync(path.join(dirent.parentPath,dirent.name))?.isFile());
+    return dirent.isFile() || (dirent.isSymbolicLink() && fs.statSync(path.join(dirent.parentPath,dirent.name), {throwIfNoEntry: false})?.isFile());
 }
 function _isDirectory(dirent) {
-    return dirent.isDirectory() || (dirent.isSymbolicLink() && fs.statSync(path.join(dirent.parentPath,dirent.name))?.isDirectory());
+    return dirent.isDirectory() || (dirent.isSymbolicLink() && fs.statSync(path.join(dirent.parentPath,dirent.name), {throwIfNoEntry: false})?.isDirectory());
 }
 
 function getZLevels(dir, image) {
