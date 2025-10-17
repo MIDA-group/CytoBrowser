@@ -702,7 +702,7 @@ const tmapp = (function() {
                     if (missingDataDir) {
                         tmappUI.displayImageError("missingdatadir");
                     }
-                    else if (images.length === 0) {
+                    else if (images.length === 0 && directories.length === 0) {
                         tmappUI.displayImageError("noavailableimages");
                     }
                     else if (imageName && collab) {

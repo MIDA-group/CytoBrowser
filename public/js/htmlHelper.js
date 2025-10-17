@@ -455,7 +455,7 @@ const htmlHelper = (function() {
                     style="z-index: 9000; pointer-events: none; height: 130px; object-fit: cover;">
                     <div class="card-body text-center" style="padding:0;" >
                         <a class="card-link stretched-link" href="?image=${image.name}">
-                            ${image.name}
+                            ${image.name} :  ${JSON.stringify(image)}
                         </a>
                     </div>
                 </div>
@@ -480,7 +480,7 @@ const htmlHelper = (function() {
                     <img src="data:," alt="&nbsp;Broken image path" class="card-img-top position-absolute m-1 m-xl-4">
                     <div class="card-body text-center" style="padding:0;padding-top:130px;" >
                         <a class="card-link stretched-link" href="?image=${image.name}">
-                            ${image.name}
+                            ${image.name} :  ${JSON.stringify(image)}
                         </a>
                     </div>
                 </div>
@@ -497,7 +497,7 @@ const htmlHelper = (function() {
                     <img src="misc/folder_icon.svg" class="card-img-top position-absolute"
                         style="height: 130px; object-fit: contain;">
                     <div class="card-body text-center" style="padding:0;padding-top:130px;" >
-                        <a class="card-link stretched-link" href="?folder=${dir.name}">
+                        <a class="card-link stretched-link" href="?folder=${dir.path}">
                             ${dir.name}
                         </a>
                     </div>
