@@ -214,6 +214,7 @@ const tmapp = (function() {
             targetRotation!=null && params.set("rotation", targetRotation||0);
         }
         update || (_collab ? params.set("collab", _collab) : params.delete("collab"));
+        update || (_currentImage && params.delete("folder"));
         urlCache=url;
         return url;
     }
