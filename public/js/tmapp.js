@@ -268,7 +268,7 @@ const tmapp = (function() {
             }
         }
         else if (folderName && !imageName) {
-            _openImageBrowser(folderName);
+            _openFolder(folderName);
         }
         else if (state && state!==_currState) {
             moveTo(state, true);
@@ -639,8 +639,8 @@ const tmapp = (function() {
         _availableZLevels = null;
     }
 
-    // Image picker
-    function _openImageBrowser(folderName = _activePath) {
+    // Image picker / image browser
+    function _openFolder(folderName = _activePath) {
         _activePath = folderName;
         $("#image_browser").modal();
     }
@@ -721,8 +721,10 @@ const tmapp = (function() {
                         });
                     }
                     else { 
-                        tmappUI.displayImageError("noimage");
-                        _openImageBrowser();
+                        if (!folderName) {
+                            tmappUI.displayImageError("noimage");
+                        }
+                        _openFolder();
                     }
                     break;
                 case 500:

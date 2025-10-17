@@ -765,6 +765,7 @@ const tmappUI = (function(){
         const activePath = tmapp.getActivePath();
         document.getElementById("active_path").textContent=activePath;
         const container = $("#available_images");
+        container.empty(); 
         htmlHelper.buildImageBrowser(container, images, directories);
     }
 

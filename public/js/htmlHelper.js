@@ -461,17 +461,6 @@ const htmlHelper = (function() {
                 </div>
             </div>
             `);
-            const anchor = entry.find("a");
-            const detail = entry.find("img:eq(1)");
-            anchor.click(event => {
-                event.preventDefault();
-                entry.closest(".modal").modal("hide");
-                collabPicker.open(image.name);
-            });
-            anchor.hover(
-                () => detail.addClass("show").removeClass("hide"),
-                () => detail.addClass("hide").removeClass("show")
-            );
         }
         else {
             entry = $(`
@@ -487,6 +476,17 @@ const htmlHelper = (function() {
             </div>
             `);
         }
+        const anchor = entry.find("a");
+        const detail = entry.find("img:eq(1)");
+        anchor.click(event => {
+            event.preventDefault();
+            entry.closest(".modal").modal("hide");
+            collabPicker.open(image.name);
+        });
+        anchor.hover(
+            () => detail.addClass("show").removeClass("hide"),
+            () => detail.addClass("hide").removeClass("show")
+        );
         return entry;
     }
 
@@ -504,6 +504,11 @@ const htmlHelper = (function() {
                 </div>
             </div>
             `);
+        const anchor = entry.find("a");
+        anchor.click(event => {
+            event.preventDefault();
+            tmapp.init({folderName:dir.path});
+        });
         return entry;
     }
 
