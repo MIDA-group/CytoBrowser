@@ -95,7 +95,6 @@ async function getThumbnails(dir, image) {
             }
             const inpath = path.join(dataDir,activePath,fileDir,dir[idx]);
             const outpath = path.join(dataOutDir,activePath,fileDir,dir[idx]);
-            console.log('Looking for thumbs: ',inpath);
             return fsPromises.readdir(inpath)
                 .then( (dir) => {
                     // Store suitable thumbnails
@@ -171,7 +170,6 @@ async function updateImages() {
         // All non '*z[0-9]+_files' directories; relative paths (from activePath are returned)
         const directories = [];
         if (activePath != path.normalize('')) {
-            console.log(activePath);
             directories.push({name: '..', path: path.join(activePath,'..')});
         }
         {
@@ -202,7 +200,6 @@ async function checkForDataUpdates(forceUpdate=false) {
     return fsPromises.stat(activeDir)
     .then( (stats) => {
         if (activeDir !== lastUpdateDir || lastUpdateFailed || forceUpdate ) {
-            console.log('cFDU');
             return updateImages();
         }
     })
@@ -227,9 +224,7 @@ async function getAvailableImages(inPath='') {
     else { //rescan if new directory
         activePath = inPath;
         activeDir = path.join(dataDir,activePath);
-        console.log('Scanning ', activeDir);
         await checkForDataUpdates();
-        console.log('Returning ', availableImages);
         return availableImages;
     }
 }
