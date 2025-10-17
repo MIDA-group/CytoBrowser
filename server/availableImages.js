@@ -46,7 +46,7 @@ const zEx = /(?<=_z).*(?=\.dzi$)/;
 function getZLevels(dir, image) {
     // Only look at dzi files for the right name
     const nameFilter = RegExp(`^${path.basename(image.name)}.*\.dzi$`);
-    const names = dir.filter(dirent => dirent.isFile() && nameFilter.test(dirent.name))
+    const names = dir.filter(dirent => (dirent.isFile() || dirent.isSymbolicLink()) && nameFilter.test(dirent.name))
         .map(dirent => dirent.name);
 
     // Isolate the z levels in the dzi filenames
@@ -69,7 +69,7 @@ function getZLevels(dir, image) {
 async function getThumbnails(dir, image) {
     // Find the file directories for the image name
     const nameFilter = RegExp(`^${path.basename(image.name)}.*_files$`);
-    const names = dir.filter(dirent => dirent.isDirectory() && nameFilter.test(dirent.name))
+    const names = dir.filter(dirent => (dirent.isDirectory() || dirent.isSymbolicLink()) && nameFilter.test(dirent.name))
         .map(dirent => dirent.name);
 
     // Look through the middle file directory
@@ -77,7 +77,7 @@ async function getThumbnails(dir, image) {
     return fsPromises.readdir(path.join(activeDir,fileDir), {withFileTypes: true})
     .then((dir)=>{
         // Directories only
-        dir = dir.filter(dirent => dirent.isDirectory())
+        dir = dir.filter(dirent => dirent.isDirectory() || dirent.isSymbolicLink())
             .map(dirent => dirent.name);
         // Sort the directories numerically
         dir = dir.sort((a, b) => +a - +b);
@@ -160,7 +160,7 @@ async function updateImages() {
     .then( (dir) => {
         const images = [];
         {
-            let names = dir.filter(dirent => dirent.isFile())
+            let names = dir.filter(dirent => dirent.isFile() || dirent.isSymbolicLink() )
                 .map(dirent => dirent.name.match(nameEx)).flat(); // One hit for each z-level
             names = names.filter(name => name !== null);
             const uniqueNames = [... new Set(names)];
@@ -173,7 +173,7 @@ async function updateImages() {
             directories.push({name: '..', path: path.join(activePath,'..')});
         }
         {
-            dir.filter(dirent => dirent.isDirectory() && !filesEx.test(dirent.name))
+            dir.filter(dirent => (dirent.isDirectory() || dirent.isSymbolicLink()) && !filesEx.test(dirent.name))
             .map(dirent => directories.push({name: dirent.name, path: path.join(activePath,dirent.name)}));
         }
 
