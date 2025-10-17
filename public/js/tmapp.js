@@ -226,7 +226,6 @@ const tmapp = (function() {
         // Get params from URL
         const params = url.searchParams;
         const imageName = params.get("image");
-        console.log('AAA:',imageName);
         const folderName = params.get("folder");
         const collab = params.get("collab");
         const state = {
@@ -242,7 +241,6 @@ const tmapp = (function() {
     // Immediate moveTo from URL
     function processURL(url) {
         const {imageName, folderName, collab, state}=parseURL(url);
-        console.log('PPP:',imageName);
         if (imageName && imageName!==_currentImage.name) {
             if (collab) {
                 openImage(imageName, () => {
@@ -254,7 +252,6 @@ const tmapp = (function() {
             }
             else {
                 openImage(imageName, () => {
-                    console.log('XXX:',imageName);
                     collabPicker.open(imageName, true, true, () => {
                         if (state) {
                             moveTo(state, true);
@@ -775,7 +772,6 @@ const tmapp = (function() {
             const image = _images.find(image => image.name === imageName);
             if (!image) {
                 tmappUI.displayImageError("badimage");
-                console.log(_images);
                 throw new Error(`Failed to open image ${imageName}.`);
             }
             _clearCurrentImage();

@@ -131,7 +131,7 @@ app.ws("/collaboration/:id", (ws, req) => {
     const userId = req.query.userId ? sanitize(req.query.userId) : null;
     const name = req.query.name? sanitize(req.query.name) : "Unnamed";
 
-    console.log('Joining: ',name,image);
+    console.log('Joining: ',name,' for image: ',image);
     collaboration.joinCollab(ws, name, userId, id, image);
 
     ws.on("message", msg => {
