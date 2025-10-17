@@ -95,7 +95,10 @@ class MarkerLayer extends OverlayLayer {
     }
 
     get #markerSize() {
-        return this.#markerScale**2*0.25*this.#maxScale*Math.pow(this.#scale/this.#maxScale, 0.4); //Let marker grow slowly as we zoom out, to keep it visible
+        const imSize=coordinateHelper.getMinDimension(); //Scale down a bit for small images
+        const imFactor=Math.log10(imSize)/5; //100,000 -> 1.0; 1,000 -> 3/5=0.6
+        //console.log('ImFactor: ',imFactor);
+        return imFactor*this.#markerScale**2*0.25*this.#maxScale*Math.pow(this.#scale/this.#maxScale, 0.4); //Let marker grow slowly as we zoom out, to keep it visible
     }
 
     //Approx from corner to corner (middle of line), in screen pixels
