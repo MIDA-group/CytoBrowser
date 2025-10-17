@@ -643,7 +643,7 @@ const htmlHelper = (function() {
      */
     function buildImageBrowser(container, images, directories) {
         const dirsPerRow=8;
-        if (directories.length > 0) {
+        if (directories?.length > 0) {
             let rowNumber = 0;
             while (rowNumber * dirsPerRow < directories.length) {
                 const start = rowNumber * dirsPerRow;
@@ -655,7 +655,7 @@ const htmlHelper = (function() {
             }
         }
         const imsPerRow=4;
-        if (images.length > 0) {
+        if (images?.length > 0) {
             let rowNumber = 0;
             while (rowNumber * imsPerRow < images.length) {
                 const start = rowNumber * imsPerRow;
@@ -666,7 +666,7 @@ const htmlHelper = (function() {
                 rowNumber++;
             }
         }
-        if (directories.length + images.length == 0) {
+        if (directories?.length + images?.length == 0) {
             const message = _emptyImageBrowser();
             container.append(message);
         }
