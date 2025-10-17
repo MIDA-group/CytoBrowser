@@ -467,7 +467,7 @@ const htmlHelper = (function() {
             <div class="col-3 d-flex">
                 <div class="card w-100">
                     <img src="data:," alt="&nbsp;Broken image path" class="card-img-top position-absolute m-1 m-xl-4">
-                    <div class="card-body text-center" style="padding:0;padding-top:130px;" >
+                    <div class="card-body text-center" style="padding:0;padding-top:130px;">
                         <a class="card-link stretched-link" href="?image=${image.name}">
                             ${image.name}
                         </a>
@@ -493,10 +493,10 @@ const htmlHelper = (function() {
     function _imageBrowserDirEntry(dir) {
         const entry = $(`
             <div class="d-flex" style="width: 12.5%;">
-                <div class="card w-100 border-0">
-                    <img src="misc/folder_icon.svg" class="card-img-top"
-                        style="object-fit: contain; height: calc(100% * 0.7); margin-bottom: -12%;">
-                    <div class="card-body text-center p-0 m-0">
+                <div class="card w-100 border-0 m-0">
+                    <img src="misc/folder_icon.svg" class="card-img-top position-absolute"
+                        style="object-fit: contain; height: calc(100% * 0.9);">
+                    <div class="card-body text-center" style="padding:0;padding-top:70px;">
                         <a class="card-link stretched-link" href="?folder=${dir.path}">
                             ${dir.name}
                         </a>
