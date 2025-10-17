@@ -7,6 +7,8 @@ const tmapp = (function() {
     "use strict";
 
     const _imageDir = "data/";
+    let _activePath = "";
+
     const _optionsOSD = {
         id: "ISS_viewer", //cybr_viewer
         prefixUrl: "js/openseadragon/images/", //Location of button graphics
@@ -225,7 +227,7 @@ const tmapp = (function() {
         const params = url.searchParams;
         const imageName = params.get("image");
         console.log('AAA:',imageName);
-        const dirName = params.get("dir");
+        const folderName = params.get("folder");
         const collab = params.get("collab");
         const state = {
             zoom: params.get("zoom"),
@@ -234,12 +236,12 @@ const tmapp = (function() {
             z: params.get("z"),
             rotation: params.get("rotation")
         };
-        return {imageName, dirName, collab, state};
+        return {imageName, folderName, collab, state};
     }
 
     // Immediate moveTo from URL
     function processURL(url) {
-        const {imageName, collab, state}=parseURL(url);
+        const {imageName, folderName, collab, state}=parseURL(url);
         console.log('PPP:',imageName);
         if (imageName && imageName!==_currentImage.name) {
             if (collab) {
@@ -250,7 +252,7 @@ const tmapp = (function() {
                     }
                 });
             }
-            else if (imageName) {
+            else {
                 openImage(imageName, () => {
                     console.log('XXX:',imageName);
                     collabPicker.open(imageName, true, true, () => {
@@ -266,6 +268,9 @@ const tmapp = (function() {
             if (state) {
                 moveTo(state, true);
             }
+        }
+        else if (folderName && !imageName) {
+            _openImageBrowser(folderName);
         }
         else if (state && state!==_currState) {
             moveTo(state, true);
@@ -636,6 +641,12 @@ const tmapp = (function() {
         _availableZLevels = null;
     }
 
+    // Image picker
+    function _openImageBrowser(folderName = _activePath) {
+        _activePath = folderName;
+        $("#image_browser").modal();
+    }
+
     /**
      * Initiate tmapp by fetching a list of images from the server,
      * filling the image browser, and going to the image specified
@@ -645,6 +656,8 @@ const tmapp = (function() {
      * the URL.
      * @param {string} options.imageName The name of the initial image
      * to be opened.
+     * @param {string} options.folderName The name of the subdirectory 
+     * where to look for images (only if no imageName).
      * @param {string} options.collab The id of the initial collab.
      * @param {Object} options.initialState The initial viewport state.
      * @param {number} options.initialState.x X position of viewport.
@@ -652,15 +665,17 @@ const tmapp = (function() {
      * @param {number} options.initialState.z Z level in viewport.
      * @param {number} options.initialState.zoom Zoom in viewport.
      */
-    function init({imageName, collab, initialState}) {
-        let activePath = "";
+    function init({imageName, folderName, collab, initialState}) {
         if (imageName) {
-            activePath = imageName.substring(0, imageName.lastIndexOf('/'));
+            _activePath = imageName.substring(0, imageName.lastIndexOf('/'));
+        }
+        else if (folderName) {
+            _activePath = folderName;
         }
 
         // Initiate a HTTP request and send it to the image info endpoint
         const imageReq = new XMLHttpRequest();
-        imageReq.open("GET", window.location.api + "/images/" + activePath, true);
+        imageReq.open("GET", window.location.api + "/images/" + _activePath, true);
         // Turn off caching of response
         imageReq.setRequestHeader("Cache-Control", "no-cache, no-store, must-revalidate, max-age=0"); // HTTP 1.1
         imageReq.setRequestHeader("Pragma", "no-cache"); // HTTP 1.0
@@ -707,9 +722,9 @@ const tmapp = (function() {
                             });
                         });
                     }
-                    else {
+                    else { 
                         tmappUI.displayImageError("noimage");
-                        $("#image_browser").modal();
+                        _openImageBrowser();
                     }
                     break;
                 case 500:
@@ -1063,9 +1078,14 @@ const tmapp = (function() {
         }
     }
 
+    function getActivePath() {
+        return _activePath;
+    }
+
     return {
         init,
         openImage,
+        getActivePath,
 
         moveTo,
         moveToAnnotation,

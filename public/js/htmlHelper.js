@@ -497,7 +497,7 @@ const htmlHelper = (function() {
                     <img src="misc/folder_icon.svg" class="card-img-top position-absolute"
                         style="height: 130px; object-fit: contain;">
                     <div class="card-body text-center" style="padding:0;padding-top:130px;" >
-                        <a class="card-link stretched-link" href="?dir=${dir.name}">
+                        <a class="card-link stretched-link" href="?folder=${dir.name}">
                             ${dir.name}
                         </a>
                     </div>

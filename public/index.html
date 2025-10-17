@@ -347,7 +347,7 @@
       <div class="modal-dialog modal-xl modal-scale-95" role="document">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">Select an image</h5>
+            <h5 class="modal-title">Select an image &ndash; <span id="active_path"></span></h5>
             <button type="button" class="close" data-dismiss="modal">
               <span>&times;</span>
             </button>
@@ -931,13 +931,13 @@
 
         // Options when initializing tmapp
         const tmappOptions = {};
-        const {imageName, dirName, collab, state}=tmapp.parseURL(new URL(window.location.href));
+        const {imageName, folderName, collab, state}=tmapp.parseURL(new URL(window.location.href));
 
         if (imageName !== null) {
             tmappOptions.imageName = imageName;
         }
-        if (dirName !== null) {
-            tmappOptions.dirName = dirName; // Only used if no imageName
+        if (folderName !== null) {
+            tmappOptions.folderName = folderName; // Only used if no imageName
         }
         if (collab !== null) {
             tmappOptions.collab = collab;
