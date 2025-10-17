@@ -493,10 +493,10 @@ const htmlHelper = (function() {
     function _imageBrowserDirEntry(dir) {
         const entry = $(`
             <div class="d-flex" style="width: 12.5%;">
-                <div class="card w-100">
-                    <img src="misc/folder_icon.svg" class="card-img-top position-absolute"
-                        style="height: 130px; object-fit: contain;">
-                    <div class="card-body text-center" style="padding:0;padding-top:130px;" >
+                <div class="card w-100 border-0">
+                    <img src="misc/folder_icon.svg" class="card-img-top"
+                        style="object-fit: contain; height: calc(100% * 0.7); margin-bottom: -12%;">
+                    <div class="card-body text-center p-0 m-0">
                         <a class="card-link stretched-link" href="?folder=${dir.path}">
                             ${dir.name}
                         </a>
