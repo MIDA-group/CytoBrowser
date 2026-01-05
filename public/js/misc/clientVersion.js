@@ -1,1 +1,1 @@
-const clientVersion = "1.5.1";
+const clientVersion = "1.5.2";
