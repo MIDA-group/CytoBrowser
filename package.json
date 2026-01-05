@@ -10,10 +10,11 @@
     "cytobrowser": "cytobrowser.js"
   },
   "scripts": {
-    "postinstall": "copy-files-from-to",
+    "postinstall": "npm run make-node_modules-link && copy-files-from-to",
     "start": "cytobrowser.js",
     "server": "cytobrowser.js",
     "cytobrowser": "cytobrowser.js",
+    "make-node_modules-link": "node -e 'const fs = require(\"fs\"); if (!fs.existsSync(\"node_modules\")) fs.symlink(\"..\", \"node_modules\", \"dir\", (err)=>{if (err) {console.error(err);process.exit(1);} else {console.log(\"symlink created\");process.exit(0);}});'",
     "version-update": "node -p 'const { version } = require(\"./package.json\"); `const clientVersion = \"${version}\";`' >| ./public/js/misc/clientVersion.js"
   },
   "copyFiles": [
