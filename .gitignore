@@ -21,3 +21,7 @@ public/js/jquery/jquery.slim.min.js.map
 # PixiJS from node module install
 public/js/pixi/pixi.min.js
 public/js/pixi/pixi.min.js.map
+
+# D3 from npm (and the map if it ever comes)
+public/js/d3/d3.min.js
+public/js/d3/d3.min.js.map

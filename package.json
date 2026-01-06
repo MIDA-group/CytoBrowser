@@ -61,6 +61,13 @@
         "module": "../pixi.js/dist/pixi.min.js{,.map}"
       },
       "to": "public/js/pixi/"
+    },
+    {
+      "from": {
+        "main": "node_modules/d3/dist/d3.min.js{,.map}",
+        "module": "../d3/dist/d3.min.js{,.map}"
+      },
+      "to": "public/js/d3/"
     }
   ],
   "copyFilesSettings": {
@@ -86,6 +93,7 @@
   "dependencies": {
     "bootstrap": "^4",
     "copy-files-from-to": "^4.0.0",
+    "d3": "^7.9.0",
     "express": "^5.2.1",
     "express-ws": "^5.0.2",
     "fast-xml-parser": "^5.3.3",
