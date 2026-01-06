@@ -1,0 +1,30 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite both the article from preferred-citation and the software itself."
+
+authors:
+  - family-names: Lindblad
+    given-names: Joakim
+    orcid: https://orcid.org/0000-0001-7312-8222
+title: "CytoBrowser"
+version: 1.5.1
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.4570576
+date-released: 2026-01-05
+url: "https://mida-group.github.io/CytoBrowser/"
+
+preferred-citation:
+  title: "CytoBrowser: a browser-based collaborative annotation platform for whole slide images"
+  type: article
+  authors:
+    - family-names: Rydell
+      given-names: Christopher
+      orcid: https://orcid.org/0000-0002-3855-8734
+    - family-names: Lindblad
+      given-names: Joakim
+      orcid: https://orcid.org/0000-0001-7312-8222
+  journal: F1000Research
+  volume: "10"
+  year: 2021
+  issue: "226"
+  doi: 10.12688/f1000research.51916.1
