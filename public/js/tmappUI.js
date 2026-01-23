@@ -409,14 +409,24 @@ const tmappUI = (function(){
 
         //1,2,... for class selection
         //z,x for focus up down
+        
+        let caught=true; //Assume we use the key (setting to false in 'default')
         $("#main_content").keydown(function(event){
-            // Prevent the keyboard shortcuts from being used when the ctrl key is down
-            // This is just a simple way of letting people copy and paste, could be refined
-            if (event.ctrlKey) {
+            if (event.ctrlKey || event.metaKey) {
+                switch (event.which) {
+                    case 38: //up-arrow     
+                        $("#focus_next").click();
+                        break
+
+                    case 40: // down-arrow
+                        $("#focus_prev").click();
+                        break
+
+                    default:
+                        caught = false;
+                }
                 return;
             }
-            let caught=true; //Assume we use the key (setting to false in 'default')
-            //console.log('Key: ',event.which);
             switch(event.which) {
                 case 27: // esc
                     if (annotationTool.isEditing()) {
