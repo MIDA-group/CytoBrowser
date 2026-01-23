@@ -417,18 +417,22 @@ const tmapp = (function() {
             event.position = new OpenSeadragon.Point(event.offsetX,event.offsetY);
             moveHandler(event);
         });
-
+        
         // Add hook to scroll without zooming, didn't seem possible without
+        let timeout = null;
         function scrollHook(event){
             // Ctrl scroll -> Focus change
+            clearTimeout(timeout);
             if (event.originalEvent.ctrlKey) {
                 event.preventDefaultAction = true;
-                if (event.scroll > 0) {
-                    incrementFocus();
-                }
-                else if (event.scroll < 0) {
-                    decrementFocus();
-                }
+                timeout = setTimeout(() => {
+                    if (event.scroll > 0) {
+                        incrementFocus();
+                    }
+                    else if (event.scroll < 0) {
+                        decrementFocus();
+                    }
+                },100)
             }
             // Alt scroll -> MarkerSize change
             if (event.originalEvent.altKey) {
