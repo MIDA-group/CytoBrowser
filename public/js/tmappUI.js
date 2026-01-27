@@ -425,6 +425,10 @@ const tmappUI = (function(){
                     default:
                         caught = false;
                 }
+
+                if (caught) {
+                    event.preventDefault();
+                }
                 return;
             }
             switch(event.which) {
