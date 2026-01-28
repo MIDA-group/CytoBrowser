@@ -1073,26 +1073,26 @@ function _fetchImages(callback) {
      * image cache (_images), clears and repopulates the image browser UI, and
      * displays an error/empty-state message if needed.
      */
-function refreshImageBrowser() {
-    _fetchImages((err, response) => {
-        if (err) {
-            console.error(err);
-            tmappUI.displayImageError("unexpected");
-            return;
-        }
+    function refreshImageBrowser() {
+        _fetchImages((err, response) => {
+            if (err) {
+                console.error(err);
+                tmappUI.displayImageError("unexpected");
+                return;
+            }
 
-        const missingDataDir = response.missingDataDir;
-        const images = response.images || [];
+            const missingDataDir = response.missingDataDir;
+            const images = response.images || [];
 
-        _images = images;
-        tmappUI.clearImageBrowser();
-        tmappUI.updateImageBrowser(images);
+            _images = images;
+            tmappUI.clearImageBrowser();
+            tmappUI.updateImageBrowser(images);
 
-        if (missingDataDir) tmappUI.displayImageError("missingdatadir");
-        else if (images.length === 0) tmappUI.displayImageError("noavailableimages");
-        else tmappUI.clearImageError && tmappUI.clearImageError();
-    });
-}
+            if (missingDataDir) tmappUI.displayImageError("missingdatadir");
+            else if (images.length === 0) tmappUI.displayImageError("noavailableimages");
+            else tmappUI.clearImageError && tmappUI.clearImageError();
+        });
+    }
 
 
     return {
