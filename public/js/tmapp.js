@@ -1038,6 +1038,13 @@ function init({ imageName, collab, initialState }) {
             throw new Error ("Tried to adjust scalebar without a viewer.");
         }
     }
+
+    /**
+     * Refreshes the list of available images in the image browser.
+     * Fetches image data from the server (/images), updates the
+     * image cache (_images), clears and repopulates the image browser UI, and
+     * displays an error/empty-state message if needed.
+     */
 function refreshImageBrowser() {
 
     _fetchImages((err, response) => {
