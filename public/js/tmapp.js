@@ -617,6 +617,33 @@ const tmapp = (function() {
         _availableZLevels = null;
     }
 
+function _fetchImages(done) {
+    const req = new XMLHttpRequest();
+    req.open("GET", window.location.api + "/images", true);
+
+    // Avoid cached responses
+    req.setRequestHeader("Cache-Control", "no-cache, no-store, must-revalidate, max-age=0");
+    req.setRequestHeader("Pragma", "no-cache");
+    req.setRequestHeader("Expires", "0");
+
+    req.onreadystatechange = function () {
+        if (req.readyState !== 4) return;
+
+        if (req.status === 200) {
+            try {
+                const response = JSON.parse(req.responseText);
+                done(null, response);
+            } catch (err) {
+                done(err, null);
+            }
+        } else {
+            done(new Error(`HTTP ${req.status}`), null);
+        }
+    };
+
+    req.send(null);
+}
+
     /**
      * Initiate tmapp by fetching a list of images from the server,
      * filling the image browser, and going to the image specified
@@ -633,69 +660,48 @@ const tmapp = (function() {
      * @param {number} options.initialState.z Z level in viewport.
      * @param {number} options.initialState.zoom Zoom in viewport.
      */
-    function init({imageName, collab, initialState}) {
+function init({ imageName, collab, initialState }) {
+    _fetchImages((err, response) => {
+        tmappUI.setUserName(userInfo.getName());
 
-        // Initiate a HTTP request and send it to the image info endpoint
-        const imageReq = new XMLHttpRequest();
-        imageReq.open("GET", window.location.api + "/images", true);
-        // Turn off caching of response
-        imageReq.setRequestHeader("Cache-Control", "no-cache, no-store, must-revalidate, max-age=0"); // HTTP 1.1
-        imageReq.setRequestHeader("Pragma", "no-cache"); // HTTP 1.0
-        imageReq.setRequestHeader("Expires", "0"); // Proxies
-
-        imageReq.send(null);
-
-        imageReq.onreadystatechange = function() {
-            if (imageReq.readyState !== 4) {
-                return;
-            }
-            tmappUI.setUserName(userInfo.getName());
-            switch (imageReq.status) {
-                case 200:
-                    // Add the images to the image browser
-                    const response = JSON.parse(imageReq.responseText);
-                    const missingDataDir = response.missingDataDir;
-                    const images = response.images;
-                    tmappUI.updateImageBrowser(images);
-                    _images = images;
-
-                    // Go to the initial image and/or join the collab
-                    if (missingDataDir) {
-                        tmappUI.displayImageError("missingdatadir");
-                    }
-                    else if (images.length === 0) {
-                        tmappUI.displayImageError("noavailableimages");
-                    }
-                    else if (imageName && collab) {
-                        openImage(imageName, () => {
-                            collabClient.connect(collab);
-                            if (initialState) {
-                                moveTo(initialState, true);
-                            }
-                        });
-                    }
-                    else if (imageName) {
-                        openImage(imageName, () => {
-                            collabPicker.open(imageName, true, true, () => {
-                                if (initialState) {
-                                    moveTo(initialState, true);
-                                }
-                            });
-                        });
-                    }
-                    else {
-                        tmappUI.displayImageError("noimage");
-                        $("#image_browser").modal();
-                    }
-                    break;
-                case 500:
-                    tmappUI.displayImageError("servererror");
-                    break;
-                default:
-                    tmappUI.displayImageError("unexpected");
-            }
+        if (err) {
+            console.error(err);
+            tmappUI.displayImageError("unexpected");
+            return;
         }
-    }
+
+        const missingDataDir = response.missingDataDir;
+        const images = response.images || [];
+
+        tmappUI.updateImageBrowser(images);
+        _images = images;
+
+        // Same logic as before
+        if (missingDataDir) {
+            tmappUI.displayImageError("missingdatadir");
+        }
+        else if (images.length === 0) {
+            tmappUI.displayImageError("noavailableimages");
+        }
+        else if (imageName && collab) {
+            openImage(imageName, () => {
+                collabClient.connect(collab);
+                if (initialState) moveTo(initialState, true);
+            });
+        }
+        else if (imageName) {
+            openImage(imageName, () => {
+                collabPicker.open(imageName, true, true, () => {
+                    if (initialState) moveTo(initialState, true);
+                });
+            });
+        }
+        else {
+            tmappUI.displayImageError("noimage");
+            $("#image_browser").modal();
+        }
+    });
+}
 
     /**
      * Open a specified image in the viewport. If annotations have been
@@ -1032,6 +1038,29 @@ const tmapp = (function() {
             throw new Error ("Tried to adjust scalebar without a viewer.");
         }
     }
+function refreshImageBrowser() {
+
+    _fetchImages((err, response) => {
+
+        if (err) {
+            console.error(err);
+            tmappUI.displayImageError("unexpected");
+            return;
+        }
+
+        const missingDataDir = response.missingDataDir;
+        const images = response.images || [];
+
+        _images = images;
+        tmappUI.clearImageBrowser();
+        tmappUI.updateImageBrowser(images);
+
+        if (missingDataDir) tmappUI.displayImageError("missingdatadir");
+        else if (images.length === 0) tmappUI.displayImageError("noavailableimages");
+        else tmappUI.clearImageError && tmappUI.clearImageError();
+    });
+}
+
 
     return {
         init,
@@ -1069,6 +1098,8 @@ const tmapp = (function() {
         keyDownHandler,
         mouseHandler,
 
-        updateScalebar
+        updateScalebar,
+
+        refreshImageBrowser
     };
 })();
