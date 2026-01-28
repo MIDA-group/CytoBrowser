@@ -660,47 +660,48 @@ function _fetchImages(done) {
      * @param {number} options.initialState.z Z level in viewport.
      * @param {number} options.initialState.zoom Zoom in viewport.
      */
-function init({ imageName, collab, initialState }) {
-    _fetchImages((err, response) => {
-        tmappUI.setUserName(userInfo.getName());
+    
+    function init({ imageName, collab, initialState }) {
+        _fetchImages((err, response) => {
+            tmappUI.setUserName(userInfo.getName());
 
-        if (err) {
-            console.error(err);
-            tmappUI.displayImageError("unexpected");
-            return;
-        }
+            if (err) {
+                console.error(err);
+                tmappUI.displayImageError("unexpected");
+                return;
+            }
 
-        const missingDataDir = response.missingDataDir;
-        const images = response.images || [];
+            const missingDataDir = response.missingDataDir;
+            const images = response.images || [];
 
-        tmappUI.updateImageBrowser(images);
-        _images = images;
+            tmappUI.updateImageBrowser(images);
+            _images = images;
 
-        if (missingDataDir) {
-            tmappUI.displayImageError("missingdatadir");
-        }
-        else if (images.length === 0) {
-            tmappUI.displayImageError("noavailableimages");
-        }
-        else if (imageName && collab) {
-            openImage(imageName, () => {
-                collabClient.connect(collab);
-                if (initialState) moveTo(initialState, true);
-            });
-        }
-        else if (imageName) {
-            openImage(imageName, () => {
-                collabPicker.open(imageName, true, true, () => {
+            if (missingDataDir) {
+                tmappUI.displayImageError("missingdatadir");
+            }
+            else if (images.length === 0) {
+                tmappUI.displayImageError("noavailableimages");
+            }
+            else if (imageName && collab) {
+                openImage(imageName, () => {
+                    collabClient.connect(collab);
                     if (initialState) moveTo(initialState, true);
                 });
-            });
-        }
-        else {
-            tmappUI.displayImageError("noimage");
-            $("#image_browser").modal();
-        }
-    });
-}
+            }
+            else if (imageName) {
+                openImage(imageName, () => {
+                    collabPicker.open(imageName, true, true, () => {
+                        if (initialState) moveTo(initialState, true);
+                    });
+                });
+            }
+            else {
+                tmappUI.displayImageError("noimage");
+                $("#image_browser").modal();
+            }
+        });
+    }
 
     /**
      * Open a specified image in the viewport. If annotations have been
