@@ -676,7 +676,6 @@ function init({ imageName, collab, initialState }) {
         tmappUI.updateImageBrowser(images);
         _images = images;
 
-        // Same logic as before
         if (missingDataDir) {
             tmappUI.displayImageError("missingdatadir");
         }
