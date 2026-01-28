@@ -325,6 +325,10 @@ const tmappUI = (function(){
         $("#focus_prev").click(tmapp.decrementFocus);
     }
 
+    function _initRefreshImagesButtonEvent() {
+        $("#image_list_refresh").click(tmapp.refreshImageBrowser);
+    }
+
     // Adjust size of rightmost grid column
     function _setLogWidth(width) {
         function handleWidthChange(small) {
@@ -562,6 +566,7 @@ const tmappUI = (function(){
         _initVisualizationSliders();
         _initKeyboardShortcuts();
         _initCollaborationMenu();
+        _initRefreshImagesButtonEvent();
     }
 
     /**
@@ -967,6 +972,10 @@ const tmappUI = (function(){
         return _pageInFocus;
     }
 
+    function clearImageBrowser() {
+        $("#available_images").empty();
+    }
+
     return {
         initUI,
         updateClassSelectionButtons,
@@ -983,6 +992,7 @@ const tmappUI = (function(){
         clearImageError,
 
         updateImageBrowser,
+        clearImageBrowser,
 
         setUserName,
         setCollabName,
