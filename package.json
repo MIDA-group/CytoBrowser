@@ -10,7 +10,7 @@
     "cytobrowser": "cytobrowser.js"
   },
   "scripts": {
-    "postinstall": "npm run postinstall_true && npm run postinstall_false",
+    "postinstall": "npm run postinstall_false; npm run postinstall_true",
     "postinstall_true": "npm run check-node_modules && copy-files-from-to --mode main",
     "postinstall_false": "npm run check-node_modules || copy-files-from-to --mode module",
     "start": "cytobrowser.js",
