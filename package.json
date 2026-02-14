@@ -91,6 +91,7 @@
     "fast-xml-parser": "^5.3.6",
     "fix-esm": "^1.0.1",
     "jsondiffpatch": "^0.7.3",
+    "jquery": "latest",
     "minimist": "^1.2.8",
     "openseadragon": "^5.0.1",
     "pixi.js": "^8",
