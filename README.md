@@ -1,7 +1,7 @@
 ## [CytoBrowser](https://mida-group.github.io/CytoBrowser/)
 CytoBrowser, a JavaScript and Node.js driven environment for fast and accessible collaborative online visualization, assessment, and annotation of very large microscopy images.
 
-<img alt="Screenshot of CytoBrowser usage" title="Example view of CytoBrowser usages" align="right" width="50%" src="../../blob/gh-pages/media/CytoBrowser_example_view.jpg">
+<img alt="Screenshot of CytoBrowser usage" title="Example view of CytoBrowser usages" align="right" width="50%" src="../../blob/gh-pages/media/CytoBrowser_example_view.jpg?raw=true">
 
 Origintating as a fork[^1] of [TissUUmaps](https://github.com/wahlby-lab/TissUUmaps) aimed at Cytology
 [^1]: TissUUmaps originally had a strict "clientside only" policy, which was incompatible with the CytoBrowser collaborative aim.
