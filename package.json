@@ -10,13 +10,13 @@
     "cytobrowser": "cytobrowser.js"
   },
   "scripts": {
-    "postinstall": "npm run postinstall_false; npm run postinstall_true",
+    "postinstall": "npm run postinstall_false & npm run postinstall_true & wait",
     "postinstall_true": "npm run check-node_modules && copy-files-from-to --mode main",
     "postinstall_false": "npm run check-node_modules || copy-files-from-to --mode module",
     "start": "cytobrowser.js",
     "server": "cytobrowser.js",
     "cytobrowser": "cytobrowser.js",
-    "check-node_modules": "node -e \"if (! require('fs').existsSync('./node_modules')) {console.log('Nope!');process.exit(1);process.exit(0);}\"",
+    "check-node_modules": "node -e \"if (require('fs').existsSync('./node_modules')) {console.log('Main');process.exit(0);}console.log('Module');process.exit(1);\"",
     "version-update": "node -p 'const { version } = require(\"./package.json\"); `const clientVersion = \"${version}\";`' >| ./public/js/misc/clientVersion.js"
   },
   "copyFiles": [
