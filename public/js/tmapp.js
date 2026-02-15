@@ -418,9 +418,9 @@ const tmapp = (function() {
             moveHandler(event);
         });
         
-        // Add hook to scroll without zooming, didn't seem possible without
+        // Add hook to scroll without zooming
         // Rate limit most scroll actions, to make them more usable with e.g. a touchpad
-        const _rateLimitedScroll=tmappUI.rateLimit((event)=>_scrollHook(event),10);
+        const _rateLimitedScroll=timeUtils.rateLimit((event)=>_scrollHook(event),100,true);
         function scrollHook(event){
             if (event.originalEvent.ctrlKey || event.originalEvent.altKey || event.originalEvent.shiftKey) {
                 event.preventDefaultAction = true; //avoid zooming
