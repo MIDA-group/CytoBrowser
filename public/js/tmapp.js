@@ -419,35 +419,36 @@ const tmapp = (function() {
         });
         
         // Add hook to scroll without zooming, didn't seem possible without
-        let timeout = null;
+        // Rate limit most scroll actions, to make them more usable with e.g. a touchpad
+        const _rateLimitedScroll=tmappUI.rateLimit((event)=>_scrollHook(event),10);
         function scrollHook(event){
+            if (event.originalEvent.ctrlKey || event.originalEvent.altKey || event.originalEvent.shiftKey) {
+                event.preventDefaultAction = true; //avoid zooming
+            }
+            _rateLimitedScroll(null,event);
+        }
+        function _scrollHook(event){
             // Ctrl scroll -> Focus change
-            clearTimeout(timeout);
             if (event.originalEvent.ctrlKey) {
-                event.preventDefaultAction = true;
-                timeout = setTimeout(() => {
-                    if (event.scroll > 0) {
-                        incrementFocus();
-                    }
-                    else if (event.scroll < 0) {
-                        decrementFocus();
-                    }
-                },100)
+                if (event.scroll > 0) {
+                    incrementFocus();
+                }
+                else if (event.scroll < 0) {
+                    decrementFocus();
+                }
             }
             // Alt scroll -> MarkerSize change
             if (event.originalEvent.altKey) {
-                event.preventDefaultAction = true;
                 const slider = $('#marker_size_slider');
                 const markerScale = slider.slider('getValue');
                 slider.slider('setValue',markerScale+0.1*Math.sign(event.scroll),true,true);
             }
             // Shift scroll -> Rotate
             if (event.originalEvent.shiftKey) {
-                event.preventDefaultAction = true;
                 const rotation = _currState.targetRotation;
                 _viewer.viewport.setRotation(((rotation + 15*Math.sign(event.scroll)) % 360 + 360) % 360);
             }
-        };
+        }
 
         viewer.addHandler("canvas-scroll", function(event) {
             scrollHook(event);

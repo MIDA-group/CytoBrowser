@@ -1054,6 +1054,7 @@ const tmappUI = (function(){
         clearFilterInfo,
         setURL,
 
-        inFocus
+        inFocus,
+        rateLimit
     };
 })();
