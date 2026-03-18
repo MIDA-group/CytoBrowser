@@ -408,11 +408,10 @@ const tmappUI = (function(){
         });
 
         //1,2,... for class selection
-        //z,x for focus up down
-        
-        let caught=true; //Assume we use the key (setting to false in 'default')
+        //z,x or ctrl up/down for focus up down
         $("#main_content").keydown(function(event){
-            if (event.ctrlKey || event.metaKey) {
+            let caught=true; //Assume we use the key (setting to false in 'default')
+            if (event.ctrlKey) {
                 switch (event.which) {
                     case 38: //up-arrow     
                         $("#focus_next").click();
