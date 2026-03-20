@@ -235,8 +235,8 @@ const tmappUI = (function(){
             const regionsVisible = regionLayer?.getRegionsVisible() ?? true;
             const button = $("#toggle_region_visibility");
             button.text(regionsVisible ? "Hide polygons" : "Show polygons");
-            button.toggleClass("btn-outline-secondary", regionsVisible);
-            button.toggleClass("btn-secondary", !regionsVisible);
+            button.toggleClass("btn-primary", regionsVisible);
+            button.toggleClass("btn-outline-primary", !regionsVisible);
         }
 
         $("#tool_marker").addClass("active");
