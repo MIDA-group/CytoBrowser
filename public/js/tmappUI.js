@@ -230,6 +230,15 @@ const tmappUI = (function(){
     }
 
     function _initToolSelectionButtons() {
+        function updateRegionVisibilityButton() {
+            const regionLayer = layerHandler.getLayer("region");
+            const regionsVisible = regionLayer?.getRegionsVisible() ?? true;
+            const button = $("#toggle_region_visibility");
+            button.text(regionsVisible ? "Hide polygons" : "Show polygons");
+            button.toggleClass("btn-outline-secondary", regionsVisible);
+            button.toggleClass("btn-secondary", !regionsVisible);
+        }
+
         $("#tool_marker").addClass("active");
         layerHandler.setActiveAnnotationOverlay("marker");
         annotationTool.setTool("marker");
@@ -245,6 +254,15 @@ const tmappUI = (function(){
             layerHandler.setActiveAnnotationOverlay("region");
             annotationTool.setTool("poly");
         });
+        $("#toggle_region_visibility").click(() => {
+            const regionLayer = layerHandler.getLayer("region");
+            if (!regionLayer) {
+                return;
+            }
+            regionLayer.setRegionsVisible(!regionLayer.getRegionsVisible());
+            updateRegionVisibilityButton();
+        });
+        updateRegionVisibilityButton();
     }
 
     function _initViewerEvents() {
