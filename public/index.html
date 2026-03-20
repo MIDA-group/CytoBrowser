@@ -266,7 +266,7 @@
                                             Marker
                                         </label>
                                     </div>
-                                    <div class="btn-group btn-group-toggle d-flex" data-toggle="buttons" role="group" onkeydown="noArrows()">
+                                    <div class="btn-group btn-group-toggle d-flex mr-1" data-toggle="buttons" role="group" onkeydown="noArrows()">
                                         <label id="tool_rect" type="button" class="btn btn-primary">
                                             <input name="tool_selection" type="radio" autocomplete="off">
                                             Rectangle
@@ -276,6 +276,10 @@
                                             Polygon
                                         </label>
                                     </div>
+
+                                </div>
+                                <div class="btn-group d-flex mt-1" role="group" onkeydown="noArrows()">
+                                    <button id="toggle_region_visibility" type="button" class="btn btn-primary">Hide polygons</button>
                                 </div>
                             </div>
                             <!-- Focus up/down --> <!-- TODO, move elsewhere -->

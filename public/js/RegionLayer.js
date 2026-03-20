@@ -6,6 +6,8 @@
 class RegionLayer extends OverlayLayer {
     #timingLog = false; //Log update times
     #scale = 1;
+    #regionsVisible = true;
+    #focused = false;
 
     #regionOverlay;
     #pendingRegionOverlay;
@@ -34,6 +36,14 @@ class RegionLayer extends OverlayLayer {
         this._viewer.addHandler('update-viewport', () => {
             this.#currentMouseUpdateFun && this.#currentMouseUpdateFun(); //set cursor position if view-port changed by external source
         });    
+    }
+
+    #applyRegionVisibility() {
+        this.#regionOverlay
+            .interrupt("highlight")
+            .style("display", this.#regionsVisible ? null : "none")
+            .style("pointer-events", this.#regionsVisible && this.#focused ? "fill" : "none")
+            .style("opacity", this.#regionsVisible ? (this.#focused ? 1 : 0.4) : 0);
     }
 
     destroy()
@@ -464,23 +474,30 @@ class RegionLayer extends OverlayLayer {
         this.#resizeRegions();
     }
 
+    setRegionsVisible(visible) {
+        this.#regionsVisible = Boolean(visible);
+        this.#applyRegionVisibility();
+    }
+
+    getRegionsVisible() {
+        return this.#regionsVisible;
+    }
+
 
 
     /**
      * Called when layer is lowered away from top
      */
     blur() {
-        this.#regionOverlay.style("pointer-events", "none")
-                    .transition("highlight").duration(500)
-                    .style("opacity", 0.4);
+        this.#focused = false;
+        this.#applyRegionVisibility();
     }
 
     /**
      * Called when layer is raised to top
      */
     focus() {
-        this.#regionOverlay.style("pointer-events", "fill")
-                    .transition("highlight").duration(500)
-                    .style("opacity", 1);
+        this.#focused = true;
+        this.#applyRegionVisibility();
     }
 }
