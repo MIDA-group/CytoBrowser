@@ -88,13 +88,13 @@
     "copy-files-from-to": "^4.0.0",
     "express": "^5.2.1",
     "express-ws": "^5.0.2",
-    "fast-xml-parser": "^5.3.6",
+    "fast-xml-parser": "^5.5.9",
     "fix-esm": "^1.0.1",
     "jsondiffpatch": "^0.7.3",
     "jquery": "latest",
     "minimist": "^1.2.8",
-    "openseadragon": "^5.0.1",
+    "openseadragon": "^6.0.2",
     "pixi.js": "^8",
-    "sanitize-filename": "^1.6.3"
+    "sanitize-filename": "^1.6.4"
   }
 }
