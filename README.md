@@ -61,7 +61,7 @@ ssh -L 8080:localhost:8080 remote.host
 #Enjoy! =)
 </pre>
 
-Some additional info can also be found in the <a href="https://github.com/MIDA-group/CytoBrowser/tree/master/INSTALL.md">INSTALL.md</a> file.
+Some additional info can also be found in the <a href="https://github.com/MIDA-group/CytoBrowser/tree/stable/INSTALL.md">INSTALL.md</a> file.
 
 ### Branches
 Current list of branches:
