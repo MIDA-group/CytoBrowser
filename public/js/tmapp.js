@@ -413,11 +413,16 @@ const tmapp = (function() {
             moveHandler(event);
         });
 
-        viewer.container.addEventListener('mousemove', event => {
+        viewer.container.addEventListener('pointermove', event => {
             event.position = new OpenSeadragon.Point(event.offsetX,event.offsetY);
             moveHandler(event);
         });
-        
+
+        // Set canvas focus when mouse enters canvas
+        viewer.container.addEventListener('pointerenter', event => {
+            viewer.canvas.focus();
+        });
+
         // Add hook to scroll without zooming
         // Rate limit most scroll actions, to make them more usable with e.g. a touchpad
         const _rateLimitedScroll=timeUtils.rateLimit((event)=>_scrollHook(event),100,true);
