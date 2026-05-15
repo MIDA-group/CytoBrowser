@@ -345,6 +345,10 @@ const tmapp = (function() {
 
         // Similar naming convention as in layerHandlers
         function updateMousePos() {
+            if (!_currentImage) {
+                console.log('Ignoring updateMousePos() since no active image');
+                return;
+            }
             if (!_cursorStatus.held) { // Drag does not change location in image
                 const pos = coordinateHelper.webToViewport(mouse_pos);
                 setCursorStatus({x: pos.x, y: pos.y});
