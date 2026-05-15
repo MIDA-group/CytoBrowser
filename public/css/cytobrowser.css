@@ -199,3 +199,12 @@ main {
 .btn-primary:focus {
     background-color: #AD1D28;
 }
+
+
+
+/* Scale modal to 95% width */
+@media (min-width: 576px) {
+    .modal-scale-95 {
+        max-width: min(95%,1140px);
+    }
+}
