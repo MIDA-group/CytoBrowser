@@ -199,7 +199,8 @@ const tmapp = (function() {
     }
 
     const roundTo = (x, n) => Math.round(x * Math.pow(10, n)) / Math.pow(10, n);
-    let urlCache=null;
+    let urlCache=null; //Cache href, image, and collab
+    // update=true => use urlCache
     function makeURL({targetX, targetY, z, targetRotation, targetZoom}={},update=false) {
         const url = (update&&urlCache)?urlCache:new URL(window.location.href);
         const params = url.searchParams;
@@ -812,12 +813,17 @@ const tmapp = (function() {
     }
 
     // Bundle position of an annotation, for moveTo and URL
+    // Note: moveTo uses zoom,x,y while URL uses target versions targetZoom, targetX, targetY
     function _defaultLocation(annotation) {
         const target = coordinateHelper.imageToViewport(annotation.centroid);
+        const zoom = _defaultZoom(annotation);
         return {
-            zoom: _defaultZoom(annotation),
+            zoom: zoom,
+            targetZoom: zoom,
             x: target.x,
+            targetX: target.x,
             y: target.y,
+            targetY: target.y,
             z: annotation.z
         }
     }
