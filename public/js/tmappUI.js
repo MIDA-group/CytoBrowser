@@ -772,6 +772,14 @@ const tmappUI = (function(){
     }
 
     /**
+     * Clears the images contained inside the image browser.
+     */
+    function clearImageBrowser() {
+        $("#available_images").empty();
+    }
+
+
+    /**
      * Set the displayed user name in the UI.
      * @param {string} txt The username to display.
      */
@@ -970,13 +978,6 @@ const tmappUI = (function(){
      */
     function inFocus() {
         return _pageInFocus;
-    }
-
-    /**
-     * Clears the images contained inside the image browser.
-     */
-    function clearImageBrowser() {
-        $("#available_images").empty();
     }
 
     return {
