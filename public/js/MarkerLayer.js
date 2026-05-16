@@ -554,7 +554,7 @@ class MarkerLayer extends OverlayLayer {
         let timed=false;
         if (this.#timingLog) {
             if (!this.updateAnnotations.inProgress()) {
-                console.time('updateAnnotations');  //lets time only the first
+                console.time('updateAnnotations Markers');  //lets time only the first
                 timed=true;
             }
         }
@@ -573,7 +573,8 @@ class MarkerLayer extends OverlayLayer {
             );
         this.updateAnnotations.inProgress(false);
         if (timed) {
-            console.timeEnd('updateAnnotations');
+            console.timeEnd('updateAnnotations Markers');
+            console.log(`${Object.keys(this.#markerList).length} markers`);
         }
     }
 
