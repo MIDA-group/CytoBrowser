@@ -270,7 +270,7 @@ const annotationHandler = (function (){
             }
 
             if (!(classes.includes(addedAnnotation.mclass))) {
-                console.warn("Cannot add an annotation with unrecognised/incompatible class.");
+                console.warn(`Cannot add an annotation with unrecognised/incompatible class '${addedAnnotation.mclass}'.`);
                 return;
             }
 
