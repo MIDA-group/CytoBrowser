@@ -84,7 +84,7 @@
   },
   "homepage": "https://github.com/MIDA-group/CytoBrowser#readme",
   "dependencies": {
-    "bootstrap": "^4",
+    "bootstrap": "^5",
     "copy-files-from-to": "^4.0.0",
     "express": "^5.2.1",
     "express-ws": "^5.0.2",
