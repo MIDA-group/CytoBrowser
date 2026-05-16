@@ -37,12 +37,7 @@ const tmapp = (function() {
         preserveOverlays: true,
         preload: true
     };
-
-    let _currentImage = null, //a focus stack
-        _images, //list of images from image browser
-        _collab,
-        _viewer, //the OSD-viewer
-        _currState = {
+    const _defaultState = {
             x: 0.5,
             targetX: 0.5,
             y: 0.5,
@@ -54,7 +49,13 @@ const tmapp = (function() {
             targetZoom: 1,
             brightness: 0,
             contrast: 0
-        },
+        };
+
+    let _currentImage = null, //a focus stack
+        _images, //list of images from image browser
+        _collab,
+        _viewer, //the OSD-viewer
+        _currState = { ..._defaultState },
         _cursorStatus = {
             x: 0.5,
             y: 0.5,
@@ -235,35 +236,35 @@ const tmapp = (function() {
         return {imageName, collab, state};
     }
 
-    // Immediate moveTo from URL
+    // Immediate moveTo from URL 
     function processURL(url) {
         const {imageName, collab, state}=parseURL(url);
-        if (imageName && imageName!==_currentImage.name) {
-            if (collab) {
-                openImage(imageName, () => {
+        if (imageName) { 
+            if (_currentImage && imageName===_currentImage.name) { // Same image
+                if (collab) { // Annotations need an image
                     collabClient.connect(collab);
-                    if (state) {
-                        moveTo(state, true);
-                    }
-                });
+                }
+                else {
+                    collabPicker.open(imageName, true); //forceChoice  
+                }
+                moveTo(state ?? _defaultState, true); // Set default state on image open
             }
-            else if (imageName) {
+            else { // Open image
                 openImage(imageName, () => {
-                    collabPicker.open(imageName, true, true, () => {
-                        if (state) {
-                            moveTo(state, true);
-                        }
-                    });
+                    if (collab) { // Annotations need an image
+                        collabClient.connect(collab);
+                    }
+                    else {
+                        collabPicker.open(imageName, true); //forceChoice  
+                    }
+                    moveTo(state ?? _defaultState, true);
                 });
-            }            
-        }
-        else if (collab && collab!==_collab) {
-            collabClient.connect(collab);
-            if (state) {
-                moveTo(state, true);
             }
         }
-        else if (state && state!==_currState) {
+        else {
+            if (collab) {
+                collabClient.connect(collab);
+            }
             moveTo(state, true);
         }
     }
@@ -281,10 +282,10 @@ const tmapp = (function() {
         collabClient.updateCursor(_cursorStatus);
     }
 
-    function _expandImageName() {
+    function _expandImageName(image) {
         // Get the full image names based on the data from the server
-        const imageName = _currentImage.name;
-        const zLevels = _currentImage.zLevels;
+        const imageName = image.name;
+        const zLevels = image.zLevels;
         const imageStack = zLevels.map(zLevel => {
             return `${_imageDir}${imageName}_z${zLevel}.dzi`;
         });
@@ -465,7 +466,7 @@ const tmapp = (function() {
         });
     }
 
-    function _addHandlers(viewer, callback) {
+    function _addHandlers(viewer, image, callback) {
         var context_menu_node = null;
         // Change-of-Page (z-level) handler
         viewer.addHandler("page", _updateFocus);
@@ -484,7 +485,8 @@ const tmapp = (function() {
 
         // When we're done loading
         viewer.addHandler("open", function (event) {
-            console.info("Done loading!");
+            _currentImage=image;
+            console.info("Done loading!",_currentImage);
             _addMouseTracking(viewer);
             viewer.canvas.focus();
             viewer.viewport.goHome();
@@ -548,13 +550,15 @@ const tmapp = (function() {
     }
 
     /**
-     * Initialize an instance of OpenSeadragon. This involves getting
-     * a full stack of image names based on the original name, loading the
-     * images from the server, and initializing the overlay.
+     * Initialize an instance of OpenSeadragon
+     * This involves getting a full stack of image names based on the original name, 
+     * loading the images from the server, and initializing the overlay.
+     * @param image 
      * @param {Function} callback Function to call once the images have
      * been successfully loaded.
+     * Seeting _currentImage when loaded
      */
-    function _initOSD(callback) {
+    function _initOSD(image, callback) {
         //init OSD viewer
         _viewer = OpenSeadragon(_optionsOSD);
         _viewer.scalebar();
@@ -567,12 +571,12 @@ const tmapp = (function() {
         _viewer.navigator.viewport.degreesSpring.animationTime=_viewer.animationTime/3;
 
         //open the DZI xml file pointing to the tiles
-        const imageName = _currentImage.name;
-        const imageStack = _expandImageName(imageName);
-        _openImages(imageStack); //sets _availableZLevels
-        _addHandlers(_viewer, callback);
+        const imageName = image.name;
+        const imageStack = _expandImageName(image);
+        _openImages(imageStack); //sets _availableZLevels     
+        _addHandlers(_viewer, image, callback);
         
-        htmlHelper.buildFocusSlider(_viewer, _currentImage.zLevels);
+        htmlHelper.buildFocusSlider(_viewer, image.zLevels);
 
         //Create a wrapper in which we place all overlays, s.t. we can switch with zIndex but still get Navigator and On-screen menu
         const overlayDiv = document.createElement('div');
@@ -630,6 +634,7 @@ const tmapp = (function() {
         coordinateHelper.clearImage();
         _disabledControls = false;
         _availableZLevels = null;
+        _currentImage = null;
     }
 
 
@@ -671,6 +676,7 @@ function _fetchImages(callback) {
      * filling the image browser, and going to the image specified
      * in the search parameters of the URL. If a collab and an initial
      * state are also specified in the URL, these are also set up.
+     * 
      * @param {Object} options The initial tmapp options specified in
      * the URL.
      * @param {string} options.imageName The name of the initial image
@@ -699,7 +705,7 @@ function _fetchImages(callback) {
             tmappUI.updateImageBrowser(images);
             _images = images;
 
-        // Go to the initial image and/or join the collab
+            // Go to the initial image and/or join the collab
             if (missingDataDir) {
                 tmappUI.displayImageError("missingdatadir");
             }
@@ -708,15 +714,14 @@ function _fetchImages(callback) {
             }
             else if (imageName && collab) {
                 openImage(imageName, () => {
-                    collabClient.connect(collab);
-                    if (initialState) moveTo(initialState, true);
+                    collabClient.connect(collab); // Need image to add annotations
+                    moveTo(initialState, true);
                 });
             }
             else if (imageName) {
                 openImage(imageName, () => {
-                    collabPicker.open(imageName, true, true, () => {
-                        if (initialState) moveTo(initialState, true);
-                    });
+                    collabPicker.open(imageName, true); //forceChoice 
+                    moveTo(initialState, true);
                 });
             }
             else {
@@ -755,10 +760,13 @@ function _fetchImages(callback) {
 
         if (!imageName) {
             _clearCurrentImage();
-            _currentImage = null;
             tmappUI.setImageName(null);
             tmappUI.displayImageError("noimage");
             _updateURLParams();
+            callback && callback();
+        }
+        else if (_currentImage && imageName === _currentImage.name) {
+            console.log(`Image ${imageName} already opened.`);
             callback && callback();
         }
         else {
@@ -768,17 +776,16 @@ function _fetchImages(callback) {
                 throw new Error(`Failed to open image ${imageName}.`);
             }
             _clearCurrentImage();
-            _currentImage = image;
-            tmappUI.setImageName(_currentImage.name);
+            tmappUI.setImageName(imageName);
             _updateURLParams();
-            _initOSD(callback);
+            _initOSD(image, callback); //setting _currentImage when done
         }
     }
 
     /**
      * Move to a specified state in the viewport. If the state is only
      * partially defined, the rest of the viewport state will remain
-     * the same as it was.
+     * the same as it was. If state is undefined, then does nothing.
      * @param {Object} state The viewport state to move to.
      * @param {number} state.x The x position of the viewport.
      * @param {number} state.y The y position of the viewport.
@@ -786,7 +793,12 @@ function _fetchImages(callback) {
      * @param {number} state.rotation The rotation in the viewport.
      * @param {number} state.zoom The zoom in the viewport.
      */
-    function moveTo({x, y, z, rotation, zoom}, immediately=false) {
+    function moveTo(state, immediately=false) {
+        if (!state || state===_currState) {
+            return; //nothing to do
+        }
+        const {x, y, z, rotation, zoom} = state;
+        
         const capValue = (val, min, max) => Math.max(Math.min(val, max), min);
         if (!_viewer) {
             throw new Error("Tried to move viewport without a viewer.");
@@ -823,6 +835,10 @@ function _fetchImages(callback) {
         if (z !== undefined) {
             _setFocusLevel(z);
         }
+    }
+
+    function moveToDefaultState() {
+        moveTo(_defaultState);
     }
 
     function _defaultZoom(annotation) {
@@ -890,6 +906,9 @@ function _fetchImages(callback) {
         _collab = id;
         tmappUI.setCollabID(id, _currentImage.name);
         _updateURLParams();
+    }  
+    function getCollab() {
+        return _collab;
     }
 
     /**
@@ -1100,6 +1119,7 @@ function _fetchImages(callback) {
         openImage,
 
         moveTo,
+        moveToDefaultState,
         moveToAnnotation,
         
         makeURL,
@@ -1108,6 +1128,7 @@ function _fetchImages(callback) {
         annotationURL,
 
         setCollab,
+        getCollab,
         clearCollab,
 
         incrementFocus,

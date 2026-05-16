@@ -541,8 +541,8 @@ const tmappUI = (function(){
             document.execCommand("copy"); //TODO: FIX: Deprecated function
         });
         $("#change_session").click(function(event) {
-            const image = tmapp.getImageName();
-            collabPicker.open(image,false,false);
+            const imageName = tmapp.getImageName();
+            collabPicker.open(imageName,false,false); //no autostart
         });
     }
 

@@ -217,6 +217,7 @@ const collabClient = (function(){
         _userId= _localMember.id;
 
         _memberUpdate();
+
         tmappUI.setCollabName(msg.name);
         tmapp.updateCollabStatus();
         if (_onCreated) {
@@ -237,10 +238,12 @@ const collabClient = (function(){
         if (_followedMember && _followedMember.id === msg.id) {
             const target = _followedMember.id;
             swapImage(msg.image, msg.collab);
-            disconnect();
+            setTimeout(disconnect(),100); //let the swap message be sent
             tmapp.openImage(msg.image, () => {
-                connect(msg.collab);
-                _desiredMember = target;
+                connect(msg.collab,undefined,undefined,undefined,()=>{
+                    _followedMember = null;
+                    _desiredMember = target;
+                });
             }, disconnect);
         }
     }
@@ -380,15 +383,20 @@ const collabClient = (function(){
      * prompted about the inclusion of annotations.
      */
     const retryCount = (function () { let i = 0; const fun=()=>++i; fun.get=()=>i; fun.set=(x)=>{i=x;}; return fun; })();
-    function connect(id, name=getDefaultName(), include=false, askAboutInclude=false) {
+    function connect(id, name=getDefaultName(), include=false, askAboutInclude=false, callback=null) {
         tmappUI.displayImageError("loadingcollab");
         if (_ws) {
             if (_ws.readyState === WebSocket.OPEN) {
                 swapImage(tmapp.getImageName(), id);
+                if (id === tmapp.getCollab) {
+                    console.log(`Already connected to Collab '${id}'`);
+                    return;
+                }
             }
-            disconnect();
+            setTimeout(disconnect(),100); //let the swap message be sent
         }
         _ongoingDestruction = _ongoingDestruction.then(() => {
+            console.log('destructed');
             const wsProtocol = (window.location.protocol === 'https:')?'wss://':'ws://';
             const imageName = tmapp.getImageName();
             const address = `${window.location.host}${window.location.dirname}/collaboration/` +
@@ -416,6 +424,8 @@ const collabClient = (function(){
                 else {
                     disconnect();
                 }
+
+                callback && callback();
             }
 
             const count = (function () { let i = 0; return () => ++i; })();
@@ -466,7 +476,7 @@ const collabClient = (function(){
             _ongoingDestruction = _ongoingDestruction.then(() => {
                 return new Promise((resolve, reject) => {
                     _resolveOngoingDestruction = resolve;
-                    if (_ws.readyState === 4 || _ws.readyState === 3) {
+                    if (!_ws || _ws.readyState === 4 || _ws.readyState === 3) {
                         _resolveOngoingDestruction();
                     }
                 }).then(() => {
@@ -498,7 +508,7 @@ const collabClient = (function(){
                     _ws.send(msg);
                 }
             } else {
-                console.log('Not sending msg since WebSocket not open.');
+                console.log(`Not sending msg of type '${msg.type}' since WebSocket not open.`);
             }
         }
     }
@@ -509,6 +519,7 @@ const collabClient = (function(){
      * @param {string} collabId The collab being joined.
      */
     function swapImage(imageName, collabId) {
+        //console.log('Sending swap:', imageName, collabId);
         send({
             type: "imageSwap",
             image: imageName,
