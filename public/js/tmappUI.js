@@ -465,7 +465,7 @@ const tmappUI = (function(){
                 break;
                 // QWER...
                 case 81: // q
-                    _updateQR(true); //toggle
+                    $('#qr_toggle').click();
                     break;
                 // ASDF...
                 case 70: // f
@@ -562,6 +562,7 @@ const tmappUI = (function(){
         _initDocumentFocusFunctionality();
         _initStorageButtonEvents();
         _initAnnotationFiltering();
+        _initQRButtonEvents();
         _initFocusButtonEvents();
         _initVisualizationSliders();
         _initKeyboardShortcuts();
@@ -888,14 +889,25 @@ const tmappUI = (function(){
     },500); //Max wait time in ms
 
     let _qrShowing=false;
-    function _updateQR(toggle=false) {
-        if (toggle) {
-            if (_qrShowing) $("#qr-code").css("width", "0px");
-            _qrShowing=!_qrShowing;
-        }
+    function _updateQR() {
         if (_qrShowing) {
             _scheduleUpdateQR();
         }
+    }
+
+    // Beware that clicking the buttong takes away keyboard focus
+    function _initQRButtonEvents() {
+        $("#qr_toggle").removeClass('active').attr('aria-pressed', 'false'); // force it to false, since some browsers cache it incorrectly
+        $('#qr_toggle').on('click', function () {
+            $(this).toggleClass('active');
+            if ($(this).hasClass('active')) {
+                _qrShowing=true;
+            } else {
+                _qrShowing=false;
+                $("#qr-code").css("width", "0px");
+            }
+            _updateQR();
+        });
     }
 
 

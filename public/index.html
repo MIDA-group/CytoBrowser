@@ -90,13 +90,18 @@
             <div class="width_keeper"> <!-- To prevent updating layout on collapse -->
                 <!-- Modal access -->
                 <div class="card-body py-0 py-lg-1 px-1 px-md-2">
-                    <div class="row py-1 pt-md-2 pb-lg-2 no-gutters">
-                        <div class="col-5 pr-2">
+                    <div class="row py-1 pt-md-2 pb-lg-2 no-gutters justify-content-between">
+                        <div class="col-1 pr-2">
+                            <button type="button" id="qr_toggle" class="btn btn-block btn-dark text-nowrap px-0">
+                                <img id="QR_img" src="misc/qr_code_icon_white.png" style="height: 1.2rem;">
+                            </button>
+                        </div>
+                        <div class="col-4 px-2">
                             <button type="button" class="btn btn-block btn-primary text-nowrap" data-toggle="modal" data-target="#image_browser">
                                 Image browser
                             </button>
                         </div>
-                        <div class="col-5 px-2">
+                        <div class="col-4 px-2">
                             <button type="button" class="btn btn-block btn-primary text-nowrap" data-toggle="modal" data-target="#collaboration_menu">
                                 Session menu
                             </button>
