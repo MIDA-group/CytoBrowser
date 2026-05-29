@@ -202,7 +202,7 @@ const collabPicker = (function() {
         $("#collab-new-name").val("");
 
         if (name) {
-            collabClient.createCollab(onCreated=() => {
+            collabClient.createCollab(undefined, undefined, () => {
                 collabClient.changeCollabName(name);
             });
         }
