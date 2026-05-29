@@ -930,6 +930,23 @@
         }
     }
 
+    // Make space for scrollbar 
+    function updateScrollbarState(el) {
+        const hasScrollbar = el.scrollHeight > el.clientHeight;
+        if (hasScrollbar) {
+            el.classList.add('has-scrollbar');
+        } else {
+            el.classList.remove('has-scrollbar');
+        }
+    }
+    // auto-update #right_toolbar_collapse scrollbar state when content changes
+    const el = document.querySelector('#right_toolbar_collapse');
+    const observer = new MutationObserver(() => {
+        updateScrollbarState(el);
+    });
+    observer.observe(el,{childList: true, subtree: true });
+
+
     // Start our tmapp
     $(document).ready(() => {
         window.addEventListener('resize', setCollapseDir);

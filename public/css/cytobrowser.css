@@ -37,6 +37,10 @@ body:fullscreen {
     height: 100%;
 }
 
+#right_toolbar_collapse.has-scrollbar {
+    scrollbar-gutter: stable;
+}
+
 /* Bootstrap breakpoints: https://getbootstrap.com/docs/4.0/layout/overview/#responsive-breakpoints */
 /* xs < 576, sm < 768, md < 992, lg < 1200, xl >= 1200 */
 @media (max-width: 1299px) {
