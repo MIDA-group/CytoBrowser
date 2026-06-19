@@ -325,6 +325,10 @@ const tmappUI = (function(){
         $("#focus_prev").click(tmapp.decrementFocus);
     }
 
+    function _initRefreshImagesButtonEvent() {
+        $("#image_list_refresh").click(tmapp.refreshImageBrowser);
+    }
+
     // Adjust size of rightmost grid column
     function _setLogWidth(width) {
         function handleWidthChange(small) {
@@ -461,7 +465,7 @@ const tmappUI = (function(){
                 break;
                 // QWER...
                 case 81: // q
-                    _updateQR(true); //toggle
+                    $('#qr_toggle').click();
                     break;
                 // ASDF...
                 case 70: // f
@@ -537,8 +541,8 @@ const tmappUI = (function(){
             document.execCommand("copy"); //TODO: FIX: Deprecated function
         });
         $("#change_session").click(function(event) {
-            const image = tmapp.getImageName();
-            collabPicker.open(image,false,false);
+            const imageName = tmapp.getImageName();
+            collabPicker.open(imageName,false,false); //no autostart
         });
     }
 
@@ -558,10 +562,12 @@ const tmappUI = (function(){
         _initDocumentFocusFunctionality();
         _initStorageButtonEvents();
         _initAnnotationFiltering();
+        _initQRButtonEvents();
         _initFocusButtonEvents();
         _initVisualizationSliders();
         _initKeyboardShortcuts();
         _initCollaborationMenu();
+        _initRefreshImagesButtonEvent();
     }
 
     /**
@@ -767,6 +773,14 @@ const tmappUI = (function(){
     }
 
     /**
+     * Clears the images contained inside the image browser.
+     */
+    function clearImageBrowser() {
+        $("#available_images").empty();
+    }
+
+
+    /**
      * Set the displayed user name in the UI.
      * @param {string} txt The username to display.
      */
@@ -875,14 +889,25 @@ const tmappUI = (function(){
     },500); //Max wait time in ms
 
     let _qrShowing=false;
-    function _updateQR(toggle=false) {
-        if (toggle) {
-            if (_qrShowing) $("#qr-code").css("width", "0px");
-            _qrShowing=!_qrShowing;
-        }
+    function _updateQR() {
         if (_qrShowing) {
             _scheduleUpdateQR();
         }
+    }
+
+    // Beware that clicking the buttong takes away keyboard focus
+    function _initQRButtonEvents() {
+        $("#qr_toggle").removeClass('active').attr('aria-pressed', 'false'); // force it to false, since some browsers cache it incorrectly
+        $('#qr_toggle').on('click', function () {
+            $(this).toggleClass('active');
+            if ($(this).hasClass('active')) {
+                _qrShowing=true;
+            } else {
+                _qrShowing=false;
+                $("#qr-code").css("width", "0px");
+            }
+            _updateQR();
+        });
     }
 
 
@@ -983,6 +1008,7 @@ const tmappUI = (function(){
         clearImageError,
 
         updateImageBrowser,
+        clearImageBrowser,
 
         setUserName,
         setCollabName,

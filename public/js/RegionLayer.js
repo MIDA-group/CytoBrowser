@@ -341,7 +341,7 @@ class RegionLayer extends OverlayLayer {
         let timed=false;
         if (this.#timingLog) {
             if (!updateAnnotations.inProgress()) {
-                console.time('updateAnnotations');  //lets time only the first
+                console.time('updateAnnotations Regions');  //lets time only the first
                 timed=true;
             }
         }
@@ -386,7 +386,7 @@ class RegionLayer extends OverlayLayer {
             .finally(() => {
                 this.updateAnnotations.inProgress(false);
                 if (timed) {
-                    console.timeEnd('updateRegionAnnotations');
+                    console.timeEnd('updateRegionAnnotations Regions');
                 }
             });
     }

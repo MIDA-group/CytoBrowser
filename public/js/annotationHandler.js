@@ -270,7 +270,7 @@ const annotationHandler = (function (){
             }
 
             if (!(classes.includes(addedAnnotation.mclass))) {
-                console.warn("Cannot add an annotation with unrecognised/incompatible class.");
+                console.warn(`Cannot add an annotation with unrecognised/incompatible class '${addedAnnotation.mclass}'.`);
                 return;
             }
 
@@ -354,7 +354,7 @@ const annotationHandler = (function (){
      * told to update their annotation.
      */
     function update(id, annotation, coordSystem="web", transmit = true, redraw = true) {
-        timingLog && console.time('updateAnnotation');
+        timingLog && console.time('updateAnnotation update()');
         const updatedAnnotation = getAnnotationById(id);
         // Check if the annotation being updated exists first
         if (updatedAnnotation === undefined) {
@@ -439,7 +439,7 @@ const annotationHandler = (function (){
 
         // Update the annotation in the graphics
         redraw && _updateVisuals();
-        timingLog && console.timeEnd('updateAnnotation');
+        timingLog && console.timeEnd('updateAnnotation update()');
     }
 
     /**
