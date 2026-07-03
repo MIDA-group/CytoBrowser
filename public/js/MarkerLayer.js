@@ -18,6 +18,7 @@ class MarkerLayer extends OverlayLayer {
     #maxScale;
     #markerScale = 1; //Modifcation factor
     #markerTextures = null;
+    #zVisibility = false;
 
     #overlayObject = null; //For destroy
     #stage = null; //Pixi stage
@@ -560,9 +561,10 @@ class MarkerLayer extends OverlayLayer {
         }
         //Draw annotations and update list asynchronously
         this.updateAnnotations.inProgress(true); //No function 'self' existing
-        const markers = annotations.filter(annotation =>
-            annotation.points.length === 1
-        );
+        const markers = annotations.filter(annotation => (
+                annotation.points.length === 1 && 
+                (this.#zVisibility || annotation.z === tmapp.getFocusLevel())
+        ));
         this.#markerOverlay.selectAll("g")
             .data(markers, d => d.id)
             .join(
@@ -610,6 +612,9 @@ class MarkerLayer extends OverlayLayer {
     }
 
 
+    setAnnotationZVisibility(visible) {
+        this.#zVisibility = visible;
+    }
 
     #alpha(obj,s) {
         Ease.ease.add(obj,{alpha:s},{duration:200});

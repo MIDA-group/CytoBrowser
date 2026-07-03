@@ -6,6 +6,7 @@
 class RegionLayer extends OverlayLayer {
     #timingLog = false; //Log update times
     #scale = 1;
+    #zVisibility = false;
 
     #regionOverlay;
     #pendingRegionOverlay;
@@ -348,9 +349,10 @@ class RegionLayer extends OverlayLayer {
 
         //Draw annotations and update list asynchronously
         this.updateAnnotations.inProgress(true); //No function 'self' existing
-        const regions = annotations.filter(annotation =>
-            annotation.points.length > 1
-        );
+        const regions = annotations.filter(annotation => (
+            annotation.points.length > 1 && 
+            (this.#zVisibility || annotation.z === tmapp.getFocusLevel())
+        ));
 
         const doneRegions = new Promise((resolve, reject) => {
             const regs = this.#regionOverlay.selectAll(".region")
@@ -465,6 +467,9 @@ class RegionLayer extends OverlayLayer {
     }
 
 
+    setAnnotationZVisibility(visible) {
+        this.#zVisibility = visible;
+    }
 
     /**
      * Called when layer is lowered away from top

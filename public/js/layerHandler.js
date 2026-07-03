@@ -15,7 +15,8 @@ const layerHandler = (function (){
         _wContainer,
         _maxZoom,
         _rotation,
-        _markerScale = 1; //Modifcation factor
+        _markerScale = 1, //Modifcation factor
+        _markerZVisibility = false;
 
 
     function _forEachLayer(funStr, ...args) {
@@ -75,6 +76,15 @@ const layerHandler = (function (){
     function setMarkerScale(markerScale, delta=false) {
         _markerScale = markerScale;
         _forEachLayer("setMarkerScale",_markerScale, delta);
+    }
+
+    /**
+     * Adjust annotation visibility across z-levels. 
+     * @param {boolean} visible Whether annotations should be visible across z-levels. 
+     */
+    function setAnnotationZVisibility(visible) {
+        _markerZVisibility = visible;
+        _forEachLayer("setAnnotationZVisibility", visible);
     }
 
     /**
@@ -173,6 +183,7 @@ const layerHandler = (function (){
         destroy,
         setZoom,
         setMarkerScale,
+        setAnnotationZVisibility,
         setRotation,
         setActiveAnnotationOverlay:setTopLayer,
         getActiveAnnotationOverlay:getTopLayer,

@@ -356,6 +356,12 @@ const tmappUI = (function(){
         $("#brightness_reset").click(function() { $('#brightness_slider').slider('setValue', 0, true, true);});
         $("#contrast_reset").click(function() { $('#contrast_slider').slider('setValue', 0, true, true);});
 
+        $("#annotations_z_switch").prop('checked',false); // force it to false, since some browsers cache it incorrectly
+        $("#annotations_z_switch").change(function(e) {
+            tmapp.setAnnotationZVisibility(e.target.checked);
+            annotationHandler.updateVisuals();
+        }); 
+
         $("#fps_switch").prop('checked',false); // force it to false, since some browsers cache it incorrectly
         $("#fps_switch").change(function(e) {
             if (e.target.checked) {
