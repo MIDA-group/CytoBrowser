@@ -18,7 +18,7 @@ class MarkerLayer extends OverlayLayer {
     #maxScale;
     #markerScale = 1; //Modifcation factor
     #markerTextures = null;
-    #zVisibility = false;
+    #zVisibility = true;
 
     #overlayObject = null; //For destroy
     #stage = null; //Pixi stage

@@ -16,7 +16,7 @@ const layerHandler = (function (){
         _maxZoom,
         _rotation,
         _markerScale = 1, //Modifcation factor
-        _markerZVisibility = false;
+        _markerZVisibility = true;
 
 
     function _forEachLayer(funStr, ...args) {

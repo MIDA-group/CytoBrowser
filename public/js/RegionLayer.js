@@ -6,7 +6,7 @@
 class RegionLayer extends OverlayLayer {
     #timingLog = false; //Log update times
     #scale = 1;
-    #zVisibility = false;
+    #zVisibility = true;
 
     #regionOverlay;
     #pendingRegionOverlay;

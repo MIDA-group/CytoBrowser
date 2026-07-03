@@ -64,7 +64,7 @@ const tmapp = (function() {
         },
         _disabledControls=false, //showing controls and navigator
         _availableZLevels, //how is this different from _currentImage.zLevels?
-        _annotationZVisibility=false,
+        _annotationZVisibility=true,
         _mouseHandler,
         _currentMouseUpdateFun=null;
 
