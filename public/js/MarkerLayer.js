@@ -84,7 +84,7 @@ class MarkerLayer extends OverlayLayer {
         });
 
         pixiOverlay._app.ticker.add(() => {
-            this.#cullMarkers();
+            this.#cullMarkers(undefined,!this.#zVisibility);
         });
     }
 
@@ -154,25 +154,29 @@ class MarkerLayer extends OverlayLayer {
     /**
      * Set marker visible if inside rectangle, or pressed
      * @param {Rectangle} rect in Screen/Web coordinates, typically this.#renderer.screen
+     * @param {bool} cull_z if to only show current z-level
      */
     #first=true;
     #oldUl={};
     #oldDr={};
-    #cullMarkers(rect = this.#renderer.screen) {
+    #oldZ=null;
+    #cullMarkers(rect = this.#renderer.screen, cull_z = false) {
         if (this.#markerContainer.children.length) {
             //Check if the view actually changed
             const ul=coordinateHelper.overlayToWeb({x:0,y:0});
             const dr=coordinateHelper.overlayToWeb({x:1000,y:1000});
+            const z=cull_z?tmapp.getFocusLevel():null;
             ul.x = Math.round(ul.x);
             ul.y = Math.round(ul.y);
             dr.x = Math.round(dr.x);
             dr.y = Math.round(dr.y);
-            if (this.#first || ul.x!=this.#oldUl.x || ul.y!=this.#oldUl.y || dr.x!=this.#oldDr.x || dr.y!=this.#oldDr.y) {
+            if (this.#first || ul.x!=this.#oldUl.x || ul.y!=this.#oldUl.y || dr.x!=this.#oldDr.x || dr.y!=this.#oldDr.y || this.#oldZ!=z) {
                 this.#first=false;
                 this.#oldUl.x = ul.x;
                 this.#oldUl.y = ul.y;
                 this.#oldDr.x = dr.x;
                 this.#oldDr.y = dr.y;
+                this.#oldZ = z;
                 rect=rect.clone().pad(this.#markerDiameter/2); //So we see frame also when outside
 
                 const topLeft = coordinateHelper.webToImage({ x: rect.x, y: rect.y });
@@ -187,12 +191,15 @@ class MarkerLayer extends OverlayLayer {
                     minX: Math.min(...xs),
                     minY: Math.min(...ys),
                     maxX: Math.max(...xs),
-                    maxY: Math.max(...ys)
+                    maxY: Math.max(...ys),
+                    z: tmapp.getFocusLevel()
                 };
                 const visibleMarkers = this.#spatialMarkerIndex.search(bbox);
                 const visibleIDs = new Set();
                 for (const m of visibleMarkers) {
-                    visibleIDs.add(m.id);
+                    if (!cull_z || m.z==bbox.z) {
+                        visibleIDs.add(m.id);
+                    }
                 }
 
                 let vis = 0;
@@ -379,6 +386,7 @@ class MarkerLayer extends OverlayLayer {
         sprite.id = d.id;
         sprite.mclass = d.mclass;
         sprite.hitArea = texture.hitArea;
+        sprite.z = d.z;
 
         this.#addMarkerInteraction(d, sprite, sprite);
         this.#markerContainer.addChild(sprite);
@@ -429,6 +437,7 @@ class MarkerLayer extends OverlayLayer {
                     minY: y,
                     maxX: x,
                     maxY: y,
+                    z: d.z,
                     id: d.id,
                 };
                 this.#spatialMarkerIndex.insert(markerItem);
@@ -487,6 +496,7 @@ class MarkerLayer extends OverlayLayer {
     }
 
     #exitMarker(exit) {
+        const duration=Math.round(30/(1+exit.size())); //The more markers the shorter animation
         return exit.each(d => {
             // console.log('EID:',d.id);
             const marker = this.#markerList[d.id]
@@ -497,10 +507,15 @@ class MarkerLayer extends OverlayLayer {
             Ease.ease.removeEase(marker);
             marker.interactive = false;
             if (!marker.destroyed) {
-                Ease.ease.add(marker,{scale:marker.scale.x*1.5},{duration:30})
-                    .once('complete', (ease) => {
-                        ease.elements.forEach(item=>item.destroy({children: true, texture: false})); //Self destruct after animation
-                    });
+                if (duration > 0) {
+                    Ease.ease.add(marker,{scale:marker.scale.x*1.5},{duration:duration})
+                        .once('complete', (ease) => {
+                            ease.elements.forEach(item=>item.destroy({children: true, texture: false})); //Self destruct after animation
+                        });
+                }
+                else {
+                    marker.destroy({children: true, texture: false});
+                }
             }
             delete this.#markerList[d.id];
             const existingMarker = this.#annotationIdToMarker.get(d.id);
@@ -561,10 +576,9 @@ class MarkerLayer extends OverlayLayer {
         }
         //Draw annotations and update list asynchronously
         this.updateAnnotations.inProgress(true); //No function 'self' existing
-        const markers = annotations.filter(annotation => (
-                annotation.points.length === 1 && 
-                (this.#zVisibility || annotation.z === tmapp.getFocusLevel())
-        ));
+        const markers = annotations.filter(annotation =>
+            annotation.points.length === 1
+        );
         this.#markerOverlay.selectAll("g")
             .data(markers, d => d.id)
             .join(
