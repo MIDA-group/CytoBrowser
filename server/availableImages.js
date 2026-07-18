@@ -39,8 +39,8 @@ let lastUpdateFailed = false;
 let availableImages = null;
 
 // Constant regular expressions
-const nameEx = /.+(?=_z[0-9]+\.dzi$)/;
-const filesEx = /.*(?=_z[0-9]+_files$)/;
+const nameEx = /.+(?=_z-?[0-9]+\.dzi$)/;
+const filesEx = /.*(?=_z-?[0-9]+_files$)/;
 const zEx = /(?<=_z).*(?=\.dzi$)/;
 
 // Following symlinks (synchronous)
@@ -175,7 +175,7 @@ async function updateImages() {
             uniqueNames.map(name => images.push({name: path.join(activePath,name)}));
         }
 
-        // All non '*z[0-9]+_files' directories; relative paths (from activePath are returned)
+        // All non '*z-?[0-9]+_files' directories; relative paths (from activePath are returned)
         const directories = [];
         if (activePath != path.normalize('')) {
             directories.push({name: '..', path: path.join(activePath,'..')});
