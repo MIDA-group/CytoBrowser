@@ -709,6 +709,7 @@ function _fetchImages(callback) {
         else if (folderName) {
             _activePath = folderName;
         }
+        if (_activePath === ".") _activePath=""; // To keep names the same
 
         _fetchImages((err, response) => {
             tmappUI.setUserName(userInfo.getName());
