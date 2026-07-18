@@ -1,7 +1,7 @@
 {
   "name": "cytobrowser",
   "description": "CytoBrowser, a JavaScript and Node.js driven environment for fast and accessible collaborative online visualization, assessment, and annotation of very large microscopy images.",
-  "version": "1.6.1",
+  "version": "1.7.0",
   "main": "cytobrowser.js",
   "directories": {
     "example": "examples"
@@ -85,12 +85,12 @@
   "homepage": "https://github.com/MIDA-group/CytoBrowser#readme",
   "dependencies": {
     "bootstrap": "^4",
-    "copy-files-from-to": "^4.0.0",
+    "copy-files-from-to": "^4.0.1",
     "express": "^5.2.1",
     "express-ws": "^5.0.2",
-    "fast-xml-parser": "^5.5.9",
+    "fast-xml-parser": "^5.9.3",
     "fix-esm": "^1.0.1",
-    "jsondiffpatch": "^0.7.3",
+    "jsondiffpatch": "^0.7.6",
     "jquery": "latest",
     "minimist": "^1.2.8",
     "openseadragon": "^6.0.2",

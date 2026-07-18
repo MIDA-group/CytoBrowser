@@ -368,6 +368,9 @@ const htmlHelper = (function() {
         return container;
     }
 
+    function _noWrapHyphens(string) {
+        return string.replaceAll("-", "&#8209;"); //non-wrapping hyphen, for ASC-US and similar
+    }
     function _classSelectionButton(mclass, active) {
         const active_color=_scaleRGB(mclass.color,0.5);
 
@@ -375,7 +378,7 @@ const htmlHelper = (function() {
         //pseudo-selectors (e.g. hover) in inline style, we do all colors below with CSS
         const button = $(`
             <label id="class_${mclass.name}" class="btn btn-dark px-0 px-md-1 px-lg-2" title="${mclass.description}">
-                <input type="radio" name="class_options" autocomplete="off">${mclass.name}</input>
+                <input type="radio" name="class_options" autocomplete="off">${_noWrapHyphens(mclass.name)}</input>
                 <span class="badge badge-light mt-1 d-block" id="class_counter_${mclass.name}">0</span>
             </label>
         `);
@@ -461,6 +464,20 @@ const htmlHelper = (function() {
                 </div>
             </div>
             `);
+            const anchor = entry.find("a");
+            const detail = entry.find("img:eq(1)");
+            anchor.click(event => {
+                event.preventDefault();
+                entry.closest(".modal").modal("hide");
+                tmapp.openImage(image.name, () => {
+                    collabPicker.open(image.name, true); //forceChoice
+                    tmapp.moveToDefaultState();
+                });
+            });
+            anchor.hover(
+                () => detail.addClass("show").removeClass("hide"),
+                () => detail.addClass("hide").removeClass("show")
+            );
         }
         else {
             entry = $(`
@@ -476,17 +493,6 @@ const htmlHelper = (function() {
             </div>
             `);
         }
-        const anchor = entry.find("a");
-        const detail = entry.find("img:eq(1)");
-        anchor.click(event => {
-            event.preventDefault();
-            entry.closest(".modal").modal("hide");
-            collabPicker.open(image.name);
-        });
-        anchor.hover(
-            () => detail.addClass("show").removeClass("hide"),
-            () => detail.addClass("hide").removeClass("show")
-        );
         return entry;
     }
 

@@ -116,7 +116,7 @@
                         this.raiseEvent("open");
                     }
                 },
-                error: () => this.raiseEvent("open-failed")
+                error: (x) => {console.log(x);this.raiseEvent("open-failed");}
             });
             this.addTiledImage(tileSource);
         });

@@ -37,6 +37,10 @@ body:fullscreen {
     height: 100%;
 }
 
+#right_toolbar_collapse.has-scrollbar {
+    scrollbar-gutter: stable;
+}
+
 /* Bootstrap breakpoints: https://getbootstrap.com/docs/4.0/layout/overview/#responsive-breakpoints */
 /* xs < 576, sm < 768, md < 992, lg < 1200, xl >= 1200 */
 @media (max-width: 1299px) {
@@ -198,6 +202,31 @@ main {
 /* To be permanently fixed with re-styling and Bootstrap 5 in due time */
 .btn-primary:focus {
     background-color: #AD1D28;
+}
+
+
+
+/* Scale modal to 95% width */
+@media (min-width: 576px) {
+    .modal-scale-95 {
+        max-width: min(95%,1140px);
+    }
+}
+
+/* Make header sticky */
+.header-row {
+  position: sticky;
+  top: 0;
+  background: darkgray;  /* important so text stays readable */
+  z-index: 1;         /* stays above rows */
+  box-shadow: 0 -1px 0 darkgray; /* 1px border on top */
+}
+/* Light emboss of header items */
+thead th {
+  background: #dcdcdc;
+  box-shadow:
+    inset 1px 1px 2px rgba(255,255,255,0.8),
+    inset -1px -1px 2px rgba(0,0,0,0.3);
 }
 
 

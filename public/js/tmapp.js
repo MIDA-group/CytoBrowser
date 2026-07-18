@@ -39,12 +39,7 @@ const tmapp = (function() {
         preserveOverlays: true,
         preload: true
     };
-
-    let _currentImage = null, //a focus stack
-        _images, //list of images from image browser
-        _collab,
-        _viewer, //the OSD-viewer
-        _currState = {
+    const _defaultState = {
             x: 0.5,
             targetX: 0.5,
             y: 0.5,
@@ -56,7 +51,13 @@ const tmapp = (function() {
             targetZoom: 1,
             brightness: 0,
             contrast: 0
-        },
+        };
+
+    let _currentImage = null, //a focus stack
+        _images, //list of images from image browser
+        _collab,
+        _viewer, //the OSD-viewer
+        _currState = { ..._defaultState },
         _cursorStatus = {
             x: 0.5,
             y: 0.5,
@@ -213,9 +214,9 @@ const tmapp = (function() {
             targetY!=null && params.set("y", roundTo(targetY, 5));
             z!=null && params.set("z", z);
             targetRotation!=null && params.set("rotation", targetRotation||0);
+            update || params.delete("folder");
         }
         update || (_collab ? params.set("collab", _collab) : params.delete("collab"));
-        update || (_currentImage && params.delete("folder"));
         urlCache=url;
         return url;
     }
@@ -227,7 +228,7 @@ const tmapp = (function() {
         // Get params from URL
         const params = url.searchParams;
         const imageName = params.get("image");
-        const folderName = params.get("folder");
+        const folderName = params.get("folder"); // In general, if imageName, then ignore folderName
         const collab = params.get("collab");
         const state = {
             zoom: params.get("zoom"),
@@ -239,38 +240,38 @@ const tmapp = (function() {
         return {imageName, folderName, collab, state};
     }
 
-    // Immediate moveTo from URL
+    // Immediate moveTo from URL 
     function processURL(url) {
         const {imageName, folderName, collab, state}=parseURL(url);
-        if (imageName && imageName!==_currentImage.name) {
-            if (collab) {
-                openImage(imageName, () => {
+        if (imageName) { 
+            if (_currentImage && imageName===_currentImage.name) { // Same image
+                if (collab) { // Annotations need an image
                     collabClient.connect(collab);
-                    if (state) {
-                        moveTo(state, true);
-                    }
-                });
+                }
+                else {
+                    collabPicker.open(imageName, true); //forceChoice  
+                }
+                moveTo(state ?? _defaultState, true); // Set default state on image open
             }
-            else {
+            else { // Open image
                 openImage(imageName, () => {
-                    collabPicker.open(imageName, true, true, () => {
-                        if (state) {
-                            moveTo(state, true);
-                        }
-                    });
+                    if (collab) { // Annotations need an image
+                        collabClient.connect(collab);
+                    }
+                    else {
+                        collabPicker.open(imageName, true); //forceChoice  
+                    }
+                    moveTo(state ?? _defaultState, true);
                 });
-            }            
-        }
-        else if (collab && collab!==_collab) {
-            collabClient.connect(collab);
-            if (state) {
-                moveTo(state, true);
             }
         }
         else if (folderName && !imageName) {
             _openFolder(folderName);
         }
-        else if (state && state!==_currState) {
+        else {
+            if (collab) {
+                collabClient.connect(collab);
+            }
             moveTo(state, true);
         }
     }
@@ -288,10 +289,10 @@ const tmapp = (function() {
         collabClient.updateCursor(_cursorStatus);
     }
 
-    function _expandImageName() {
+    function _expandImageName(image) {
         // Get the full image names based on the data from the server
-        const imageName = _currentImage.name;
-        const zLevels = _currentImage.zLevels;
+        const imageName = image.name;
+        const zLevels = image.zLevels;
         const imageStack = zLevels.map(zLevel => {
             return `${_imageDir}${imageName}_z${zLevel}.dzi`;
         });
@@ -472,7 +473,7 @@ const tmapp = (function() {
         });
     }
 
-    function _addHandlers(viewer, callback) {
+    function _addHandlers(viewer, image, callback) {
         var context_menu_node = null;
         // Change-of-Page (z-level) handler
         viewer.addHandler("page", _updateFocus);
@@ -491,7 +492,8 @@ const tmapp = (function() {
 
         // When we're done loading
         viewer.addHandler("open", function (event) {
-            console.info("Done loading!");
+            _currentImage=image;
+            console.info("Done loading!",_currentImage);
             _addMouseTracking(viewer);
             viewer.canvas.focus();
             viewer.viewport.goHome();
@@ -555,13 +557,15 @@ const tmapp = (function() {
     }
 
     /**
-     * Initialize an instance of OpenSeadragon. This involves getting
-     * a full stack of image names based on the original name, loading the
-     * images from the server, and initializing the overlay.
+     * Initialize an instance of OpenSeadragon
+     * This involves getting a full stack of image names based on the original name, 
+     * loading the images from the server, and initializing the overlay.
+     * @param image 
      * @param {Function} callback Function to call once the images have
      * been successfully loaded.
+     * Seeting _currentImage when loaded
      */
-    function _initOSD(callback) {
+    function _initOSD(image, callback) {
         //init OSD viewer
         _viewer = OpenSeadragon(_optionsOSD);
         _viewer.scalebar();
@@ -574,12 +578,12 @@ const tmapp = (function() {
         _viewer.navigator.viewport.degreesSpring.animationTime=_viewer.animationTime/3;
 
         //open the DZI xml file pointing to the tiles
-        const imageName = _currentImage.name;
-        const imageStack = _expandImageName(imageName);
-        _openImages(imageStack); //sets _availableZLevels
-        _addHandlers(_viewer, callback);
+        const imageName = image.name;
+        const imageStack = _expandImageName(image);
+        _openImages(imageStack); //sets _availableZLevels     
+        _addHandlers(_viewer, image, callback);
         
-        htmlHelper.buildFocusSlider(_viewer, _currentImage.zLevels);
+        htmlHelper.buildFocusSlider(_viewer, image.zLevels);
 
         //Create a wrapper in which we place all overlays, s.t. we can switch with zIndex but still get Navigator and On-screen menu
         const overlayDiv = document.createElement('div');
@@ -637,6 +641,7 @@ const tmapp = (function() {
         coordinateHelper.clearImage();
         _disabledControls = false;
         _availableZLevels = null;
+        _currentImage = null;
     }
 
     // Image picker / image browser
@@ -645,11 +650,45 @@ const tmapp = (function() {
         $("#image_browser").modal();
     }
 
+/**
+ * Fetch images from the server api endpoint
+ * @param {Function(err=null,response)} callback Function to call once the images 
+ * have been successfully loaded.
+ */
+function _fetchImages(callback) {
+    // Initiate a HTTP request and send it to the image info endpoint
+    const req = new XMLHttpRequest();
+    req.open("GET", window.location.api + "/images/" + _activePath, true);
+
+    // Avoid cached responses
+    req.setRequestHeader("Cache-Control", "no-cache, no-store, must-revalidate, max-age=0"); // HTTP 1.1
+    req.setRequestHeader("Pragma", "no-cache"); // HTTP 1.0
+    req.setRequestHeader("Expires", "0"); // Proxies
+
+    req.onreadystatechange = function () {
+        if (req.readyState !== 4) return;
+
+        if (req.status === 200) {
+            try {
+                const response = JSON.parse(req.responseText);
+                callback(null, response);
+            } catch (err) {
+                callback(err, null);
+            }
+        } else {
+            callback(new Error(`HTTP ${req.status}`), null);
+        }
+    };
+
+    req.send(null);
+}
+
     /**
      * Initiate tmapp by fetching a list of images from the server,
      * filling the image browser, and going to the image specified
      * in the search parameters of the URL. If a collab and an initial
      * state are also specified in the URL, these are also set up.
+     * 
      * @param {Object} options The initial tmapp options specified in
      * the URL.
      * @param {string} options.imageName The name of the initial image
@@ -663,7 +702,7 @@ const tmapp = (function() {
      * @param {number} options.initialState.z Z level in viewport.
      * @param {number} options.initialState.zoom Zoom in viewport.
      */
-    function init({imageName, folderName, collab, initialState}) {
+    function init({ imageName, folderName, collab, initialState }) {
         if (imageName) {
             _activePath = imageName.substring(0, imageName.lastIndexOf('/'));
         }
@@ -671,69 +710,48 @@ const tmapp = (function() {
             _activePath = folderName;
         }
 
-        // Initiate a HTTP request and send it to the image info endpoint
-        const imageReq = new XMLHttpRequest();
-        imageReq.open("GET", window.location.api + "/images/" + _activePath, true);
-        // Turn off caching of response
-        imageReq.setRequestHeader("Cache-Control", "no-cache, no-store, must-revalidate, max-age=0"); // HTTP 1.1
-        imageReq.setRequestHeader("Pragma", "no-cache"); // HTTP 1.0
-        imageReq.setRequestHeader("Expires", "0"); // Proxies
+        _fetchImages((err, response) => {
+            tmappUI.setUserName(userInfo.getName());
 
-        imageReq.send(null);
-
-        imageReq.onreadystatechange = function() {
-            if (imageReq.readyState !== 4) {
+            if (err) {
+                console.error(err);
+                tmappUI.displayImageError("unexpected");
                 return;
             }
-            tmappUI.setUserName(userInfo.getName());
-            switch (imageReq.status) {
-                case 200:
-                    // Add the images to the image browser
-                    const response = JSON.parse(imageReq.responseText);
-                    const missingDataDir = response.missingDataDir;
-                    const images = response.images;
-                    const directories = response.directories;
-                    tmappUI.updateImageBrowser(images,directories);
-                    _images = images;
 
-                    // Go to the initial image and/or join the collab
-                    if (missingDataDir) {
-                        tmappUI.displayImageError("missingdatadir");
-                    }
-                    else if (images.length === 0 && directories.length === 0) {
-                        tmappUI.displayImageError("noavailableimages");
-                    }
-                    else if (imageName && collab) {
-                        openImage(imageName, () => {
-                            collabClient.connect(collab);
-                            if (initialState) {
-                                moveTo(initialState, true);
-                            }
-                        });
-                    }
-                    else if (imageName) {
-                        openImage(imageName, () => {
-                            collabPicker.open(imageName, true, true, () => {
-                                if (initialState) {
-                                    moveTo(initialState, true);
-                                }
-                            });
-                        });
-                    }
-                    else { 
-                        if (!folderName) {
-                            tmappUI.displayImageError("noimage");
-                        }
-                        _openFolder();
-                    }
-                    break;
-                case 500:
-                    tmappUI.displayImageError("servererror");
-                    break;
-                default:
-                    tmappUI.displayImageError("unexpected");
+            const missingDataDir = response.missingDataDir;
+            const images = response.images || [];
+            const directories = response.directories || [];
+            _images = images;
+            tmappUI.updateImageBrowser(images,directories);
+
+            // Go to the initial image and/or join the collab
+            if (missingDataDir) {
+                tmappUI.displayImageError("missingdatadir");
             }
-        }
+            else if (images.length === 0 && directories.length === 0) {
+                tmappUI.displayImageError("noavailableimages");
+            }
+            else if (imageName && collab) {
+                openImage(imageName, () => {
+                    collabClient.connect(collab); // Need image to add annotations
+                    moveTo(initialState, true);
+                });
+            }
+            else if (imageName) {
+                openImage(imageName, () => {
+                    collabPicker.open(imageName, true); //forceChoice 
+                    moveTo(initialState, true);
+                });
+            }
+            else {
+                if (!folderName) {
+                    tmappUI.displayImageError("noimage");
+                    $("#image_browser").modal(); // Open browser directly if neither image nor folder
+                }
+                _openFolder();
+            }
+        });
     }
 
     /**
@@ -765,10 +783,13 @@ const tmapp = (function() {
 
         if (!imageName) {
             _clearCurrentImage();
-            _currentImage = null;
             tmappUI.setImageName(null);
             tmappUI.displayImageError("noimage");
             _updateURLParams();
+            callback && callback();
+        }
+        else if (_currentImage && imageName === _currentImage.name) {
+            console.log(`Image ${imageName} already opened.`);
             callback && callback();
         }
         else {
@@ -778,17 +799,16 @@ const tmapp = (function() {
                 throw new Error(`Failed to open image ${imageName}.`);
             }
             _clearCurrentImage();
-            _currentImage = image;
-            tmappUI.setImageName(_currentImage.name);
+            tmappUI.setImageName(imageName);
             _updateURLParams();
-            _initOSD(callback);
+            _initOSD(image, callback); //setting _currentImage when done
         }
     }
 
     /**
      * Move to a specified state in the viewport. If the state is only
      * partially defined, the rest of the viewport state will remain
-     * the same as it was.
+     * the same as it was. If state is undefined, then does nothing.
      * @param {Object} state The viewport state to move to.
      * @param {number} state.x The x position of the viewport.
      * @param {number} state.y The y position of the viewport.
@@ -796,7 +816,12 @@ const tmapp = (function() {
      * @param {number} state.rotation The rotation in the viewport.
      * @param {number} state.zoom The zoom in the viewport.
      */
-    function moveTo({x, y, z, rotation, zoom}, immediately=false) {
+    function moveTo(state, immediately=false) {
+        if (!state || state===_currState) {
+            return; //nothing to do
+        }
+        const {x, y, z, rotation, zoom} = state;
+        
         const capValue = (val, min, max) => Math.max(Math.min(val, max), min);
         if (!_viewer) {
             throw new Error("Tried to move viewport without a viewer.");
@@ -833,6 +858,10 @@ const tmapp = (function() {
         if (z !== undefined) {
             _setFocusLevel(z);
         }
+    }
+
+    function moveToDefaultState() {
+        moveTo(_defaultState);
     }
 
     function _defaultZoom(annotation) {
@@ -900,6 +929,9 @@ const tmapp = (function() {
         _collab = id;
         tmappUI.setCollabID(id, _currentImage.name);
         _updateURLParams();
+    }  
+    function getCollab() {
+        return _collab;
     }
 
     /**
@@ -1081,12 +1113,41 @@ const tmapp = (function() {
         return _activePath;
     }
 
+    /**
+     * Refreshes the list of available images in the image browser.
+     * Fetches image data from the server (/images), updates the
+     * image cache (_images), clears and repopulates the image browser UI, and
+     * displays an error/empty-state message if needed.
+     */
+    function refreshImageBrowser() {
+        _fetchImages((err, response) => {
+            if (err) {
+                console.error(err);
+                tmappUI.displayImageError("unexpected");
+                return;
+            }
+
+            const missingDataDir = response.missingDataDir;
+            const images = response.images || [];
+            const directories = response.directories || [];
+            _images = images;
+            tmappUI.clearImageBrowser();
+            tmappUI.updateImageBrowser(images,directories);
+
+            if (missingDataDir) tmappUI.displayImageError("missingdatadir");
+            else if (images.length === 0) tmappUI.displayImageError("noavailableimages");
+            else tmappUI.clearImageError && tmappUI.clearImageError();
+        });
+    }
+
+
     return {
         init,
         openImage,
         getActivePath,
 
         moveTo,
+        moveToDefaultState,
         moveToAnnotation,
         
         makeURL,
@@ -1095,6 +1156,7 @@ const tmapp = (function() {
         annotationURL,
 
         setCollab,
+        getCollab,
         clearCollab,
 
         incrementFocus,
@@ -1118,6 +1180,8 @@ const tmapp = (function() {
         keyDownHandler,
         mouseHandler,
 
-        updateScalebar
+        updateScalebar,
+
+        refreshImageBrowser
     };
 })();

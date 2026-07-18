@@ -78,6 +78,7 @@ class SortableList {
                 .text(field.name);
             if (field.displayStyle) {
                 th.style("display", field.displayStyle());
+                col.style("display", field.displayStyle()); //Set displayStyle on the colum as well, otherwise Firefox allocates space for it
             }
             if (field.sortable) {
                 th.on("click", () => this._progressSort(field.key))
