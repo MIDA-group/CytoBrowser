@@ -501,7 +501,7 @@ const htmlHelper = (function() {
             <div class="d-flex" style="width: 12.5%;">
                 <div class="card w-100 border-0 m-0">
                     <img src="misc/folder_icon.svg" class="card-img-top position-absolute"
-                        style="object-fit: contain; height: calc(100% * 0.9);">
+                        style="object-fit: contain; height: 83px;">
                     <div class="card-body text-center" style="padding:0;padding-top:70px;">
                         <a class="card-link stretched-link" href="?folder=${dir.path}">
                             ${dir.name}
