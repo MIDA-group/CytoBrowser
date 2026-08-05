@@ -1136,7 +1136,9 @@ function _fetchImages(callback) {
             tmappUI.updateImageBrowser(images,directories);
 
             if (missingDataDir) tmappUI.displayImageError("missingdatadir");
-            else if (images.length === 0) tmappUI.displayImageError("noavailableimages");
+            else if (images.length === 0 && directories.length === 0) {
+                tmappUI.displayImageError("noavailableimages");
+            }
             else tmappUI.clearImageError && tmappUI.clearImageError();
         });
     }
