@@ -466,6 +466,7 @@ class MarkerLayer extends OverlayLayer {
                     minY: y,
                     maxX: x,
                     maxY: y,
+                    z: d.z,
                     id: d.id,
                 };
                 this.#spatialMarkerIndex.insert(markerItem);
