@@ -313,7 +313,8 @@ class RegionLayer extends OverlayLayer {
     }
 
     #exitRegion(exit) {
-        return exit.transition("appear").duration(200)
+        return exit.transition("appear")
+            .duration(d => (this.#zVisibility || d.z === tmapp.getFocusLevel()) ? 200 : 0)
             .attr("opacity", 0)
             .remove();
     }
