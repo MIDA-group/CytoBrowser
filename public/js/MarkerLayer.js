@@ -27,7 +27,7 @@ class MarkerLayer extends OverlayLayer {
     #drawUpdate = null; //Rendring update function
 
     #spatialMarkerIndex = new RBush();
-    #annotationIdToMarker = new Map();
+    #annotationIdToMarker = new Map(); //isn't this just partly duplicating markerList? (JL 260815)
     
     #markerOverlay;
     #markerContainer = null;
@@ -83,7 +83,7 @@ class MarkerLayer extends OverlayLayer {
             }
         });
 
-        pixiOverlay._app.ticker.add(() => {
+        pixiOverlay._app.ticker.add(() => { // cull during spare time
             this.#cullMarkers(undefined,!this.#zVisibility);
         });
     }
@@ -160,23 +160,23 @@ class MarkerLayer extends OverlayLayer {
     #oldUl={};
     #oldDr={};
     #oldZ=null;
+    #visibleMarkers2D=null; //in the 2D bbox 
     #cullMarkers(rect = this.#renderer.screen, cull_z = false) {
         if (this.#markerContainer.children.length) {
-            //Check if the view actually changed
+            //Check if the view changed
+            let change2D=false;
             const ul=coordinateHelper.overlayToWeb({x:0,y:0});
             const dr=coordinateHelper.overlayToWeb({x:1000,y:1000});
-            const z=cull_z?tmapp.getFocusLevel():null;
             ul.x = Math.round(ul.x);
             ul.y = Math.round(ul.y);
             dr.x = Math.round(dr.x);
             dr.y = Math.round(dr.y);
-            if (this.#first || ul.x!=this.#oldUl.x || ul.y!=this.#oldUl.y || dr.x!=this.#oldDr.x || dr.y!=this.#oldDr.y || this.#oldZ!=z) {
+            if (this.#first || ul.x!=this.#oldUl.x || ul.y!=this.#oldUl.y || dr.x!=this.#oldDr.x || dr.y!=this.#oldDr.y) {
                 this.#first=false;
                 this.#oldUl.x = ul.x;
                 this.#oldUl.y = ul.y;
                 this.#oldDr.x = dr.x;
                 this.#oldDr.y = dr.y;
-                this.#oldZ = z;
                 rect=rect.clone().pad(this.#markerDiameter/2); //So we see frame also when outside
 
                 const topLeft = coordinateHelper.webToImage({ x: rect.x, y: rect.y });
@@ -192,12 +192,16 @@ class MarkerLayer extends OverlayLayer {
                     minY: Math.min(...ys),
                     maxX: Math.max(...xs),
                     maxY: Math.max(...ys),
-                    z: tmapp.getFocusLevel()
                 };
-                const visibleMarkers = this.#spatialMarkerIndex.search(bbox);
+                this.#visibleMarkers2D = this.#spatialMarkerIndex.search(bbox); //array
+                change2D=true;
+            }
+            const z=cull_z?tmapp.getFocusLevel():null;
+            if (change2D || this.#oldZ!=z) { //if 2D-change or z-change
+                this.#oldZ = z;
                 const visibleIDs = new Set();
-                for (const m of visibleMarkers) {
-                    if (!cull_z || m.z==bbox.z) {
+                for (const m of this.#visibleMarkers2D) {
+                    if (!cull_z || this.#markerList[m.id].z===z) {
                         visibleIDs.add(m.id);
                     }
                 }
@@ -218,8 +222,7 @@ class MarkerLayer extends OverlayLayer {
             }
         }
     }
-
-    
+   
     #resizeMarkers() {
 //        console.log('Resize: ',this.#markerSize);
         this.#markerContainer.children.forEach(c => {
@@ -428,6 +431,7 @@ class MarkerLayer extends OverlayLayer {
             .each(d => {
                 // console.log('AID: ',d.id,duration);
                 this.#markerList[d.id]=this.#pixiMarker(d,duration);
+                this.#setMarkerZVisibility(this.#markerList[d.id]); //if added outside visibleZ
 
                 // Add marker to spatial index and ID map
                 const x = d.points[0].x;
@@ -437,7 +441,6 @@ class MarkerLayer extends OverlayLayer {
                     minY: y,
                     maxX: x,
                     maxY: y,
-                    z: d.z,
                     id: d.id,
                 };
                 this.#spatialMarkerIndex.insert(markerItem);
@@ -466,11 +469,16 @@ class MarkerLayer extends OverlayLayer {
                     minY: y,
                     maxX: x,
                     maxY: y,
-                    z: d.z,
                     id: d.id,
                 };
                 this.#spatialMarkerIndex.insert(markerItem);
                 this.#annotationIdToMarker.set(d.id, markerItem);
+            }
+
+            if (marker.z!==d.z) { 
+                marker.z=d.z;
+                this.#setMarkerZVisibility(this.#markerList[d.id]);
+                changed = true;
             }
             
             if (marker.mclass!==d.mclass) {
@@ -525,6 +533,11 @@ class MarkerLayer extends OverlayLayer {
         }).remove();
     }
 
+    #setMarkerZVisibility(marker) {
+        const vis=(marker.pressed || this.#zVisibility || marker.z==tmapp.getFocusLevel());
+        marker.visible = vis;
+        marker.interactive = vis;
+    }
 
     /**
      * Clear all annotations currently in the overlay, in case you need to quickly replace them.
