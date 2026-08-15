@@ -17,23 +17,10 @@ const fs = require("fs");
 const fsPromises = fs.promises;
 
 // Directory where the data can be found
-let dataDir;
-
-// The current subdirectory
-let activePath = "";
-let activeDir;
+let dataDir; // Set on creation only
 
 // HttpDirectory where the data can be accessed
 const dataOutDir = "data"; // Must match Cytobrowser served directory
-
-// Where the data was last updated
-let lastUpdateDir = null;
-
-// Time when the data was last altered
-let lastUpdate = 0;
-
-// Whether or not the data failed to load the last time we tried
-let lastUpdateFailed = false;
 
 // Variable to cache the available images
 let availableImages = null;
@@ -49,6 +36,9 @@ function _isFile(dirent) {
 }
 function _isDirectory(dirent) {
     return dirent.isDirectory() || (dirent.isSymbolicLink() && fs.statSync(path.join(dirent.parentPath,dirent.name), {throwIfNoEntry: false})?.isDirectory());
+}
+function _path2dir(inPath) { 
+    return path.join(dataDir,inPath);
 }
 
 function getZLevels(dir, image) {
@@ -68,13 +58,14 @@ function getZLevels(dir, image) {
  * The overview image is found by looking for the largest image scale that
  * only contains a single image. The detail image is found by taking a tile
  * near the center of an image at the smallest scale over a certain limit.
+ * @param {string} inPath
  * @param {Array<fs.Dirent>} dir The content of the data (sub)directory.
  * @param {Object} image The image data of the image for which thumbnails
  * should be found.
  * Thumbnails are returned in image.thumbnails={overview: string, detail: string}
  * @returns {Promise} Promise that resolves once the data is stored.
 */
-async function getThumbnails(dir, image) {
+async function getThumbnails(inPath, dir, image) {
     // Find the file directories for the image name
     const nameFilter = RegExp(`^${path.basename(image.name)}.*_files$`);
     const names = dir.filter(dirent => _isDirectory(dirent) && nameFilter.test(dirent.name))
@@ -82,7 +73,7 @@ async function getThumbnails(dir, image) {
 
     // Look through the middle file directory
     const fileDir = names[Math.floor(names.length / 2)];
-    return fsPromises.readdir(path.join(activeDir,fileDir), {withFileTypes: true})
+    return fsPromises.readdir(path.join(dataDir,inPath,fileDir), {withFileTypes: true})
     .then((dir)=>{
         // Directories only
         dir = dir.filter(dirent => _isDirectory(dirent))
@@ -91,18 +82,17 @@ async function getThumbnails(dir, image) {
         dir = dir.sort((a, b) => +a - +b);
 
         // Look through each directory to find thumbnails
-        let idx = 0;
         let remainingZooms = 4;
         const maxTiles = 200;
         const thumbnails = {overview: null, detail: null};
         image.thumbnails = thumbnails;
 
-        async function findThumbnails(){
+        async function findThumbnails(idx){
             if (idx === dir.length) {
                 return;
             }
-            const inpath = path.join(dataDir,activePath,fileDir,dir[idx]);
-            const outpath = path.join(dataOutDir,activePath,fileDir,dir[idx]);
+            const inpath = path.join(dataDir,inPath,fileDir,dir[idx]);
+            const outpath = path.join(dataOutDir,inPath,fileDir,dir[idx]);
             return fsPromises.readdir(inpath)
                 .then( (dir) => {
                     // Store suitable thumbnails
@@ -128,9 +118,9 @@ async function getThumbnails(dir, image) {
                     // Check if all thumbnails have been found
                     if (!(thumbnails.overview && thumbnails.detail)
                         || remainingZooms > 0
-                        && dir.length < maxTiles) {
-                        idx++;
-                        return findThumbnails();
+                        && dir.length < maxTiles) 
+                    {
+                        return findThumbnails(idx+1);
                     }
                 })
                 .catch( (err) => { //failure to read subdir
@@ -138,7 +128,7 @@ async function getThumbnails(dir, image) {
                     console.error(err.toString());
                 });
         }
-        return findThumbnails();
+        return findThumbnails(0);
     })
     .catch((err) => { //failure to read main dir
         // TODO: Handle errors
@@ -146,25 +136,24 @@ async function getThumbnails(dir, image) {
     });
 }
 
-function handleDirError(err) {
-    lastUpdateFailed = true;
+function handleDirError(err,inPath) {
     if (err.code === "ENOENT") {
-        console.error(`WARNING -- The specified data directory \`${activeDir}\` does not exist.`);
-        availableImages = {images: [], missingDataDir: true};
+        console.error(`WARNING -- The specified data directory \`${_path2dir(inPath)}\` does not exist.`);
     }
     else {
         console.error(err.toString());
-        availableImages = null;
     }
+    return availableImages = {path: inPath, images: [], missingDataDir: true};
 }
 
 /**
  * Update the cached image information. This function stores information
  * about the existing images in availableImages, which can be retrieved
  * multiple times without having to call this function again.
+ * @returns {availableImages} 
  */
-async function updateImages() {
-    return fsPromises.readdir(activeDir, {withFileTypes: true})
+async function updateImages(inPath) {
+    return fsPromises.readdir(_path2dir(inPath), {withFileTypes: true})
     .then( (dir) => {
         const images = [];
         {
@@ -172,32 +161,30 @@ async function updateImages() {
                 .map(dirent => dirent.name.match(nameEx)).flat(); // One hit for each z-level
             names = names.filter(name => name !== null);
             const uniqueNames = [... new Set(names)];
-            uniqueNames.map(name => images.push({name: path.join(activePath,name)}));
+            uniqueNames.map(name => images.push({name: path.join(inPath,name)}));
         }
 
-        // All non '*z-?[0-9]+_files' directories; relative paths (from activePath are returned)
+        // All non '*z-?[0-9]+_files' directories; relative paths (from inPath are returned)
         const directories = [];
-        if (activePath != path.normalize('')) {
-            directories.push({name: '..', path: path.join(activePath,'..')});
+        if (inPath != path.normalize('')) {
+            directories.push({name: '..', path: path.join(inPath,'..')});
         }
         {
             dir.filter(dirent => _isDirectory(dirent) && !filesEx.test(dirent.name))
-            .map(dirent => directories.push({name: dirent.name, path: path.join(activePath,dirent.name)}));
+            .map(dirent => directories.push({name: dirent.name, path: path.join(inPath,dirent.name)}));
         }
 
-        return Promise.all(images.map(image => {
+        return Promise.all(images.map(image => { //fill in thumbs into the images array
             getZLevels(dir, image);
-            return getThumbnails(dir, image);
+            return getThumbnails(inPath, dir, image);
         }))
             .then( () => {
-                availableImages = {images: images, directories: directories};
-                lastUpdateDir = activeDir;
-                lastUpdateFailed = false;
+                return availableImages = {path: inPath, images: images, directories: directories};
             } );
     })
     .catch( (err) => {
         console.error(err.toString());
-        handleDirError(err);
+        return handleDirError(err,inPath);
     });
 }
 
@@ -205,16 +192,26 @@ async function updateImages() {
  * Look to see if any data has changed since the last time it was
  * collected. If it has, fetch the new data.
  */
-async function checkForDataUpdates(forceUpdate=false) {
-    return fsPromises.stat(activeDir)
-    .then( (stats) => {
-        if (activeDir !== lastUpdateDir || lastUpdateFailed || forceUpdate ) {
-            return updateImages();
-        }
-    })
-    .catch( (err) => {
-        handleDirError(err);
-    });
+let lastCtime=null;
+let updateTimeoutID=null;
+async function checkForDataUpdates(inPath='.',forceUpdate=false) {
+    if (updateTimeoutID) {
+        clearTimeout(updateTimeoutID);
+        updateTimeoutID=null;
+    }
+    updateTimeoutID=setTimeout(() => {checkForDataUpdates(inPath);}, 10000); //Do stat every 10s, with last used path
+
+    return fsPromises.stat(_path2dir(inPath))
+        .then( (stats) => {
+            const dirCtime = stats.ctime.getTime();
+            if (forceUpdate || inPath !== availableImages?.path || dirCtime !== lastCtime) {
+                lastCtime=dirCtime;
+                return updateImages(inPath);
+            }
+        })
+        .catch( (err) => { //stat fail
+            return handleDirError(err,inPath);
+        });
 }
 
 /**
@@ -226,18 +223,15 @@ async function checkForDataUpdates(forceUpdate=false) {
  * 
  * We expect **sanitized** inPath!
  */
-async function getAvailableImages(inPath='') {
+async function getAvailableImages(inPath='.') {
     // console.log('Asking for images: ',inPath);
-    if (inPath === activePath) {
+    if (availableImages?.path === inPath) { //use cache if same path
+        // console.log('Using cache: ',availableImages);
         return availableImages;
     }
     else { //rescan if new directory
-        activePath = inPath;
-        activeDir = path.join(dataDir,activePath);
-        // console.log('Scanning for images: ',activeDir);
-        await checkForDataUpdates();
-        // console.log('Got images: ',availableImages);
-        return availableImages;
+        // console.log('Scanning for images: ',inPath);
+        return checkForDataUpdates(inPath, true); 
     }
 }
 
@@ -246,8 +240,6 @@ module.exports = function(dir) {
         throw new Error("A data directory has to be specified.");
     }
     dataDir = dir;
-    activeDir = dir;
     checkForDataUpdates();
-    setInterval(checkForDataUpdates, 10000); //Check every 10s
     return getAvailableImages;
 }

@@ -59,7 +59,7 @@ function pathSanitize(inPath = '') {
 }
 
 
-const availableImages = require("./server/availableImages")(dataDir);
+const availableImages = require("./server/availableImages")(dataDir); //return function to look for images
 const collaboration = require("./server/collaboration")(collabDir, metadataDir);
 const { version : serverVersion } = require("./package.json");
 
