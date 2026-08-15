@@ -18,6 +18,7 @@ class MarkerLayer extends OverlayLayer {
     #maxScale;
     #markerScale = 1; //Modifcation factor
     #markerTextures = null;
+    #zVisibility = true;
 
     #overlayObject = null; //For destroy
     #stage = null; //Pixi stage
@@ -26,7 +27,7 @@ class MarkerLayer extends OverlayLayer {
     #drawUpdate = null; //Rendring update function
 
     #spatialMarkerIndex = new RBush();
-    #annotationIdToMarker = new Map();
+    #annotationIdToMarker = new Map(); //isn't this just partly duplicating markerList? (JL 260815)
     
     #markerOverlay;
     #markerContainer = null;
@@ -82,8 +83,8 @@ class MarkerLayer extends OverlayLayer {
             }
         });
 
-        pixiOverlay._app.ticker.add(() => {
-            this.#cullMarkers();
+        pixiOverlay._app.ticker.add(() => { // cull during spare time
+            this.#cullMarkers(undefined,!this.#zVisibility);
         });
     }
 
@@ -153,13 +154,17 @@ class MarkerLayer extends OverlayLayer {
     /**
      * Set marker visible if inside rectangle, or pressed
      * @param {Rectangle} rect in Screen/Web coordinates, typically this.#renderer.screen
+     * @param {bool} cull_z if to only show current z-level
      */
     #first=true;
     #oldUl={};
     #oldDr={};
-    #cullMarkers(rect = this.#renderer.screen) {
+    #oldZ=null;
+    #visibleMarkers2D=null; //in the 2D bbox 
+    #cullMarkers(rect = this.#renderer.screen, cull_z = false) {
         if (this.#markerContainer.children.length) {
-            //Check if the view actually changed
+            //Check if the view changed
+            let change2D=false;
             const ul=coordinateHelper.overlayToWeb({x:0,y:0});
             const dr=coordinateHelper.overlayToWeb({x:1000,y:1000});
             ul.x = Math.round(ul.x);
@@ -186,12 +191,19 @@ class MarkerLayer extends OverlayLayer {
                     minX: Math.min(...xs),
                     minY: Math.min(...ys),
                     maxX: Math.max(...xs),
-                    maxY: Math.max(...ys)
+                    maxY: Math.max(...ys),
                 };
-                const visibleMarkers = this.#spatialMarkerIndex.search(bbox);
+                this.#visibleMarkers2D = this.#spatialMarkerIndex.search(bbox); //array
+                change2D=true;
+            }
+            const z=cull_z?tmapp.getFocusLevel():null;
+            if (change2D || this.#oldZ!=z) { //if 2D-change or z-change
+                this.#oldZ = z;
                 const visibleIDs = new Set();
-                for (const m of visibleMarkers) {
-                    visibleIDs.add(m.id);
+                for (const m of this.#visibleMarkers2D) {
+                    if (!cull_z || this.#markerList[m.id].z===z) {
+                        visibleIDs.add(m.id);
+                    }
                 }
 
                 let vis = 0;
@@ -210,8 +222,7 @@ class MarkerLayer extends OverlayLayer {
             }
         }
     }
-
-    
+   
     #resizeMarkers() {
 //        console.log('Resize: ',this.#markerSize);
         this.#markerContainer.children.forEach(c => {
@@ -378,6 +389,7 @@ class MarkerLayer extends OverlayLayer {
         sprite.id = d.id;
         sprite.mclass = d.mclass;
         sprite.hitArea = texture.hitArea;
+        sprite.z = d.z;
 
         this.#addMarkerInteraction(d, sprite, sprite);
         this.#markerContainer.addChild(sprite);
@@ -419,6 +431,7 @@ class MarkerLayer extends OverlayLayer {
             .each(d => {
                 // console.log('AID: ',d.id,duration);
                 this.#markerList[d.id]=this.#pixiMarker(d,duration);
+                this.#setMarkerZVisibility(this.#markerList[d.id]); //if added outside visibleZ
 
                 // Add marker to spatial index and ID map
                 const x = d.points[0].x;
@@ -461,6 +474,12 @@ class MarkerLayer extends OverlayLayer {
                 this.#spatialMarkerIndex.insert(markerItem);
                 this.#annotationIdToMarker.set(d.id, markerItem);
             }
+
+            if (marker.z!==d.z) { 
+                marker.z=d.z;
+                this.#setMarkerZVisibility(this.#markerList[d.id]);
+                changed = true;
+            }
             
             if (marker.mclass!==d.mclass) {
                 marker.texture = this.#markerTextures[d.mclass];
@@ -486,8 +505,9 @@ class MarkerLayer extends OverlayLayer {
     }
 
     #exitMarker(exit) {
+        const duration=Math.round(100/(1+exit.size())); //The more markers the shorter animation
         return exit.each(d => {
-            // console.log('EID:',d.id);
+            // console.log('EID:',d.id,duration);
             const marker = this.#markerList[d.id]
             if (!marker) {
                 console.log(`EXIT: Marker #${d.id} lost before exit, probably from clearAnnotation.`);
@@ -496,10 +516,15 @@ class MarkerLayer extends OverlayLayer {
             Ease.ease.removeEase(marker);
             marker.interactive = false;
             if (!marker.destroyed) {
-                Ease.ease.add(marker,{scale:marker.scale.x*1.5},{duration:30})
-                    .once('complete', (ease) => {
-                        ease.elements.forEach(item=>item.destroy({children: true, texture: false})); //Self destruct after animation
-                    });
+                if (duration > 0) {
+                    Ease.ease.add(marker,{scale:marker.scale.x*1.5},{duration:duration})
+                        .once('complete', (ease) => {
+                            ease.elements.forEach(item=>item.destroy({children: true, texture: false})); //Self destruct after animation
+                        });
+                }
+                else {
+                    marker.destroy({children: true, texture: false});
+                }
             }
             delete this.#markerList[d.id];
             const existingMarker = this.#annotationIdToMarker.get(d.id);
@@ -508,6 +533,11 @@ class MarkerLayer extends OverlayLayer {
         }).remove();
     }
 
+    #setMarkerZVisibility(marker) {
+        const vis=(marker.pressed || this.#zVisibility || marker.z==tmapp.getFocusLevel());
+        marker.visible = vis;
+        marker.interactive = vis;
+    }
 
     /**
      * Clear all annotations currently in the overlay, in case you need to quickly replace them.
@@ -610,6 +640,9 @@ class MarkerLayer extends OverlayLayer {
     }
 
 
+    setAnnotationZVisibility(visible) {
+        this.#zVisibility = visible;
+    }
 
     #alpha(obj,s) {
         Ease.ease.add(obj,{alpha:s},{duration:200});
