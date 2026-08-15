@@ -352,7 +352,7 @@
       <div class="modal-dialog modal-xl modal-scale-95" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Select an image</h5>
+                    <h5 class="modal-title">Select an image <i class="fa fa-chevron-right p-0 px-1 m-0 text-muted"></i> <span id="active_path"></span></h5>
                     <div class="d-flex">
                         <button id="image_list_refresh" class="btn btn-link" type="button" title="Refresh">
                             Refresh
@@ -957,10 +957,13 @@
 
         // Options when initializing tmapp
         const tmappOptions = {};
-        const {imageName, collab, state}=tmapp.parseURL(new URL(window.location.href));
+        const {imageName, folderName, collab, state}=tmapp.parseURL(new URL(window.location.href));
 
         if (imageName !== null) {
             tmappOptions.imageName = imageName;
+        }
+        if (folderName !== null) {
+            tmappOptions.folderName = folderName; // Only used if no imageName
         }
         if (collab !== null) {
             tmappOptions.collab = collab;

@@ -9,20 +9,28 @@
 
 const fs = require("fs");
 const fsPromises = fs.promises;
+const path = require('node:path');
 const sanitize = require("sanitize-filename");
+function pathSanitize(inPath = '') {
+    const pathSegments = inPath.split('/');
+    const sanitizedPath = pathSegments.map(str => sanitize(str));
+    const joinedPath = path.join(...sanitizedPath); 
+    return joinedPath;
+}
+
 const historyTracker = require("./historyTracker");
 
 const idPattern = /(?<=_)[^_]*(?=\.json$)/;
 let autosaveDir;
 
 function getSubDirName(image) {
-    const sanitizedImage = sanitize(String(image));
+    const sanitizedImage = pathSanitize(String(image));
     return sanitizedImage;
 }
 
 function getFilename(id, image) {
     const sanitizedId = sanitize(String(id));
-    const sanitizedImage = sanitize(String(image));
+    const sanitizedImage = sanitize(path.basename(String(image)));
     return `${sanitizedImage}_${sanitizedId}`;
 }
 

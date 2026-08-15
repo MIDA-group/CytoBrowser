@@ -48,7 +48,18 @@ if (argv.h || argv.help) {
 
 // Declare required modules
 const express = require("express");
-const availableImages = require("./server/availableImages")(dataDir);
+const path = require('node:path');
+const sanitize = require("sanitize-filename"); // Sanitize web-input as early as possible
+// Since sanitize doesn't have an option to allow '/', we divide and conquer 
+function pathSanitize(inPath = '') {
+    const pathSegments = inPath.split('/');
+    const sanitizedPath = pathSegments.map(str => sanitize(str));
+    const joinedPath = path.join(...sanitizedPath); 
+    return joinedPath;
+}
+
+
+const availableImages = require("./server/availableImages")(dataDir); //return function to look for images
 const collaboration = require("./server/collaboration")(collabDir, metadataDir);
 const { version : serverVersion } = require("./package.json");
 
@@ -62,7 +73,7 @@ console.info('Serving resources from: ',publicPath);
 app.use(express.static(publicPath));
 
 console.info('Serving image data from: ',dataDir);
-app.use("/data", express.static(dataDir));
+app.use("/data", express.static(dataDir)); // Corresponds to dataOutDir in availableImages.js
 app.use(express.json());
 
 // Serve the index page at the root
@@ -76,18 +87,22 @@ app.get("/api/serverVersion", (req, res) => {
     res.json({serverVersion});
 });
 
-// Get a list of available images
-app.get("/api/images", (req, res) => {
+// Get a list of available images, and image subdirectories
+app.get("/api/images{/*path}", (req, res) => {
     // Get the available images and send them as a response
-    const images = availableImages();
-    if (images === null) {
-        res.status(500);
-        res.send("The server was unable to find images.");
-    }
-    else {
-        res.status(200);
-        res.json(images);
-    }
+    const sanitizedPath=req.params.path?.map(str => sanitize(str)) ?? '';
+    const joinedPath = path.join(...sanitizedPath); 
+
+    availableImages(joinedPath).then(images => {
+        if (images === null) {
+            res.status(500);
+            res.send("The server was unable to find images.");
+        }
+        else {
+            res.status(200);
+            res.json(images);
+        }
+    });
 });
 
 // Get an unused collaboration id
@@ -99,7 +114,7 @@ app.get("/api/collaboration/id", (req, res) => {
 
 // Get a list of existing collaborations
 app.get("/api/collaboration/available", (req, res) => {
-    const image = req.query.image;
+    const image = pathSanitize(req.query.image);
     collaboration.getAvailable(image).then(available => {
         res.status(200);
         res.json({available});
@@ -111,10 +126,12 @@ app.get("/api/collaboration/available", (req, res) => {
 
 // Add websocket endpoints for collaboration
 app.ws("/collaboration/:id", (ws, req) => {
-    const id = req.params.id;
-    const image = req.query.image ? req.query.image : null;
-    const userId = req.query.userId ? req.query.userId : null;
-    const name = req.query.name || "Unnamed";
+    const id = sanitize(req.params.id);
+    const image = req.query.image ? pathSanitize(req.query.image) : null;
+    const userId = req.query.userId ? sanitize(req.query.userId) : null;
+    const name = req.query.name? sanitize(req.query.name) : "Unnamed";
+
+    console.log(`"${name}" joining collab [${id}] for image "${image}"`);
     collaboration.joinCollab(ws, name, userId, id, image);
 
     ws.on("message", msg => {

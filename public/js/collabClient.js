@@ -395,8 +395,8 @@ const collabClient = (function(){
             }
             setTimeout(disconnect(),100); //let the swap message be sent
         }
-        _ongoingDestruction = _ongoingDestruction.then(() => {
-            console.log('destructed');
+        // If descrution ongoing, wait for it, otherwise just run (the promise is resolved from the start)
+        _ongoingDestruction = _ongoingDestruction.then(() => { 
             const wsProtocol = (window.location.protocol === 'https:')?'wss://':'ws://';
             const imageName = tmapp.getImageName();
             const address = `${window.location.host}${window.location.dirname}/collaboration/` +
@@ -404,7 +404,7 @@ const collabClient = (function(){
                 `&userId=${_userId ? _userId : ""}`;
             const ws = new WebSocket(wsProtocol+address);
             ws.onopen = function(event) {
-                console.info(`Successfully connected to collaboration ${id}.`);
+                console.info(`Successfully connected to collaboration ${id} for image ${imageName}.`);
                 retryCount.set(0);
                 tmappUI.clearImageError();
 

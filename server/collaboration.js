@@ -4,8 +4,6 @@
  * different users of the CytoBrowser.
  */
 
-const sanitize = require("sanitize-filename");
-
 
 const autosaveTimeout = 10000; //Autosave timeout in ms
 
@@ -49,7 +47,7 @@ class Collaboration {
         this.ongoingLoad = new Promise(r => r()); // Dummy promise just in case
         this.hasUnsavedChanges = false;
         this.loadState(false);
-        this.log(`Initializing collaboration.`, console.info);
+        this.log(`Initializing collaboration: image ${image}.`, console.info);
         this.classConfig = [];
     }
 
@@ -142,6 +140,7 @@ class Collaboration {
     }
 
     handleMessage(sender, msg) {
+        // console.log('Handle: ',msg);
         // Keep track of the member that sent the message
         const member = this.members.get(sender);
         switch (msg.type) {
@@ -521,10 +520,11 @@ function getId() {
  * @param {string} id ID of the collab being joined.
  * @param {string} image Name of the image observed in the collab. Only
  * has an effect if the collaboration has not been created yet.
+ * 
+ * We expect **sanitized** image name!
  */
 function joinCollab(ws, name, userId, id, image) {
-    const cleanImage = sanitize(image);
-    const collab = getCollab(id, cleanImage, name);
+    const collab = getCollab(id, image, name);
     collab.addMember(ws, name, userId);
 }
 
@@ -568,10 +568,11 @@ function handleMessage(ws, id, msg) {
  * @param {string} image The name of the image.
  * @returns {Promise<Array<Object>>} A promise of the list of available
  * image ids and their names.
+ * 
+ * We expect **sanitized** image name!
  */
 function getAvailable(image) {
-    const cleanImage = sanitize(image);
-    return autosave.getSavedCollabInfo(cleanImage).then(available => {
+    return autosave.getSavedCollabInfo(image).then(available => {
         available.forEach(info => {
             if (collabs[info.id]) {
                 const collab = collabs[info.id];

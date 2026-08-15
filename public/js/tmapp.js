@@ -7,6 +7,8 @@ const tmapp = (function() {
     "use strict";
 
     const _imageDir = "data/";
+    let _activePath = "";
+
     const _optionsOSD = {
         id: "ISS_viewer", //cybr_viewer
         prefixUrl: "js/openseadragon/images/", //Location of button graphics
@@ -212,6 +214,7 @@ const tmapp = (function() {
             targetY!=null && params.set("y", roundTo(targetY, 5));
             z!=null && params.set("z", z);
             targetRotation!=null && params.set("rotation", targetRotation||0);
+            update || params.delete("folder");
         }
         update || (_collab ? params.set("collab", _collab) : params.delete("collab"));
         urlCache=url;
@@ -225,6 +228,7 @@ const tmapp = (function() {
         // Get params from URL
         const params = url.searchParams;
         const imageName = params.get("image");
+        const folderName = params.get("folder"); // In general, if imageName, then ignore folderName
         const collab = params.get("collab");
         const state = {
             zoom: params.get("zoom"),
@@ -233,12 +237,12 @@ const tmapp = (function() {
             z: params.get("z"),
             rotation: params.get("rotation")
         };
-        return {imageName, collab, state};
+        return {imageName, folderName, collab, state};
     }
 
     // Immediate moveTo from URL 
     function processURL(url) {
-        const {imageName, collab, state}=parseURL(url);
+        const {imageName, folderName, collab, state}=parseURL(url);
         if (imageName) { 
             if (_currentImage && imageName===_currentImage.name) { // Same image
                 if (collab) { // Annotations need an image
@@ -260,6 +264,9 @@ const tmapp = (function() {
                     moveTo(state ?? _defaultState, true);
                 });
             }
+        }
+        else if (folderName && !imageName) {
+            _openFolder(folderName);
         }
         else {
             if (collab) {
@@ -637,6 +644,11 @@ const tmapp = (function() {
         _currentImage = null;
     }
 
+    // Image picker / image browser
+    function _openFolder(folderName = _activePath) {
+        _activePath = folderName;
+        $("#image_browser").modal();
+    }
 
 /**
  * Fetch images from the server api endpoint
@@ -646,7 +658,7 @@ const tmapp = (function() {
 function _fetchImages(callback) {
     // Initiate a HTTP request and send it to the image info endpoint
     const req = new XMLHttpRequest();
-    req.open("GET", window.location.api + "/images", true);
+    req.open("GET", window.location.api + "/images/" + _activePath, true);
 
     // Avoid cached responses
     req.setRequestHeader("Cache-Control", "no-cache, no-store, must-revalidate, max-age=0"); // HTTP 1.1
@@ -681,6 +693,8 @@ function _fetchImages(callback) {
      * the URL.
      * @param {string} options.imageName The name of the initial image
      * to be opened.
+     * @param {string} options.folderName The name of the subdirectory 
+     * where to look for images (only if no imageName).
      * @param {string} options.collab The id of the initial collab.
      * @param {Object} options.initialState The initial viewport state.
      * @param {number} options.initialState.x X position of viewport.
@@ -688,8 +702,15 @@ function _fetchImages(callback) {
      * @param {number} options.initialState.z Z level in viewport.
      * @param {number} options.initialState.zoom Zoom in viewport.
      */
-    
-    function init({ imageName, collab, initialState }) {
+    function init({ imageName, folderName, collab, initialState }) {
+        if (imageName) {
+            _activePath = imageName.substring(0, imageName.lastIndexOf('/'));
+        }
+        else if (folderName) {
+            _activePath = folderName;
+        }
+        if (_activePath === ".") _activePath=""; // To keep names the same
+
         _fetchImages((err, response) => {
             tmappUI.setUserName(userInfo.getName());
 
@@ -701,15 +722,15 @@ function _fetchImages(callback) {
 
             const missingDataDir = response.missingDataDir;
             const images = response.images || [];
-
-            tmappUI.updateImageBrowser(images);
+            const directories = response.directories || [];
             _images = images;
+            tmappUI.updateImageBrowser(images,directories);
 
             // Go to the initial image and/or join the collab
             if (missingDataDir) {
                 tmappUI.displayImageError("missingdatadir");
             }
-            else if (images.length === 0) {
+            else if (images.length === 0 && directories.length === 0) {
                 tmappUI.displayImageError("noavailableimages");
             }
             else if (imageName && collab) {
@@ -725,8 +746,11 @@ function _fetchImages(callback) {
                 });
             }
             else {
-                tmappUI.displayImageError("noimage");
-                $("#image_browser").modal();
+                if (!folderName) {
+                    tmappUI.displayImageError("noimage");
+                    $("#image_browser").modal(); // Open browser directly if neither image nor folder
+                }
+                _openFolder();
             }
         });
     }
@@ -1086,6 +1110,10 @@ function _fetchImages(callback) {
         }
     }
 
+    function getActivePath() {
+        return _activePath;
+    }
+
     /**
      * Refreshes the list of available images in the image browser.
      * Fetches image data from the server (/images), updates the
@@ -1102,13 +1130,15 @@ function _fetchImages(callback) {
 
             const missingDataDir = response.missingDataDir;
             const images = response.images || [];
-
+            const directories = response.directories || [];
             _images = images;
             tmappUI.clearImageBrowser();
-            tmappUI.updateImageBrowser(images);
+            tmappUI.updateImageBrowser(images,directories);
 
             if (missingDataDir) tmappUI.displayImageError("missingdatadir");
-            else if (images.length === 0) tmappUI.displayImageError("noavailableimages");
+            else if (images.length === 0 && directories.length === 0) {
+                tmappUI.displayImageError("noavailableimages");
+            }
             else tmappUI.clearImageError && tmappUI.clearImageError();
         });
     }
@@ -1117,6 +1147,7 @@ function _fetchImages(callback) {
     return {
         init,
         openImage,
+        getActivePath,
 
         moveTo,
         moveToDefaultState,
