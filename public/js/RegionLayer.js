@@ -312,11 +312,14 @@ class RegionLayer extends OverlayLayer {
             );
     }
 
-    #exitRegion(exit) {
-        return exit.transition("appear")
-            .duration(d => (this.#zVisibility || d.z === tmapp.getFocusLevel()) ? 200 : 0)
+    #exitRegion(exit) { //exit return value ignored in d3.join(...)
+        const animate = this.#zVisibility? exit: exit.filter(d=>d.z===tmapp.getFocusLevel());
+        const direct = this.#zVisibility? d3.select(null): exit.filter(d=>d.z!==tmapp.getFocusLevel());
+        animate.transition("appear")
+            .duration(200)
             .attr("opacity", 0)
             .remove();
+        direct.remove(); // Immediate remove required to avoid missing regions on quick back&forth z-changes
     }
 
 
