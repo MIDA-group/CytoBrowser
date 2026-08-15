@@ -505,9 +505,9 @@ class MarkerLayer extends OverlayLayer {
     }
 
     #exitMarker(exit) {
-        const duration=Math.round(30/(1+exit.size())); //The more markers the shorter animation
+        const duration=Math.round(100/(1+exit.size())); //The more markers the shorter animation
         return exit.each(d => {
-            // console.log('EID:',d.id);
+            // console.log('EID:',d.id,duration);
             const marker = this.#markerList[d.id]
             if (!marker) {
                 console.log(`EXIT: Marker #${d.id} lost before exit, probably from clearAnnotation.`);
