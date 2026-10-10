@@ -839,6 +839,7 @@ function _fetchImages(callback) {
 
     function moveToDefaultState() {
         moveTo(_defaultState);
+        _viewer.viewport.goHome();
     }
 
     function _defaultZoom(annotation) {

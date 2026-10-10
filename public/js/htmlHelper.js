@@ -368,17 +368,16 @@ const htmlHelper = (function() {
         return container;
     }
 
-    function _noWrapHyphens(string) {
-        return string.replaceAll("-", "&#8209;"); //non-wrapping hyphen, for ASC-US and similar
-    }
     function _classSelectionButton(mclass, active) {
         const active_color=_scaleRGB(mclass.color,0.5);
 
         //To set 'style="background-color: ${mclass.color};"' works here, but se we cannot use
         //pseudo-selectors (e.g. hover) in inline style, we do all colors below with CSS
+
+        //Note: Super strange bug in Chrome when using "&#8209;" for non-breaking hyphen (making zoom out non-centered)
         const button = $(`
             <label id="class_${mclass.name}" class="btn btn-dark px-0 px-md-1 px-lg-2" title="${mclass.description}">
-                <input type="radio" name="class_options" autocomplete="off">${_noWrapHyphens(mclass.name)}</input>
+                <input type="radio" name="class_options" autocomplete="off"><span class='no-break'>${mclass.name}</span></input>
                 <span class="badge badge-light mt-1 d-block" id="class_counter_${mclass.name}">0</span>
             </label>
         `);
