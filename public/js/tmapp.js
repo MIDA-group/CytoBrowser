@@ -65,7 +65,8 @@ const tmapp = (function() {
         _disabledControls=false, //showing controls and navigator
         _availableZLevels, //how is this different from _currentImage.zLevels?
         _mouseHandler,
-        _currentMouseUpdateFun=null;
+        _currentMouseUpdateFun=null,
+        _sortMode={ numeric: true }; //natural order (false => alphabetic order)
 
 
     //z = index-ofs
@@ -110,6 +111,18 @@ const tmapp = (function() {
     function setContrast(c) {
         _currState.contrast = c;
         _updateBrightnessContrast();
+    }
+
+    function setSortMode(m) {
+        _sortMode = m;
+        _sortImages(_images)
+        tmappUI.clearImageBrowser();
+        tmappUI.updateImageBrowser(_images);
+    }
+    function _sortImages(images) {
+        if (_sortMode) {
+            images.sort( (a, b) => new Intl.Collator("und", _sortMode).compare(a.name, b.name)); //numeric sort of name, no language
+        }
     }
 
     /**
@@ -701,6 +714,7 @@ function _fetchImages(callback) {
 
             const missingDataDir = response.missingDataDir;
             const images = response.images || [];
+            _sortImages(images);
 
             tmappUI.updateImageBrowser(images);
             _images = images;
@@ -1103,6 +1117,7 @@ function _fetchImages(callback) {
 
             const missingDataDir = response.missingDataDir;
             const images = response.images || [];
+            _sortImages(images);
 
             _images = images;
             tmappUI.clearImageBrowser();
@@ -1142,6 +1157,8 @@ function _fetchImages(callback) {
         setContrast,
         changeBrightness,
         changeContrast,
+
+        setSortMode,
 
         getImageName,
         updateCollabStatus,

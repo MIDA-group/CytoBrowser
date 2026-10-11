@@ -381,7 +381,7 @@ const tmappUI = (function(){
             else {
                 $("#fps").text('');
             }
-        }); 
+        });
 
         $("#log_switch").prop('checked',false); // force it to false, since some browsers cache it incorrectly
         $("#log_switch").change(function(e) {
@@ -393,7 +393,17 @@ const tmappUI = (function(){
             else {
                 _setLogWidth("0");
             }
-        }); 
+        });
+
+        $("#sort_switch").prop('checked',true); // force it to true
+        $("#sort_switch").change(function(e) {
+            if (e.target.checked) {
+                tmapp.setSortMode({ numeric: true });
+            }
+            else {
+                tmapp.setSortMode({ numeric: false });
+            }
+        });
     }
 
 

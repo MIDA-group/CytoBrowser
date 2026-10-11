@@ -437,6 +437,8 @@ const htmlHelper = (function() {
         return entry;
     }
 
+/////////////////////////////////////////////////////////////////////////////
+    
     function _emptyImageBrowser() {
         return $(`
             <div class="col-12 text-center">
@@ -503,6 +505,8 @@ const htmlHelper = (function() {
         images.forEach(image => row.append(_imageBrowserEntry(image)));
         return row;
     }
+
+/////////////////////////////////////////////////////////////////////////////
 
     /**
      * Fill a jquery selection with a comment section.

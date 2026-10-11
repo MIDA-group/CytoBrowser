@@ -351,9 +351,14 @@
     <div class="modal fade" id="image_browser" tabindex="-1" role="dialog">
       <div class="modal-dialog modal-xl modal-scale-95" role="document">
             <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Select an image</h5>
-                    <div class="d-flex">
+                <div class="modal-header" style="margin-top:-4px;">
+                    <div><h5 class="modal-title">Select an image</h5>
+                        <div class="custom-control custom-switch" style="margin-bottom:-12px;margin-top:4px;">
+                            <input type="checkbox" checked class="custom-control-input" id="sort_switch">
+                            <label class="custom-control-label px-1" for="sort_switch">Natural sorting order</label>
+                        </div>
+                    </div>
+                    <div class="d-flex" style="margin-top:-10px;">
                         <button id="image_list_refresh" class="btn btn-link" type="button" title="Refresh">
                             Refresh
                         </button>
