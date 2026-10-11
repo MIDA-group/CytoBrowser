@@ -16,8 +16,9 @@ You can try out a limited bandwidth live demo of the latest stable release (just
 
 #### Express setup
 1. Install [Node.js](https://nodejs.org/en/download) 
-2. Run `npx cytobrowser --open-browser`[^2]
+2. Run `npx cytobrowser --open-browser`[^2][^3]
 [^2]: If (on Windows) you get `ENOENT: no such file or directory...`, the try running `npm install -g npm`
+[^3]: With `npx` >= v12 you may need: `npx --allow-scripts=cytobrowser cytobrowser --open-browser`, to allow the postinstall script to run.
 
 Done! 😊
 
