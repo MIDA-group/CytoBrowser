@@ -250,11 +250,16 @@ const annotationTool = (function() {
      * @param {string} toolName The name of the tool being used.
      */
     function setTool(toolName) {
-        const tool = _tools[toolName];
-        if (tool)
-            _replaceTool(tool);
-        else
-            throw new Error("Invalid tool name.");
+        if (!toolName) {
+            _replaceTool(toolName);
+        } 
+        else {
+            const tool = _tools[toolName];
+            if (tool)
+                _replaceTool(tool);
+            else
+                throw new Error("Invalid tool name.");
+        }
     }
 
     /**

@@ -470,10 +470,7 @@ const htmlHelper = (function() {
             anchor.click(event => {
                 event.preventDefault();
                 entry.closest(".modal").modal("hide");
-                tmapp.openImage(image.name, () => {
-                    collabPicker.open(image.name, true); //forceChoice
-                    tmapp.moveToDefaultState();
-                });
+                tmapp.openImageAndCollab(image.name);
             });
             anchor.hover(
                 () => detail.addClass("show").removeClass("hide"),

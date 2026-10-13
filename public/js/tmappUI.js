@@ -231,9 +231,14 @@ const tmappUI = (function(){
     }
 
     function _initToolSelectionButtons() {
-        $("#tool_marker").addClass("active");
-        layerHandler.setActiveAnnotationOverlay("marker");
-        annotationTool.setTool("marker");
+        $("#tool_none").addClass("active");
+        layerHandler.setActiveAnnotationOverlay(null);
+        annotationTool.setTool(null);
+        $("#tool_none").click(() => {
+            console.log('None clicked!');
+            layerHandler.setActiveAnnotationOverlay(null);
+            annotationTool.setTool(null);
+        });
         $("#tool_marker").click(() => {
             layerHandler.setActiveAnnotationOverlay("marker");
             annotationTool.setTool("marker");
@@ -323,6 +328,11 @@ const tmappUI = (function(){
     function _initFocusButtonEvents() {
         $("#focus_next").click(tmapp.incrementFocus);
         $("#focus_prev").click(tmapp.decrementFocus);
+    }
+
+    function _initImageStepButtonEvents() {
+        $("#next-image").click(tmapp.openNextImage);
+        $("#prev-image").click(tmapp.openPrevImage);
     }
 
     function _initRefreshImagesButtonEvent() {
@@ -477,6 +487,9 @@ const tmappUI = (function(){
                 case 81: // q
                     $('#qr_toggle').click();
                     break;
+                case 80: // p
+                    $('#prev-image').click();
+                    break;
                 // ASDF...
                 case 70: // f
                     //catching 'f' to disable 'Flip' in OSD, we do not support it
@@ -496,6 +509,9 @@ const tmappUI = (function(){
                     break;
                 case 66: // b
                     $("#tool_poly").click();
+                    break;
+                case 78: // n
+                    $('#next-image').click();
                     break;
                 default:
                     caught=false; //Assume we miss the key
@@ -574,6 +590,7 @@ const tmappUI = (function(){
         _initAnnotationFiltering();
         _initQRButtonEvents();
         _initFocusButtonEvents();
+        _initImageStepButtonEvents();
         _initVisualizationSliders();
         _initKeyboardShortcuts();
         _initCollaborationMenu();

@@ -53,6 +53,7 @@ const tmapp = (function() {
 
     let _currentImage = null, //a focus stack
         _images, //list of images from image browser
+        _currentImageIdx, //index into _images
         _collab,
         _viewer, //the OSD-viewer
         _currState = { ..._defaultState },
@@ -620,6 +621,7 @@ const tmapp = (function() {
         markerOverlay.ready.then(() => {
             const markerLayer = new MarkerLayer("marker", markerOverlay);
             layerHandler.addLayer(markerLayer);
+            layerHandler.setActiveAnnotationOverlay(null);
         });
 
 
@@ -784,7 +786,8 @@ function _fetchImages(callback) {
             callback && callback();
         }
         else {
-            const image = _images.find(image => image.name === imageName);
+            _currentImageIdx = _images.findIndex(image => image.name === imageName);
+            const image = _images[_currentImageIdx];
             if (!image) {
                 tmappUI.displayImageError("badimage");
                 throw new Error(`Failed to open image ${imageName}.`);
@@ -794,6 +797,28 @@ function _fetchImages(callback) {
             _updateURLParams();
             _initOSD(image, callback); //setting _currentImage when done
         }
+    }
+
+    // Todo, allow escape back to previous state
+    function openImageAndCollab(imageName) {
+        openImage(imageName,() => {
+            collabPicker.open(imageName, true); //forceChoice
+            tmapp.moveToDefaultState();
+        });
+    }
+
+    function openNextImage() {
+        if (_currentImageIdx < _images.length-1) {
+            _currentImageIdx++;
+        }
+        openImageAndCollab(_images[_currentImageIdx].name);
+    }
+
+    function openPrevImage() {
+        if (_currentImageIdx > 0) {
+            _currentImageIdx--;
+        }
+        openImageAndCollab(_images[_currentImageIdx].name);
     }
 
     /**
@@ -1133,6 +1158,9 @@ function _fetchImages(callback) {
     return {
         init,
         openImage,
+        openImageAndCollab,
+        openNextImage,
+        openPrevImage,
 
         moveTo,
         moveToDefaultState,

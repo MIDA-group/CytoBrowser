@@ -140,14 +140,17 @@ const layerHandler = (function (){
 
     /**
      * Set which layer should be able to receive mouse events
-     * @param {string} name The name of the overlay, either "region" or
+     * @param {string|null} name The name of the overlay, either "region" or
      * "marker".
      */
     function setTopLayer(name) {
+        console.log('SetLayer',name);
         if (!_layers.length) return;
         _layers[0].blur();
-        _putLayerFirst(name)
-        _layers[0].focus();
+        if (name) {
+            _putLayerFirst(name)
+            _layers[0].focus();
+        }
     }
 
     function getTopLayer() {
