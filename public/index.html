@@ -266,17 +266,17 @@
                                 <h6 class="card-subtitle mb-0 mb-lg-1 text-muted">Annotation tool</h6>
                                 <div class="btn-toolbar" role="toolbar" aria-label="Toolbar with annotation button groups">
                                     <div class="btn-group btn-group-toggle d-flex mr-1" data-toggle="buttons" role="group" onkeydown="noArrows()">
-                                        <label id="tool_marker" type="button" class="btn btn-primary">
+                                        <label id="tool_marker" type="button" class="btn btn-primary tool-selection-group">
                                             <input name="tool_selection" type="radio" autocomplete="off">
                                             Marker
                                         </label>
                                     </div>
                                     <div class="btn-group btn-group-toggle d-flex" data-toggle="buttons" role="group" onkeydown="noArrows()">
-                                        <label id="tool_rect" type="button" class="btn btn-primary">
+                                        <label id="tool_rect" type="button" class="btn btn-primary tool-selection-group">
                                             <input name="tool_selection" type="radio" autocomplete="off">
                                             Rectangle
                                         </label>
-                                        <label id="tool_poly" type="button" class="btn btn-primary">
+                                        <label id="tool_poly" type="button" class="btn btn-primary tool-selection-group">
                                             <input name="tool_selection" type="radio" autocomplete="off">
                                             Polygon
                                         </label>
@@ -934,6 +934,24 @@
             $("#right_toolbar_collapse").removeClass("width");
         }
     }
+
+    // Only one active button among disconnected groups
+    function joinButtonGroups(groupSelector) {
+        document.querySelectorAll(groupSelector).forEach(button => {
+            button.addEventListener('click', () => {
+                // Remove 'active' class from all buttons in all linked groups
+                document.querySelectorAll(groupSelector).forEach(btn => {
+                    btn.classList.remove('active');
+                    btn.setAttribute('aria-pressed', 'false');
+                });
+                
+                // Add 'active' class to the clicked button
+                button.classList.add('active');
+                button.setAttribute('aria-pressed', 'true');
+            });
+        });
+    }
+    joinButtonGroups('.tool-selection-group');
 
     // Make space for scrollbar 
     function updateScrollbarState(el) {
