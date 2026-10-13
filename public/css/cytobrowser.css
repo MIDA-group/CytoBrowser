@@ -203,6 +203,10 @@ main {
 .btn-primary:focus {
     background-color: #AD1D28;
 }
+.tool-selection-group:not(.active):focus,
+.tool-selection-group:not(.active).focus {
+    background-color: #AD1D28;
+}
 
 
 
