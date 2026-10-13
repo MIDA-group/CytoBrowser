@@ -469,10 +469,10 @@ class RegionLayer extends OverlayLayer {
     /**
      * Called when layer is lowered away from top
      */
-    blur() {
+    blur(alpha=0.4) {
         this.#regionOverlay.style("pointer-events", "none")
                     .transition("highlight").duration(500)
-                    .style("opacity", 0.4);
+                    .style("opacity", alpha);
     }
 
     /**

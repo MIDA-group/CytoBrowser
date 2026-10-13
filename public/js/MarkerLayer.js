@@ -618,9 +618,9 @@ class MarkerLayer extends OverlayLayer {
     /**
      * Called when layer is lowered away from top
      */
-    blur() {
+    blur(alpha=0.4) {
         if (this.#markerContainer) {
-            this.#alpha(this.#markerContainer,0.4);
+            this.#alpha(this.#markerContainer,alpha);
             this.#markerContainer.eventMode='none';
         }
         this.#drawUpdate();

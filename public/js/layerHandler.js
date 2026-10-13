@@ -146,10 +146,13 @@ const layerHandler = (function (){
     function setTopLayer(name) {
         console.log('SetLayer',name);
         if (!_layers.length) return;
-        _layers[0].blur();
         if (name) {
+            _layers.forEach(x => x.blur());
             _putLayerFirst(name)
             _layers[0].focus();
+        }
+        else {
+            _layers.forEach(x => x.blur(0.8));
         }
     }
 
