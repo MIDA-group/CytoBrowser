@@ -248,3 +248,10 @@ thead th {
     transform: translateY(-1px);
     box-shadow: 0 2px 6px rgba(0,0,0,.3);
 }
+
+/* Handing post-click hover on touch devices looks confusing */
+@media (hover: none) {
+    .tool-selection-group:not(.active):hover {
+        background-color: #AD1D28;
+    }
+}
