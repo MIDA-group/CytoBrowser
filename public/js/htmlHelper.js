@@ -21,6 +21,8 @@ const htmlHelper = (function() {
         const divElem = document.createElement("span");
         viewer.addControl(divElem, {anchor: OpenSeadragon.ControlAnchor.ABSOLUTE});
         
+        divElem.parentElement.style.height = "100%"; //Otherwise 0
+
         divElem.id="focus_slider_div";
         divElem.style.position = "absolute";
         divElem.style.left = "0px";
@@ -45,7 +47,7 @@ const htmlHelper = (function() {
     
         $(`#focus_slider_${viewer.id}_internal`)
             .addClass("focus_slider_internal")
-            .css("height","max(100px,10%)");
+            .css("height","max(100px,18%)");
     }
 
     function updateFocusSlider(viewer,val0) {
@@ -54,6 +56,7 @@ const htmlHelper = (function() {
         obj.slider('setValue', val0);
         viewer.setControlsEnabled(); //Show controls, similar as for panning using keyboard
     }
+
 
 
     function _annotationButtonRow(id, closeFun) {
