@@ -65,6 +65,7 @@ const tmapp = (function() {
         },
         _disabledControls=false, //showing controls and navigator
         _availableZLevels, //how is this different from _currentImage.zLevels?
+        _annotationZVisibility=true,
         _mouseHandler,
         _currentMouseUpdateFun=null,
         _sortMode={ numeric: true }; //natural order (false => alphabetic order)
@@ -77,12 +78,20 @@ const tmapp = (function() {
         z = Math.min(Math.max(z,-ofs),count-1-ofs);
         setFocusIndex(z+ofs);
     }
+    function getFocusLevel() {
+        return _currState.z;
+    }
     function getFocusIndex() {
         return  _viewer.getFocusIndex(); //From the focus-levels plugin
     }
     function setFocusIndex(z0) {
         _viewer.setFocusIndex(z0);
         _updateFocus();
+    }
+
+    function setAnnotationZVisibility(visible) {
+        _annotationZVisibility = visible;
+        layerHandler.setAnnotationZVisibility(visible);
     }
 
     function _updateFocus() {
@@ -96,6 +105,8 @@ const tmapp = (function() {
         htmlHelper.updateFocusSlider(_viewer,index); 
         tmappUI.setImageZLevel(_currentImage.zLevels[index]); //Write in UI
         coordinateHelper.setImage(_viewer.world.getItemAt(index)); 
+        // If annotation z limit is active
+        if (!_annotationZVisibility) {annotationHandler.updateVisuals()};
         _updateCollabPosition();
         _updateURLParams();
     }
@@ -1180,6 +1191,8 @@ function _fetchImages(callback) {
         getZLevels,
         setFocusIndex,
         getFocusIndex,
+        getFocusLevel,
+        setAnnotationZVisibility,
 
         setBrightness,
         setContrast,
