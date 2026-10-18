@@ -124,7 +124,6 @@ const htmlHelper = (function() {
         $('.slider-tick-label').css('position', 'absolute');            
         $('.slider-tick').each(function(i) {
             const top = $(this).css('top');
-            console.log('xxx',top);
             $('.slider-tick-label').eq(i).css('top', top);
         });
     }
