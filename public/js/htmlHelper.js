@@ -13,7 +13,6 @@ const htmlHelper = (function() {
     /**
      * @param {*} viewer 
      * @param {array} zLevels 
-     * @returns element for OSD.addControl
      * Doc: https://seiyria.com/bootstrap-slider/
      */
     function buildFocusSlider(viewer,zLevels) {
@@ -22,6 +21,7 @@ const htmlHelper = (function() {
         viewer.addControl(divElem, {anchor: OpenSeadragon.ControlAnchor.ABSOLUTE});
         
         divElem.parentElement.style.height = "100%"; //Otherwise 0
+        divElem.parentElement.style.top = "0px";
 
         divElem.id="focus_slider_div";
         divElem.style.position = "absolute";
@@ -54,6 +54,89 @@ const htmlHelper = (function() {
         const obj=$(`#focus_slider_${viewer.id}`);
         if (!obj) return;
         obj.slider('setValue', val0);
+        viewer.setControlsEnabled(); //Show controls, similar as for panning using keyboard
+    }
+
+
+    /**
+     * @param {*} viewer 
+     * Doc: https://seiyria.com/bootstrap-slider/
+     */
+    function buildZoomSlider(viewer,zLevels) {
+        const divElem = document.createElement("span");
+        viewer.addControl(divElem, {anchor: OpenSeadragon.ControlAnchor.ABSOLUTE});
+     
+        divElem.parentElement.style.height = "100%"; //Otherwise 0
+        divElem.parentElement.style.position = "absolute";
+        divElem.parentElement.style.top = "0px";
+        divElem.parentElement.style.right = "0px";
+
+        divElem.id="zoom_slider_div";
+        divElem.style.position = "absolute";
+        divElem.style.left = "";
+        divElem.style.right = "0px";
+        divElem.style.top = "10px";
+        divElem.style.height = "100%";
+        divElem.style.margin = "7px";
+
+        const slider = `<input class="zoom_slider" id="zoom_slider_${viewer.id}" data-slider-id="zoom_slider_${viewer.id}_internal" type="text" data-slider-orientation="vertical"/>`
+        divElem.innerHTML=slider;
+        
+        function fmt(x) {
+            return Number(x.toPrecision(2)).toString();
+        }
+        // Slider values are log2(zoom)
+        const minZoom = viewer.viewport.getMinZoom()
+        const maxZoom = viewer.viewport.getMaxZoom();
+        const values = []; //[1,10,100,...]
+        for (let v = 1; v <= maxZoom; v *= 10) values.push(v);
+        
+        $(`#zoom_slider_${viewer.id}`).slider({
+                tooltip_position: 'left',
+                step:0.001,
+                reversed:true,
+                focus: true,
+
+                ticks: values.map(Math.log2),
+                ticks_labels: values.map(v => `${v}x`).reverse(),
+                ticks_snap_bounds: 0.5,
+
+                min:Math.log2(minZoom),
+                max:Math.log2(maxZoom),
+                value:Math.log2(viewer.viewport.getZoom(true)),
+                formatter: function(value) {
+                    return fmt(Math.pow(2,value)) + 'x'; // + '('+value+')';
+                }
+            })
+            .on('change', (data) => {
+                tmapp.moveTo({zoom:Math.pow(2,data.value.newValue)});
+                console.log({zoom:Math.pow(2,data.value.newValue)});
+            });
+    
+        $(`#zoom_slider_${viewer.id}_internal`)
+            .addClass("zoom_slider_internal")
+            .css({
+                height: 'max(100px,28%)',
+                position: 'absolute',
+                right: '0'
+            });
+
+        $('.slider-tick-label').css('position', 'absolute');            
+        $('.slider-tick').each(function(i) {
+            const top = $(this).css('top');
+            console.log('xxx',top);
+            $('.slider-tick-label').eq(i).css('top', top);
+        });
+    }
+
+    function updateZoomSlider(viewer,val0) {
+        const obj=$(`#zoom_slider_${viewer.id}`);
+        if (!obj) return;
+        obj.slider('setValue', Math.log2(val0));
+        obj.slider('showTooltip');
+        setTimeout(() => {
+            obj.slider('hideTooltip');
+        }, 1000);
         viewer.setControlsEnabled(); //Show controls, similar as for panning using keyboard
     }
 
@@ -650,6 +733,8 @@ const htmlHelper = (function() {
         buildImageBrowser,
 
         buildFocusSlider,
-        updateFocusSlider
+        updateFocusSlider,
+        buildZoomSlider,
+        updateZoomSlider
     };
 })();

@@ -168,6 +168,7 @@ const tmapp = (function() {
 
         _updateCollabPosition();
         _updateURLParams();
+        htmlHelper.updateZoomSlider(_viewer,currZoom);
         //console.log('zoom update',zoom)
     }
 
@@ -540,6 +541,10 @@ const tmapp = (function() {
             setNavSize();
             viewer.addHandler("after-resize", setNavSize);
 
+            htmlHelper.buildFocusSlider(_viewer, image.zLevels);
+            htmlHelper.buildZoomSlider(_viewer);
+
+
             tmappUI.clearImageError();
             callback && callback();
             viewer.canvas.focus(); //Focus again after the callback
@@ -590,8 +595,6 @@ const tmapp = (function() {
         _openImages(imageStack); //sets _availableZLevels     
         _addHandlers(_viewer, image, callback);
         
-        htmlHelper.buildFocusSlider(_viewer, image.zLevels);
-
         //Create a wrapper in which we place all overlays, s.t. we can switch with zIndex but still get Navigator and On-screen menu
         const overlayDiv = document.createElement('div');
         overlayDiv.id = 'overlay_div';
