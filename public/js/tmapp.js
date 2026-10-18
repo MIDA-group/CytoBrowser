@@ -628,8 +628,6 @@ const tmapp = (function() {
         });
 
 
-
-
         //PIXI.Ticker.shared.add(() => fps.frame());
 
         // var ticker = PIXI.Ticker.shared;
@@ -850,6 +848,15 @@ function _fetchImages(callback) {
             const max = _viewer.viewport.getMaxZoom();
             const boundZoom = capValue(zoom, min, max);
             _viewer.viewport.zoomTo(boundZoom, immediately);
+            
+            const homeZ = _viewer.viewport.getHomeZoom();
+            if (zoom <= homeZ) {
+                _viewer.viewport.goHome();
+            }
+            else {
+                _viewer.viewport.applyConstraints();
+            }
+
         }
         if (x !== undefined && y !== undefined) {
             const imageBounds = _viewer.world.getItemAt(0).getBounds();

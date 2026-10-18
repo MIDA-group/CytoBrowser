@@ -116,7 +116,7 @@ const htmlHelper = (function() {
         $(`#zoom_slider_${viewer.id}_internal`)
             .addClass("zoom_slider_internal")
             .css({
-                height: 'max(100px,28%)',
+                height: 'max(150px,27%)',
                 position: 'absolute',
                 right: '0'
             });
