@@ -438,14 +438,15 @@ const tmappUI = (function(){
             let caught=true; //Assume we use the key (setting to false in 'default')
             if (event.ctrlKey) {
                 switch (event.which) {
-                    case 38: //up-arrow     
+                    case 36: // home
+                        tmapp.moveToDefaultState();
+                        break;
+                    case 38: // up-arrow     
                         $("#focus_next").click();
                         break
-
                     case 40: // down-arrow
                         $("#focus_prev").click();
                         break
-
                     default:
                         caught = false;
                 }
@@ -455,6 +456,7 @@ const tmappUI = (function(){
                 }
                 return;
             }
+
             switch(event.which) {
                 case 27: // esc
                     if (annotationTool.isEditing()) {
@@ -482,7 +484,16 @@ const tmappUI = (function(){
                     else {
                         caught=false;
                     }
-                break;
+                    break;
+                case 33: // pgup
+                    tmapp.zoomBy(Math.sqrt(10));
+                    break;
+                case 34: // pgdn
+                    tmapp.zoomBy(Math.sqrt(0.1));
+                    break;
+                case 36: // home
+                    tmapp.goHome();
+                    break;
                 // QWER...
                 case 81: // q
                     $('#qr_toggle').click();

@@ -144,12 +144,19 @@ const tmapp = (function() {
         _viewer.world.draw();
     }
 
+    function _currZoom() {
+        return Math.round(_viewer.viewport.getZoom(true)*1000)/1000;
+    }
+    function _targetZoom() {
+        return _viewer.viewport.getZoom(false);
+    }
+
     function _updateZoom(init = false) {
         if (!_viewer) {
             throw new Error("Tried to update zoom of nonexistent viewer.");
         }
-        const currZoom = Math.round(_viewer.viewport.getZoom(true)*1000)/1000;
-        const targetZoom = _viewer.viewport.getZoom(false);
+        const currZoom = _currZoom();
+        const targetZoom = _targetZoom();
         if (!init && _currState.zoom === currZoom && _currState.targetZoom === targetZoom) return;
 
         if (targetZoom < _viewer.viewport.getMinZoom()) {
@@ -835,6 +842,8 @@ function _fetchImages(callback) {
      * @param {number} state.zoom The zoom in the viewport.
      */
     function moveTo(state, immediately=false) {
+        console.log('moveTo: ',state);
+        
         if (!state || state===_currState) {
             return; //nothing to do
         }
@@ -857,7 +866,6 @@ function _fetchImages(callback) {
             else {
                 _viewer.viewport.applyConstraints();
             }
-
         }
         if (x !== undefined && y !== undefined) {
             const imageBounds = _viewer.world.getItemAt(0).getBounds();
@@ -887,11 +895,19 @@ function _fetchImages(callback) {
         }
     }
 
+    function zoomBy(factor) {
+        moveTo({zoom: _targetZoom()*factor});
+    }
+
+    function goHome() {
+        _viewer.viewport.goHome();
+    }
+
     function moveToDefaultState() {
         moveTo(_defaultState);
         _viewer.viewport.goHome();
     }
-
+  
     function _defaultZoom(annotation) {
         const img_diag = _viewer.world.getItemAt(0).getContentSize().distanceTo(new OpenSeadragon.Point());
         return Math.pow(0.5*img_diag/(600+annotation.diameter),0.9);
@@ -1176,6 +1192,8 @@ function _fetchImages(callback) {
         moveTo,
         moveToDefaultState,
         moveToAnnotation,
+        zoomBy,
+        goHome,
         
         makeURL,
         parseURL,
