@@ -121,9 +121,11 @@ const htmlHelper = (function() {
                 right: '0'
             });
 
+        $('.slider-tick-label-container').css('height', '100%');            
         $('.slider-tick-label').css('position', 'absolute');            
         $('.slider-tick').each(function(i) {
-            const top = $(this).css('top');
+            // const top = $(this).css('top'); No, this is recomputed to pixels
+            const top = this.style.top;   // e.g. "37.5%"
             $('.slider-tick-label').eq(i).css('top', top);
         });
     }
