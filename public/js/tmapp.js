@@ -376,6 +376,7 @@ const tmapp = (function() {
         function moveHandler(event) {
             mouse_pos = event.position;
             updateMousePos();
+            _viewer.setControlsEnabled(true);
             _currentMouseUpdateFun = updateMousePos;
         }
 
