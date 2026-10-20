@@ -235,7 +235,6 @@ const tmappUI = (function(){
         layerHandler.setActiveAnnotationOverlay(null);
         annotationTool.setTool(null);
         $("#tool_none").click(() => {
-            console.log('None clicked!');
             layerHandler.setActiveAnnotationOverlay(null);
             annotationTool.setTool(null);
         });
@@ -435,6 +434,7 @@ const tmappUI = (function(){
         //1,2,... for class selection
         //z,x or ctrl up/down for focus up down
         $("#main_content").keydown(function(event){
+            const focused = document.activeElement;
             let caught=true; //Assume we use the key (setting to false in 'default')
             if (event.ctrlKey) {
                 switch (event.which) {
@@ -454,6 +454,7 @@ const tmappUI = (function(){
                 if (caught) {
                     event.preventDefault();
                 }
+                focused?.focus();
                 return;
             }
 
@@ -513,13 +514,28 @@ const tmappUI = (function(){
                     $("#focus_next").click();
                     break;
                 case 67: // c
-                    $("#tool_marker").click();
+                    if ($("#tool_marker").hasClass("active")) {
+                        $("#tool_none").click();
+                    }
+                    else {
+                        $("#tool_marker").click();
+                    }
                     break;
                 case 86: // v
-                    $("#tool_rect").click();
+                    if ($("#tool_rect").hasClass("active")) {
+                        $("#tool_none").click();
+                    }
+                    else {
+                        $("#tool_rect").click();
+                    }
                     break;
                 case 66: // b
-                    $("#tool_poly").click();
+                    if ($("#tool_poly").hasClass("active")) {
+                        $("#tool_none").click();
+                    }
+                    else {
+                        $("#tool_poly").click();
+                    }
                     break;
                 case 78: // n
                     $('#next-image').click();
@@ -531,7 +547,7 @@ const tmappUI = (function(){
                     const chars = digits.map(digit => digit.charCodeAt());
                     chars.slice(0, classUtils.count()).forEach((char, index) => {
                         if (event.which === char || event.which === char+48) {
-                            $("#class_" + classUtils.getClassFromID(index).name).click();
+                            $("#class_" + classUtils.getClassFromID(index).name+" input[type=radio]").click();
                             caught=true; //We did take it
                         }
                     });
@@ -542,6 +558,7 @@ const tmappUI = (function(){
             else {
                 tmapp.keyDownHandler(event); //Send events on to OSD (also if not in focus)
             }
+            focused?.focus();
         });
     }
 

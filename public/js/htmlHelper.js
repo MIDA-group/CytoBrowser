@@ -110,7 +110,7 @@ const htmlHelper = (function() {
             })
             .on('change', (data) => {
                 tmapp.moveTo({zoom:Math.pow(2,data.value.newValue)});
-                console.log({zoom:Math.pow(2,data.value.newValue)});
+                //console.log({zoom:Math.pow(2,data.value.newValue)});
             });
     
         $(`#zoom_slider_${viewer.id}_internal`)
@@ -468,8 +468,9 @@ const htmlHelper = (function() {
                 <span class="badge badge-light mt-1 d-block" id="class_counter_${mclass.name}">0</span>
             </label>
         `);
-        if (active)
+        if (active) { //pre-selected class
             button.addClass("active");
+        }
         button.click(() => {
             annotationTool.setMclass(mclass.name);
         });
