@@ -447,10 +447,9 @@ const tmapp = (function() {
             moveHandler(event);
         });
 
-        // Set canvas focus when mouse enters canvas
-        viewer.container.addEventListener('pointerenter', event => {
-            viewer.canvas.focus();
-        });
+        // Set canvas focus when mouse enters canvas, using global "Focus follows mouse" event handler in index.html
+        viewer.canvas.setAttribute("data-hover-focus", "");
+        viewer.canvas.setAttribute("id", viewer.id+"_canvas"); // had nothing set, this helps our debugging
 
         // Add hook to scroll without zooming
         // Rate limit most scroll actions, to make them more usable with e.g. a touchpad

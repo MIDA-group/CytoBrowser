@@ -47,7 +47,8 @@ const htmlHelper = (function() {
     
         $(`#focus_slider_${viewer.id}_internal`)
             .addClass("focus_slider_internal")
-            .css("height","max(100px,18%)");
+            .css("height","max(100px,18%)")
+            .attr("data-hover-focus", ".slider-handle");
     }
 
     function updateFocusSlider(viewer,val0) {
@@ -93,7 +94,7 @@ const htmlHelper = (function() {
         
         $(`#zoom_slider_${viewer.id}`).slider({
                 tooltip_position: 'left',
-                step:0.001,
+                step:0.01,
                 reversed:true,
                 focus: true,
 
@@ -119,7 +120,9 @@ const htmlHelper = (function() {
                 height: 'max(150px,27%)',
                 position: 'absolute',
                 right: '0'
-            });
+            })
+            .attr("data-hover-focus", ".slider-handle");
+
 
         $('.slider-tick-label-container').css('height', '100%');            
         $('.slider-tick-label').css('position', 'absolute');            
