@@ -505,6 +505,14 @@ const tmapp = (function() {
         // When leaving full-page mode, update counts
         viewer.addHandler("full-page", (event) => !event.fullPage && annotationHandler && annotationHandler.updateAnnotationCounts());
 
+        // Enable intercepting OSD keys
+        viewer.addHandler('canvas-key', function(event) {
+            const e = event.originalEvent;
+            if (e.code === 'KeyF') { //The annotation layer does not support Flip
+                event.preventDefaultAction = true;
+            }
+        });
+
         // When we're done loading
         viewer.addHandler("open", function (event) {
             _currentImage=image;
