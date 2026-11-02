@@ -181,7 +181,7 @@ const annotationHandler = (function (){
         );
     }
 
-    function _updateVisuals() {
+    function updateVisuals() {
         annotationVisuals.update(Array.from(_annotationMap.values()));
     }
 
@@ -342,7 +342,7 @@ const annotationHandler = (function (){
         timingLog && console.timeEnd('addAnnotation');
 
         // Add a graphical representation of the annotation
-        _updateVisuals();
+        updateVisuals();
     }
 
     /**
@@ -438,7 +438,7 @@ const annotationHandler = (function (){
 
 
         // Update the annotation in the graphics
-        redraw && _updateVisuals();
+        redraw && updateVisuals();
         timingLog && console.timeEnd('updateAnnotation update()');
     }
 
@@ -507,7 +507,7 @@ const annotationHandler = (function (){
         updateAnnotationCounts();
 
         // Remove the annotation from the graphics
-        _updateVisuals();
+        updateVisuals();
     }
 
     /**
@@ -582,6 +582,7 @@ const annotationHandler = (function (){
 
     // Return public members of the closure
     return {
+        updateVisuals,
         add,
         update,
         setBookmarked,

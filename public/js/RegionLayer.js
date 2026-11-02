@@ -6,6 +6,7 @@
 class RegionLayer extends OverlayLayer {
     #timingLog = false; //Log update times
     #scale = 1;
+    #zVisibility = true;
 
     #regionOverlay;
     #pendingRegionOverlay;
@@ -311,10 +312,14 @@ class RegionLayer extends OverlayLayer {
             );
     }
 
-    #exitRegion(exit) {
-        return exit.transition("appear").duration(200)
+    #exitRegion(exit) { //exit return value ignored in d3.join(...)
+        const animate = this.#zVisibility? exit: exit.filter(d=>d.z===tmapp.getFocusLevel());
+        const direct = this.#zVisibility? d3.select(null): exit.filter(d=>d.z!==tmapp.getFocusLevel());
+        animate.transition("appear")
+            .duration(200)
             .attr("opacity", 0)
             .remove();
+        direct.remove(); // Immediate remove required to avoid missing regions on quick back&forth z-changes
     }
 
 
@@ -348,9 +353,10 @@ class RegionLayer extends OverlayLayer {
 
         //Draw annotations and update list asynchronously
         this.updateAnnotations.inProgress(true); //No function 'self' existing
-        const regions = annotations.filter(annotation =>
-            annotation.points.length > 1
-        );
+        const regions = annotations.filter(annotation => (
+            annotation.points.length > 1 && 
+            (this.#zVisibility || annotation.z === tmapp.getFocusLevel())
+        ));
 
         const doneRegions = new Promise((resolve, reject) => {
             const regs = this.#regionOverlay.selectAll(".region")
@@ -465,6 +471,9 @@ class RegionLayer extends OverlayLayer {
     }
 
 
+    setAnnotationZVisibility(visible) {
+        this.#zVisibility = visible;
+    }
 
     /**
      * Called when layer is lowered away from top
