@@ -21,3 +21,7 @@ public/js/jquery/jquery.slim.min.map
 # PixiJS from node module install
 public/js/pixi/pixi.min.js
 public/js/pixi/pixi.min.js.map
+
+# @fortawesome/fontawesome-free
+public/css/all.min.css
+public/webfonts

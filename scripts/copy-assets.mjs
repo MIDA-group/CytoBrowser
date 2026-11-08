@@ -64,6 +64,20 @@ const assets = [
     ],
   },
   {
+    from: "@fortawesome/fontawesome-free/css",
+    to: "public/css",
+    files: [
+      "all.min.css"
+    ],
+  },
+  {
+    from: "@fortawesome/fontawesome-free",
+    to: "public",
+    files: [
+      "webfonts"
+    ],
+  },
+  {
     from: "jquery/dist",
     to: "public/js/jquery",
     files: [
