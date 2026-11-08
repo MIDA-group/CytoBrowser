@@ -505,11 +505,37 @@ const tmapp = (function() {
         // When leaving full-page mode, update counts
         viewer.addHandler("full-page", (event) => !event.fullPage && annotationHandler && annotationHandler.updateAnnotationCounts());
 
+
         // Enable intercepting OSD keys
         viewer.addHandler('canvas-key', function(event) {
             const e = event.originalEvent;
             if (e.code === 'KeyF') { //The annotation layer does not support Flip
                 event.preventDefaultAction = true;
+            }
+            const size = viewer.viewport.getContainerSize();
+            const diagonal = Math.hypot(size.x, size.y);
+            if (e.shiftKey) {
+                viewer.pixelsPerArrowPress = diagonal*0.10; 
+
+                if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                    event.preventDefaultAction = true;
+                    const clone = new KeyboardEvent('keydown', {
+                        key: e.key,
+                        code: e.code,
+                        bubbles: true,
+                        cancelable: true,
+                        shiftKey: false, // Strip the shift state
+                        ctrlKey: e.ctrlKey,
+                        altKey: e.altKey,
+                        metaKey: e.metaKey
+                    });
+                    viewer.canvas.dispatchEvent(clone);
+                }
+            }
+            else {
+                if (e.isTrusted) { // Not our clone
+                    viewer.pixelsPerArrowPress = diagonal*0.05; //old default was 40 pixels
+                }
             }
         });
 
