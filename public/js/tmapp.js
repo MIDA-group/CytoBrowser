@@ -515,7 +515,7 @@ const tmapp = (function() {
             const size = viewer.viewport.getContainerSize();
             const diagonal = Math.hypot(size.x, size.y);
             if (e.shiftKey) {
-                viewer.pixelsPerArrowPress = diagonal*0.10; 
+                viewer.pixelsPerArrowPress = diagonal*0.08; 
 
                 if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
                     event.preventDefaultAction = true;
@@ -534,7 +534,7 @@ const tmapp = (function() {
             }
             else {
                 if (e.isTrusted) { // Not our clone
-                    viewer.pixelsPerArrowPress = diagonal*0.05; //old default was 40 pixels
+                    viewer.pixelsPerArrowPress = diagonal*0.04; //old default was 40 pixels
                 }
             }
         });
