@@ -875,7 +875,7 @@ function _fetchImages(callback) {
      * @param {number} state.zoom The zoom in the viewport.
      */
     function moveTo(state, immediately=false) {
-        console.log('moveTo: ',state);
+        //console.log('moveTo: ',state);
         
         if (!state || state===_currState) {
             return; //nothing to do
@@ -1004,7 +1004,7 @@ function _fetchImages(callback) {
      */
     function setCollab(id) {
         _collab = id;
-        tmappUI.setCollabID(id, _currentImage.name);
+        tmappUI.setCollabID(id, _currentImage?.name);
         _updateURLParams();
     }  
     function getCollab() {

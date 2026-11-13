@@ -115,16 +115,55 @@ app.ws("/collaboration/:id", (ws, req) => {
     const image = req.query.image ? req.query.image : null;
     const userId = req.query.userId ? req.query.userId : null;
     const name = req.query.name || "Unnamed";
+
+    const ip =
+        req.headers["x-forwarded-for"]?.split(",")[0].trim() ||
+        req.socket.remoteAddress;
+    console.log(`Connected from ${ip}`);
+
     collaboration.joinCollab(ws, name, userId, id, image);
+   
+    ws.on("error", err => {
+        console.error(" ws_error:", err);
+    });    
+
+    // The underlying TCP socket 
+    ws._socket.on("error", err => {
+        if (err.code=='ECONNRESET') {
+            console.error(" tcp_error: ECONNRESET (probably just a client close)");
+        }
+        else {
+            console.error(" tcp_error: ", err);
+        }
+    });
+
+    ws._socket.on("close", hadError => {
+        if (hadError) console.log(" tcp_close, hadError: ", hadError);
+    });
 
     ws.on("message", msg => {
         collaboration.handleMessage(ws, id, msg);
     });
 
     ws.on("close", (code, reason) => {
-        console.log(` ws_close: ${code}, ${reason}`);
+        console.log(` ws_close: ${code}, ${reason.toString()}`);
         collaboration.leaveCollab(ws, id);
     });
+
+    // Monitor ws.buffer (large annotation load on slow line triggers this)
+    let prev_buff=0;
+    const interval = setInterval(() => {
+        const curr_buff=ws.bufferedAmount;
+        if (prev_buff>100 && curr_buff>100) {
+            console.log("Possible ws congestion, buffered:", curr_buff);
+        }
+        prev_buff=curr_buff;
+    }, 1000);
+    function cleanup_interval() {
+        clearInterval(interval);
+    }
+    ws.once("close", cleanup_interval);
+    ws.once("error", cleanup_interval);
 });
 
 // Begin listening on the specified interface
@@ -144,3 +183,17 @@ const listener = app.listen(port, hostname, () => {
         open(`http://${address}:${port}/${urlQuery}`);  
     }
 });
+
+// Monitor event-loop lag
+let last = Date.now();
+setInterval(() => {
+    const now = Date.now();
+    const lag = now - last - 1000;
+
+    if (lag > 500) {
+        console.log("event loop lag (ms)", lag);
+    }
+
+    last = now;
+}, 1000);
+

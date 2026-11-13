@@ -54,12 +54,13 @@ class Collaboration {
     }
 
     close() {
+        console.log('Closing');
         this.saveState().then(wasSaved => {
             if (wasSaved) {
-                this.log("Closing collaboration.", console.info);
+                this.log("Closing inactive collaboration.", console.info);
             }
-            else {
-                this.log("Closing collaboration without saving.", console.info);
+            else { //This is the common case with autosave
+                this.log("Closing inactive collaboration (without saving).", console.info); 
             }
             delete collabs[this.id];
         });
@@ -77,7 +78,7 @@ class Collaboration {
             position: {},
             ready: false,
         });
-        this.log(`${name} has connected.`, console.info);
+        this.log(`${name} has connected (${this.members.size})`, console.info);
         this.forwardMessage(ws, {
             type: "memberEvent",
             eventType: "add",
@@ -92,10 +93,10 @@ class Collaboration {
             eventType: "remove",
             member: member
         });
-        this.log(`${member.name} has disconnected.`, console.info);
         this.members.delete(ws);
+        this.log(`${member.name} has disconnected (${this.members.size})`, console.info);
         if (this.members.size === 0) {
-            this.deathClock = setTimeout(() => this.close(), 300000);
+            this.deathClock = setTimeout(() => this.close(), 300000); // Closing after 5 min
         }
     }
 

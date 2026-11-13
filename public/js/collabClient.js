@@ -429,6 +429,9 @@ const collabClient = (function(){
             }
 
             const count = (function () { let i = 0; return () => ++i; })();
+            ws.onerror = function(event) {
+                console.error("ws_error:", event); //event.data is typically undefined
+            }
             ws.onmessage = function(event) {
                 // console.log('Msg: ',count());
                 if (event.data !== "__pong__") {
