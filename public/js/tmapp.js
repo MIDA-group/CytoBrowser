@@ -610,7 +610,7 @@ const tmapp = (function() {
             //    url: url,
             // network: entry.responseEnd - entry.requestStart,
             //    ttfb: entry.responseStart - entry.requestStart, //TimeToFirstByte
-                total: entry.duration
+                total: entry.transferSize > 0? entry.duration: "cached"
             });
         });
 
