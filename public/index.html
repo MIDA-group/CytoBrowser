@@ -1030,6 +1030,14 @@
         }
     });   
 
+    // Default is 250-ish
+    performance.setResourceTimingBufferSize(10000);
+    // Simply clear when full
+    performance.addEventListener("resourcetimingbufferfull", () => {
+        console.warn("Resource timing buffer full, thus clearing it.");
+        performance.clearResourceTimings();
+    });
+
     // Start our tmapp
     $(document).ready(() => {
         window.addEventListener('resize', setCollapseDir);

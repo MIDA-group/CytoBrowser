@@ -598,9 +598,25 @@ const tmapp = (function() {
             tmappUI.displayImageError("servererror");
         });
 
+        viewer.addHandler('tile-loaded', function (event) {
+            const url = event.tile.getUrl();
+            const entries = performance.getEntriesByName(url, "resource"); 
+            const entry = entries[entries.length - 1]; //Just pick the last entry
+            if (!entry) {
+                console.warn("Lacking performance entry for:",url); //Should generally not happen (sign of full buffer)
+                return;
+            }
+            console.log({
+            //    url: url,
+            // network: entry.responseEnd - entry.requestStart,
+            //    ttfb: entry.responseStart - entry.requestStart, //TimeToFirstByte
+                total: entry.duration
+            });
+        });
+
         // A tile failed to load
         viewer.addHandler("tile-load-failed", function(event) {
-            tmappUI.displayImageError("tilefail", 1000);
+            tmappUI.displayImageError("tilefail", 100); //Shortened fail msg.
         });
 
         // When viewport position changes (before drawing)
