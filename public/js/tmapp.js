@@ -6,9 +6,10 @@
 const tmapp = (function() {
     "use strict";
 
-    const _imageDir = "data/";
+    const _imageDir = "https://cytobrowser.se/cervix/data/";
     const _optionsOSD = {
         id: "ISS_viewer", //cybr_viewer
+        crossOriginPolicy: "Anonymous", //allow image loading from other sites
         prefixUrl: "js/openseadragon/images/", //Location of button graphics
         wrapHorizontal: false,
         showNavigator: true,
